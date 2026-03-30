@@ -1,0 +1,20 @@
+<clickhouse>
+    <!-- Enable CORS for browser access from Vue dashboard -->
+    <http_options_response>
+        <header>
+            <name>Access-Control-Allow-Origin</name>
+            <value>*</value>
+        </header>
+        <header>
+            <name>Access-Control-Allow-Methods</name>
+            <value>POST, GET, OPTIONS</value>
+        </header>
+        <header>
+            <name>Access-Control-Allow-Headers</name>
+            <value>*</value>
+        </header>
+    </http_options_response>
+
+    <!-- Listen on all interfaces for network access -->
+    <listen_host>0.0.0.0</listen_host>
+</clickhouse>

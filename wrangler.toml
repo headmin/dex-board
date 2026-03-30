@@ -1,0 +1,27 @@
+name = "dex-board"
+main = "src/worker/index.ts"
+compatibility_date = "2025-03-30"
+compatibility_flags = ["nodejs_compat"]
+
+[placement]
+mode = "smart"
+
+[assets]
+directory = "dist"
+binding = "ASSETS"
+
+[observability]
+enabled = true
+
+[vars]
+CLICKHOUSE_URL = "https://your-instance.clickhouse.cloud:8443"
+CLICKHOUSE_USER = "default"
+CLICKHOUSE_DATABASE = "fleet_logs"
+
+# Cloudflare Access auth (optional - leave empty to disable)
+CF_ACCESS_TEAM_DOMAIN = ""
+CF_ACCESS_AUD = ""
+
+# Secrets (set via wrangler CLI, never in this file):
+#   npx wrangler secret put CLICKHOUSE_PASSWORD
+#   npx wrangler secret put CF_ACCESS_AUD  (if you prefer it as a secret)

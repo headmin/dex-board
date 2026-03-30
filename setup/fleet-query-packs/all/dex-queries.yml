@@ -1,0 +1,82 @@
+# Fleet DEX Query Pack - Cross-Platform Queries
+# Digital Employee Experience (DEX) metrics for analytics
+#
+# Reference: https://t-lark.github.io/posts/building_endpoint_performance_metrics/
+
+# Top 20 processes by memory usage (5 min interval)
+- name: dex_top_processes
+  description: Top 20 processes by memory usage for DEX analytics
+  query: |
+    SELECT
+      name as process_name,
+      path as process_path,
+      pid,
+      uid,
+      ROUND(resident_size / 1048576.0, 1) as memory_mb,
+      state,
+      threads
+    FROM processes
+    WHERE resident_size > 0
+    ORDER BY resident_size DESC
+    LIMIT 20;
+  interval: 300
+  platform: darwin,linux,windows
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
+
+# Hardware specifications (24 hour interval)
+- name: dex_hardware_info
+  description: Hardware specifications and device classification
+  query: |
+    SELECT
+      s.hardware_vendor,
+      s.hardware_model,
+      s.hardware_serial,
+      s.cpu_brand,
+      s.cpu_type,
+      s.cpu_physical_cores,
+      s.cpu_logical_cores,
+      ROUND(s.physical_memory / 1073741824.0, 0) as physical_memory_gb,
+      s.hostname,
+      s.computer_name,
+      CASE
+        WHEN s.hardware_model LIKE '%Book%' THEN 'laptop'
+        WHEN s.hardware_model LIKE '%iMac%' THEN 'desktop'
+        WHEN s.hardware_model LIKE '%Mac mini%' THEN 'desktop'
+        WHEN s.hardware_model LIKE '%Mac Pro%' THEN 'desktop'
+        WHEN s.hardware_model LIKE '%Mac Studio%' THEN 'desktop'
+        WHEN s.hardware_vendor LIKE '%VMware%' THEN 'virtual'
+        WHEN s.hardware_vendor LIKE '%Parallels%' THEN 'virtual'
+        WHEN s.hardware_vendor LIKE '%QEMU%' THEN 'virtual'
+        WHEN s.hardware_model LIKE '%Virtual%' THEN 'virtual'
+        WHEN s.hardware_model LIKE '%Surface%' THEN 'laptop'
+        WHEN s.hardware_model LIKE '%Laptop%' THEN 'laptop'
+        WHEN s.hardware_model LIKE '%Notebook%' THEN 'laptop'
+        ELSE 'desktop'
+      END as device_type
+    FROM system_info s;
+  interval: 86400
+  platform: darwin,linux,windows
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
+
+# Chrome browser extensions inventory (24 hour interval)
+- name: dex_browser_extensions_chrome
+  description: Chrome browser extensions inventory
+  query: |
+    SELECT
+      name,
+      version,
+      identifier,
+      description,
+      path,
+      'chrome' as browser
+    FROM chrome_extensions
+    WHERE name != '';
+  interval: 86400
+  platform: darwin,linux,windows
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true

@@ -1,0 +1,177 @@
+# Fleet DEX Query Pack - macOS Queries
+# Digital Employee Experience (DEX) metrics for analytics
+#
+# Reference: https://t-lark.github.io/posts/building_endpoint_performance_metrics/
+#
+# PLATFORM NOTES:
+# - macOS uses different tables than Linux/Windows for many system metrics
+# - disk_info is Windows-only; use block_devices + mounts on macOS
+# - memory_info is Linux-only; use virtual_memory_info on macOS
+# - Many tables are macOS-exclusive: alf, sip_config, gatekeeper, apps, wifi_status
+#
+# MEMORY PAGE SIZE WARNING (Apple Silicon):
+# - Intel Macs: 4KB pages (4096 bytes)
+# - Apple Silicon (M1/M2/M3): 16KB pages (16384 bytes)
+# - virtual_memory_info returns page COUNTS, not bytes
+# - Must multiply by actual page size from system_controls 'hw.pagesize'
+# - Hardcoding 4096 on Apple Silicon will give wrong memory readings!
+
+# Core device health (5 min interval)
+# Memory calculation on macOS:
+# - wired, active, free, etc. are in PAGES (multiply by 4096)
+# - compressed is in BYTES on Apple Silicon (osquery bug/quirk)
+# - We only use wired + active for "used" to avoid the compressed issue
+- name: dex_device_health_macos
+  description: Core device health metrics for macOS (memory, disk, battery, uptime)
+  query: |
+    SELECT
+      s.hostname,
+      s.hardware_model,
+      s.hardware_serial,
+      s.computer_name,
+      o.name as os_name,
+      o.version as os_version,
+      o.build as os_build,
+      s.cpu_brand,
+      s.cpu_physical_cores as cpu_cores,
+      ROUND(s.physical_memory / 1073741824.0, 2) as memory_total_gb,
+      -- Memory used = (wired + active) pages * 4096 + compressed bytes
+      -- Note: compressed is in BYTES on Apple Silicon, not pages!
+      ROUND(((m.wired + m.active) * 4096.0 + m.compressed) / 1073741824.0, 2) as memory_used_gb,
+      ROUND(100.0 * ((m.wired + m.active) * 4096.0 + m.compressed) / s.physical_memory, 1) as memory_percent,
+      ROUND(d.blocks * d.blocks_size / 1073741824.0, 2) as disk_total_gb,
+      ROUND(d.blocks_available * d.blocks_size / 1073741824.0, 2) as disk_free_gb,
+      ROUND(100.0 * (d.blocks - d.blocks_available) / d.blocks, 1) as disk_percent,
+      COALESCE(ROUND(100.0 * b.max_capacity / b.designed_capacity, 1), 0) as battery_health_percent,
+      COALESCE(ROUND(100.0 * b.current_capacity / b.max_capacity, 1), 0) as battery_charge_percent,
+      COALESCE(b.charging, 0) as battery_charging,
+      ROUND(u.total_seconds / 86400.0, 2) as uptime_days
+    FROM system_info s
+    JOIN os_version o ON 1=1
+    JOIN uptime u ON 1=1
+    JOIN virtual_memory_info m ON 1=1
+    LEFT JOIN mounts d ON d.path = '/'
+    LEFT JOIN battery b ON 1=1;
+  interval: 300
+  platform: darwin
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
+
+# Security posture (15 min interval)
+# NOTE: disk_encryption has known issues with APFS (osquery #3709, #5223):
+# - APFS volume names don't match traditional patterns
+# - T2/M1/M2 Macs report encrypted=1 regardless of FileVault status
+# - Use filevault_status column if available (requires patched osquery)
+# Current approach: MAX(encrypted) to find if ANY disk is encrypted
+- name: dex_security_posture_macos
+  description: Security compliance metrics for macOS devices
+  query: |
+    SELECT
+      o.version as os_version,
+      o.build as os_build,
+      o.platform as os_platform,
+      COALESCE((SELECT MAX(encrypted) FROM disk_encryption), 0) as disk_encrypted,
+      COALESCE((SELECT type FROM disk_encryption WHERE encrypted = 1 LIMIT 1), '') as encryption_type,
+      COALESCE(alf.global_state, 0) as firewall_enabled,
+      COALESCE(alf.stealth_enabled, 0) as firewall_stealth_mode,
+      COALESCE(sip.enabled, 0) as sip_enabled,
+      COALESCE(gk.assessments_enabled, 0) as gatekeeper_enabled
+    FROM os_version o
+    LEFT JOIN alf ON 1=1
+    LEFT JOIN sip_config sip ON 1=1
+    LEFT JOIN gatekeeper gk ON 1=1
+    LIMIT 1;
+  interval: 900
+  platform: darwin
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
+
+# WiFi network quality (10 min interval)
+- name: dex_network_quality_macos
+  description: WiFi and network quality metrics for macOS
+  query: |
+    SELECT
+      w.ssid as wifi_ssid,
+      w.bssid as wifi_bssid,
+      w.rssi as wifi_rssi,
+      w.noise as wifi_noise,
+      w.channel as wifi_channel,
+      w.transmit_rate as wifi_transmit_rate,
+      w.interface as interface_name,
+      CASE
+        WHEN w.rssi >= -50 THEN 'excellent'
+        WHEN w.rssi >= -60 THEN 'good'
+        WHEN w.rssi >= -70 THEN 'fair'
+        ELSE 'poor'
+      END as signal_quality
+    FROM wifi_status w
+    WHERE w.ssid != '';
+  interval: 600
+  platform: darwin
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
+
+# Disk and storage info (1 hour interval)
+# NOTE: disk_info table is Windows/ChromeOS only - use block_devices on macOS/Linux
+- name: dex_disk_info_macos
+  description: Disk and storage information for macOS
+  query: |
+    SELECT
+      b.name,
+      b.type,
+      b.model,
+      b.vendor,
+      ROUND(b.size * b.block_size / 1073741824.0, 0) as size_gb,
+      m.path as mount_path,
+      ROUND(m.blocks * m.blocks_size / 1073741824.0, 0) as total_gb,
+      ROUND(m.blocks_available * m.blocks_size / 1073741824.0, 0) as free_gb,
+      ROUND(100.0 * (m.blocks - m.blocks_available) / m.blocks, 1) as used_percent,
+      m.type as filesystem_type
+    FROM mounts m
+    LEFT JOIN block_devices b ON m.device LIKE '%' || b.name OR m.device = b.name
+    WHERE m.path IN ('/', '/System/Volumes/Data');
+  interval: 3600
+  platform: darwin
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
+
+# Installed applications (temporarily set to 5 min to pick up Chrome + VS Code install)
+- name: dex_app_inventory_macos
+  description: Installed applications inventory for macOS (excludes Apple apps)
+  query: |
+    SELECT
+      name as app_name,
+      bundle_short_version as app_version,
+      bundle_identifier as app_bundle_id,
+      path as app_path,
+      'macos' as platform
+    FROM apps
+    WHERE bundle_identifier != ''
+      AND bundle_identifier NOT LIKE 'com.apple.%'
+    ORDER BY name;
+  interval: 300
+  platform: darwin
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
+
+# Login and startup items (24 hour interval)
+- name: dex_startup_items_macos
+  description: Login and startup items for macOS
+  query: |
+    SELECT
+      name,
+      path,
+      source,
+      type,
+      username
+    FROM startup_items;
+  interval: 86400
+  platform: darwin
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true

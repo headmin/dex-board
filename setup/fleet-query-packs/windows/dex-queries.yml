@@ -1,0 +1,99 @@
+# Fleet DEX Query Pack - Windows Queries
+# Digital Employee Experience (DEX) metrics for analytics
+#
+# Reference: https://t-lark.github.io/posts/building_endpoint_performance_metrics/
+
+# Core device health (5 min interval)
+- name: dex_device_health_windows
+  description: Core device health metrics for Windows (disk, uptime)
+  query: |
+    SELECT
+      s.hostname,
+      s.hardware_model,
+      s.hardware_serial,
+      s.computer_name,
+      o.name as os_name,
+      o.version as os_version,
+      o.build as os_build,
+      s.cpu_brand,
+      s.cpu_physical_cores as cpu_cores,
+      ROUND(s.physical_memory / 1073741824.0, 2) as memory_total_gb,
+      ROUND(d.blocks * d.blocks_size / 1073741824.0, 2) as disk_total_gb,
+      ROUND(d.blocks_available * d.blocks_size / 1073741824.0, 2) as disk_free_gb,
+      ROUND(100.0 * (d.blocks - d.blocks_available) / d.blocks, 1) as disk_percent,
+      COALESCE(ROUND(100.0 * b.max_capacity / b.designed_capacity, 1), 0) as battery_health_percent,
+      COALESCE(ROUND(100.0 * b.current_capacity / b.max_capacity, 1), 0) as battery_charge_percent,
+      COALESCE(b.charging, 0) as battery_charging,
+      ROUND(u.total_seconds / 86400.0, 2) as uptime_days
+    FROM system_info s
+    JOIN os_version o ON 1=1
+    JOIN uptime u ON 1=1
+    LEFT JOIN mounts d ON d.path = 'C:\'
+    LEFT JOIN battery b ON 1=1;
+  interval: 300
+  platform: windows
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
+
+# Security posture (15 min interval)
+- name: dex_security_posture_windows
+  description: Security compliance metrics for Windows devices
+  query: |
+    SELECT
+      o.version as os_version,
+      o.build as os_build,
+      o.platform as os_platform,
+      COALESCE(bde.protection_status, 0) as disk_encrypted,
+      COALESCE(bde.encryption_method, '') as encryption_type,
+      COALESCE(sb.secure_boot, 0) as secure_boot_enabled
+    FROM os_version o
+    LEFT JOIN bitlocker_info bde ON bde.drive_letter = 'C:'
+    LEFT JOIN secureboot sb ON 1=1;
+  interval: 900
+  platform: windows
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
+
+# Disk and storage info (1 hour interval)
+- name: dex_disk_info_windows
+  description: Disk and storage information for Windows
+  query: |
+    SELECT
+      d.name,
+      d.type,
+      ROUND(d.disk_size / 1073741824.0, 0) as size_gb,
+      m.path as mount_path,
+      ROUND(m.blocks * m.blocks_size / 1073741824.0, 0) as total_gb,
+      ROUND(m.blocks_available * m.blocks_size / 1073741824.0, 0) as free_gb,
+      ROUND(100.0 * (m.blocks - m.blocks_available) / m.blocks, 1) as used_percent,
+      m.type as filesystem_type
+    FROM mounts m
+    LEFT JOIN disk_info d ON m.device LIKE '%' || d.name OR m.device = d.name
+    WHERE m.path = 'C:\';
+  interval: 3600
+  platform: windows
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
+
+# Installed applications (24 hour interval)
+- name: dex_app_inventory_windows
+  description: Installed applications inventory for Windows
+  query: |
+    SELECT
+      name as app_name,
+      version as app_version,
+      publisher,
+      install_location as app_path,
+      install_date,
+      'windows' as platform
+    FROM programs
+    WHERE name != ''
+    ORDER BY name;
+  interval: 86400
+  platform: windows
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true

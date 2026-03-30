@@ -1,0 +1,50 @@
+:root {
+  /* Fleet brand colors */
+  --fleet-black: #192147;
+  --fleet-green: #009a7d;
+  --fleet-white: #ffffff;
+  --fleet-black-75: #515774;
+  --fleet-black-50: #8b8fa2;
+  --fleet-black-33: #b3b6c1;
+  --fleet-black-25: #c5c7d1;
+  --fleet-black-10: #e2e4ea;
+  --fleet-black-5: #f4f4f6;
+  --fleet-black-5-down: #f0f1f4;
+  --fleet-blue: #3e4771;
+  --fleet-vibrant-blue: #6a67fe;
+  --fleet-vibrant-red: #ff5c83;
+  --fleet-purple: #ae6ddf;
+  --fleet-off-white: #f9fafc;
+  --fleet-success: #3db67b;
+  --fleet-warning: #ebbc43;
+  --fleet-error: #d66c7b;
+  --fleet-info: #6a67fe;
+  --fleet-tooltip-bg: #3e4771;
+
+  /* Sidebar */
+  --sidebar-width: 200px;
+  --sidebar-bg: var(--fleet-white);
+  --sidebar-border: var(--fleet-black-10);
+
+  /* Spacing */
+  --pad-small: 8px;
+  --pad-medium: 16px;
+  --pad-large: 24px;
+  --pad-xlarge: 32px;
+
+  /* Border */
+  --radius: 4px;
+  --radius-medium: 6px;
+  --radius-large: 8px;
+  --box-shadow: 0px 2px 4px rgba(25, 33, 71, 0.06);
+
+  /* Font */
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 24px;
+  --font-size-xxl: 32px;
+}

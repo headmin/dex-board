@@ -1,0 +1,112 @@
+# Fleet DEX Query Pack - Linux Queries
+# Digital Employee Experience (DEX) metrics for analytics
+#
+# Reference: https://t-lark.github.io/posts/building_endpoint_performance_metrics/
+#
+# PLATFORM NOTES:
+# - Linux uses memory_info table (not available on macOS)
+# - memory_info provides memory_total and memory_available in bytes (no page math needed)
+# - disk_info is Windows/ChromeOS only - use block_devices on Linux
+# - Linux has secureboot table for UEFI secure boot status
+# - virtual_memory_info is macOS-only
+
+# Core device health (5 min interval)
+- name: dex_device_health_linux
+  description: Core device health metrics for Linux (memory, disk, uptime)
+  query: |
+    SELECT
+      s.hostname,
+      s.hardware_model,
+      s.hardware_serial,
+      s.computer_name,
+      o.name as os_name,
+      o.version as os_version,
+      o.build as os_build,
+      s.cpu_brand,
+      s.cpu_physical_cores as cpu_cores,
+      ROUND(m.memory_total / 1073741824.0, 2) as memory_total_gb,
+      ROUND((m.memory_total - m.memory_available) / 1073741824.0, 2) as memory_used_gb,
+      ROUND(100.0 * (m.memory_total - m.memory_available) / m.memory_total, 1) as memory_percent,
+      ROUND(d.blocks * d.blocks_size / 1073741824.0, 2) as disk_total_gb,
+      ROUND(d.blocks_available * d.blocks_size / 1073741824.0, 2) as disk_free_gb,
+      ROUND(100.0 * (d.blocks - d.blocks_available) / d.blocks, 1) as disk_percent,
+      ROUND(u.total_seconds / 86400.0, 2) as uptime_days
+    FROM system_info s
+    JOIN os_version o ON 1=1
+    JOIN memory_info m ON 1=1
+    JOIN uptime u ON 1=1
+    LEFT JOIN mounts d ON d.path = '/';
+  interval: 300
+  platform: linux
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
+
+# Top processes with memory percent (5 min interval)
+- name: dex_top_processes_linux
+  description: Top 20 processes by memory usage with memory percent (Linux)
+  query: |
+    SELECT
+      p.name as process_name,
+      p.path as process_path,
+      p.pid,
+      p.uid,
+      ROUND(p.resident_size * 100.0 / m.memory_total, 2) as memory_percent,
+      ROUND(p.resident_size / 1048576.0, 1) as memory_mb,
+      p.state,
+      p.threads
+    FROM processes p, memory_info m
+    WHERE p.resident_size > 0
+    ORDER BY p.resident_size DESC
+    LIMIT 20;
+  interval: 300
+  platform: linux
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
+
+# Security posture (15 min interval)
+- name: dex_security_posture_linux
+  description: Security compliance metrics for Linux devices
+  query: |
+    SELECT
+      o.version as os_version,
+      o.build as os_build,
+      o.platform as os_platform,
+      COALESCE(de.encrypted, 0) as disk_encrypted,
+      COALESCE(de.type, '') as encryption_type,
+      COALESCE(sb.secure_boot, 0) as secure_boot_enabled
+    FROM os_version o
+    LEFT JOIN disk_encryption de ON de.name LIKE '%root%' OR de.name LIKE '%/%'
+    LEFT JOIN secureboot sb ON 1=1
+    LIMIT 1;
+  interval: 900
+  platform: linux
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
+
+# Disk and storage info (1 hour interval)
+# NOTE: disk_info table is Windows/ChromeOS only - use block_devices on Linux/macOS
+- name: dex_disk_info_linux
+  description: Disk and storage information for Linux
+  query: |
+    SELECT
+      b.name,
+      b.type,
+      b.model,
+      b.vendor,
+      ROUND(b.size * b.block_size / 1073741824.0, 0) as size_gb,
+      m.path as mount_path,
+      ROUND(m.blocks * m.blocks_size / 1073741824.0, 0) as total_gb,
+      ROUND(m.blocks_available * m.blocks_size / 1073741824.0, 0) as free_gb,
+      ROUND(100.0 * (m.blocks - m.blocks_available) / m.blocks, 1) as used_percent,
+      m.type as filesystem_type
+    FROM mounts m
+    LEFT JOIN block_devices b ON m.device LIKE '%' || b.name OR m.device = b.name
+    WHERE m.path = '/';
+  interval: 3600
+  platform: linux
+  logging: snapshot
+  automations_enabled: true
+  observer_can_run: true
