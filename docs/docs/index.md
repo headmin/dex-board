@@ -37,15 +37,20 @@ cd dex-board
 # Install
 npm install
 
-# Bootstrap ClickHouse schema + Fleet query packs
-bash setup/bootstrap.sh
+# Create .env from template and fill in values
+cp .env.example .env
 
-# Configure Cloudflare secrets
-bash setup-secrets.sh
+# Apply ClickHouse schema
+bash setup/setup-clickhouse.sh
 
-# Deploy
-bash deploy.sh
+# Bootstrap Fleet query packs
+bash setup/bootstrap.sh --skip-clickhouse
+
+# Deploy to Cloudflare (pushes secrets + builds + deploys)
+bash setup/deploy.sh
 ```
+
+See the [Setup guide](setup.md) for full details, including 1Password integration.
 
 ## Features
 
@@ -53,5 +58,6 @@ bash deploy.sh
 - **Device drill-down** — Click any device in the heatmap to see full history
 - **GitOps timeline** — Correlate Fleet config changes with score impact
 - **88 named queries** — No raw SQL in the browser; all queries are parameterised and validated server-side
+- **Basic auth** — Optional HTTP basic auth to protect the dashboard
 - **Cloudflare Access auth** — Optional JWT validation for access control
 - **Workers Council mode** — Privacy-preserving view that hides per-device drill-down

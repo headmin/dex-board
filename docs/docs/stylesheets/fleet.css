@@ -26,7 +26,23 @@
 
 /* Header */
 .md-header {
-  background-color: var(--md-primary-fg-color);
+  background-color: #ffffff;
+  color: var(--md-primary-fg-color);
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.md-header__title {
+  color: var(--md-primary-fg-color);
+}
+
+[data-md-color-scheme="slate"] .md-header {
+  background-color: #1e1e2e;
+  color: #cdd6f4;
+  border-bottom: 1px solid #313244;
+}
+
+[data-md-color-scheme="slate"] .md-header__title {
+  color: #cdd6f4;
 }
 
 /* Links use Fleet green */

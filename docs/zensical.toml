@@ -34,7 +34,7 @@ site_url = "https://dex-board.pages.dev/"
 #
 # Read more: https://zensical.org/docs/setup/basics/#copyright
 copyright = """
-Copyright &copy; 2026 The authors
+Copyright &copy; 2026 Henry Stamerjohann, on behalf of Fleet Device Management. <a href="https://fleetdm.com">fleetdm.com</a>
 """
 
 # Zensical supports both implicit navigation and explicitly defined navigation.

@@ -146,7 +146,7 @@
             :data="drillTopProcesses"
             :loading="loading.drill"
             nameKey="process_name"
-            valueKey="avg_memory"
+            valueKey="avg_mb"
           />
           <DataTable
             title="Recent process events"
@@ -484,7 +484,7 @@
             :data="topProcessesByMemory"
             :loading="loading.processes"
             nameKey="process_name"
-            valueKey="avg_memory"
+            valueKey="avg_mb"
           />
           <PieChart
             title="Process distribution"

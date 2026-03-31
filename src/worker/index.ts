@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { basicAuth } from 'hono/basic-auth'
 import type { Env, QueryRequest } from './types'
 import { registry, RegistryError } from './query-registry'
 import { pingClickHouse } from './clickhouse-client'
@@ -26,6 +27,14 @@ registry.registerAll(scoreQueries)
 
 // ─── Hono app ────────────────────────────────────────────
 const app = new Hono<{ Bindings: Env }>()
+
+// Basic auth — protects all routes (UI + API) when configured
+app.use('*', async (c, next) => {
+  const user = c.env.BASIC_AUTH_USER
+  const pass = c.env.BASIC_AUTH_PASS
+  if (!user || !pass) return next()
+  return basicAuth({ username: user, password: pass })(c, next)
+})
 
 // Middleware
 app.use('/api/*', cors({ origin: '*', allowMethods: ['GET', 'POST'], maxAge: 3600 }))

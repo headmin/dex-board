@@ -70,4 +70,6 @@ export interface Env {
   ASSETS: Fetcher
   CF_ACCESS_TEAM_DOMAIN?: string
   CF_ACCESS_AUD?: string
+  BASIC_AUTH_USER?: string
+  BASIC_AUTH_PASS?: string
 }

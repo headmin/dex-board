@@ -86,11 +86,11 @@ WITH
     )
 SELECT
     toStartOfHour(h.event_time) AS hour,
-    h.host_identifier,
-    h.hostname,
+    h.host_identifier AS host_identifier,
+    h.hostname AS hostname,
     0 AS team_id,
-    h.os_name,
-    h.hardware_model,
+    h.os_name AS os_name,
+    h.hardware_model AS hardware_model,
     -- RAM tier classification
     multiIf(
         h.ram_gb >= 64, '64GB+',

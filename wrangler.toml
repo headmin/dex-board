@@ -9,19 +9,13 @@ mode = "smart"
 [assets]
 directory = "dist"
 binding = "ASSETS"
+not_found_handling = "single-page-application"
 
 [observability]
 enabled = true
 
-[vars]
-CLICKHOUSE_URL = "https://your-instance.clickhouse.cloud:8443"
-CLICKHOUSE_USER = "default"
-CLICKHOUSE_DATABASE = "fleet_logs"
-
-# Cloudflare Access auth (optional - leave empty to disable)
-CF_ACCESS_TEAM_DOMAIN = ""
-CF_ACCESS_AUD = ""
-
-# Secrets (set via wrangler CLI, never in this file):
-#   npx wrangler secret put CLICKHOUSE_PASSWORD
-#   npx wrangler secret put CF_ACCESS_AUD  (if you prefer it as a secret)
+# All config is set as secrets via setup/deploy.sh (reads from .env or 1Password):
+#   CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN
+#   CLICKHOUSE_URL, CLICKHOUSE_USER, CLICKHOUSE_PASSWORD, CLICKHOUSE_DATABASE
+#   BASIC_AUTH_USER, BASIC_AUTH_PASS
+#   CF_ACCESS_TEAM_DOMAIN, CF_ACCESS_AUD
