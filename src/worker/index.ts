@@ -15,6 +15,10 @@ import { networkQueries } from './queries/network'
 import { auditQueries } from './queries/audit'
 import { softwareQueries } from './queries/software'
 import { scoreQueries } from './queries/scores'
+import { firehoseWifiQueries } from './queries/alt-wifi'
+import { firehoseAppsQueries } from './queries/alt-apps'
+import { firehoseHardwareQueries } from './queries/alt-hardware'
+import { firehoseFleetdQueries } from './queries/alt-fleetd'
 
 registry.registerAll(healthQueries)
 registry.registerAll(deviceQueries)
@@ -24,6 +28,10 @@ registry.registerAll(networkQueries)
 registry.registerAll(auditQueries)
 registry.registerAll(softwareQueries)
 registry.registerAll(scoreQueries)
+registry.registerAll(firehoseWifiQueries)
+registry.registerAll(firehoseAppsQueries)
+registry.registerAll(firehoseHardwareQueries)
+registry.registerAll(firehoseFleetdQueries)
 
 // ─── Hono app ────────────────────────────────────────────
 const app = new Hono<{ Bindings: Env }>()

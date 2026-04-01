@@ -24,6 +24,9 @@
         <router-link to="/audit" class="nav-item" active-class="active">
           <span class="nav-icon">&#9899;</span> Audit log
         </router-link>
+        <router-link to="/firehose" class="nav-item" active-class="active">
+          <span class="nav-icon">&#9656;</span> Firehose
+        </router-link>
       </nav>
     </aside>
     <main class="main-content">
