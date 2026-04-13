@@ -40,7 +40,7 @@ env file it's pointed at.
 ## What the script creates
 
 Eleven (destination table + materialized view + backfill) trios, all reading
-from the S3 ClickPipe source table `s3-85c9c3ef-81e3-4c05-aead-a3dc9e6f90b2`.
+from the S3 ClickPipe source table `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`.
 
 ### Coverage map vs. `dex-queries.yml`
 
