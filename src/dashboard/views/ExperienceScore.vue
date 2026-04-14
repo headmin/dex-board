@@ -869,7 +869,8 @@ onMounted(() => {
 }
 
 .signal-info {
-  min-width: 160px;
+  width: 280px;
+  min-width: 280px;
   flex-shrink: 0;
 }
 
