@@ -19,6 +19,8 @@ export const firehoseHealthQueries: QueryConfig[] = [
         countDistinct(host_id) AS total_devices,
         countDistinctIf(host_id, swap_pressure = 'severe') AS severe_swap,
         countDistinctIf(host_id, swap_pressure = 'elevated') AS elevated_swap,
+        countDistinctIf(host_id, compression_pressure = 'high') AS high_compression,
+        countDistinctIf(host_id, compression_pressure = 'moderate') AS moderate_compression,
         countDistinctIf(host_id, battery_health_score = 'degraded') AS degraded_battery,
         countDistinctIf(host_id, battery_health_score = 'replace') AS replace_battery,
         round(avg(battery_percent), 0) AS avg_battery_pct
@@ -92,6 +94,24 @@ export const firehoseHealthQueries: QueryConfig[] = [
         FROM device_health GROUP BY host_id
       )
       GROUP BY swap_pressure
+      ORDER BY device_count DESC
+    `,
+  },
+  {
+    name: 'firehose.health.compression_distribution',
+    domain: 'health',
+    client: 'alt',
+    description: 'Device count by compression pressure level',
+    params: [],
+    sql: `
+      SELECT
+        compression_pressure,
+        count() AS device_count
+      FROM (
+        SELECT host_id, argMax(compression_pressure, timestamp) AS compression_pressure
+        FROM device_health GROUP BY host_id
+      )
+      GROUP BY compression_pressure
       ORDER BY device_count DESC
     `,
   },

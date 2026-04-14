@@ -4,17 +4,23 @@
  * Scoring formulas:
  *   Device Health (25%): CPU class + RAM tier + battery + swap pressure
  *   Performance (35%):   Swap/compression pressure + top process RSS + uptime risk
- *   Network (20% info):  RSSI + SNR + Tx rate + VPN confidence
- *   Security (10%):      OS currency + DEX OS health (limited signals)
- *   Software (10%):      Crash frequency + app adoption + app count
+ *   Network (info only):  RSSI + SNR + Tx rate + VPN confidence (excluded from composite)
+ *   Security (20%):      OS currency + DEX OS health (limited signals)
+ *   Software (20%):      Crash frequency + app adoption + app count
  *
- * Composite = weighted average (network informational only, excluded from composite)
+ * Composite = 0.25*DH + 0.35*Perf + 0.20*Sec + 0.20*SW
  * Grade: A >=90, B >=75, C >=60, D >=40, F <40
+ *
+ * NULL handling: LEFT JOINs can produce NULLs for devices missing data in
+ * secondary tables. We use ifNull() with reasonable defaults so "no data"
+ * means "assume OK" rather than "assume worst case".
  */
 import type { QueryConfig } from '../types'
 
 // ── Per-device score CTE ─────────────────────────────────
-// Reusable WITH clause that computes all 5 category scores per device
+// Reusable WITH clause that computes all 5 category scores per device.
+// ifNull() ensures LEFT-JOINed NULLs get reasonable defaults ("no data = assume OK")
+// rather than falling to CASE ELSE minimum scores.
 const DEVICE_SCORES_CTE = `
 WITH device_scores AS (
   SELECT
@@ -22,6 +28,14 @@ WITH device_scores AS (
     h.hostname AS hostname,
     h.cpu_class AS cpu_class,
     h.ram_tier AS ram_tier,
+
+    -- Data coverage: how many secondary tables have data for this device (0-6)
+    (CASE WHEN o.host_id IS NOT NULL THEN 1 ELSE 0 END
+    + CASE WHEN p.host_id IS NOT NULL THEN 1 ELSE 0 END
+    + CASE WHEN w.host_id IS NOT NULL THEN 1 ELSE 0 END
+    + CASE WHEN v.host_id IS NOT NULL THEN 1 ELSE 0 END
+    + CASE WHEN c.host_id IS NOT NULL THEN 1 ELSE 0 END
+    + CASE WHEN a.host_id IS NOT NULL THEN 1 ELSE 0 END) AS data_sources,
 
     -- Device Health Score (0-100)
     round(
@@ -32,62 +46,64 @@ WITH device_scores AS (
         ELSE 50 END)
     + 0.25 * (CASE h.ram_tier
         WHEN '32gb_plus' THEN 100 WHEN '16gb' THEN 80 WHEN '8gb' THEN 50 ELSE 30 END)
-    + 0.25 * (CASE h.battery_health_score
+    + 0.25 * (CASE ifNull(h.battery_health_score, 'good')
         WHEN 'good' THEN 100 WHEN 'degraded' THEN 60 WHEN 'replace' THEN 20 ELSE 80 END)
     + 0.20 * (CASE h.swap_pressure
-        WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 ELSE 30 END)
+        WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 WHEN 'severe' THEN 30 ELSE 75 END)
     ) AS device_health_score,
 
     -- Performance Score (0-100)
+    -- Compression: macOS aggressively compresses as normal behavior, so "high" ≠ bad
     round(
       0.35 * (CASE h.swap_pressure
-        WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 ELSE 30 END)
+        WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 WHEN 'severe' THEN 30 ELSE 75 END)
     + 0.30 * (CASE h.compression_pressure
-        WHEN 'low' THEN 100 WHEN 'moderate' THEN 60 ELSE 30 END)
+        WHEN 'low' THEN 100 WHEN 'moderate' THEN 85 WHEN 'high' THEN 65 ELSE 75 END)
     + 0.20 * (CASE
-        WHEN p.max_rss_mb < 2048 THEN 100
+        WHEN ifNull(p.max_rss_mb, 0) < 2048 THEN 100
         WHEN p.max_rss_mb < 4096 THEN 80
         WHEN p.max_rss_mb < 8192 THEN 60
         ELSE 30 END)
-    + 0.15 * (CASE o.uptime_risk
+    + 0.15 * (CASE ifNull(o.uptime_risk, 'normal')
         WHEN 'just_rebooted' THEN 100 WHEN 'fresh' THEN 100
-        WHEN 'normal' THEN 90 WHEN 'stale_7d' THEN 60 ELSE 30 END)
+        WHEN 'normal' THEN 90 WHEN 'stale_7d' THEN 60 WHEN 'stale_14d' THEN 30 ELSE 80 END)
     ) AS performance_score,
 
-    -- Network Score (0-100)
+    -- Network Score (0-100, informational — excluded from composite)
     round(
       0.40 * (CASE
-        WHEN w.rssi >= -50 THEN 100 WHEN w.rssi >= -60 THEN 85
+        WHEN ifNull(w.rssi, -65) >= -50 THEN 100 WHEN w.rssi >= -60 THEN 85
         WHEN w.rssi >= -70 THEN 65  WHEN w.rssi >= -80 THEN 40 ELSE 20 END)
     + 0.30 * (CASE
-        WHEN w.snr >= 30 THEN 100 WHEN w.snr >= 20 THEN 80
+        WHEN ifNull(w.snr, 20) >= 30 THEN 100 WHEN w.snr >= 20 THEN 80
         WHEN w.snr >= 10 THEN 50 ELSE 25 END)
     + 0.20 * (CASE
-        WHEN w.transmit_rate >= 400 THEN 100 WHEN w.transmit_rate >= 200 THEN 85
+        WHEN ifNull(w.transmit_rate, 200) >= 400 THEN 100 WHEN w.transmit_rate >= 200 THEN 85
         WHEN w.transmit_rate >= 100 THEN 60 ELSE 30 END)
-    + 0.10 * (CASE v.network_confidence
+    + 0.10 * (CASE ifNull(v.network_confidence, 'direct_connected')
         WHEN 'tunnel_active' THEN 100 WHEN 'direct_connected' THEN 80 ELSE 20 END)
     ) AS network_score,
 
-    -- Security Score (0-100) — limited signals from firehose
+    -- Security Score (0-100) — limited to OS signals from firehose
+    -- ifNull: no os_health data = assume current/acceptable (not penalize)
     round(
-      0.50 * (CASE o.os_currency
+      0.50 * (CASE ifNull(o.os_currency, 'current')
         WHEN 'current' THEN 100 WHEN 'n_minus_1' THEN 70
-        WHEN 'n_minus_2' THEN 40 ELSE 20 END)
-    + 0.50 * (CASE o.dex_os_health
-        WHEN 'healthy' THEN 100 WHEN 'acceptable' THEN 70 ELSE 30 END)
+        WHEN 'n_minus_2' THEN 40 WHEN 'legacy' THEN 20 ELSE 80 END)
+    + 0.50 * (CASE ifNull(o.dex_os_health, 'acceptable')
+        WHEN 'healthy' THEN 100 WHEN 'acceptable' THEN 70 WHEN 'degraded' THEN 30 ELSE 70 END)
     ) AS security_score,
 
     -- Software Score (0-100)
     round(
       0.40 * (CASE
-        WHEN c.total_crashes = 0 THEN 100 WHEN c.total_crashes = 1 THEN 85
+        WHEN ifNull(c.total_crashes, 0) = 0 THEN 100 WHEN c.total_crashes = 1 THEN 85
         WHEN c.total_crashes <= 4 THEN 65  WHEN c.total_crashes <= 9 THEN 40 ELSE 20 END)
     + 0.35 * (CASE
-        WHEN a.active_pct >= 80 THEN 100 WHEN a.active_pct >= 60 THEN 80
+        WHEN ifNull(a.active_pct, 70) >= 80 THEN 100 WHEN a.active_pct >= 60 THEN 80
         WHEN a.active_pct >= 40 THEN 60 ELSE 40 END)
     + 0.25 * (CASE
-        WHEN a.app_count < 80 THEN 100 WHEN a.app_count < 120 THEN 80
+        WHEN ifNull(a.app_count, 50) < 80 THEN 100 WHEN a.app_count < 120 THEN 80
         WHEN a.app_count < 160 THEN 60 ELSE 40 END)
     ) AS software_score
 
@@ -140,7 +156,6 @@ WITH device_scores AS (
 ),
 scored AS (
   SELECT *,
-    -- Composite: 25% DH + 35% Perf + 20% Sec + 20% SW (network excluded)
     round(0.25 * device_health_score + 0.35 * performance_score + 0.20 * security_score + 0.20 * software_score) AS composite_score,
     CASE
       WHEN round(0.25 * device_health_score + 0.35 * performance_score + 0.20 * security_score + 0.20 * software_score) >= 90 THEN 'A'
@@ -221,7 +236,8 @@ export const firehoseScoreQueries: QueryConfig[] = [
         security_score,
         software_score,
         composite_score,
-        composite_grade
+        composite_grade,
+        data_sources
       FROM scored
       ORDER BY composite_score ASC
       {{LIMIT}}

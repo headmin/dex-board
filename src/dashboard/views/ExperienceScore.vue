@@ -482,9 +482,10 @@ async function fetchSignals(categoryKey) {
     let signalDefs = []
 
     if (categoryKey === 'device_health') {
-      const [dhRows, cpuRows] = await Promise.all([
+      const [dhRows, cpuRows, ramRows] = await Promise.all([
         query('firehose.health.device_summary'),
         query('firehose.health.cpu_distribution'),
+        query('firehose.health.swap_distribution'),
       ])
       const dh = dhRows[0] || {}
       const total = dh.total_devices || 1
@@ -492,27 +493,35 @@ async function fetchSignals(categoryKey) {
       const battOkPct = Math.round(((total - (dh.degraded_battery || 0) - (dh.replace_battery || 0)) / total) * 100)
       const modernCpu = cpuRows.filter(r => ['apple_m3', 'apple_m4', 'apple_m5'].includes(r.cpu_class)).reduce((s, r) => s + Number(r.device_count), 0)
       const cpuPct = Math.round((modernCpu / total) * 100)
+      // RAM: score based on % of fleet at 16GB+ (good) vs 8GB or below (poor)
+      const ramGood = ramRows.filter(r => ['16gb', '32gb_plus'].includes(r.swap_pressure)).reduce((s, r) => s + Number(r.device_count), 0)
+      const ramPct = Math.round((ramGood / total) * 100) || 80
       signalDefs = [
         { name: 'CPU Generation', weight: 0.30, score: cpuPct, detail: `${cpuPct}% on M3 or newer` },
-        { name: 'RAM Tier', weight: 0.25, score: dh.avg_battery_pct || 80 },
+        { name: 'RAM Tier', weight: 0.25, score: ramPct, detail: `${ramPct}% at 16 GB or higher` },
         { name: 'Battery Health', weight: 0.25, score: battOkPct, detail: `${battOkPct}% good or better` },
         { name: 'Swap Pressure', weight: 0.20, score: swapOkPct, detail: `${swapOkPct}% not elevated/severe` },
       ]
     } else if (categoryKey === 'performance') {
-      const [dhRows, procRows] = await Promise.all([
+      const [dhRows, procRows, osRows] = await Promise.all([
         query('firehose.health.device_summary'),
         query('firehose.processes.by_class'),
+        query('firehose.health.os_summary'),
       ])
       const dh = dhRows[0] || {}
+      const os = osRows[0] || {}
       const total = dh.total_devices || 1
       const swapOkPct = Math.round(((total - (dh.severe_swap || 0) - (dh.elevated_swap || 0)) / total) * 100)
+      const compOkPct = Math.round(((total - (dh.high_compression || 0) - (dh.moderate_compression || 0)) / total) * 100)
       const avgRss = procRows.reduce((s, r) => s + (Number(r.avg_rss_mb) || 0), 0) / (procRows.length || 1)
       const rssScore = avgRss < 200 ? 100 : avgRss < 500 ? 80 : avgRss < 1000 ? 60 : 40
+      const avgUptime = os.avg_uptime_days || 0
+      const uptimeScore = avgUptime < 3 ? 100 : avgUptime < 7 ? 90 : avgUptime < 14 ? 60 : 30
       signalDefs = [
         { name: 'Swap Pressure', weight: 0.35, score: swapOkPct, detail: `${swapOkPct}% fleet not pressured` },
-        { name: 'Compression Pressure', weight: 0.30, score: swapOkPct },
-        { name: 'Process Memory', weight: 0.20, score: rssScore, detail: `Avg ${avgRss.toFixed(0)} MB per process` },
-        { name: 'Uptime Staleness', weight: 0.15, score: 70 },
+        { name: 'Compression Pressure', weight: 0.30, score: compOkPct, detail: `${compOkPct}% low compression (note: macOS compression is normal)` },
+        { name: 'Process Memory', weight: 0.20, score: rssScore, detail: `Avg ${avgRss.toFixed(0)} MB per process class` },
+        { name: 'Uptime Staleness', weight: 0.15, score: uptimeScore, detail: `Fleet avg ${avgUptime.toFixed(1)} days` },
       ]
     } else if (categoryKey === 'network') {
       const [wifiRows, vpnRows] = await Promise.all([
@@ -550,25 +559,38 @@ async function fetchSignals(categoryKey) {
         { name: 'DEX OS Health', weight: 0.50, score: healthyPct, detail: `${healthyPct}% rated healthy` },
       ]
     } else if (categoryKey === 'software') {
-      const [crashRows, adoptRows] = await Promise.all([
+      const [crashRows, adoptRows, tierRows] = await Promise.all([
         query('firehose.crashes.summary'),
         query('firehose.adoption.summary'),
+        query('firehose.adoption.tier_distribution'),
       ])
       const cr = crashRows[0] || {}
       const ad = adoptRows[0] || {}
-      const crashScore = (cr.total_crashes_7d || 0) === 0 ? 100 : (cr.total_crashes_7d || 0) <= 3 ? 80 : 50
-      const totalApps = ad.unique_apps || 1
-      const activeApps = (Number(ad.active_today) || 0) + (Number(ad.active_week) || 0)
-      const activePct = Math.round(activeApps / totalApps * 100)
-      const staleApps = Number(ad.stale_90d_plus) || 0
-      const stalePct = Math.round(staleApps / totalApps * 100)
+
+      // Crash score — aligned with SQL: 0→100, 1→85, 2-4→65, 5-9→40, 10+→20
+      const totalCrashes = cr.total_crashes_7d || 0
+      const crashScore = totalCrashes === 0 ? 100 : totalCrashes === 1 ? 85 : totalCrashes <= 4 ? 65 : totalCrashes <= 9 ? 40 : 20
+
+      // Adoption — use tier distribution for unique_apps per tier (not app-device pair counts)
+      const staleRow = tierRows.find(r => r.usage_tier === 'stale_90d_plus') || {}
+      const totalUniqueApps = ad.unique_apps || 1
+      const staleUniqueApps = staleRow.unique_apps || 0
+      const stalePct = Math.round(staleUniqueApps / totalUniqueApps * 100)
       const staleScore = stalePct < 20 ? 100 : stalePct < 40 ? 75 : stalePct < 60 ? 50 : 30
 
+      // Active % — app-device pairs active this week / total pairs
+      const totalPairs = (Number(ad.active_today) || 0) + (Number(ad.active_week) || 0) + (Number(ad.stale_30d) || 0) + (Number(ad.stale_90d) || 0) + (Number(ad.stale_90d_plus) || 0)
+      const activePairs = (Number(ad.active_today) || 0) + (Number(ad.active_week) || 0)
+      const activePct = totalPairs ? Math.round(activePairs / totalPairs * 100) : 70
+      const adoptScore = activePct >= 80 ? 100 : activePct >= 60 ? 80 : activePct >= 40 ? 60 : 40
+
       signalDefs = [
-        { name: 'Crash Frequency', weight: 0.40, score: crashScore, detail: `${cr.total_crashes_7d || 0} crashes in 7d` },
-        { name: 'App Adoption', weight: 0.35, score: activePct, detail: `${activePct}% apps active this week` },
-        { name: 'Shelfware', weight: 0.25, score: staleScore, detail: `${stalePct}% apps stale 90d+` },
+        { name: 'Crash Frequency', weight: 0.40, score: crashScore, detail: `${totalCrashes} crashes across ${cr.devices_with_crashes || 0} devices in 7d` },
+        { name: 'App Adoption', weight: 0.35, score: adoptScore, detail: `${activePct}% of app installs used this week` },
+        { name: 'Shelfware', weight: 0.25, score: staleScore, detail: `${staleUniqueApps} of ${totalUniqueApps} unique apps (${stalePct}%) stale 90d+` },
       ]
+
+      fetchSoftwareDetail()
     }
 
     signals.value = signalDefs
@@ -579,25 +601,37 @@ async function fetchSignals(categoryKey) {
 }
 
 async function fetchSoftwareDetail() {
-  // No patch velocity in firehose — show adoption data instead
   try {
-    const [adoptRows, crashRows, staleRows] = await Promise.all([
+    const [adoptRows, tierRows, osRows, crashTopRows, staleRows] = await Promise.all([
       query('firehose.adoption.summary'),
-      query('firehose.crashes.top_crashers', { limit: 5 }),
+      query('firehose.adoption.tier_distribution'),
+      query('firehose.health.os_summary'),
+      query('firehose.crashes.top_crashers', { limit: 8 }),
       query('firehose.adoption.stale_apps', { limit: 8 }),
     ])
 
     const ad = adoptRows[0] || {}
-    const totalApps = ad.unique_apps || 1
-    const activePct = Math.round(((Number(ad.active_today) || 0) + (Number(ad.active_week) || 0)) / totalApps * 100)
+    const os = osRows[0] || {}
+    const osTotal = os.total_devices || 1
+    const osPct = Math.round((os.os_current || 0) / osTotal * 100)
+    const totalPairs = (Number(ad.active_today) || 0) + (Number(ad.active_week) || 0) + (Number(ad.stale_30d) || 0) + (Number(ad.stale_90d) || 0) + (Number(ad.stale_90d_plus) || 0)
+    const activePairs = (Number(ad.active_today) || 0) + (Number(ad.active_week) || 0)
+    const activePct = totalPairs ? Math.round(activePairs / totalPairs * 100) : 0
 
     patchStats.value = {
-      avgDays: null,
-      pctCurrent: activePct,
+      avgDays: null,          // No patch velocity data in firehose yet
+      pctCurrent: osPct,      // % fleet on current OS
       p90Days: null
     }
     patchTimeline.value = []
-    mostUsedApps.value = []
+
+    // Most used: top crashers as a proxy for actively-used-but-problematic apps
+    mostUsedApps.value = crashTopRows.filter(r => r.crashed_identifier).map(r => ({
+      app_name: r.crashed_identifier,
+      device_count: r.affected_devices,
+      usage_grade: r.total_crashes_7d >= 5 ? 'F' : r.total_crashes_7d >= 2 ? 'C' : 'B'
+    }))
+
     leastUsedApps.value = staleRows.map(r => ({
       app_name: r.app_name,
       stale_count: r.installed_on,
