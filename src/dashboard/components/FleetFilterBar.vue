@@ -104,7 +104,8 @@ const {
 
 const { wcMode, toggleWcMode } = useWorkersCouncil()
 
-const isFirehose = computed(() => route.path.startsWith('/firehose'))
+// Firehose is default for all routes except legacy admin views
+const isFirehose = computed(() => !route.path.startsWith('/overview') && !route.path.startsWith('/audit'))
 
 const localSearch = ref(searchText.value)
 let debounceTimer = null

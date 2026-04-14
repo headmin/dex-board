@@ -1,15 +1,7 @@
 <template>
   <div class="dashboard">
     <header class="dashboard-header">
-      <h1>Firehose devices</h1>
-      <div class="header-controls">
-        <input
-          v-model="search"
-          class="search-input"
-          placeholder="Search hostname..."
-          @input="filterDevices"
-        />
-      </div>
+      <h1>Devices</h1>
     </header>
 
     <div v-if="error" class="error-banner">{{ error }}</div>
@@ -227,16 +219,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { query } from '../services/api'
+import { useFleetFilter } from '../composables/useFleetFilter'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
+
+const { searchText: globalSearch, selectedModel, selectedRAMTier } = useFleetFilter()
 
 const error = ref(null)
 const loading = ref({ list: false, detail: false, deviceWifi: false, deviceApps: false })
 
 const devices = ref([])
-const search = ref('')
 const sortCol = ref('hostname')
 const sortAsc = ref(true)
 
@@ -257,14 +251,29 @@ const filteredDevices = computed(() => {
     ...d,
     mem_pressure: calcPressure(d),
   }))
-  if (search.value) {
-    const s = search.value.toLowerCase()
+  // Text search — from global filter bar
+  if (globalSearch.value) {
+    const s = globalSearch.value.toLowerCase()
     list = list.filter(d =>
       (d.hostname || '').toLowerCase().includes(s) ||
       (d.computer_name || '').toLowerCase().includes(s) ||
       (d.hardware_model || '').toLowerCase().includes(s) ||
       (d.host_id || '').toLowerCase().includes(s)
     )
+  }
+  // Model filter
+  if (selectedModel.value) {
+    list = list.filter(d => d.hardware_model === selectedModel.value)
+  }
+  // RAM tier filter
+  if (selectedRAMTier.value) {
+    const ramVal = selectedRAMTier.value
+    list = list.filter(d => {
+      const gb = Number(d.memory_gb) || 0
+      if (ramVal === '128GB+') return gb >= 128
+      const target = parseInt(ramVal)
+      return target && gb >= target && gb < target * 2
+    })
   }
   return [...list].sort((a, b) => {
     const av = a[sortCol.value] ?? ''
@@ -381,8 +390,6 @@ function closeDevice() {
   deviceWifiTs.value = []
   deviceApps.value = []
 }
-
-function filterDevices() { /* reactive via computed */ }
 
 // ── Fetch ───────────────────────────────────────────
 async function fetchDevices() {
