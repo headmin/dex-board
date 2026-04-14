@@ -238,8 +238,11 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { query } from '../services/api'
+import { useFleetFilter } from '../composables/useFleetFilter'
 import MetricCard from '../components/MetricCard.vue'
 import BarChart from '../components/BarChart.vue'
+
+const { searchText: globalSearch, selectedModel, selectedRAMTier } = useFleetFilter()
 
 const error = ref(null)
 const loading = ref(true)
@@ -269,10 +272,37 @@ const riskCounts = computed(() => {
   return c
 })
 
-const riskyDevices = computed(() => riskData.value.filter(d => d.risk_score > 0))
+function applyGlobalFilter(list) {
+  let filtered = list
+  if (globalSearch.value) {
+    const s = globalSearch.value.toLowerCase()
+    filtered = filtered.filter(d =>
+      (d.hostname || '').toLowerCase().includes(s) ||
+      (d.cpu_brand || '').toLowerCase().includes(s) ||
+      (d.host_id || '').toLowerCase().includes(s)
+    )
+  }
+  if (selectedModel.value) {
+    filtered = filtered.filter(d => d.hardware_model === selectedModel.value)
+  }
+  if (selectedRAMTier.value) {
+    const target = parseInt(selectedRAMTier.value)
+    if (selectedRAMTier.value === '128GB+') {
+      filtered = filtered.filter(d => (Number(d.memory_gb) || 0) >= 128)
+    } else if (target) {
+      filtered = filtered.filter(d => {
+        const gb = Number(d.memory_gb) || 0
+        return gb >= target && gb < target * 2
+      })
+    }
+  }
+  return filtered
+}
+
+const riskyDevices = computed(() => applyGlobalFilter(riskData.value.filter(d => d.risk_score > 0)))
 
 const sortedPressureDevices = computed(() => {
-  return [...pressureDevices.value].sort((a, b) => {
+  return [...applyGlobalFilter(pressureDevices.value)].sort((a, b) => {
     const av = a[devSortCol.value] ?? ''
     const bv = b[devSortCol.value] ?? ''
     const cmp = typeof av === 'number' ? av - bv : String(av).localeCompare(String(bv))
