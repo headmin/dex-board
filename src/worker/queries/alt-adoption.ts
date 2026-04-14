@@ -116,7 +116,7 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
         usage_tier,
         timestamp
       FROM adoption_gap
-      WHERE bundle_identifier = {filterBundleId:String}
+      WHERE bundle_identifier = {bundleId:String}
         AND (host_id, timestamp) IN (
           SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id
         )

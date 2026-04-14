@@ -188,7 +188,7 @@
     <!-- ─── Distribution + Movers Row ──────────────────────── -->
     <section class="two-col">
       <GradeDistribution
-        title="Fleet grade distribution"
+        :title="expandedCategory ? `${expandedCategoryLabel} grade distribution` : 'Fleet grade distribution'"
         :data="distribution"
         :loading="loading.distribution"
       />
@@ -350,10 +350,15 @@ async function fetchCategoryScores() {
 }
 
 // ─── Fetch Grade Distribution ─────────────────────────────────
-async function fetchDistribution() {
+async function fetchDistribution(category = null) {
   loading.value.distribution = true
   try {
-    const rows = await query('firehose.scores.grade_distribution')
+    let rows
+    if (category) {
+      rows = await query('firehose.scores.grade_distribution_category', { category })
+    } else {
+      rows = await query('firehose.scores.grade_distribution')
+    }
     const dist = {}
     for (const r of rows) {
       if (r.grade) dist[r.grade] = Number(r.cnt)
@@ -470,11 +475,13 @@ function toggleSignals(categoryKey) {
   if (expandedCategory.value === categoryKey) {
     expandedCategory.value = null
     signals.value = []
+    fetchDistribution(null)  // Reset to composite distribution
     return
   }
   expandedCategory.value = categoryKey
-  showMethodology.value = true  // Always show "how is this scored" on first open
+  showMethodology.value = true
   fetchSignals(categoryKey)
+  fetchDistribution(categoryKey)  // Show per-category distribution
 }
 
 async function fetchSignals(categoryKey) {
@@ -485,7 +492,7 @@ async function fetchSignals(categoryKey) {
       const [dhRows, cpuRows, ramRows] = await Promise.all([
         query('firehose.health.device_summary'),
         query('firehose.health.cpu_distribution'),
-        query('firehose.health.swap_distribution'),
+        query('firehose.hardware.memory_tiers'),
       ])
       const dh = dhRows[0] || {}
       const total = dh.total_devices || 1
@@ -493,12 +500,16 @@ async function fetchSignals(categoryKey) {
       const battOkPct = Math.round(((total - (dh.degraded_battery || 0) - (dh.replace_battery || 0)) / total) * 100)
       const modernCpu = cpuRows.filter(r => ['apple_m3', 'apple_m4', 'apple_m5'].includes(r.cpu_class)).reduce((s, r) => s + Number(r.device_count), 0)
       const cpuPct = Math.round((modernCpu / total) * 100)
-      // RAM: score based on % of fleet at 16GB+ (good) vs 8GB or below (poor)
-      const ramGood = ramRows.filter(r => ['16gb', '32gb_plus'].includes(r.swap_pressure)).reduce((s, r) => s + Number(r.device_count), 0)
-      const ramPct = Math.round((ramGood / total) * 100) || 80
+      // RAM: % of fleet at 16 GB+ from hardware.memory_tiers
+      const ramTotal = ramRows.reduce((s, r) => s + Number(r.device_count || 0), 0) || 1
+      const ramGood = ramRows.filter(r => {
+        const gb = parseInt(r.ram_tier) || 0
+        return gb >= 16 || r.ram_tier === '16 GB' || r.ram_tier === '32 GB' || r.ram_tier === '64 GB' || r.ram_tier === '128+ GB'
+      }).reduce((s, r) => s + Number(r.device_count), 0)
+      const ramPct = Math.round((ramGood / ramTotal) * 100)
       signalDefs = [
         { name: 'CPU Generation', weight: 0.30, score: cpuPct, detail: `${cpuPct}% on M3 or newer` },
-        { name: 'RAM Tier', weight: 0.25, score: ramPct, detail: `${ramPct}% at 16 GB or higher` },
+        { name: 'RAM Tier', weight: 0.25, score: ramPct, detail: `${ramPct}% at 16 GB or higher (${ramTotal} devices)` },
         { name: 'Battery Health', weight: 0.25, score: battOkPct, detail: `${battOkPct}% good or better` },
         { name: 'Swap Pressure', weight: 0.20, score: swapOkPct, detail: `${swapOkPct}% not elevated/severe` },
       ]
@@ -512,16 +523,20 @@ async function fetchSignals(categoryKey) {
       const os = osRows[0] || {}
       const total = dh.total_devices || 1
       const swapOkPct = Math.round(((total - (dh.severe_swap || 0) - (dh.elevated_swap || 0)) / total) * 100)
-      const compOkPct = Math.round(((total - (dh.high_compression || 0) - (dh.moderate_compression || 0)) / total) * 100)
+      // Compression: show the SQL-aligned score (65 for high, 85 for moderate, 100 for low)
+      const highComp = dh.high_compression || 0
+      const modComp = dh.moderate_compression || 0
+      const lowComp = total - highComp - modComp
+      const compScore = Math.round((lowComp * 100 + modComp * 85 + highComp * 65) / total)
       const avgRss = procRows.reduce((s, r) => s + (Number(r.avg_rss_mb) || 0), 0) / (procRows.length || 1)
       const rssScore = avgRss < 200 ? 100 : avgRss < 500 ? 80 : avgRss < 1000 ? 60 : 40
       const avgUptime = os.avg_uptime_days || 0
       const uptimeScore = avgUptime < 3 ? 100 : avgUptime < 7 ? 90 : avgUptime < 14 ? 60 : 30
       signalDefs = [
-        { name: 'Swap Pressure', weight: 0.35, score: swapOkPct, detail: `${swapOkPct}% fleet not pressured` },
-        { name: 'Compression Pressure', weight: 0.30, score: compOkPct, detail: `${compOkPct}% low compression (note: macOS compression is normal)` },
+        { name: 'Swap Pressure', weight: 0.35, score: swapOkPct, detail: `${swapOkPct}% fleet not pressured (${dh.severe_swap || 0} severe, ${dh.elevated_swap || 0} elevated)` },
+        { name: 'Compression', weight: 0.30, score: compScore, detail: `Score ${compScore}: ${highComp} high, ${modComp} moderate, ${lowComp} low (macOS compression is normal)` },
         { name: 'Process Memory', weight: 0.20, score: rssScore, detail: `Avg ${avgRss.toFixed(0)} MB per process class` },
-        { name: 'Uptime Staleness', weight: 0.15, score: uptimeScore, detail: `Fleet avg ${avgUptime.toFixed(1)} days` },
+        { name: 'Uptime Staleness', weight: 0.15, score: uptimeScore, detail: `Fleet avg ${avgUptime.toFixed(1)} days uptime` },
       ]
     } else if (categoryKey === 'network') {
       const [wifiRows, vpnRows] = await Promise.all([
@@ -541,22 +556,25 @@ async function fetchSignals(categoryKey) {
       const txScore = tx >= 400 ? 100 : tx >= 200 ? 85 : tx >= 100 ? 60 : 30
 
       signalDefs = [
-        { name: 'WiFi Signal (RSSI)', weight: 0.40, score: rssiScore, detail: `Fleet avg ${rssi} dBm` },
-        { name: 'Signal-to-Noise', weight: 0.30, score: snrScore, detail: `Fleet avg ${snr} dB` },
-        { name: 'Transmit Rate', weight: 0.20, score: txScore, detail: `Fleet avg ${tx} Mbps` },
-        { name: 'Network Confidence', weight: 0.10, score: vpnConnPct, detail: `${vpnConnPct}% connected (VPN or direct)` },
+        { name: 'WiFi Signal (RSSI)', weight: 0.40, score: rssiScore, detail: `Fleet avg ${rssi.toFixed(1)} dBm (${w.unique_hosts || 0} hosts reporting)` },
+        { name: 'Signal-to-Noise', weight: 0.30, score: snrScore, detail: `Fleet avg ${snr.toFixed(1)} dB` },
+        { name: 'Transmit Rate', weight: 0.20, score: txScore, detail: `Fleet avg ${Math.round(tx)} Mbps` },
+        { name: 'Network Confidence', weight: 0.10, score: vpnConnPct, detail: `${vpnConnPct}% connected — ${v.vpn_active || 0} VPN, ${v.direct_connected || 0} direct, ${v.disconnected || 0} disconnected` },
       ]
     } else if (categoryKey === 'security') {
-      const [osRows] = await Promise.all([
+      const [osRows, fleetRows] = await Promise.all([
         query('firehose.health.os_summary'),
+        query('firehose.scores.fleet_summary'),
       ])
       const os = osRows[0] || {}
-      const total = os.total_devices || 1
-      const currentPct = Math.round((os.os_current || 0) / total * 100)
-      const healthyPct = Math.round((os.healthy || 0) / total * 100)
+      const fleet = fleetRows[0] || {}
+      const reporting = os.total_devices || 0
+      const fleetTotal = fleet.device_count || 1
+      const currentPct = reporting ? Math.round((os.os_current || 0) / reporting * 100) : 0
+      const healthyPct = reporting ? Math.round((os.healthy || 0) / reporting * 100) : 0
       signalDefs = [
-        { name: 'OS Currency', weight: 0.50, score: currentPct, detail: `${currentPct}% on current OS` },
-        { name: 'DEX OS Health', weight: 0.50, score: healthyPct, detail: `${healthyPct}% rated healthy` },
+        { name: 'OS Currency', weight: 0.50, score: currentPct, detail: `${os.os_current || 0}/${reporting} reporting devices on current OS (${fleetTotal - reporting} not reporting — scored as current)` },
+        { name: 'DEX OS Health', weight: 0.50, score: healthyPct, detail: `${os.healthy || 0}/${reporting} reporting devices rated healthy (${fleetTotal - reporting} not reporting — scored as acceptable)` },
       ]
     } else if (categoryKey === 'software') {
       const [crashRows, adoptRows, tierRows] = await Promise.all([
@@ -634,6 +652,7 @@ async function fetchSoftwareDetail() {
 
     leastUsedApps.value = staleRows.map(r => ({
       app_name: r.app_name,
+      bundle_identifier: r.bundle_identifier,
       stale_count: r.installed_on,
       avg_days: r.avg_days_stale
     }))
@@ -654,8 +673,27 @@ async function toggleAppDrill(appName, mode) {
   drillDevices.value = []
 
   try {
-    const rows = await query('software.app_drill', { appName })
-    drillDevices.value = rows
+    // Find the bundle_identifier for this app from the stale list
+    const staleApp = leastUsedApps.value.find(a => a.app_name === appName)
+    if (staleApp && staleApp.bundle_identifier) {
+      const rows = await query('firehose.adoption.by_app', { bundleId: staleApp.bundle_identifier })
+      drillDevices.value = rows.map(r => ({
+        host_identifier: r.host_id,
+        hostname: r.hostname,
+        app_version: r.version,
+        usage_category: r.usage_tier,
+        days_since_opened: r.days_since_opened
+      }))
+    } else {
+      // Fallback: search stale_apps for this app name
+      const rows = await query('firehose.adoption.stale_apps', { limit: 200 })
+      drillDevices.value = rows.filter(r => r.app_name === appName).map(r => ({
+        hostname: `${r.installed_on} devices`,
+        app_version: r.version,
+        usage_category: r.usage_tier,
+        days_since_opened: r.avg_days_stale
+      }))
+    }
   } catch (e) {
     console.error('App drill-down failed:', e)
   }

@@ -72,7 +72,7 @@ export const firehoseCrashQueries: QueryConfig[] = [
         crash_rank,
         timestamp
       FROM crash_detail
-      WHERE crashed_identifier = {filterIdentifier:String}
+      WHERE crashed_identifier = {identifier:String}
       ORDER BY crash_datetime DESC
     `,
   },

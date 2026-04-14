@@ -70,15 +70,20 @@ WITH device_scores AS (
     ) AS performance_score,
 
     -- Network Score (0-100, informational — excluded from composite)
+    -- Guard: rssi/snr/transmit_rate = 0 is the toXOrZero sentinel for missing
+    -- data, not a real reading. Treat 0 as NULL → use default.
     round(
       0.40 * (CASE
-        WHEN ifNull(w.rssi, -65) >= -50 THEN 100 WHEN w.rssi >= -60 THEN 85
+        WHEN w.rssi IS NULL OR w.rssi = 0 THEN 75
+        WHEN w.rssi >= -50 THEN 100 WHEN w.rssi >= -60 THEN 85
         WHEN w.rssi >= -70 THEN 65  WHEN w.rssi >= -80 THEN 40 ELSE 20 END)
     + 0.30 * (CASE
-        WHEN ifNull(w.snr, 20) >= 30 THEN 100 WHEN w.snr >= 20 THEN 80
+        WHEN w.snr IS NULL OR w.snr = 0 THEN 75
+        WHEN w.snr >= 30 THEN 100 WHEN w.snr >= 20 THEN 80
         WHEN w.snr >= 10 THEN 50 ELSE 25 END)
     + 0.20 * (CASE
-        WHEN ifNull(w.transmit_rate, 200) >= 400 THEN 100 WHEN w.transmit_rate >= 200 THEN 85
+        WHEN w.transmit_rate IS NULL OR w.transmit_rate = 0 THEN 75
+        WHEN w.transmit_rate >= 400 THEN 100 WHEN w.transmit_rate >= 200 THEN 85
         WHEN w.transmit_rate >= 100 THEN 60 ELSE 30 END)
     + 0.10 * (CASE ifNull(v.network_confidence, 'direct_connected')
         WHEN 'tunnel_active' THEN 100 WHEN 'direct_connected' THEN 80 ELSE 20 END)
@@ -205,13 +210,50 @@ export const firehoseScoreQueries: QueryConfig[] = [
     name: 'firehose.scores.grade_distribution',
     domain: 'scores',
     client: 'alt',
-    description: 'Grade A/B/C/D/F device counts',
+    description: 'Grade A/B/C/D/F device counts (composite)',
     params: [],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT composite_grade AS grade, count() AS cnt
       FROM scored
       GROUP BY composite_grade
+      ORDER BY grade
+    `,
+  },
+  {
+    name: 'firehose.scores.grade_distribution_category',
+    domain: 'scores',
+    client: 'alt',
+    description: 'Grade A/B/C/D/F device counts for a specific category',
+    params: [
+      { name: 'category', type: 'enum' as const, required: true, values: ['device_health', 'performance', 'network', 'security', 'software', 'composite'] },
+    ],
+    sql: `
+      ${DEVICE_SCORES_CTE}
+      SELECT grade, count() AS cnt
+      FROM (
+        SELECT
+          CASE
+            WHEN cat_score >= 90 THEN 'A'
+            WHEN cat_score >= 75 THEN 'B'
+            WHEN cat_score >= 60 THEN 'C'
+            WHEN cat_score >= 40 THEN 'D'
+            ELSE 'F'
+          END AS grade
+        FROM (
+          SELECT
+            CASE {category:String}
+              WHEN 'device_health' THEN device_health_score
+              WHEN 'performance' THEN performance_score
+              WHEN 'network' THEN network_score
+              WHEN 'security' THEN security_score
+              WHEN 'software' THEN software_score
+              ELSE composite_score
+            END AS cat_score
+          FROM scored
+        )
+      )
+      GROUP BY grade
       ORDER BY grade
     `,
   },
