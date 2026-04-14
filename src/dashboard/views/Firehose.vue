@@ -69,7 +69,7 @@
           title="Weakest signal devices (by RSSI)"
           :data="wifiWorstBar"
           :loading="loading.wifiDevices"
-          labelKey="hostname"
+          nameKey="hostname"
           valueKey="abs_rssi"
         />
       </section>

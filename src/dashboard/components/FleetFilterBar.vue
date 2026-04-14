@@ -16,7 +16,7 @@
       <div class="filter-divider"></div>
 
       <div class="filter-group">
-        <span class="filter-label">OS</span>
+        <span class="filter-label">{{ isFirehose ? 'Platform' : 'OS' }}</span>
         <div class="select-wrapper">
           <select v-model="selectedOS" class="filter-select">
             <option value="">All</option>
@@ -54,7 +54,7 @@
         </div>
       </div>
 
-      <div class="filter-group">
+      <div v-if="!isFirehose" class="filter-group">
         <span class="filter-label">Encryption</span>
         <div class="select-wrapper">
           <select v-model="selectedEncryption" class="filter-select">
@@ -88,18 +88,23 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { useWorkersCouncil } from '../composables/useWorkersCouncil'
 
+const route = useRoute()
+
 const {
   searchText, selectedOS, selectedModel, selectedEncryption, selectedRAMTier,
-  osOptions, modelOptions, ramTierOptions, deviceCount,
+  osOptions, modelOptions, ramTierOptions, deviceCount, firehoseMode,
   isFleetFiltered, clearFleetFilter,
-  loadFilterOptions, fetchDeviceCount
+  loadFilterOptions, fetchDeviceCount, setFirehoseMode
 } = useFleetFilter()
 
 const { wcMode, toggleWcMode } = useWorkersCouncil()
+
+const isFirehose = computed(() => route.path.startsWith('/firehose'))
 
 const localSearch = ref(searchText.value)
 let debounceTimer = null
@@ -121,8 +126,17 @@ watch([searchText, selectedOS, selectedModel, selectedEncryption, selectedRAMTie
   fetchDeviceCount()
 }, { immediate: true })
 
+// Switch filter mode when navigating between firehose and main
+watch(isFirehose, (val) => {
+  setFirehoseMode(val)
+}, { immediate: true })
+
 onMounted(() => {
-  loadFilterOptions()
+  if (isFirehose.value) {
+    setFirehoseMode(true)
+  } else {
+    loadFilterOptions()
+  }
 })
 </script>
 

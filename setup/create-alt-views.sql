@@ -1,9 +1,11 @@
 -- ============================================================
 -- Alt ClickHouse: Materialized Views for osquery result logs
--- Source: s3-85c9c3ef-81e3-4c05-aead-a3dc9e6f90b2
+-- Source table: ${CLICKPIPE_TABLE} (set in .alt-env)
+-- Current value: s3-625dcbb6-7804-4672-8d83-c621b10a4679
 -- ============================================================
--- This file is NOT meant to be run as a single multi-statement file.
--- Use create-alt-views.sh which executes each statement individually.
+-- This file is a REFERENCE COPY — not meant to be run directly.
+-- Use create-alt-views.sh which substitutes $CLICKPIPE_TABLE
+-- at runtime and executes each statement individually.
 
 -- ────────────────────────────────────────────────────────────
 -- 1. WIFI SIGNAL QUALITY
@@ -45,7 +47,7 @@ SELECT
     toFloat64OrZero(JSONExtractString(item, 'transmit_rate')) AS transmit_rate,
     JSONExtractString(item, 'security_type')                AS security_type,
     JSONExtractString(item, 'interface')                    AS interface
-FROM `s3-85c9c3ef-81e3-4c05-aead-a3dc9e6f90b2`
+FROM `${CLICKPIPE_TABLE}`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Wi-Fi signal quality%';
 
@@ -65,7 +67,7 @@ SELECT
     toFloat64OrZero(JSONExtractString(item, 'transmit_rate')) AS transmit_rate,
     JSONExtractString(item, 'security_type')                AS security_type,
     JSONExtractString(item, 'interface')                    AS interface
-FROM `s3-85c9c3ef-81e3-4c05-aead-a3dc9e6f90b2`
+FROM `${CLICKPIPE_TABLE}`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Wi-Fi signal quality%';
 
@@ -104,7 +106,7 @@ SELECT
     toUInt32OrZero(JSONExtractString(item, 'pid'))           AS pid,
     toInt8OrZero(JSONExtractString(item, 'is_active'))       AS is_active,
     JSONExtractString(item, 'path')                          AS path
-FROM `s3-85c9c3ef-81e3-4c05-aead-a3dc9e6f90b2`
+FROM `${CLICKPIPE_TABLE}`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%macOS Running Apps%' OR name ILIKE '%macOS running apps%';
 
@@ -121,7 +123,7 @@ SELECT
     toUInt32OrZero(JSONExtractString(item, 'pid'))           AS pid,
     toInt8OrZero(JSONExtractString(item, 'is_active'))       AS is_active,
     JSONExtractString(item, 'path')                          AS path
-FROM `s3-85c9c3ef-81e3-4c05-aead-a3dc9e6f90b2`
+FROM `${CLICKPIPE_TABLE}`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%macOS Running Apps%' OR name ILIKE '%macOS running apps%';
 
@@ -164,7 +166,7 @@ SELECT
     toUInt64OrZero(JSONExtractString(item, 'uptime'))         AS uptime_seconds,
     JSONExtractString(item, 'enrolled') = 'true'              AS enrolled,
     JSONExtractString(item, 'last_recorded_error')            AS last_error
-FROM `s3-85c9c3ef-81e3-4c05-aead-a3dc9e6f90b2`
+FROM `${CLICKPIPE_TABLE}`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%fleetd information%';
 
@@ -183,7 +185,7 @@ SELECT
     toUInt64OrZero(JSONExtractString(item, 'uptime'))         AS uptime_seconds,
     JSONExtractString(item, 'enrolled') = 'true'              AS enrolled,
     JSONExtractString(item, 'last_recorded_error')            AS last_error
-FROM `s3-85c9c3ef-81e3-4c05-aead-a3dc9e6f90b2`
+FROM `${CLICKPIPE_TABLE}`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%fleetd information%';
 
@@ -226,7 +228,7 @@ SELECT
     JSONExtractString(item, 'hardware_serial')                    AS hardware_serial,
     JSONExtractString(item, 'hardware_vendor')                    AS hardware_vendor,
     toFloat64OrZero(JSONExtractString(item, 'memory_gb'))         AS memory_gb
-FROM `s3-85c9c3ef-81e3-4c05-aead-a3dc9e6f90b2`
+FROM `${CLICKPIPE_TABLE}`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%System Information%' OR name ILIKE '%system information%';
 
@@ -245,6 +247,302 @@ SELECT
     JSONExtractString(item, 'hardware_serial')                    AS hardware_serial,
     JSONExtractString(item, 'hardware_vendor')                    AS hardware_vendor,
     toFloat64OrZero(JSONExtractString(item, 'memory_gb'))         AS memory_gb
-FROM `s3-85c9c3ef-81e3-4c05-aead-a3dc9e6f90b2`
+FROM `${CLICKPIPE_TABLE}`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%System Information%' OR name ILIKE '%system information%';
+
+-- ────────────────────────────────────────────────────────────
+-- NOTE: Sections 5–11 below use a SINGLE MV only (no separate
+-- backfill block in this reference file). The actual backfill
+-- INSERT is emitted by create-alt-views.sh. Keep the `.sh` and
+-- this `.sql` file in sync whenever you edit either one.
+-- ────────────────────────────────────────────────────────────
+
+-- ────────────────────────────────────────────────────────────
+-- 5. DEVICE HEALTH (Hardware experience)
+--    dex-queries.yml: "DEX - Hardware experience - device health"
+-- ────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS device_health
+(
+    host_id                     String,
+    hostname                    String,
+    timestamp                   DateTime64(9),
+    hardware_model              LowCardinality(String),
+    hardware_serial             String,
+    cpu_brand                   LowCardinality(String),
+    cpu_class                   LowCardinality(String),
+    cpu_cores                   UInt8,
+    logical_processors          UInt8,
+    ram_gb                      Float64,
+    ram_tier                    LowCardinality(String),
+    swap_pressure               LowCardinality(String),
+    compression_pressure        LowCardinality(String),
+    battery_percent             Int16,
+    battery_cycles              UInt32,
+    battery_state               LowCardinality(String),
+    battery_charging            Int8,
+    battery_minutes_remaining   Int32,
+    battery_health_pct          Float64,
+    battery_health_score        LowCardinality(String)
+) ENGINE = MergeTree() ORDER BY (host_id, timestamp);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS device_health_mv TO device_health AS
+SELECT
+    hostIdentifier                                                   AS host_id,
+    decorations.hostname                                             AS hostname,
+    calendarTime                                                     AS timestamp,
+    JSONExtractString(item, 'hardware_model')                        AS hardware_model,
+    JSONExtractString(item, 'hardware_serial')                       AS hardware_serial,
+    JSONExtractString(item, 'cpu_brand')                             AS cpu_brand,
+    JSONExtractString(item, 'cpu_class')                             AS cpu_class,
+    toUInt8OrZero(JSONExtractString(item, 'cpu_cores'))              AS cpu_cores,
+    toUInt8OrZero(JSONExtractString(item, 'logical_processors'))     AS logical_processors,
+    toFloat64OrZero(JSONExtractString(item, 'ram_gb'))               AS ram_gb,
+    JSONExtractString(item, 'ram_tier')                              AS ram_tier,
+    JSONExtractString(item, 'swap_pressure')                         AS swap_pressure,
+    JSONExtractString(item, 'compression_pressure')                  AS compression_pressure,
+    toInt16OrZero(JSONExtractString(item, 'battery_percent'))        AS battery_percent,
+    toUInt32OrZero(JSONExtractString(item, 'battery_cycles'))        AS battery_cycles,
+    JSONExtractString(item, 'battery_state')                         AS battery_state,
+    toInt8OrZero(JSONExtractString(item, 'battery_charging'))        AS battery_charging,
+    toInt32OrZero(JSONExtractString(item, 'battery_minutes_remaining')) AS battery_minutes_remaining,
+    toFloat64OrZero(JSONExtractString(item, 'battery_health_pct'))   AS battery_health_pct,
+    JSONExtractString(item, 'battery_health_score')                  AS battery_health_score
+FROM `${CLICKPIPE_TABLE}`
+ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
+WHERE name ILIKE '%Hardware experience - device health%';
+
+-- ────────────────────────────────────────────────────────────
+-- 6. OS HEALTH (System experience)
+--    dex-queries.yml: "DEX - System experience - OS health"
+-- ────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS os_health
+(
+    host_id         String,
+    hostname        String,
+    timestamp       DateTime64(9),
+    os_name         LowCardinality(String),
+    os_version      String,
+    os_build        String,
+    os_currency     LowCardinality(String),
+    uptime_seconds  UInt64,
+    uptime_days     Float64,
+    uptime_risk     LowCardinality(String),
+    crashes_30d     UInt32,
+    dex_os_health   LowCardinality(String)
+) ENGINE = MergeTree() ORDER BY (host_id, timestamp);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS os_health_mv TO os_health AS
+SELECT
+    hostIdentifier                                              AS host_id,
+    decorations.hostname                                        AS hostname,
+    calendarTime                                                AS timestamp,
+    JSONExtractString(item, 'os_name')                          AS os_name,
+    JSONExtractString(item, 'os_version')                       AS os_version,
+    JSONExtractString(item, 'os_build')                         AS os_build,
+    JSONExtractString(item, 'os_currency')                      AS os_currency,
+    toUInt64OrZero(JSONExtractString(item, 'uptime_seconds'))   AS uptime_seconds,
+    toFloat64OrZero(JSONExtractString(item, 'uptime_days'))     AS uptime_days,
+    JSONExtractString(item, 'uptime_risk')                      AS uptime_risk,
+    toUInt32OrZero(JSONExtractString(item, 'crashes_30d'))      AS crashes_30d,
+    JSONExtractString(item, 'dex_os_health')                    AS dex_os_health
+FROM `${CLICKPIPE_TABLE}`
+ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
+WHERE name ILIKE '%System experience - OS health%';
+
+-- ────────────────────────────────────────────────────────────
+-- 7. PROCESS HEALTH (Application experience)
+--    dex-queries.yml: "DEX - Application experience - process health"
+-- ────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS process_health
+(
+    host_id             String,
+    hostname            String,
+    timestamp           DateTime64(9),
+    process_name        String,
+    path                String,
+    pid                 UInt32,
+    state               LowCardinality(String),
+    threads             UInt32,
+    rss_mb              Float64,
+    vmem_gb             Float64,
+    cpu_user_ms         UInt64,
+    cpu_sys_ms          UInt64,
+    disk_bytes_read     UInt64,
+    disk_bytes_written  UInt64,
+    process_class       LowCardinality(String),
+    mem_pressure        LowCardinality(String)
+) ENGINE = MergeTree() ORDER BY (host_id, timestamp, process_name);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS process_health_mv TO process_health AS
+SELECT
+    hostIdentifier                                                    AS host_id,
+    decorations.hostname                                              AS hostname,
+    calendarTime                                                      AS timestamp,
+    JSONExtractString(item, 'process_name')                           AS process_name,
+    JSONExtractString(item, 'path')                                   AS path,
+    toUInt32OrZero(JSONExtractString(item, 'pid'))                    AS pid,
+    JSONExtractString(item, 'state')                                  AS state,
+    toUInt32OrZero(JSONExtractString(item, 'threads'))                AS threads,
+    toFloat64OrZero(JSONExtractString(item, 'rss_mb'))                AS rss_mb,
+    toFloat64OrZero(JSONExtractString(item, 'vmem_gb'))               AS vmem_gb,
+    toUInt64OrZero(JSONExtractString(item, 'cpu_user_ms'))            AS cpu_user_ms,
+    toUInt64OrZero(JSONExtractString(item, 'cpu_sys_ms'))             AS cpu_sys_ms,
+    toUInt64OrZero(JSONExtractString(item, 'disk_bytes_read'))        AS disk_bytes_read,
+    toUInt64OrZero(JSONExtractString(item, 'disk_bytes_written'))     AS disk_bytes_written,
+    JSONExtractString(item, 'process_class')                          AS process_class,
+    JSONExtractString(item, 'mem_pressure')                           AS mem_pressure
+FROM `${CLICKPIPE_TABLE}`
+ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
+WHERE name ILIKE '%Application experience - process health%';
+
+-- ────────────────────────────────────────────────────────────
+-- 8. VPN GATE (Network experience)
+--    dex-queries.yml: "DEX - Network experience - VPN gate"
+-- ────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS vpn_gate
+(
+    host_id             String,
+    hostname            String,
+    timestamp           DateTime64(9),
+    vpn_tunnels_active  UInt32,
+    vpn_tunnels_total   UInt32,
+    vpn_default_route   UInt32,
+    primary_interface   LowCardinality(String),
+    primary_active      Int8,
+    network_confidence  LowCardinality(String),
+    checked_at_epoch    UInt64,
+    checked_at_display  String
+) ENGINE = MergeTree() ORDER BY (host_id, timestamp);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS vpn_gate_mv TO vpn_gate AS
+SELECT
+    hostIdentifier                                                  AS host_id,
+    decorations.hostname                                            AS hostname,
+    calendarTime                                                    AS timestamp,
+    toUInt32OrZero(JSONExtractString(item, 'vpn_tunnels_active'))   AS vpn_tunnels_active,
+    toUInt32OrZero(JSONExtractString(item, 'vpn_tunnels_total'))    AS vpn_tunnels_total,
+    toUInt32OrZero(JSONExtractString(item, 'vpn_default_route'))    AS vpn_default_route,
+    JSONExtractString(item, 'primary_interface')                    AS primary_interface,
+    toInt8OrZero(JSONExtractString(item, 'primary_active'))         AS primary_active,
+    JSONExtractString(item, 'network_confidence')                   AS network_confidence,
+    toUInt64OrZero(JSONExtractString(item, 'checked_at_epoch'))     AS checked_at_epoch,
+    JSONExtractString(item, 'checked_at_display')                   AS checked_at_display
+FROM `${CLICKPIPE_TABLE}`
+ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
+WHERE name ILIKE '%Network experience - VPN gate%';
+
+-- ────────────────────────────────────────────────────────────
+-- 9. CRASH SUMMARY (Application experience)
+--    dex-queries.yml: "DEX - Application experience - crash summary"
+-- ────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS crash_summary
+(
+    host_id              String,
+    hostname             String,
+    timestamp            DateTime64(9),
+    crashed_identifier   String,
+    app_name             String,
+    bundle_identifier    String,
+    app_version          String,
+    crash_count_7d       UInt32,
+    last_crash_at        String,
+    crash_severity       LowCardinality(String),
+    app_match_status     LowCardinality(String)
+) ENGINE = MergeTree() ORDER BY (host_id, timestamp, crashed_identifier);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS crash_summary_mv TO crash_summary AS
+SELECT
+    hostIdentifier                                               AS host_id,
+    decorations.hostname                                         AS hostname,
+    calendarTime                                                 AS timestamp,
+    JSONExtractString(item, 'crashed_identifier')                AS crashed_identifier,
+    JSONExtractString(item, 'app_name')                          AS app_name,
+    JSONExtractString(item, 'bundle_identifier')                 AS bundle_identifier,
+    JSONExtractString(item, 'app_version')                       AS app_version,
+    toUInt32OrZero(JSONExtractString(item, 'crash_count_7d'))    AS crash_count_7d,
+    JSONExtractString(item, 'last_crash_at')                     AS last_crash_at,
+    JSONExtractString(item, 'crash_severity')                    AS crash_severity,
+    JSONExtractString(item, 'app_match_status')                  AS app_match_status
+FROM `${CLICKPIPE_TABLE}`
+ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
+WHERE name ILIKE '%Application experience - crash summary%';
+
+-- ────────────────────────────────────────────────────────────
+-- 10. CRASH DETAIL (Application experience)
+--     dex-queries.yml: "DEX - Application experience - crash detail"
+-- ────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS crash_detail
+(
+    host_id               String,
+    hostname              String,
+    timestamp             DateTime64(9),
+    crashed_identifier    String,
+    app_name              String,
+    crash_datetime        String,
+    exception_type        LowCardinality(String),
+    exception_codes       String,
+    responsible           String,
+    crashed_process_path  String,
+    app_version           String,
+    crash_rank            UInt32
+) ENGINE = MergeTree() ORDER BY (host_id, timestamp, crashed_identifier);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS crash_detail_mv TO crash_detail AS
+SELECT
+    hostIdentifier                                           AS host_id,
+    decorations.hostname                                     AS hostname,
+    calendarTime                                             AS timestamp,
+    JSONExtractString(item, 'crashed_identifier')            AS crashed_identifier,
+    JSONExtractString(item, 'app_name')                      AS app_name,
+    JSONExtractString(item, 'crash_datetime')                AS crash_datetime,
+    JSONExtractString(item, 'exception_type')                AS exception_type,
+    JSONExtractString(item, 'exception_codes')               AS exception_codes,
+    JSONExtractString(item, 'responsible')                   AS responsible,
+    JSONExtractString(item, 'crashed_process_path')          AS crashed_process_path,
+    JSONExtractString(item, 'app_version')                   AS app_version,
+    toUInt32OrZero(JSONExtractString(item, 'crash_rank'))    AS crash_rank
+FROM `${CLICKPIPE_TABLE}`
+ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
+WHERE name ILIKE '%Application experience - crash detail%';
+
+-- ────────────────────────────────────────────────────────────
+-- 11. ADOPTION GAP (Application experience)
+--     dex-queries.yml: "DEX - Application experience - adoption gap"
+-- ────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS adoption_gap
+(
+    host_id             String,
+    hostname            String,
+    timestamp           DateTime64(9),
+    app_name            String,
+    bundle_identifier   String,
+    version             String,
+    category            LowCardinality(String),
+    path                String,
+    days_since_opened   Float64,
+    usage_tier          LowCardinality(String)
+) ENGINE = MergeTree() ORDER BY (host_id, timestamp, bundle_identifier);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS adoption_gap_mv TO adoption_gap AS
+SELECT
+    hostIdentifier                                                  AS host_id,
+    decorations.hostname                                            AS hostname,
+    calendarTime                                                    AS timestamp,
+    JSONExtractString(item, 'app_name')                             AS app_name,
+    JSONExtractString(item, 'bundle_identifier')                    AS bundle_identifier,
+    JSONExtractString(item, 'version')                              AS version,
+    JSONExtractString(item, 'category')                             AS category,
+    JSONExtractString(item, 'path')                                 AS path,
+    toFloat64OrZero(JSONExtractString(item, 'days_since_opened'))   AS days_since_opened,
+    JSONExtractString(item, 'usage_tier')                           AS usage_tier
+FROM `${CLICKPIPE_TABLE}`
+ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
+WHERE name ILIKE '%Application experience - adoption gap%';

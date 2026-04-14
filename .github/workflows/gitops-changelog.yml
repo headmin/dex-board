@@ -1,0 +1,83 @@
+name: GitOps Changelog
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:        # Manual trigger
+
+jobs:
+  generate-changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout dex-board
+        uses: actions/checkout@v4
+        with:
+          path: dex-board
+
+      - name: Checkout fleetdm/fleet
+        uses: actions/checkout@v4
+        with:
+          repository: fleetdm/fleet
+          path: fleet
+          fetch-depth: 0  # Full history for git log
+
+      - name: Generate changelog.json
+        run: |
+          cd fleet
+          git log \
+            --format='{"sha":"%H","short_sha":"%h","author":"%an","email":"%ae","message":"%s","timestamp":"%aI"}' \
+            --name-only \
+            -- it-and-security/ \
+          | python3 -c "
+          import sys, json
+
+          entries = []
+          current = None
+
+          for line in sys.stdin:
+              line = line.strip()
+              if not line:
+                  continue
+              if line.startswith('{'):
+                  if current:
+                      entries.append(current)
+                  obj = json.loads(line)
+                  current = {
+                      'sha': obj['sha'],
+                      'short_sha': obj['short_sha'],
+                      'author': obj['author'],
+                      'email': obj['email'],
+                      'message': obj['message'],
+                      'timestamp': obj['timestamp'],
+                      'files': []
+                  }
+              elif current:
+                  current['files'].append(line)
+
+          if current:
+              entries.append(current)
+
+          # Keep last 500 commits to limit file size
+          entries = entries[:500]
+
+          with open('../dex-board/changelog.json', 'w') as f:
+              json.dump(entries, f, indent=2)
+
+          print(f'Generated changelog.json with {len(entries)} commits')
+          "
+
+      - name: Commit changelog.json
+        run: |
+          cd dex-board
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add changelog.json
+          if git diff --cached --quiet; then
+            echo "No changes to changelog.json"
+          else
+            git commit -m "Update GitOps changelog from fleetdm/fleet"
+            git push
+          fi

@@ -42,14 +42,14 @@ export const firehoseAppsQueries: QueryConfig[] = [
       SELECT
         app_name,
         bundle_identifier,
-        memory_mb,
-        threads,
-        pid,
-        path,
-        timestamp
+        max(memory_mb) AS memory_mb,
+        max(threads) AS threads,
+        max(pid) AS pid,
+        any(path) AS path
       FROM running_apps
       WHERE host_id = {filterHostId:String}
         AND timestamp = (SELECT max(timestamp) FROM running_apps WHERE host_id = {filterHostId:String})
+      GROUP BY app_name, bundle_identifier
       ORDER BY memory_mb DESC
     `,
   },

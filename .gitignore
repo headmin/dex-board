@@ -3,6 +3,8 @@ dist/
 .wrangler/
 .dev.vars
 .env
+.alt-env
+.alt*.env
 *.log
 .DS_Store
 .venv/
