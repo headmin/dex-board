@@ -22,6 +22,9 @@ if [[ -z "${CLICKHOUSE_URL:-}" || -z "${CLICKHOUSE_PASSWORD:-}" ]]; then
   exit 1
 fi
 
+# ClickPipe source table — override in .alt-env when the pipe is re-created
+CLICKPIPE_TABLE="${CLICKPIPE_TABLE:-s3-625dcbb6-7804-4672-8d83-c621b10a4679}"
+
 AUTH="${CLICKHOUSE_USER:-default}:${CLICKHOUSE_PASSWORD}"
 
 run_sql() {
@@ -44,6 +47,7 @@ count_table() {
 }
 
 echo "=== Alt ClickHouse: Creating materialized views ==="
+echo "    Source table: $CLICKPIPE_TABLE"
 echo ""
 
 # ── 1. Wi-Fi Signal Quality ──────────────────────────────
@@ -66,8 +70,7 @@ CREATE TABLE IF NOT EXISTS wifi_signal (
 ) ENGINE = MergeTree() ORDER BY (host_id, timestamp)
 "
 
-run_sql "CREATE MV wifi_signal_mv" "
-CREATE MATERIALIZED VIEW IF NOT EXISTS wifi_signal_mv TO wifi_signal AS
+WIFI_SIGNAL_SELECT="
 SELECT
     hostIdentifier AS host_id,
     decorations.hostname AS hostname,
@@ -82,30 +85,19 @@ SELECT
     toFloat64OrZero(JSONExtractString(item, 'transmit_rate')) AS transmit_rate,
     JSONExtractString(item, 'security_type') AS security_type,
     JSONExtractString(item, 'interface') AS interface
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
+FROM \`$CLICKPIPE_TABLE\`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Wi-Fi signal quality%'
 "
 
+run_sql "CREATE MV wifi_signal_mv" "
+CREATE MATERIALIZED VIEW IF NOT EXISTS wifi_signal_mv TO wifi_signal AS
+$WIFI_SIGNAL_SELECT
+"
+
 run_sql "BACKFILL wifi_signal" "
 INSERT INTO wifi_signal
-SELECT
-    hostIdentifier AS host_id,
-    decorations.hostname AS hostname,
-    calendarTime AS timestamp,
-    toUInt16OrZero(JSONExtractString(item, 'channel')) AS channel,
-    toUInt8OrZero(JSONExtractString(item, 'channel_band')) AS channel_band,
-    toUInt16OrZero(JSONExtractString(item, 'channel_width')) AS channel_width,
-    toInt16OrZero(JSONExtractString(item, 'rssi')) AS rssi,
-    toInt16OrZero(JSONExtractString(item, 'noise')) AS noise,
-    toInt16OrZero(JSONExtractString(item, 'signal_to_noise_ratio')) AS snr,
-    JSONExtractString(item, 'signal_quality') AS signal_quality,
-    toFloat64OrZero(JSONExtractString(item, 'transmit_rate')) AS transmit_rate,
-    JSONExtractString(item, 'security_type') AS security_type,
-    JSONExtractString(item, 'interface') AS interface
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
-ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
-WHERE name ILIKE '%Wi-Fi signal quality%'
+$WIFI_SIGNAL_SELECT
 "
 echo "  → wifi_signal rows: $(count_table wifi_signal)"
 echo ""
@@ -127,8 +119,7 @@ CREATE TABLE IF NOT EXISTS running_apps (
 ) ENGINE = MergeTree() ORDER BY (host_id, timestamp, app_name)
 "
 
-run_sql "CREATE MV running_apps_mv" "
-CREATE MATERIALIZED VIEW IF NOT EXISTS running_apps_mv TO running_apps AS
+RUNNING_APPS_SELECT="
 SELECT
     hostIdentifier AS host_id,
     decorations.hostname AS hostname,
@@ -140,27 +131,19 @@ SELECT
     toUInt32OrZero(JSONExtractString(item, 'pid')) AS pid,
     toInt8OrZero(JSONExtractString(item, 'is_active')) AS is_active,
     JSONExtractString(item, 'path') AS path
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
+FROM \`$CLICKPIPE_TABLE\`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%macOS Running Apps%' OR name ILIKE '%macOS running apps%'
 "
 
+run_sql "CREATE MV running_apps_mv" "
+CREATE MATERIALIZED VIEW IF NOT EXISTS running_apps_mv TO running_apps AS
+$RUNNING_APPS_SELECT
+"
+
 run_sql "BACKFILL running_apps" "
 INSERT INTO running_apps
-SELECT
-    hostIdentifier AS host_id,
-    decorations.hostname AS hostname,
-    calendarTime AS timestamp,
-    JSONExtractString(item, 'name') AS app_name,
-    JSONExtractString(item, 'bundle_identifier') AS bundle_identifier,
-    toFloat64OrZero(JSONExtractString(item, 'memory_mb')) AS memory_mb,
-    toUInt32OrZero(JSONExtractString(item, 'threads')) AS threads,
-    toUInt32OrZero(JSONExtractString(item, 'pid')) AS pid,
-    toInt8OrZero(JSONExtractString(item, 'is_active')) AS is_active,
-    JSONExtractString(item, 'path') AS path
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
-ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
-WHERE name ILIKE '%macOS Running Apps%' OR name ILIKE '%macOS running apps%'
+$RUNNING_APPS_SELECT
 "
 echo "  → running_apps rows: $(count_table running_apps)"
 echo ""
@@ -184,8 +167,7 @@ CREATE TABLE IF NOT EXISTS fleetd_info (
 ) ENGINE = MergeTree() ORDER BY (host_id, timestamp)
 "
 
-run_sql "CREATE MV fleetd_info_mv" "
-CREATE MATERIALIZED VIEW IF NOT EXISTS fleetd_info_mv TO fleetd_info AS
+FLEETD_INFO_SELECT="
 SELECT
     hostIdentifier AS host_id,
     decorations.hostname AS hostname,
@@ -199,35 +181,25 @@ SELECT
     toUInt64OrZero(JSONExtractString(item, 'uptime')) AS uptime_seconds,
     JSONExtractString(item, 'enrolled') = 'true' AS enrolled,
     JSONExtractString(item, 'last_recorded_error') AS last_error
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
+FROM \`$CLICKPIPE_TABLE\`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%fleetd information%'
 "
 
+run_sql "CREATE MV fleetd_info_mv" "
+CREATE MATERIALIZED VIEW IF NOT EXISTS fleetd_info_mv TO fleetd_info AS
+$FLEETD_INFO_SELECT
+"
+
 run_sql "BACKFILL fleetd_info" "
 INSERT INTO fleetd_info
-SELECT
-    hostIdentifier AS host_id,
-    decorations.hostname AS hostname,
-    calendarTime AS timestamp,
-    JSONExtractString(item, 'version') AS version,
-    JSONExtractString(item, 'desktop_version') AS desktop_version,
-    JSONExtractString(item, 'osquery_version') AS osquery_version,
-    JSONExtractString(item, 'orbit_channel') AS orbit_channel,
-    JSONExtractString(item, 'platform') AS platform,
-    JSONExtractString(item, 'cpu_type') AS cpu_type,
-    toUInt64OrZero(JSONExtractString(item, 'uptime')) AS uptime_seconds,
-    JSONExtractString(item, 'enrolled') = 'true' AS enrolled,
-    JSONExtractString(item, 'last_recorded_error') AS last_error
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
-ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
-WHERE name ILIKE '%fleetd information%'
+$FLEETD_INFO_SELECT
 "
 echo "  → fleetd_info rows: $(count_table fleetd_info)"
 echo ""
 
 # ── 4. Hardware Inventory ────────────────────────────────
-echo "4/4  Hardware Inventory"
+echo "4/11 Hardware Inventory"
 run_sql "CREATE TABLE hardware_inventory" "
 CREATE TABLE IF NOT EXISTS hardware_inventory (
     host_id            String,
@@ -245,8 +217,7 @@ CREATE TABLE IF NOT EXISTS hardware_inventory (
 ) ENGINE = MergeTree() ORDER BY (host_id, timestamp)
 "
 
-run_sql "CREATE MV hardware_inventory_mv" "
-CREATE MATERIALIZED VIEW IF NOT EXISTS hardware_inventory_mv TO hardware_inventory AS
+HARDWARE_INVENTORY_SELECT="
 SELECT
     hostIdentifier AS host_id,
     decorations.hostname AS hostname,
@@ -260,29 +231,19 @@ SELECT
     JSONExtractString(item, 'hardware_serial') AS hardware_serial,
     JSONExtractString(item, 'hardware_vendor') AS hardware_vendor,
     toFloat64OrZero(JSONExtractString(item, 'memory_gb')) AS memory_gb
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
+FROM \`$CLICKPIPE_TABLE\`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%System Information%' OR name ILIKE '%system information%'
 "
 
+run_sql "CREATE MV hardware_inventory_mv" "
+CREATE MATERIALIZED VIEW IF NOT EXISTS hardware_inventory_mv TO hardware_inventory AS
+$HARDWARE_INVENTORY_SELECT
+"
+
 run_sql "BACKFILL hardware_inventory" "
 INSERT INTO hardware_inventory
-SELECT
-    hostIdentifier AS host_id,
-    decorations.hostname AS hostname,
-    calendarTime AS timestamp,
-    JSONExtractString(item, 'computer_name') AS computer_name,
-    JSONExtractString(item, 'cpu_brand') AS cpu_brand,
-    toUInt8OrZero(JSONExtractString(item, 'cpu_logical_cores')) AS cpu_logical_cores,
-    toUInt8OrZero(JSONExtractString(item, 'cpu_physical_cores')) AS cpu_physical_cores,
-    JSONExtractString(item, 'cpu_type') AS cpu_type,
-    JSONExtractString(item, 'hardware_model') AS hardware_model,
-    JSONExtractString(item, 'hardware_serial') AS hardware_serial,
-    JSONExtractString(item, 'hardware_vendor') AS hardware_vendor,
-    toFloat64OrZero(JSONExtractString(item, 'memory_gb')) AS memory_gb
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
-ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
-WHERE name ILIKE '%System Information%' OR name ILIKE '%system information%'
+$HARDWARE_INVENTORY_SELECT
 "
 echo "  → hardware_inventory rows: $(count_table hardware_inventory)"
 echo ""
@@ -336,7 +297,7 @@ SELECT
     toInt32OrZero(JSONExtractString(item, 'battery_minutes_remaining')) AS battery_minutes_remaining,
     toFloat64OrZero(JSONExtractString(item, 'battery_health_pct')) AS battery_health_pct,
     JSONExtractString(item, 'battery_health_score') AS battery_health_score
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
+FROM \`$CLICKPIPE_TABLE\`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Hardware experience - device health%'
 "
@@ -386,7 +347,7 @@ SELECT
     JSONExtractString(item, 'uptime_risk') AS uptime_risk,
     toUInt32OrZero(JSONExtractString(item, 'crashes_30d')) AS crashes_30d,
     JSONExtractString(item, 'dex_os_health') AS dex_os_health
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
+FROM \`$CLICKPIPE_TABLE\`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%System experience - OS health%'
 "
@@ -444,7 +405,7 @@ SELECT
     toUInt64OrZero(JSONExtractString(item, 'disk_bytes_written')) AS disk_bytes_written,
     JSONExtractString(item, 'process_class') AS process_class,
     JSONExtractString(item, 'mem_pressure') AS mem_pressure
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
+FROM \`$CLICKPIPE_TABLE\`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Application experience - process health%'
 "
@@ -492,7 +453,7 @@ SELECT
     JSONExtractString(item, 'network_confidence') AS network_confidence,
     toUInt64OrZero(JSONExtractString(item, 'checked_at_epoch')) AS checked_at_epoch,
     JSONExtractString(item, 'checked_at_display') AS checked_at_display
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
+FROM \`$CLICKPIPE_TABLE\`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Network experience - VPN gate%'
 "
@@ -540,7 +501,7 @@ SELECT
     JSONExtractString(item, 'last_crash_at') AS last_crash_at,
     JSONExtractString(item, 'crash_severity') AS crash_severity,
     JSONExtractString(item, 'app_match_status') AS app_match_status
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
+FROM \`$CLICKPIPE_TABLE\`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Application experience - crash summary%'
 "
@@ -590,7 +551,7 @@ SELECT
     JSONExtractString(item, 'crashed_process_path') AS crashed_process_path,
     JSONExtractString(item, 'app_version') AS app_version,
     toUInt32OrZero(JSONExtractString(item, 'crash_rank')) AS crash_rank
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
+FROM \`$CLICKPIPE_TABLE\`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Application experience - crash detail%'
 "
@@ -636,7 +597,7 @@ SELECT
     JSONExtractString(item, 'path') AS path,
     toFloat64OrZero(JSONExtractString(item, 'days_since_opened')) AS days_since_opened,
     JSONExtractString(item, 'usage_tier') AS usage_tier
-FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
+FROM \`$CLICKPIPE_TABLE\`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Application experience - adoption gap%'
 "

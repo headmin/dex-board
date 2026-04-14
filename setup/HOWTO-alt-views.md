@@ -31,10 +31,14 @@ CLICKHOUSE_URL=https://<host>.clickhouse.cloud:8443
 CLICKHOUSE_USER=default
 CLICKHOUSE_PASSWORD=...
 CLICKHOUSE_DATABASE=fleet_logs   # ← declared but NOT used by the script
+
+# ClickPipe source table — the ONE thing you change when the pipe is recreated
+CLICKPIPE_TABLE=s3-625dcbb6-7804-4672-8d83-c621b10a4679
 ```
 
-Same variable names as `.env` on purpose — the script just `source`s whichever
-env file it's pointed at.
+The script reads `CLICKPIPE_TABLE` from `.alt-env` and substitutes it into
+every `FROM` clause at runtime. If unset, it falls back to the default
+hardcoded in the script header.
 
 > **Gotcha:** `CLICKHOUSE_DATABASE` is declared for parity with `.env` but the
 > `curl` calls in `create-alt-views.sh` do **not** pass `?database=`, so every
@@ -47,12 +51,13 @@ env file it's pointed at.
 ## What the script creates
 
 Eleven (destination table + materialized view + backfill) trios, all reading
-from the S3 ClickPipe source table `s3-625dcbb6-7804-4672-8d83-c621b10a4679`.
+from the S3 ClickPipe source table configured via `CLICKPIPE_TABLE` in
+`.alt-env` (currently `s3-625dcbb6-7804-4672-8d83-c621b10a4679`).
 
-> **ClickPipe UUID drift:** this UUID is **hardcoded** in 32 places across
-> `.sh` + `.sql` + this doc. It changes whenever the ClickPipe is re-created
-> (instance migration, pipeline edit, ClickPipe recreation). If the script
-> starts failing with `UNKNOWN_TABLE`, that's why — jump to
+> **ClickPipe UUID drift:** The UUID changes whenever the ClickPipe is
+> re-created (instance migration, pipeline edit, ClickPipe recreation). If the
+> script starts failing with `UNKNOWN_TABLE`, update `CLICKPIPE_TABLE` in
+> `.alt-env` to the new UUID — that's a one-line fix. See
 > [Troubleshooting](#troubleshooting) for the one-liner fix.
 
 ### Upstream query names — the `pack/<team>/` prefix
@@ -194,9 +199,10 @@ Triggered when a new query is added to `dex-queries.yml` (or any other
 upstream pack that lands in the same S3 ClickPipe).
 
 1. Add a new section to `setup/create-alt-views.sh` following the existing
-   three-step pattern (destination table → MV → backfill). For sections 5+
-   the script uses a `FOO_SELECT=` variable to share one SELECT string
-   between the MV definition and the backfill — follow that pattern.
+   three-step pattern (destination table → MV → backfill). Every section uses
+   a `FOO_SELECT=` variable to share one SELECT string between the MV
+   definition and the backfill — follow that pattern. Use
+   `FROM \`$CLICKPIPE_TABLE\`` (not a hardcoded UUID).
 2. Pick a `WHERE name ILIKE '%…%'` filter that uniquely matches the query
    name. Prefer the full `"<category> - <leaf>"` suffix (e.g.
    `'%Application experience - crash detail%'`) to avoid accidentally
@@ -216,27 +222,25 @@ upstream pack that lands in the same S3 ClickPipe).
 **Symptom:** Script fails on the first `run_sql "CREATE MV …"` line with
 `Code: 60. DB::Exception: Unknown table expression identifier 'default.s3-…'`.
 
-**Cause:** The hardcoded ClickPipe UUID in the script no longer matches what
-exists on the target ClickHouse instance. ClickPipes get re-created during
-instance migrations, pipeline edits, or when someone rebuilds the S3
-ingestion — each rebuild assigns a new UUID.
+**Cause:** The `CLICKPIPE_TABLE` in `.alt-env` no longer matches what exists
+on the target ClickHouse instance. ClickPipes get re-created during instance
+migrations, pipeline edits, or when someone rebuilds the S3 ingestion — each
+rebuild assigns a new UUID.
 
-**Fix:** Find the current UUID and replace it across the repo.
+**Fix:** Find the new UUID and update `.alt-env` — one line.
 ```bash
 source .alt-env
-# List all ClickPipe-shaped tables
+# 1. Find the current ClickPipe table name
 curl -s --user "$CLICKHOUSE_USER:$CLICKHOUSE_PASSWORD" \
-  --data-binary "SELECT database, name FROM system.tables
+  --data-binary "SELECT name FROM system.tables
                  WHERE name LIKE 's3-%' AND name NOT LIKE '%buffer%'
                    AND name NOT LIKE '%clickpipes_error%'" "$CLICKHOUSE_URL"
-# Then replace across the 3 files:
-OLD=s3-<old-uuid>
-NEW=s3-<new-uuid>
-sed -i '' "s/$OLD/$NEW/g" setup/create-alt-views.sh \
-                          setup/create-alt-views.sql \
-                          setup/HOWTO-alt-views.md
+# 2. Update .alt-env with the new UUID
+#    CLICKPIPE_TABLE=s3-<new-uuid>
+# 3. Drop old MVs, truncate tables, re-run the script
 ```
-Verify with `grep -R 's3-' setup/` — should only show the new UUID.
+No `sed` across source files needed — the script reads `CLICKPIPE_TABLE`
+from `.alt-env` at runtime.
 
 ### `Authentication failed` / HTTP 401
 
