@@ -294,7 +294,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
-        o.os_currency AS dimension,
+        ifNull(o.os_currency, 'not reporting') AS dimension,
         round(avg(s.composite_score), 1) AS avg_score,
         round(avg(s.device_health_score), 1) AS avg_device_health,
         round(avg(s.performance_score), 1) AS avg_performance,
@@ -320,7 +320,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
-        m.hardware_model AS dimension,
+        ifNull(m.hardware_model, 'unknown') AS dimension,
         round(avg(s.composite_score), 1) AS avg_score,
         round(avg(s.device_health_score), 1) AS avg_device_health,
         round(avg(s.performance_score), 1) AS avg_performance,
