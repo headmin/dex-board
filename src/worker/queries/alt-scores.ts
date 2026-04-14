@@ -359,4 +359,52 @@ export const firehoseScoreQueries: QueryConfig[] = [
       ORDER BY avg_score DESC
     `,
   },
+  {
+    name: 'firehose.scores.dimension_cpu',
+    domain: 'scores',
+    client: 'alt',
+    description: 'Average scores broken down by CPU class',
+    params: [],
+    sql: `
+      ${DEVICE_SCORES_CTE}
+      SELECT
+        s.cpu_class AS dimension,
+        round(avg(s.composite_score), 1) AS avg_score,
+        round(avg(s.device_health_score), 1) AS avg_device_health,
+        round(avg(s.performance_score), 1) AS avg_performance,
+        round(avg(s.network_score), 1) AS avg_network,
+        round(avg(s.security_score), 1) AS avg_security,
+        round(avg(s.software_score), 1) AS avg_software,
+        count() AS device_count
+      FROM scored s
+      GROUP BY s.cpu_class
+      ORDER BY avg_score DESC
+    `,
+  },
+  {
+    name: 'firehose.scores.dimension_swap',
+    domain: 'scores',
+    client: 'alt',
+    description: 'Average scores broken down by swap pressure',
+    params: [],
+    sql: `
+      ${DEVICE_SCORES_CTE}
+      SELECT
+        h.swap AS dimension,
+        round(avg(s.composite_score), 1) AS avg_score,
+        round(avg(s.device_health_score), 1) AS avg_device_health,
+        round(avg(s.performance_score), 1) AS avg_performance,
+        round(avg(s.network_score), 1) AS avg_network,
+        round(avg(s.security_score), 1) AS avg_security,
+        round(avg(s.software_score), 1) AS avg_software,
+        count() AS device_count
+      FROM scored s
+      LEFT JOIN (
+        SELECT host_id, argMax(swap_pressure, timestamp) AS swap
+        FROM device_health GROUP BY host_id
+      ) h ON s.host_id = h.host_id
+      GROUP BY h.swap
+      ORDER BY avg_score DESC
+    `,
+  },
 ]

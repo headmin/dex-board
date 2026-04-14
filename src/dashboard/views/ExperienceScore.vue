@@ -97,60 +97,39 @@
         <template v-if="expandedCategory === 'software'">
           <div class="software-detail">
             <div class="detail-section">
-              <h4>Patch Velocity</h4>
+              <h4>Fleet Software Health</h4>
               <div class="patch-stats">
                 <div class="patch-stat">
-                  <span class="stat-value">{{ patchStats.avgDays?.toFixed(1) || '—' }}</span>
-                  <span class="stat-label">avg days to patch</span>
+                  <span class="stat-value">{{ patchStats.pctCurrent || '—' }}%</span>
+                  <span class="stat-label">fleet on current OS</span>
                 </div>
                 <div class="patch-stat">
-                  <span class="stat-value">{{ patchStats.pctCurrent?.toFixed(0) || '—' }}%</span>
-                  <span class="stat-label">fleet on latest OS</span>
+                  <span class="stat-value">{{ mostUsedApps.length }}</span>
+                  <span class="stat-label">crashing apps (7d)</span>
                 </div>
                 <div class="patch-stat">
-                  <span class="stat-value">{{ patchStats.p90Days?.toFixed(1) || '—' }}</span>
-                  <span class="stat-label">p90 days to patch</span>
-                </div>
-              </div>
-              <div v-if="patchTimeline.length" class="patch-timeline">
-                <div v-for="p in patchTimeline" :key="p.software_name" class="patch-row">
-                  <span class="patch-name">{{ p.software_name }}</span>
-                  <div class="patch-bar-track">
-                    <div class="patch-bar-fill" :style="{ width: p.pct_current + '%', backgroundColor: signalColor(p.pct_current) }"></div>
-                  </div>
-                  <span class="patch-pct">{{ p.pct_current.toFixed(0) }}% current</span>
-                  <span class="patch-lag">avg {{ p.avg_days_to_patch.toFixed(1) }}d</span>
+                  <span class="stat-value">{{ leastUsedApps.length }}</span>
+                  <span class="stat-label">stale apps (90d+)</span>
                 </div>
               </div>
             </div>
 
             <div class="usage-tables">
               <div class="detail-section">
-                <h4>Most Used Apps</h4>
-                <div class="app-list">
+                <h4>Recent Crashes</h4>
+                <div v-if="mostUsedApps.length" class="app-list">
                   <div v-for="app in mostUsedApps" :key="app.app_name">
-                    <div class="app-row" :class="{ clickable: !wcMode }" @click="!wcMode && toggleAppDrill(app.app_name, 'used')">
+                    <div class="app-row">
                       <span class="app-name">{{ app.app_name }}</span>
-                      <span class="app-devices">{{ app.device_count }} devices</span>
+                      <span class="app-devices stale">{{ app.device_count }} devices</span>
                       <GradeBadge :grade="app.usage_grade" />
-                      <span v-if="!wcMode" class="drill-arrow">{{ drillApp === app.app_name ? '▾' : '▸' }}</span>
-                    </div>
-                    <div v-if="drillApp === app.app_name && !wcMode" class="device-drill">
-                      <div v-if="drillLoading" class="drill-loading">Loading devices...</div>
-                      <div v-else class="drill-device-list">
-                        <div v-for="d in drillDevices" :key="d.host_identifier" class="drill-device-row">
-                          <span class="drill-hostname">{{ d.hostname }}</span>
-                          <span class="drill-version">v{{ d.app_version }}</span>
-                          <span class="drill-usage" :class="d.usage_category">{{ d.usage_category }}</span>
-                          <span class="drill-days">{{ d.days_since_opened }}d ago</span>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
+                <div v-else class="good-news">No crashes in the last 7 days</div>
               </div>
               <div class="detail-section">
-                <h4>Least Used (Shelfware)</h4>
+                <h4>Stale Apps (90d+ unused)</h4>
                 <div class="app-list">
                   <div v-for="app in leastUsedApps" :key="app.app_name">
                     <div class="app-row" :class="{ clickable: !wcMode }" @click="!wcMode && toggleAppDrill(app.app_name, 'stale')">
@@ -440,10 +419,11 @@ async function fetchTeams() {
 async function fetchDimensions() {
   loading.value.dimensions = true
   try {
-    const [osRows, modelRows, ramRows] = await Promise.all([
-      query('firehose.scores.dimension_os'),
+    const [cpuRows, modelRows, ramRows, swapRows] = await Promise.all([
+      query('firehose.scores.dimension_cpu'),
       query('firehose.scores.dimension_model'),
       query('firehose.scores.dimension_ram'),
+      query('firehose.scores.dimension_swap'),
     ])
 
     const mapDim = rows => rows.map(r => ({
@@ -453,10 +433,10 @@ async function fetchDimensions() {
       grade: scoreToGrade(r.avg_score)
     }))
     dimensionData.value = {
-      os: mapDim(osRows),
+      os: mapDim(cpuRows),       // CPU class (full coverage, replaces sparse OS)
       model: mapDim(modelRows),
       ram: mapDim(ramRows),
-      team: []  // No team_id in firehose
+      team: mapDim(swapRows),    // Swap pressure (actionable dimension)
     }
   } catch (e) {
     console.error('Dimensions fetch failed:', e)
@@ -1175,6 +1155,13 @@ onMounted(() => {
   color: var(--fleet-black-50);
   min-width: 80px;
   text-align: right;
+}
+
+.good-news {
+  font-size: var(--font-size-sm);
+  color: #16a34a;
+  font-weight: 500;
+  padding: 8px 0;
 }
 
 /* ─── Two column layout ───────────────────────── */

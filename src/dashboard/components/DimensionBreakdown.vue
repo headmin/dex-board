@@ -52,10 +52,10 @@ const props = defineProps({
 defineEmits(['row-click'])
 
 const dimensions = [
-  { key: 'os', label: 'OS' },
+  { key: 'os', label: 'CPU' },
   { key: 'model', label: 'Model' },
   { key: 'ram', label: 'RAM' },
-  { key: 'team', label: 'Fleet' }
+  { key: 'team', label: 'Swap' }
 ]
 
 const activeDimension = ref('os')
