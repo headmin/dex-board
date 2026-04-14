@@ -8,6 +8,7 @@
 export async function query(name, params = {}) {
   const res = await fetch('/api/query', {
     method: 'POST',
+    credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: name, params })
   })

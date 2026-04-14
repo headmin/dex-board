@@ -22,6 +22,6 @@
     "@clickhouse/client-web": "^1.8.0",
     "@vitejs/plugin-vue": "^5.0.0",
     "vite": "^5.0.0",
-    "wrangler": "^4.0.0"
+    "wrangler": "^4.82.2"
   }
 }
