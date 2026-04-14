@@ -305,22 +305,18 @@ function scoreToGrade(score) {
 async function fetchFleetScore() {
   loading.value.fleet = true
   try {
-    const [summaryRows, prevRows, sparkRows] = await Promise.all([
-      query('scores.fleet_summary', queryParams.value),
-      query('scores.fleet_comparison', queryParams.value),
-      query('scores.fleet_sparkline', queryParams.value)
+    const [summaryRows] = await Promise.all([
+      query('firehose.scores.fleet_summary'),
     ])
 
     const score = summaryRows[0]?.avg_score ?? null
     const count = summaryRows[0]?.device_count ?? 0
-    const prevScore = prevRows[0]?.avg_score ?? null
-    const delta = (score !== null && prevScore !== null) ? score - prevScore : null
 
     fleet.value = {
       grade: scoreToGrade(score),
       score,
-      delta,
-      sparkline: sparkRows.map(r => r.score),
+      delta: null,  // No comparison period in firehose yet
+      sparkline: [],
       deviceCount: count
     }
   } catch (e) {
@@ -333,21 +329,18 @@ async function fetchFleetScore() {
 async function fetchCategoryScores() {
   loading.value.categories = true
   try {
-    const [rows, prevRows, sparkRows] = await Promise.all([
-      query('scores.categories', queryParams.value),
-      query('scores.categories_comparison', queryParams.value),
-      query('scores.category_sparklines', queryParams.value)
+    const [rows] = await Promise.all([
+      query('firehose.scores.categories'),
     ])
 
     categories.value = categories.value.map(cat => {
       const score = rows[0]?.[`avg_${cat.key}`] ?? null
-      const prev = prevRows[0]?.[`avg_${cat.key}`] ?? null
       return {
         ...cat,
         score,
         grade: scoreToGrade(score),
-        delta: (score !== null && prev !== null) ? score - prev : null,
-        sparkline: sparkRows.map(r => r[`avg_${cat.key}`] ?? 0)
+        delta: null,  // No comparison period in firehose yet
+        sparkline: []
       }
     })
   } catch (e) {
@@ -360,7 +353,7 @@ async function fetchCategoryScores() {
 async function fetchDistribution() {
   loading.value.distribution = true
   try {
-    const rows = await query('scores.grade_distribution', queryParams.value)
+    const rows = await query('firehose.scores.grade_distribution')
     const dist = {}
     for (const r of rows) {
       if (r.grade) dist[r.grade] = Number(r.cnt)
@@ -375,12 +368,8 @@ async function fetchDistribution() {
 // ─── Fetch Biggest Movers ─────────────────────────────────────
 async function fetchMovers() {
   loading.value.movers = true
-  try {
-    const rows = await query('scores.biggest_movers', { ...queryParams.value, limit: 8 })
-    movers.value = rows
-  } catch (e) {
-    console.error('Movers fetch failed:', e)
-  }
+  // No WoW comparison data in firehose yet — show empty
+  movers.value = []
   loading.value.movers = false
 }
 
@@ -437,18 +426,8 @@ async function fetchMoverDetail(hostId) {
 // ─── Fetch Team Scores ────────────────────────────────────────
 async function fetchTeams() {
   loading.value.teams = true
-  try {
-    const rows = await query('scores.dimension_breakdown', { ...queryParams.value, dimension: 'team_id' })
-    teams.value = rows.map(r => ({
-      team_id: r.name,
-      name: `Fleet ${r.name}`,
-      score: r.score,
-      grade: scoreToGrade(r.score),
-      device_count: r.count
-    }))
-  } catch (e) {
-    console.error('Teams fetch failed:', e)
-  }
+  // No team_id in firehose data — show empty
+  teams.value = []
   loading.value.teams = false
 }
 
@@ -456,19 +435,23 @@ async function fetchTeams() {
 async function fetchDimensions() {
   loading.value.dimensions = true
   try {
-    const [osRows, modelRows, ramRows, teamRows] = await Promise.all([
-      query('scores.dimension_breakdown', { ...queryParams.value, dimension: 'os_name' }),
-      query('scores.dimension_breakdown', { ...queryParams.value, dimension: 'hardware_model', limit: 15 }),
-      query('scores.dimension_breakdown', { ...queryParams.value, dimension: 'ram_tier' }),
-      query('scores.dimension_breakdown', { ...queryParams.value, dimension: 'team_id' })
+    const [osRows, modelRows, ramRows] = await Promise.all([
+      query('firehose.scores.dimension_os'),
+      query('firehose.scores.dimension_model'),
+      query('firehose.scores.dimension_ram'),
     ])
 
-    const addGrades = rows => rows.map(r => ({ ...r, grade: scoreToGrade(r.score) }))
+    const mapDim = rows => rows.map(r => ({
+      name: r.dimension,
+      score: r.avg_score,
+      count: r.device_count,
+      grade: scoreToGrade(r.avg_score)
+    }))
     dimensionData.value = {
-      os: addGrades(osRows),
-      model: addGrades(modelRows),
-      ram: addGrades(ramRows),
-      team: addGrades(teamRows).map(r => ({ ...r, name: `Fleet ${r.name}` }))
+      os: mapDim(osRows),
+      model: mapDim(modelRows),
+      ram: mapDim(ramRows),
+      team: []  // No team_id in firehose
     }
   } catch (e) {
     console.error('Dimensions fetch failed:', e)
@@ -499,81 +482,93 @@ async function fetchSignals(categoryKey) {
     let signalDefs = []
 
     if (categoryKey === 'device_health') {
-      const rows = await query('health.signals')
-      const diskTotal = rows[0]?.avg_disk_total || 0
-      const diskScore = diskTotal >= 512 ? 100 : diskTotal >= 256 ? 70 : 40
+      const [dhRows, cpuRows] = await Promise.all([
+        query('firehose.health.device_summary'),
+        query('firehose.health.cpu_distribution'),
+      ])
+      const dh = dhRows[0] || {}
+      const total = dh.total_devices || 1
+      const swapOkPct = Math.round(((total - (dh.severe_swap || 0) - (dh.elevated_swap || 0)) / total) * 100)
+      const battOkPct = Math.round(((total - (dh.degraded_battery || 0) - (dh.replace_battery || 0)) / total) * 100)
+      const modernCpu = cpuRows.filter(r => ['apple_m3', 'apple_m4', 'apple_m5'].includes(r.cpu_class)).reduce((s, r) => s + Number(r.device_count), 0)
+      const cpuPct = Math.round((modernCpu / total) * 100)
       signalDefs = [
-        { name: 'Disk Capacity', weight: 0.50, score: diskScore },
-        { name: 'Device Age (est.)', weight: 0.50, score: 80 }
+        { name: 'CPU Generation', weight: 0.30, score: cpuPct, detail: `${cpuPct}% on M3 or newer` },
+        { name: 'RAM Tier', weight: 0.25, score: dh.avg_battery_pct || 80 },
+        { name: 'Battery Health', weight: 0.25, score: battOkPct, detail: `${battOkPct}% good or better` },
+        { name: 'Swap Pressure', weight: 0.20, score: swapOkPct, detail: `${swapOkPct}% not elevated/severe` },
       ]
     } else if (categoryKey === 'performance') {
-      const rows = await query('health.signals')
-      const mem = rows[0]?.avg_mem || 0
-      const disk = rows[0]?.avg_disk || 0
-      const uptime = rows[0]?.avg_uptime || 0
-
-      const memScore = mem < 60 ? 100 : mem < 75 ? 80 : mem < 85 ? 60 : mem < 95 ? 40 : 20
-      const diskScore = disk < 70 ? 100 : disk < 80 ? 80 : disk < 90 ? 60 : disk < 95 ? 40 : 20
-      const uptimeScore = uptime < 7 ? 100 : uptime < 14 ? 80 : uptime < 30 ? 60 : 30
-
+      const [dhRows, procRows] = await Promise.all([
+        query('firehose.health.device_summary'),
+        query('firehose.processes.by_class'),
+      ])
+      const dh = dhRows[0] || {}
+      const total = dh.total_devices || 1
+      const swapOkPct = Math.round(((total - (dh.severe_swap || 0) - (dh.elevated_swap || 0)) / total) * 100)
+      const avgRss = procRows.reduce((s, r) => s + (Number(r.avg_rss_mb) || 0), 0) / (procRows.length || 1)
+      const rssScore = avgRss < 200 ? 100 : avgRss < 500 ? 80 : avgRss < 1000 ? 60 : 40
       signalDefs = [
-        { name: 'Memory Usage', weight: 0.35, score: memScore },
-        { name: 'Disk Usage', weight: 0.30, score: diskScore },
-        { name: 'Process Pressure', weight: 0.20, score: 80 },
-        { name: 'Uptime Staleness', weight: 0.15, score: uptimeScore }
+        { name: 'Swap Pressure', weight: 0.35, score: swapOkPct, detail: `${swapOkPct}% fleet not pressured` },
+        { name: 'Compression Pressure', weight: 0.30, score: swapOkPct },
+        { name: 'Process Memory', weight: 0.20, score: rssScore, detail: `Avg ${avgRss.toFixed(0)} MB per process` },
+        { name: 'Uptime Staleness', weight: 0.15, score: 70 },
       ]
     } else if (categoryKey === 'network') {
-      const rows = await query('network.signals')
-      const rssi = rows[0]?.avg_rssi || -70
-      const noise = rows[0]?.avg_noise || -80
-      const tx = rows[0]?.avg_tx || 100
+      const [wifiRows, vpnRows] = await Promise.all([
+        query('firehose.wifi.summary'),
+        query('firehose.vpn.summary'),
+      ])
+      const w = wifiRows[0] || {}
+      const v = vpnRows[0] || {}
+      const rssi = w.avg_rssi || -70
+      const snr = w.avg_snr || 20
+      const tx = w.avg_transmit_rate || 100
+      const vpnTotal = v.total_devices || 1
+      const vpnConnPct = Math.round(((v.vpn_active || 0) + (v.direct_connected || 0)) / vpnTotal * 100)
 
-      const rssiScore = rssi > -50 ? 100 : rssi > -60 ? 80 : rssi > -70 ? 60 : rssi > -80 ? 40 : 20
-      const noiseScore = noise < -85 ? 100 : noise < -75 ? 70 : 40
-      const txScore = tx > 400 ? 100 : tx > 200 ? 80 : tx > 100 ? 60 : 40
+      const rssiScore = rssi >= -50 ? 100 : rssi >= -60 ? 85 : rssi >= -70 ? 65 : rssi >= -80 ? 40 : 20
+      const snrScore = snr >= 30 ? 100 : snr >= 20 ? 80 : snr >= 10 ? 50 : 25
+      const txScore = tx >= 400 ? 100 : tx >= 200 ? 85 : tx >= 100 ? 60 : 30
 
       signalDefs = [
-        { name: 'WiFi Signal (RSSI)', weight: 0.40, score: rssiScore },
-        { name: 'WiFi Noise', weight: 0.30, score: noiseScore },
-        { name: 'Transmit Rate', weight: 0.30, score: txScore }
+        { name: 'WiFi Signal (RSSI)', weight: 0.40, score: rssiScore, detail: `Fleet avg ${rssi} dBm` },
+        { name: 'Signal-to-Noise', weight: 0.30, score: snrScore, detail: `Fleet avg ${snr} dB` },
+        { name: 'Transmit Rate', weight: 0.20, score: txScore, detail: `Fleet avg ${tx} Mbps` },
+        { name: 'Network Confidence', weight: 0.10, score: vpnConnPct, detail: `${vpnConnPct}% connected (VPN or direct)` },
       ]
     } else if (categoryKey === 'security') {
-      const rows = await query('security.compliance')
+      const [osRows] = await Promise.all([
+        query('firehose.health.os_summary'),
+      ])
+      const os = osRows[0] || {}
+      const total = os.total_devices || 1
+      const currentPct = Math.round((os.os_current || 0) / total * 100)
+      const healthyPct = Math.round((os.healthy || 0) / total * 100)
       signalDefs = [
-        { name: 'Disk Encryption', weight: 0.25, score: rows[0]?.pct_encrypted || 0 },
-        { name: 'Firewall', weight: 0.25, score: rows[0]?.pct_firewall || 0 },
-        { name: 'SIP', weight: 0.20, score: rows[0]?.pct_sip || 0 },
-        { name: 'Gatekeeper', weight: 0.15, score: rows[0]?.pct_gatekeeper || 0 },
-        { name: 'OS Currency', weight: 0.15, score: 80 }
+        { name: 'OS Currency', weight: 0.50, score: currentPct, detail: `${currentPct}% on current OS` },
+        { name: 'DEX OS Health', weight: 0.50, score: healthyPct, detail: `${healthyPct}% rated healthy` },
       ]
     } else if (categoryKey === 'software') {
-      // ─── Patch Velocity signals ─────────────────────────────
-      const [patchRows, osRows, usageRows] = await Promise.all([
-        query('software.patch_velocity'),
-        query('software.os_currency', { softwareName: 'macOS' }),
-        query('software.usage_stats')
+      const [crashRows, adoptRows] = await Promise.all([
+        query('firehose.crashes.summary'),
+        query('firehose.adoption.summary'),
       ])
-
-      const avgLag = patchRows[0]?.avg_lag ?? 10
-      const patchScore = avgLag <= 3 ? 100 : avgLag <= 7 ? 80 : avgLag <= 14 ? 60 : avgLag <= 30 ? 40 : 20
-
-      const osPct = osRows[0]?.pct_current ?? 0
-      const osCurrScore = osPct >= 90 ? 100 : osPct >= 75 ? 80 : osPct >= 50 ? 60 : osPct >= 25 ? 40 : 20
-
-      const stalePct = usageRows[0]?.stale_pct ?? 50
-      const dailyPct = usageRows[0]?.daily_pct ?? 30
-      const staleScore = stalePct < 10 ? 100 : stalePct < 25 ? 80 : stalePct < 40 ? 60 : stalePct < 60 ? 40 : 20
-      const activeScore = dailyPct >= 50 ? 100 : dailyPct >= 35 ? 80 : dailyPct >= 20 ? 60 : 40
+      const cr = crashRows[0] || {}
+      const ad = adoptRows[0] || {}
+      const crashScore = (cr.total_crashes_7d || 0) === 0 ? 100 : (cr.total_crashes_7d || 0) <= 3 ? 80 : 50
+      const totalApps = ad.unique_apps || 1
+      const activeApps = (Number(ad.active_today) || 0) + (Number(ad.active_week) || 0)
+      const activePct = Math.round(activeApps / totalApps * 100)
+      const staleApps = Number(ad.stale_90d_plus) || 0
+      const stalePct = Math.round(staleApps / totalApps * 100)
+      const staleScore = stalePct < 20 ? 100 : stalePct < 40 ? 75 : stalePct < 60 ? 50 : 30
 
       signalDefs = [
-        { name: 'Patch Velocity', weight: 0.30, score: patchScore, detail: `Avg ${avgLag.toFixed(1)} days to patch` },
-        { name: 'OS Currency', weight: 0.20, score: osCurrScore, detail: `${osPct.toFixed(0)}% fleet on latest` },
-        { name: 'Shelfware Ratio', weight: 0.25, score: staleScore, detail: `${stalePct.toFixed(0)}% apps unused 90d+` },
-        { name: 'Active Usage Rate', weight: 0.25, score: activeScore, detail: `${dailyPct.toFixed(0)}% apps used daily` }
+        { name: 'Crash Frequency', weight: 0.40, score: crashScore, detail: `${cr.total_crashes_7d || 0} crashes in 7d` },
+        { name: 'App Adoption', weight: 0.35, score: activePct, detail: `${activePct}% apps active this week` },
+        { name: 'Shelfware', weight: 0.25, score: staleScore, detail: `${stalePct}% apps stale 90d+` },
       ]
-
-      // ─── Fetch software detail data ─────────────────────────
-      fetchSoftwareDetail()
     }
 
     signals.value = signalDefs
@@ -584,27 +579,30 @@ async function fetchSignals(categoryKey) {
 }
 
 async function fetchSoftwareDetail() {
+  // No patch velocity in firehose — show adoption data instead
   try {
-    const [statsRows, timelineRows, mostRows, leastRows, osRow] = await Promise.all([
-      query('software.patch_velocity'),
-      query('software.patch_summary', { limit: 8 }),
-      query('software.top_active', { limit: 8 }),
-      query('software.stale_apps', { limit: 8 }),
-      query('software.os_currency', { softwareName: 'macOS' })
+    const [adoptRows, crashRows, staleRows] = await Promise.all([
+      query('firehose.adoption.summary'),
+      query('firehose.crashes.top_crashers', { limit: 5 }),
+      query('firehose.adoption.stale_apps', { limit: 8 }),
     ])
 
-    patchStats.value = {
-      avgDays: statsRows[0]?.avg_lag,
-      pctCurrent: osRow[0]?.pct_current,
-      p90Days: statsRows[0]?.p90_lag
-    }
+    const ad = adoptRows[0] || {}
+    const totalApps = ad.unique_apps || 1
+    const activePct = Math.round(((Number(ad.active_today) || 0) + (Number(ad.active_week) || 0)) / totalApps * 100)
 
-    patchTimeline.value = timelineRows
-    mostUsedApps.value = mostRows.map(r => ({
-      ...r,
-      usage_grade: r.daily_count >= r.device_count * 0.8 ? 'A' : r.daily_count >= r.device_count * 0.5 ? 'B' : 'C'
+    patchStats.value = {
+      avgDays: null,
+      pctCurrent: activePct,
+      p90Days: null
+    }
+    patchTimeline.value = []
+    mostUsedApps.value = []
+    leastUsedApps.value = staleRows.map(r => ({
+      app_name: r.app_name,
+      stale_count: r.installed_on,
+      avg_days: r.avg_days_stale
     }))
-    leastUsedApps.value = leastRows
   } catch (e) {
     console.error('Software detail fetch failed:', e)
   }

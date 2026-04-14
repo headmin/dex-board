@@ -16,6 +16,8 @@ export interface QueryConfig {
   name: string
   /** Domain grouping: health, security, processes, devices, audit, software, network, scores */
   domain: string
+  /** Which ClickHouse instance to query: 'default' or 'alt' */
+  client?: 'default' | 'alt'
   /** Parameterized SQL with {name:Type} ClickHouse placeholders and {{FILTERS}} macro */
   sql: string
   /** Parameter definitions for validation */
@@ -67,6 +69,10 @@ export interface Env {
   CLICKHOUSE_USER: string
   CLICKHOUSE_PASSWORD: string
   CLICKHOUSE_DATABASE: string
+  ALT_CLICKHOUSE_URL?: string
+  ALT_CLICKHOUSE_USER?: string
+  ALT_CLICKHOUSE_PASSWORD?: string
+  ALT_CLICKHOUSE_DATABASE?: string
   ASSETS: Fetcher
   CF_ACCESS_TEAM_DOMAIN?: string
   CF_ACCESS_AUD?: string

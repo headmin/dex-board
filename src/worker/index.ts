@@ -15,6 +15,18 @@ import { networkQueries } from './queries/network'
 import { auditQueries } from './queries/audit'
 import { softwareQueries } from './queries/software'
 import { scoreQueries } from './queries/scores'
+import { firehoseWifiQueries } from './queries/alt-wifi'
+import { firehoseAppsQueries } from './queries/alt-apps'
+import { firehoseHardwareQueries } from './queries/alt-hardware'
+import { firehoseFleetdQueries } from './queries/alt-fleetd'
+import { firehoseDeviceQueries } from './queries/alt-devices'
+import { firehoseInsightQueries } from './queries/alt-insights'
+import { firehoseHealthQueries } from './queries/alt-health'
+import { firehoseProcessQueries } from './queries/alt-processes'
+import { firehoseVpnQueries } from './queries/alt-vpn'
+import { firehoseCrashQueries } from './queries/alt-crashes'
+import { firehoseAdoptionQueries } from './queries/alt-adoption'
+import { firehoseScoreQueries } from './queries/alt-scores'
 
 registry.registerAll(healthQueries)
 registry.registerAll(deviceQueries)
@@ -24,6 +36,18 @@ registry.registerAll(networkQueries)
 registry.registerAll(auditQueries)
 registry.registerAll(softwareQueries)
 registry.registerAll(scoreQueries)
+registry.registerAll(firehoseWifiQueries)
+registry.registerAll(firehoseAppsQueries)
+registry.registerAll(firehoseHardwareQueries)
+registry.registerAll(firehoseFleetdQueries)
+registry.registerAll(firehoseDeviceQueries)
+registry.registerAll(firehoseInsightQueries)
+registry.registerAll(firehoseHealthQueries)
+registry.registerAll(firehoseProcessQueries)
+registry.registerAll(firehoseVpnQueries)
+registry.registerAll(firehoseCrashQueries)
+registry.registerAll(firehoseAdoptionQueries)
+registry.registerAll(firehoseScoreQueries)
 
 // ─── Hono app ────────────────────────────────────────────
 const app = new Hono<{ Bindings: Env }>()
@@ -113,6 +137,11 @@ app.get('/api/queries/:name', (c) => {
     description: config.description,
     params: config.params,
   })
+})
+
+// ─── SPA fallback — serve index.html for non-API routes ─
+app.get('*', async (c) => {
+  return c.env.ASSETS.fetch(new Request(new URL('/', c.req.url), c.req.raw))
 })
 
 export default app

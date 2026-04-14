@@ -1,0 +1,537 @@
+[
+  {
+    "sha": "1263ffc46b9f9f6f9c5089b1386296377883f819",
+    "short_sha": "1263ffc",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Update Claude desktop app policy versions to latest (#42659)",
+    "timestamp": "2026-03-30T10:43:13-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/update-claude.yml",
+      "it-and-security/lib/windows/policies/update-claude.yml"
+    ]
+  },
+  {
+    "sha": "7db99c7801118273b6721b3bafcece6e570e1a3a",
+    "short_sha": "7db99c7",
+    "author": "Scott Gress",
+    "email": "scottmgress@gmail.com",
+    "message": "Fix test-packaging.yml action (#42570)",
+    "timestamp": "2026-03-30T07:25:07-05:00",
+    "files": [
+      "it-and-security/lib/macos/scripts/install-wine.sh"
+    ]
+  },
+  {
+    "sha": "1d8e3506a3de069bc0e6c0d129492eda481c881d",
+    "short_sha": "1d8e350",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update battery-health-check.yml (#42401)",
+    "timestamp": "2026-03-25T13:57:51-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/battery-health-check.yml"
+    ]
+  },
+  {
+    "sha": "e9e3ad856476022249bd1493f3a8d1bb91b2d52d",
+    "short_sha": "e9e3ad8",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Add battery health check policies for macOS and Windows workstations (#42388)",
+    "timestamp": "2026-03-25T11:23:49-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/battery-health-check.yml",
+      "it-and-security/lib/windows/policies/battery-health-check.yml"
+    ]
+  },
+  {
+    "sha": "d9a4aa6440e9af04952e8a8e1cf9af06a304388d",
+    "short_sha": "d9a4aa6",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Cleaning up duplicate policies (#42382)",
+    "timestamp": "2026-03-25T10:15:11-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/filevault-enabled.yml",
+      "it-and-security/lib/windows/policies/bitlocker-enabled.yml"
+    ]
+  },
+  {
+    "sha": "4dfba017c4a3b0e57940ca53d1aa67a28e480861",
+    "short_sha": "4dfba01",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Enable calendar integration for Windows 1Password and Firefox update policies (#42381)",
+    "timestamp": "2026-03-25T10:14:49-05:00",
+    "files": [
+      "it-and-security/lib/windows/policies/update-1password.yml",
+      "it-and-security/lib/windows/policies/update-firefox.yml"
+    ]
+  },
+  {
+    "sha": "80f6c9069fd0895b1be20d22d90d8c35186518db",
+    "short_sha": "80f6c90",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Enable Claude install during setup experience for Workstations team (#42378)",
+    "timestamp": "2026-03-25T10:06:23-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
+    "sha": "4895c75de99822a18fb83a9e84ee2fbef3b48e77",
+    "short_sha": "4895c75",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Cleaning up scripts (#42371)",
+    "timestamp": "2026-03-25T09:12:56-05:00",
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/install-macos-compatibility-extension.yml",
+      "it-and-security/lib/macos/scripts/collect-fleetd-logs.sh",
+      "it-and-security/lib/macos/scripts/execute-disable-fleet-desktop.sh",
+      "it-and-security/lib/macos/scripts/install-macos-compatibility-extension.sh",
+      "it-and-security/lib/macos/scripts/install-santa-extension.sh",
+      "it-and-security/lib/macos/scripts/install-update-homebrew.sh",
+      "it-and-security/lib/macos/scripts/mdm-migration.sh",
+      "it-and-security/lib/macos/scripts/migrate-slack-preferences.sh",
+      "it-and-security/lib/macos/scripts/refetch-host.sh",
+      "it-and-security/lib/macos/scripts/remove-old-nudge.sh",
+      "it-and-security/lib/macos/scripts/santa-block-script.sh",
+      "it-and-security/lib/macos/scripts/see-automatic-enrollment-profile.sh",
+      "it-and-security/lib/macos/scripts/set-lock-screen-message.sh",
+      "it-and-security/lib/macos/scripts/system-maintenance.sh",
+      "it-and-security/lib/macos/scripts/uninstall-santa-extension.sh",
+      "it-and-security/lib/windows/scripts/default-exe-install-script.ps1",
+      "it-and-security/lib/windows/scripts/uninstall-slack.ps1"
+    ]
+  },
+  {
+    "sha": "2b09d00818b86d9fb449fd6c7014056787b17408",
+    "short_sha": "2b09d00",
+    "author": "github-actions[bot]",
+    "email": "41898282+github-actions[bot]@users.noreply.github.com",
+    "message": "Update Safari policy version (#42366)",
+    "timestamp": "2026-03-25T08:47:22-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/update-safari.yml"
+    ]
+  },
+  {
+    "sha": "a1ded814f347553e69b025bbc2a50550cf976ac6",
+    "short_sha": "a1ded81",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Add FileVault and BitLocker disk encryption policies for Workstations team (#42340)",
+    "timestamp": "2026-03-24T20:45:50-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/filevault-enabled.yml",
+      "it-and-security/lib/windows/policies/bitlocker-enabled.yml"
+    ]
+  },
+  {
+    "sha": "af1dc1dc3c6a97c3b28e0ca6805aceeeba708502",
+    "short_sha": "af1dc1d",
+    "author": "github-actions[bot]",
+    "email": "41898282+github-actions[bot]@users.noreply.github.com",
+    "message": "Update macOS policy versions (#42356)",
+    "timestamp": "2026-03-24T20:44:30-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/latest-macos.yml"
+    ]
+  },
+  {
+    "sha": "3a6aab622f5ee7e60f0eb94ebaa510388cf7dc20",
+    "short_sha": "3a6aab6",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Update Firefox to 149.0 for Workstations team (#42315)",
+    "timestamp": "2026-03-24T10:50:53-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/update-firefox.yml",
+      "it-and-security/lib/macos/software/mozilla-firefox.yml",
+      "it-and-security/lib/windows/policies/update-firefox.yml"
+    ]
+  },
+  {
+    "sha": "cf04d4d4d0db1c7e47797a4722bc9c4215ff073b",
+    "short_sha": "cf04d4d",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add display_name for Mozilla Firefox (#42286)",
+    "timestamp": "2026-03-23T22:20:34-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
+    "sha": "c2f4c9638bc36fcc3e0c4fb283efd6d8bd326b83",
+    "short_sha": "c2f4c96",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Remove WhatsApp block rule and deploy Santa profiles to all Workstations Macs (#42285)",
+    "timestamp": "2026-03-23T22:09:18-05:00",
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/santa-test-devices.yml",
+      "it-and-security/lib/macos/configuration-profiles/santa-rules.mobileconfig",
+      "it-and-security/lib/macos/policies/install-santa-extension.yml",
+      "it-and-security/lib/macos/reports/collect-santa-denied-logs.yml"
+    ]
+  },
+  {
+    "sha": "1e326f5b458f9d6cbc79729184155e9e39868d83",
+    "short_sha": "1e326f5",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Update Firefox macOS policy to enable scheduled maintenance (#42283)",
+    "timestamp": "2026-03-23T21:35:20-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/update-firefox.yml"
+    ]
+  },
+  {
+    "sha": "51f00a3c2c1e7112bea80f5d47c3c65bac17e8ec",
+    "short_sha": "51f00a3",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Enable calendar events on Workstations fleet (#42284)",
+    "timestamp": "2026-03-23T21:33:51-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
+    "sha": "52f82571e4d598d5a710be65e413dca5abb8db5b",
+    "short_sha": "52f8257",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update 1Password macOS policy to enable scheduled maintenance (#41932)",
+    "timestamp": "2026-03-23T21:04:20-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/update-1password.yml"
+    ]
+  },
+  {
+    "sha": "a308b2f8380946c409c8b3fa72b1a57920c7ff7c",
+    "short_sha": "a308b2f",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update macOS 27 incompatible apps report (#42217)",
+    "timestamp": "2026-03-21T21:30:49-05:00",
+    "files": [
+      "it-and-security/lib/macos/reports/collect-macos-27-incompatible-apps.yml"
+    ]
+  },
+  {
+    "sha": "25c221d5ce3eb09d99c2d0cd99484e1061e54a6a",
+    "short_sha": "25c221d",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add macOS 27 incompatible apps report (#42214)",
+    "timestamp": "2026-03-21T21:15:35-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/reports/collect-macos-27-incompatible-apps.yml"
+    ]
+  },
+  {
+    "sha": "ae104134143b27554445c7aacde3d1d3cda62040",
+    "short_sha": "ae10413",
+    "author": "fleetdm-bot",
+    "email": "luke+fleetbot@fleetdm.com",
+    "message": "Fix duplicate labels_include_any key on claude/windows (#41955)",
+    "timestamp": "2026-03-18T13:17:03-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
+    "sha": "151b2bce94bccf30d3f92ee7c9d720ee9270b43c",
+    "short_sha": "151b2bc",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add secrets in dogfood-gitops workflow to support Okta SSO (#41928)",
+    "timestamp": "2026-03-18T10:37:46-05:00",
+    "files": [
+      "it-and-security/default.yml"
+    ]
+  },
+  {
+    "sha": "0dc53ec2c3df54ea09fe13e8dde9652b9f3dd482",
+    "short_sha": "0dc53ec",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Switch dogfood SSO to Okta and add metadata URL (#41900)",
+    "timestamp": "2026-03-17T21:27:33-05:00",
+    "files": [
+      "it-and-security/default.yml"
+    ]
+  },
+  {
+    "sha": "18b4faa9e50387f9882426a7f56fe27e4f5c5ed4",
+    "short_sha": "18b4faa",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Fix CVE-2025-2857: Add Windows Firefox update policy and maintained app (#41882)",
+    "timestamp": "2026-03-17T16:45:10-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/windows/policies/update-firefox.yml"
+    ]
+  },
+  {
+    "sha": "379eeb875432b6ed271b4c3cd89864810b21e328",
+    "short_sha": "379eeb8",
+    "author": "github-actions[bot]",
+    "email": "41898282+github-actions[bot]@users.noreply.github.com",
+    "message": "Update 1Password policy versions (#41869)",
+    "timestamp": "2026-03-17T15:00:05-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/update-1password.yml"
+    ]
+  },
+  {
+    "sha": "6c4001aeb308af1342b819945f243949901b510c",
+    "short_sha": "6c4001a",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Add Microsoft Entra ID environment variable for Dogfood GitOps (#41522)",
+    "timestamp": "2026-03-16T12:57:22-05:00",
+    "files": [
+      "it-and-security/default.yml"
+    ]
+  },
+  {
+    "sha": "796663a83c2a7464b51c3143a51f2b1f84f8d228",
+    "short_sha": "796663a",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Add Slack update policy for macOS and Windows workstations (#41687)",
+    "timestamp": "2026-03-13T16:19:38-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/update-slack.yml",
+      "it-and-security/lib/windows/policies/update-slack.yml"
+    ]
+  },
+  {
+    "sha": "ea6c720615e34515d3be703007d50ba939d2898d",
+    "short_sha": "ea6c720",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Deploy Slack across all workstation platforms (#41684)",
+    "timestamp": "2026-03-13T16:07:51-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
+    "sha": "e0dec78e619c5719ead1f494afbc27f1880eb2dc",
+    "short_sha": "e0dec78",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Removing Slack to prep for demo (#41679)",
+    "timestamp": "2026-03-13T15:50:40-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/update-slack.yml"
+    ]
+  },
+  {
+    "sha": "da34876029a9623ebd84a836dc67947df54aaed2",
+    "short_sha": "da34876",
+    "author": "Lucas Manuel Rodriguez",
+    "email": "lucas@fleetdm.com",
+    "message": "Ignore vulnerabilities in fleetdm/fleetctl (#41647)",
+    "timestamp": "2026-03-13T14:22:40-03:00",
+    "files": [
+      "it-and-security/README.md",
+      "it-and-security/default.yml",
+      "it-and-security/fleets/company-owned-mobile-devices.yml",
+      "it-and-security/fleets/personal-mobile-devices.yml",
+      "it-and-security/fleets/servers.yml",
+      "it-and-security/fleets/testing-and-qa.yml",
+      "it-and-security/fleets/unassigned.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/agent-options/agent-options.yml",
+      "it-and-security/lib/all/agent-options/servers.agent-options.yml",
+      "it-and-security/lib/all/icons/fleet-desktop-icon.png",
+      "it-and-security/lib/all/icons/keynote-theme-swan.png",
+      "it-and-security/lib/all/icons/nudge-assets-logo.png",
+      "it-and-security/lib/all/icons/nudge-logo.png",
+      "it-and-security/lib/all/icons/zoom-logo.png",
+      "it-and-security/lib/all/labels/apple-silicon-macos-hosts.yml",
+      "it-and-security/lib/all/labels/arm-based-windows-hosts.yml",
+      "it-and-security/lib/all/labels/debian-based-linux-hosts.yml",
+      "it-and-security/lib/all/labels/department-customer-success.yml",
+      "it-and-security/lib/all/labels/department-engineering.yml",
+      "it-and-security/lib/all/labels/department-executive.yml",
+      "it-and-security/lib/all/labels/department-finance.yml",
+      "it-and-security/lib/all/labels/department-information-technology.yml",
+      "it-and-security/lib/all/labels/department-marketing.yml",
+      "it-and-security/lib/all/labels/department-people.yml",
+      "it-and-security/lib/all/labels/department-product-design.yml",
+      "it-and-security/lib/all/labels/department-sales.yml",
+      "it-and-security/lib/all/labels/keynote-14-installed.yml",
+      "it-and-security/lib/all/labels/macos-compatibility-extension-installed.yml",
+      "it-and-security/lib/all/labels/macs-with-1password-installed.yml",
+      "it-and-security/lib/all/labels/macs-with-microsoft-autoupdate-installed.yml",
+      "it-and-security/lib/all/labels/nudge-test-devices.yml",
+      "it-and-security/lib/all/labels/rpm-based-linux-hosts.yml",
+      "it-and-security/lib/all/labels/santa-test-devices.yml",
+      "it-and-security/lib/all/labels/team-g-mdm.yml",
+      "it-and-security/lib/all/labels/team-g-software.yml",
+      "it-and-security/lib/all/labels/virtual-machines.yml",
+      "it-and-security/lib/all/labels/x86-based-windows-hosts.yml",
+      "it-and-security/lib/all/reports/collect-fleetd-information.yml",
+      "it-and-security/lib/all/reports/collect-known-vulnerable-chrome-extensions.yml",
+      "it-and-security/lib/all/reports/collect-operating-system-information.yml",
+      "it-and-security/lib/all/reports/dex-queries.yml",
+      "it-and-security/lib/android/.keep",
+      "it-and-security/lib/android/configuration-profiles/.keep",
+      "it-and-security/lib/android/managed-app-configurations/.keep",
+      "it-and-security/lib/ios/configuration-profiles/lock-screen-message.mobileconfig",
+      "it-and-security/lib/ios/configuration-profiles/self-service.mobileconfig",
+      "it-and-security/lib/ios/declaration-profiles/Passcode settings.json",
+      "it-and-security/lib/ios/declaration-profiles/Software Update settings.json",
+      "it-and-security/lib/ipados/configuration-profiles/lock-screen-message.mobileconfig",
+      "it-and-security/lib/ipados/declaration-profiles/Passcode settings.json",
+      "it-and-security/lib/ipados/declaration-profiles/Software Update settings.json",
+      "it-and-security/lib/linux/policies/check-fleet-desktop-extension-enabled.yml",
+      "it-and-security/lib/linux/policies/disk-encryption-check.yml",
+      "it-and-security/lib/linux/policies/disk-space-check.yml",
+      "it-and-security/lib/linux/reports/all-deb-hosts.yml",
+      "it-and-security/lib/linux/reports/all-rpm-hosts.yml",
+      "it-and-security/lib/linux/scripts/change-password-linux.sh",
+      "it-and-security/lib/linux/scripts/install-fleet-desktop-required-extension.sh",
+      "it-and-security/lib/linux/scripts/uninstall-fleetd-linux.sh",
+      "it-and-security/lib/linux/software/1password-deb.yml",
+      "it-and-security/lib/linux/software/1password-rpm.yml",
+      "it-and-security/lib/linux/software/slack-deb.yml",
+      "it-and-security/lib/linux/software/slack-rpm.yml",
+      "it-and-security/lib/linux/software/zoom-deb.yml",
+      "it-and-security/lib/linux/software/zoom-rpm.yml",
+      "it-and-security/lib/macos/commands/macos-send-fleetd.xml",
+      "it-and-security/lib/macos/configuration-profiles/1password-managed-settings.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/automatic-app-store-updates.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/chrome-enrollment.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/date-time.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/disable-bluetooth-file-sharing.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/disable-content-caching.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/disable-guest-account.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/disable-guest-shares.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/disable-internet-sharing.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/disable-media-sharing.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/disable-safari-safefiles.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/enable-doh.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/enable-firewall-logging.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/enable-gatekeeper.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/enforce-library-validation.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/ensure-show-status-bar-is-enabled.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/firewall.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/fleet-okta-conditional-access.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/full-disk-access-for-fleetd.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/google-updater-background-task.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/limit-ad-tracking.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/microsoft-autoupdate-settings.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/misc.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/okta-verify-settings.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/prevent-autologon.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/santa-configuration.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/santa-rules.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/secure-terminal-keyboard.mobileconfig",
+      "it-and-security/lib/macos/declaration-profiles/Passcode settings.json",
+      "it-and-security/lib/macos/declaration-profiles/Software Update settings.json",
+      "it-and-security/lib/macos/enrollment-profiles/automatic-enrollment.dep.json",
+      "it-and-security/lib/macos/misc/eula.pdf",
+      "it-and-security/lib/macos/policies/1password-emergency-kit-check.yml",
+      "it-and-security/lib/macos/policies/1password-installed.yml",
+      "it-and-security/lib/macos/policies/all-software-updates-installed.yml",
+      "it-and-security/lib/macos/policies/disk-encryption-check.yml",
+      "it-and-security/lib/macos/policies/disk-space-check.yml",
+      "it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml",
+      "it-and-security/lib/macos/policies/install-macos-compatibility-extension.yml",
+      "it-and-security/lib/macos/policies/install-nudge.yml",
+      "it-and-security/lib/macos/policies/install-santa-extension.yml",
+      "it-and-security/lib/macos/policies/latest-macos.yml",
+      "it-and-security/lib/macos/policies/update-1password.yml",
+      "it-and-security/lib/macos/policies/update-claude.yml",
+      "it-and-security/lib/macos/policies/update-firefox.yml",
+      "it-and-security/lib/macos/policies/update-safari.yml",
+      "it-and-security/lib/macos/policies/update-slack.yml",
+      "it-and-security/lib/macos/reports/collect-macos-compatibility-data.yml",
+      "it-and-security/lib/macos/reports/collect-santa-denied-logs.yml",
+      "it-and-security/lib/macos/reports/collect-xprotect-reports.yml",
+      "it-and-security/lib/macos/reports/detect-apns-certificate.yml",
+      "it-and-security/lib/macos/reports/detect-apple-intelligence.yml",
+      "it-and-security/lib/macos/scripts/collect-fleetd-logs.sh",
+      "it-and-security/lib/macos/scripts/execute-disable-fleet-desktop.sh",
+      "it-and-security/lib/macos/scripts/install-macos-compatibility-extension.sh",
+      "it-and-security/lib/macos/scripts/install-nudge.sh",
+      "it-and-security/lib/macos/scripts/install-santa-extension.sh",
+      "it-and-security/lib/macos/scripts/install-update-homebrew.sh",
+      "it-and-security/lib/macos/scripts/install-wine.sh",
+      "it-and-security/lib/macos/scripts/mdm-migration.sh",
+      "it-and-security/lib/macos/scripts/migrate-slack-preferences.sh",
+      "it-and-security/lib/macos/scripts/nudge-postinstall.sh",
+      "it-and-security/lib/macos/scripts/refetch-host.sh",
+      "it-and-security/lib/macos/scripts/remove-old-nudge.sh",
+      "it-and-security/lib/macos/scripts/santa-block-script.sh",
+      "it-and-security/lib/macos/scripts/see-automatic-enrollment-profile.sh",
+      "it-and-security/lib/macos/scripts/set-lock-screen-message.sh",
+      "it-and-security/lib/macos/scripts/system-maintenance.sh",
+      "it-and-security/lib/macos/scripts/uninstall-fleetd-macos.sh",
+      "it-and-security/lib/macos/scripts/uninstall-santa-extension.sh",
+      "it-and-security/lib/macos/scripts/update-safari.sh",
+      "it-and-security/lib/macos/software/1password.yml",
+      "it-and-security/lib/macos/software/fleet-desktop.yml",
+      "it-and-security/lib/macos/software/fleet-keynote-theme.yml",
+      "it-and-security/lib/macos/software/mozilla-firefox.yml",
+      "it-and-security/lib/macos/software/nudge-assets.yml",
+      "it-and-security/lib/macos/software/nudge.yml",
+      "it-and-security/lib/macos/software/santa.yml",
+      "it-and-security/lib/macos/software/zoom.yml",
+      "it-and-security/lib/windows/configuration-profiles/Advanced PowerShell logging.xml",
+      "it-and-security/lib/windows/configuration-profiles/Disable Guest account.xml",
+      "it-and-security/lib/windows/configuration-profiles/Disable OneDrive.xml",
+      "it-and-security/lib/windows/configuration-profiles/Enable firewall.xml",
+      "it-and-security/lib/windows/configuration-profiles/Password settings.xml",
+      "it-and-security/lib/windows/configuration-profiles/Windows Defender compliance settings.xml",
+      "it-and-security/lib/windows/policies/1password-installed.yml",
+      "it-and-security/lib/windows/policies/all-windows-updates-installed.yml",
+      "it-and-security/lib/windows/policies/antivirus-signatures-up-to-date.yml",
+      "it-and-security/lib/windows/policies/disk-encryption-check.yml",
+      "it-and-security/lib/windows/policies/disk-space-check.yml",
+      "it-and-security/lib/windows/policies/update-1password.yml",
+      "it-and-security/lib/windows/policies/update-claude.yml",
+      "it-and-security/lib/windows/policies/windows-defender-compliance-check.yml",
+      "it-and-security/lib/windows/reports/all-arm-hosts.yml",
+      "it-and-security/lib/windows/reports/all-x86-hosts.yml",
+      "it-and-security/lib/windows/scripts/create-admin-user.ps1",
+      "it-and-security/lib/windows/scripts/default-exe-install-script.ps1",
+      "it-and-security/lib/windows/scripts/enable-ms-defender.ps1",
+      "it-and-security/lib/windows/scripts/install-bitdefender.ps1",
+      "it-and-security/lib/windows/scripts/okta_verify_install.ps1",
+      "it-and-security/lib/windows/scripts/okta_verify_uninstall.ps1",
+      "it-and-security/lib/windows/scripts/turn-off-mdm.ps1",
+      "it-and-security/lib/windows/scripts/uninstall-fleetd-windows.ps1",
+      "it-and-security/lib/windows/scripts/uninstall-slack.ps1",
+      "it-and-security/lib/windows/scripts/uninstall-zoom.ps1",
+      "it-and-security/lib/windows/software/1password.yml",
+      "it-and-security/lib/windows/software/google-chrome-arm.yml",
+      "it-and-security/lib/windows/software/okta-verify.yml",
+      "it-and-security/lib/windows/software/zoom-arm.yml",
+      "it-and-security/lib/windows/software/zoom.yml"
+    ]
+  }
+]

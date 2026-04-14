@@ -9,21 +9,36 @@
         <router-link to="/" class="nav-item" exact-active-class="active">
           <span class="nav-icon">&#9670;</span> Experience
         </router-link>
+        <router-link to="/experience-details" class="nav-item" active-class="active">
+          <span class="nav-icon">&#9670;</span> Exp. Details
+        </router-link>
         <router-link to="/devices" class="nav-item" active-class="active">
           <span class="nav-icon">&#9670;</span> Devices
         </router-link>
-        <router-link to="/timeline" class="nav-item" active-class="active">
-          <span class="nav-icon">&#9632;</span> Timeline
-        </router-link>
-        <router-link to="/overview" class="nav-item" active-class="active">
-          <span class="nav-icon">&#9670;</span> Overview
+        <router-link to="/insights" class="nav-item" active-class="active">
+          <span class="nav-icon">&#9670;</span> Insights
         </router-link>
         <router-link to="/reports" class="nav-item" active-class="active">
           <span class="nav-icon">&#9670;</span> Reports
         </router-link>
-        <router-link to="/audit" class="nav-item" active-class="active">
-          <span class="nav-icon">&#9899;</span> Audit log
+        <router-link to="/timeline" class="nav-item" active-class="active">
+          <span class="nav-icon">&#9632;</span> Timeline
         </router-link>
+        <router-link to="/changeboard" class="nav-item" active-class="active">
+          <span class="nav-icon">&#9632;</span> Changeboard
+        </router-link>
+        <div class="nav-group">
+          <span class="nav-group-label">Admin</span>
+          <router-link to="/overview" class="nav-item sub" active-class="active">
+            <span class="nav-icon">&#9656;</span> Overview
+          </router-link>
+          <router-link to="/audit" class="nav-item sub" active-class="active">
+            <span class="nav-icon">&#9656;</span> Audit log
+          </router-link>
+          <router-link to="/raw" class="nav-item sub" active-class="active">
+            <span class="nav-icon">&#9656;</span> Raw data
+          </router-link>
+        </div>
       </nav>
     </aside>
     <main class="main-content">
@@ -126,6 +141,28 @@ const { wcMode } = useWorkersCouncil()
 
 .nav-item.active .nav-icon {
   color: var(--fleet-green);
+}
+
+.nav-group {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--fleet-black-10);
+}
+
+.nav-group-label {
+  display: block;
+  padding: 4px var(--pad-large);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--fleet-black-50);
+}
+
+.nav-item.sub {
+  padding-left: calc(var(--pad-large) + 8px);
+  font-size: var(--font-size-xs);
 }
 
 /* ── Main Content ────────────────────────────── */

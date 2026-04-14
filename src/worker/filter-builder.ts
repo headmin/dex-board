@@ -95,6 +95,16 @@ export function buildFilters(params: Record<string, string | number>): FilterRes
     queryParams.filterHostId = params.hostIdentifier
   }
 
+  // Host ID — firehose queries use host_id column
+  if (params.hostId) {
+    queryParams.filterHostId = params.hostId
+  }
+
+  // Ensure firehose filter params always have defaults
+  if (!queryParams.filterSearch) queryParams.filterSearch = params.search || ''
+  if (!queryParams.filterModel) queryParams.filterModel = params.model || ''
+  if (!queryParams.filterRamTier) queryParams.filterRamTier = params.ramTier || ''
+
   // Limit — parameterized
   if (params.limit) {
     queryParams.filterLimit = Number(params.limit)
