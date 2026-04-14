@@ -47,7 +47,7 @@ env file it's pointed at.
 ## What the script creates
 
 Eleven (destination table + materialized view + backfill) trios, all reading
-from the S3 ClickPipe source table `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`.
+from the S3 ClickPipe source table `s3-625dcbb6-7804-4672-8d83-c621b10a4679`.
 
 > **ClickPipe UUID drift:** this UUID is **hardcoded** in 32 places across
 > `.sh` + `.sql` + this doc. It changes whenever the ClickPipe is re-created
@@ -262,7 +262,7 @@ Verify from the source side:
 source .alt-env
 curl -s --user "$CLICKHOUSE_USER:$CLICKHOUSE_PASSWORD" --data-binary "
 SELECT name, count() AS rows, max(calendarTime) AS latest
-FROM \`s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36\`
+FROM \`s3-625dcbb6-7804-4672-8d83-c621b10a4679\`
 WHERE name ILIKE '%DEX -%'
 GROUP BY name ORDER BY name
 FORMAT PrettyCompactMonoBlock" "$CLICKHOUSE_URL"

@@ -1,6 +1,6 @@
 -- ============================================================
 -- Alt ClickHouse: Materialized Views for osquery result logs
--- Source: s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36
+-- Source: s3-625dcbb6-7804-4672-8d83-c621b10a4679
 -- ============================================================
 -- This file is NOT meant to be run as a single multi-statement file.
 -- Use create-alt-views.sh which executes each statement individually.
@@ -45,7 +45,7 @@ SELECT
     toFloat64OrZero(JSONExtractString(item, 'transmit_rate')) AS transmit_rate,
     JSONExtractString(item, 'security_type')                AS security_type,
     JSONExtractString(item, 'interface')                    AS interface
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Wi-Fi signal quality%';
 
@@ -65,7 +65,7 @@ SELECT
     toFloat64OrZero(JSONExtractString(item, 'transmit_rate')) AS transmit_rate,
     JSONExtractString(item, 'security_type')                AS security_type,
     JSONExtractString(item, 'interface')                    AS interface
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Wi-Fi signal quality%';
 
@@ -104,7 +104,7 @@ SELECT
     toUInt32OrZero(JSONExtractString(item, 'pid'))           AS pid,
     toInt8OrZero(JSONExtractString(item, 'is_active'))       AS is_active,
     JSONExtractString(item, 'path')                          AS path
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%macOS Running Apps%' OR name ILIKE '%macOS running apps%';
 
@@ -121,7 +121,7 @@ SELECT
     toUInt32OrZero(JSONExtractString(item, 'pid'))           AS pid,
     toInt8OrZero(JSONExtractString(item, 'is_active'))       AS is_active,
     JSONExtractString(item, 'path')                          AS path
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%macOS Running Apps%' OR name ILIKE '%macOS running apps%';
 
@@ -164,7 +164,7 @@ SELECT
     toUInt64OrZero(JSONExtractString(item, 'uptime'))         AS uptime_seconds,
     JSONExtractString(item, 'enrolled') = 'true'              AS enrolled,
     JSONExtractString(item, 'last_recorded_error')            AS last_error
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%fleetd information%';
 
@@ -183,7 +183,7 @@ SELECT
     toUInt64OrZero(JSONExtractString(item, 'uptime'))         AS uptime_seconds,
     JSONExtractString(item, 'enrolled') = 'true'              AS enrolled,
     JSONExtractString(item, 'last_recorded_error')            AS last_error
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%fleetd information%';
 
@@ -226,7 +226,7 @@ SELECT
     JSONExtractString(item, 'hardware_serial')                    AS hardware_serial,
     JSONExtractString(item, 'hardware_vendor')                    AS hardware_vendor,
     toFloat64OrZero(JSONExtractString(item, 'memory_gb'))         AS memory_gb
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%System Information%' OR name ILIKE '%system information%';
 
@@ -245,7 +245,7 @@ SELECT
     JSONExtractString(item, 'hardware_serial')                    AS hardware_serial,
     JSONExtractString(item, 'hardware_vendor')                    AS hardware_vendor,
     toFloat64OrZero(JSONExtractString(item, 'memory_gb'))         AS memory_gb
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%System Information%' OR name ILIKE '%system information%';
 
@@ -307,7 +307,7 @@ SELECT
     toInt32OrZero(JSONExtractString(item, 'battery_minutes_remaining')) AS battery_minutes_remaining,
     toFloat64OrZero(JSONExtractString(item, 'battery_health_pct'))   AS battery_health_pct,
     JSONExtractString(item, 'battery_health_score')                  AS battery_health_score
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Hardware experience - device health%';
 
@@ -346,7 +346,7 @@ SELECT
     JSONExtractString(item, 'uptime_risk')                      AS uptime_risk,
     toUInt32OrZero(JSONExtractString(item, 'crashes_30d'))      AS crashes_30d,
     JSONExtractString(item, 'dex_os_health')                    AS dex_os_health
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%System experience - OS health%';
 
@@ -393,7 +393,7 @@ SELECT
     toUInt64OrZero(JSONExtractString(item, 'disk_bytes_written'))     AS disk_bytes_written,
     JSONExtractString(item, 'process_class')                          AS process_class,
     JSONExtractString(item, 'mem_pressure')                           AS mem_pressure
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Application experience - process health%';
 
@@ -430,7 +430,7 @@ SELECT
     JSONExtractString(item, 'network_confidence')                   AS network_confidence,
     toUInt64OrZero(JSONExtractString(item, 'checked_at_epoch'))     AS checked_at_epoch,
     JSONExtractString(item, 'checked_at_display')                   AS checked_at_display
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Network experience - VPN gate%';
 
@@ -467,7 +467,7 @@ SELECT
     JSONExtractString(item, 'last_crash_at')                     AS last_crash_at,
     JSONExtractString(item, 'crash_severity')                    AS crash_severity,
     JSONExtractString(item, 'app_match_status')                  AS app_match_status
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Application experience - crash summary%';
 
@@ -506,7 +506,7 @@ SELECT
     JSONExtractString(item, 'crashed_process_path')          AS crashed_process_path,
     JSONExtractString(item, 'app_version')                   AS app_version,
     toUInt32OrZero(JSONExtractString(item, 'crash_rank'))    AS crash_rank
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Application experience - crash detail%';
 
@@ -541,6 +541,6 @@ SELECT
     JSONExtractString(item, 'path')                                 AS path,
     toFloat64OrZero(JSONExtractString(item, 'days_since_opened'))   AS days_since_opened,
     JSONExtractString(item, 'usage_tier')                           AS usage_tier
-FROM `s3-93ac5ff3-825d-48f5-8db6-5d2c04e67b36`
+FROM `s3-625dcbb6-7804-4672-8d83-c621b10a4679`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%Application experience - adoption gap%';
