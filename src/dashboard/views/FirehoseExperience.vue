@@ -32,10 +32,34 @@
     <section class="section">
       <h2>Device health</h2>
       <div class="metrics-row four-col">
-        <MetricCard label="Severe swap" :value="deviceHealth.severeSwap" :loading="loading.deviceHealth" />
-        <MetricCard label="Elevated swap" :value="deviceHealth.elevatedSwap" :loading="loading.deviceHealth" />
-        <MetricCard label="Degraded battery" :value="deviceHealth.degradedBattery" :loading="loading.deviceHealth" />
+        <div class="clickable-wrap" :class="{ active: drillCondition === 'severe_swap' }" @click="toggleDrill('severe_swap')" role="button" tabindex="0">
+          <MetricCard label="Severe swap" :value="deviceHealth.severeSwap" :loading="loading.deviceHealth" />
+        </div>
+        <div class="clickable-wrap" :class="{ active: drillCondition === 'elevated_swap' }" @click="toggleDrill('elevated_swap')" role="button" tabindex="0">
+          <MetricCard label="Elevated swap" :value="deviceHealth.elevatedSwap" :loading="loading.deviceHealth" />
+        </div>
+        <div class="clickable-wrap" :class="{ active: drillCondition === 'degraded_battery' }" @click="toggleDrill('degraded_battery')" role="button" tabindex="0">
+          <MetricCard label="Degraded battery" :value="deviceHealth.degradedBattery" :loading="loading.deviceHealth" />
+        </div>
         <MetricCard label="Avg battery" :value="deviceHealth.avgBatteryPct" unit="%" :loading="loading.deviceHealth" />
+      </div>
+    </section>
+
+    <!-- Drill-down: host tiles for the clicked condition -->
+    <section v-if="drillCondition" class="section drill-section">
+      <div class="drill-header">
+        <h3>{{ drillTitle }} <span class="drill-count">· {{ drillHosts.length }} host{{ drillHosts.length === 1 ? '' : 's' }}</span></h3>
+        <button class="drill-close" @click="drillCondition = null" aria-label="Close drill-down">✕</button>
+      </div>
+      <div v-if="drillLoading" class="drill-loading">Loading hosts...</div>
+      <div v-else-if="!drillHosts.length" class="drill-empty">No hosts match this condition right now.</div>
+      <div v-else class="host-tile-grid">
+        <HostTile
+          v-for="h in drillHosts"
+          :key="h.host_id"
+          :host="h"
+          :condition="drillCondition"
+        />
       </div>
     </section>
 
@@ -326,6 +350,7 @@ import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
 import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
+import HostTile from '../components/HostTile.vue'
 
 const error = ref(null)
 const loading = ref({
@@ -354,6 +379,41 @@ const osCurrencyDist = ref([])
 const uptimeRiskDist = ref([])
 const vpn = ref({ totalDevices: 0, vpnActive: 0, directConnected: 0, disconnected: 0 })
 const vpnConfDist = ref([])
+
+// ─── Device-health drill-down (clickable metric cards) ──────
+// Clicking a metric like "Degraded battery: 3" expands an inline tile grid
+// of the matching hosts. Condition enum matches the SQL in hosts_by_condition.
+const drillCondition = ref(null)
+const drillHosts = ref([])
+const drillLoading = ref(false)
+
+const DRILL_TITLES = {
+  severe_swap: 'Severe swap pressure',
+  elevated_swap: 'Elevated swap pressure',
+  degraded_battery: 'Degraded battery',
+  replace_battery: 'Battery needs replacement',
+  high_compression: 'High compression pressure',
+}
+const drillTitle = computed(() => DRILL_TITLES[drillCondition.value] || '')
+
+async function toggleDrill(condition) {
+  // Click same card again → close
+  if (drillCondition.value === condition) {
+    drillCondition.value = null
+    drillHosts.value = []
+    return
+  }
+  drillCondition.value = condition
+  drillLoading.value = true
+  drillHosts.value = []
+  try {
+    const rows = await query('firehose.health.hosts_by_condition', { condition, limit: 100 })
+    drillHosts.value = rows
+  } catch (e) {
+    console.error('Drill-down fetch failed:', e)
+  }
+  drillLoading.value = false
+}
 
 // Humanize the raw enum values from ClickHouse so pie chart legend
 // reads "Direct" / "VPN tunnel" / "Disconnected" instead of snake_case.
@@ -536,6 +596,29 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 .section-header-with-caption { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
 .section-header-with-caption h2 { margin: 0; }
 .section-caption { font-size: var(--font-size-xs); color: var(--fleet-black-50); font-style: italic; }
+
+/* Clickable metric-card wrapper. Wraps around <MetricCard> to add interactivity
+   without touching the base component. */
+.clickable-wrap { cursor: pointer; border-radius: var(--radius); transition: box-shadow 150ms ease, transform 150ms ease; outline: none; }
+.clickable-wrap:hover { box-shadow: 0 0 0 2px #c7d2fe; }
+.clickable-wrap:focus-visible { box-shadow: 0 0 0 2px #4a90d9; }
+.clickable-wrap.active { box-shadow: 0 0 0 2px #4a90d9; }
+.clickable-wrap > :first-child { border-color: transparent; }
+
+/* Drill-down panel — appears below Device Health when a card is clicked.
+   Uses a subtle tinted background so it reads as grouped with the clicked card
+   without going full dark-theme. */
+.drill-section { background: var(--fleet-off-white, #f4f4f6); border: 1px solid var(--fleet-black-10); border-radius: var(--radius); padding: 20px 24px; margin-top: -8px; margin-bottom: 24px; }
+.drill-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.drill-header h3 { color: var(--fleet-black); font-size: var(--font-size-sm); font-weight: 600; margin: 0; }
+.drill-count { color: var(--fleet-black-50); font-weight: 400; margin-left: 4px; }
+.drill-close { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); color: var(--fleet-black-50); border-radius: var(--radius); width: 28px; height: 28px; cursor: pointer; font-size: 14px; transition: all 150ms ease; }
+.drill-close:hover { background: var(--fleet-black-5); color: var(--fleet-black); border-color: var(--fleet-black-25); }
+.drill-loading, .drill-empty { color: var(--fleet-black-50); font-size: var(--font-size-sm); padding: 24px 0; text-align: center; }
+
+.host-tile-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 1024px) { .host-tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .host-tile-grid { grid-template-columns: 1fr; } }
 @media (max-width: 1024px) { .metrics-row.four-col { grid-template-columns: repeat(2, 1fr); } .metrics-row.three-col { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) { .metrics-row, .metrics-row.four-col, .metrics-row.three-col { grid-template-columns: 1fr; } .charts-row.two-col { grid-template-columns: 1fr; } .dashboard-header { flex-direction: column; gap: 8px; } }
 </style>

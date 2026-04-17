@@ -31,6 +31,53 @@ export const firehoseHealthQueries: QueryConfig[] = [
     `,
   },
   {
+    // Per-condition host drill-down. Returns the *latest* snapshot per host
+    // that matches the given condition, with enough fields to render a tile.
+    // Used by clickable metric cards (e.g. "Degraded battery: 3").
+    name: 'firehose.health.hosts_by_condition',
+    domain: 'health',
+    client: 'alt',
+    description: 'Hosts matching a specific device-health condition (tile drill-down)',
+    params: [
+      { name: 'condition', type: 'enum' as const, required: true, values: [
+        'severe_swap', 'elevated_swap',
+        'degraded_battery', 'replace_battery',
+        'high_compression',
+      ] },
+      { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 50 },
+    ],
+    sql: `
+      SELECT
+        host_id,
+        hostname,
+        cpu_class,
+        cpu_brand,
+        ram_tier,
+        ram_gb,
+        swap_pressure,
+        compression_pressure,
+        battery_percent,
+        battery_cycles,
+        battery_health_score,
+        battery_state,
+        timestamp AS last_seen
+      FROM device_health
+      WHERE (host_id, timestamp) IN (
+        SELECT host_id, max(timestamp) FROM device_health GROUP BY host_id
+      )
+      AND multiIf(
+        {condition:String} = 'severe_swap', swap_pressure = 'severe',
+        {condition:String} = 'elevated_swap', swap_pressure = 'elevated',
+        {condition:String} = 'degraded_battery', battery_health_score = 'degraded',
+        {condition:String} = 'replace_battery', battery_health_score = 'replace',
+        {condition:String} = 'high_compression', compression_pressure = 'high',
+        false
+      )
+      ORDER BY hostname
+      {{LIMIT}}
+    `,
+  },
+  {
     name: 'firehose.health.device_list',
     domain: 'health',
     client: 'alt',
