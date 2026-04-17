@@ -100,10 +100,12 @@ export function buildFilters(params: Record<string, string | number>): FilterRes
     queryParams.filterHostId = params.hostId
   }
 
-  // Ensure firehose filter params always have defaults
+  // Ensure firehose filter params always have defaults so ClickHouse binds
+  // all {filter*:String} placeholders even when no filter is set.
   if (!queryParams.filterSearch) queryParams.filterSearch = params.search || ''
   if (!queryParams.filterModel) queryParams.filterModel = params.model || ''
   if (!queryParams.filterRamTier) queryParams.filterRamTier = params.ramTier || ''
+  if (!queryParams.filterOs) queryParams.filterOs = params.os || ''
 
   // Limit — parameterized
   if (params.limit) {

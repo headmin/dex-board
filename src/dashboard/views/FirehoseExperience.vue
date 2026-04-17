@@ -7,7 +7,7 @@
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
-    <!-- Fleet Overview Metrics — scope on left, coverage on right -->
+    <!-- ═══ FLEET OVERVIEW ═══════════════════════════════════ -->
     <section class="section">
       <h2>Fleet overview</h2>
       <div class="metrics-row four-col">
@@ -28,56 +28,96 @@
       </div>
     </section>
 
-    <!-- Wi-Fi Health — signal quality only (samples moved to caption) -->
+    <!-- ═══ 1. HARDWARE (Device health) ══════════════════════ -->
     <section class="section">
-      <div class="section-header-with-caption">
-        <h2>Network health</h2>
-        <span v-if="overview.wifiSamples" class="section-caption">
-          Based on {{ overview.wifiSamples.toLocaleString() }} samples across {{ overview.wifiHosts }} hosts
-        </span>
-      </div>
-      <div class="metrics-row three-col">
-        <MetricCard label="Avg RSSI" :value="wifi.avgRssi" unit="dBm" :loading="loading.wifi" />
-        <MetricCard label="Avg SNR" :value="wifi.avgSnr" unit="dB" :loading="loading.wifi" />
-        <MetricCard label="Avg Tx Rate" :value="wifi.avgTxRate" unit="Mbps" :loading="loading.wifi" />
+      <h2>Device health</h2>
+      <div class="metrics-row four-col">
+        <MetricCard label="Severe swap" :value="deviceHealth.severeSwap" :loading="loading.deviceHealth" />
+        <MetricCard label="Elevated swap" :value="deviceHealth.elevatedSwap" :loading="loading.deviceHealth" />
+        <MetricCard label="Degraded battery" :value="deviceHealth.degradedBattery" :loading="loading.deviceHealth" />
+        <MetricCard label="Avg battery" :value="deviceHealth.avgBatteryPct" unit="%" :loading="loading.deviceHealth" />
       </div>
     </section>
 
-    <!-- Wi-Fi charts — both Wi-Fi-related -->
     <div class="charts-row two-col">
       <section class="section">
-        <PieChart
-          title="Wi-Fi signal quality"
-          :data="wifiDistribution"
-          :loading="loading.wifi"
-          nameKey="signal_quality"
-          valueKey="cnt"
+        <BarChart
+          title="CPU class distribution"
+          :data="cpuDistribution"
+          :loading="loading.deviceHealth"
+          nameKey="cpu_class"
+          valueKey="device_count"
+          :horizontal="true"
         />
       </section>
       <section class="section">
-        <BarChart
-          title="Weakest Wi-Fi hosts"
-          :data="worstWifi"
-          :loading="loading.wifi"
-          nameKey="hostname"
-          valueKey="abs_rssi"
+        <PieChart
+          title="RAM distribution"
+          :data="ramTiers"
+          :loading="loading.hardware"
+          nameKey="ram_tier"
+          valueKey="device_count"
         />
       </section>
     </div>
 
-    <!-- Wi-Fi Timeseries -->
+    <div class="charts-row two-col">
+      <section class="section">
+        <BarChart
+          title="Swap pressure"
+          :data="swapDistribution"
+          :loading="loading.deviceHealth"
+          nameKey="swap_pressure"
+          valueKey="device_count"
+          :horizontal="true"
+        />
+      </section>
+      <section class="section">
+        <PieChart
+          title="Battery health"
+          :data="batteryDist"
+          :loading="loading.deviceHealth"
+          nameKey="battery_health_score"
+          valueKey="device_count"
+        />
+      </section>
+    </div>
+
+    <!-- ═══ 2. OS HEALTH ═════════════════════════════════════ -->
     <section class="section">
-      <TimeSeriesChart
-        title="Fleet RSSI trend"
-        :data="wifiTimeseries"
-        :loading="loading.wifiTs"
-        xKey="hour"
-        yKey="avg_rssi"
-        color="#3b82f6"
-      />
+      <h2>OS health</h2>
+      <div class="metrics-row four-col">
+        <MetricCard label="Healthy" :value="osHealth.healthy" :loading="loading.osHealth" />
+        <MetricCard label="Acceptable" :value="osHealth.acceptable" :loading="loading.osHealth" />
+        <MetricCard label="Degraded" :value="osHealth.degraded" :loading="loading.osHealth" />
+        <MetricCard label="Avg uptime" :value="osHealth.avgUptimeDays" unit="days" :loading="loading.osHealth" />
+      </div>
     </section>
 
-    <!-- Application memory usage (Unique apps already in Fleet overview) -->
+    <div class="charts-row two-col">
+      <section class="section">
+        <BarChart
+          title="OS currency"
+          :data="osCurrencyDist"
+          :loading="loading.osHealth"
+          nameKey="os_currency"
+          valueKey="device_count"
+          :horizontal="true"
+        />
+      </section>
+      <section class="section">
+        <BarChart
+          title="Uptime risk"
+          :data="uptimeRiskDist"
+          :loading="loading.osHealth"
+          nameKey="uptime_risk"
+          valueKey="device_count"
+          :horizontal="true"
+        />
+      </section>
+    </div>
+
+    <!-- ═══ 3. APPS (memory, adoption, crashes) ══════════════ -->
     <section class="section">
       <div class="section-header-with-caption">
         <h2>Application memory usage</h2>
@@ -113,176 +153,6 @@
       </section>
     </div>
 
-    <!-- Fleetd Health -->
-    <section class="section">
-      <h2>Fleet agent health</h2>
-      <div class="metrics-row four-col">
-        <MetricCard label="Total hosts" :value="fleetd.totalHosts" :loading="loading.fleetd" />
-        <MetricCard label="Enrolled" :value="fleetd.enrolledHosts" :loading="loading.fleetd" />
-        <MetricCard label="Versions" :value="fleetd.uniqueVersions" :loading="loading.fleetd" />
-        <MetricCard label="Avg uptime" :value="fleetd.avgUptimeHours" unit="hrs" :loading="loading.fleetd" />
-      </div>
-    </section>
-
-    <div class="charts-row">
-      <section class="section">
-        <PieChart
-          title="Uptime distribution"
-          :data="uptimeDist"
-          :loading="loading.uptime"
-          nameKey="uptime_bucket"
-          valueKey="device_count"
-        />
-      </section>
-    </div>
-
-    <!-- Device Health -->
-    <section class="section">
-      <h2>Device health</h2>
-      <div class="metrics-row four-col">
-        <MetricCard label="Severe swap" :value="deviceHealth.severeSwap" :loading="loading.deviceHealth" />
-        <MetricCard label="Elevated swap" :value="deviceHealth.elevatedSwap" :loading="loading.deviceHealth" />
-        <MetricCard label="Degraded battery" :value="deviceHealth.degradedBattery" :loading="loading.deviceHealth" />
-        <MetricCard label="Avg battery" :value="deviceHealth.avgBatteryPct" unit="%" :loading="loading.deviceHealth" />
-      </div>
-    </section>
-
-    <!-- Device Health chart row 1: hardware inventory (CPU + RAM) -->
-    <div class="charts-row two-col">
-      <section class="section">
-        <BarChart
-          title="CPU class distribution"
-          :data="cpuDistribution"
-          :loading="loading.deviceHealth"
-          nameKey="cpu_class"
-          valueKey="device_count"
-          :horizontal="true"
-        />
-      </section>
-      <section class="section">
-        <PieChart
-          title="RAM distribution"
-          :data="ramTiers"
-          :loading="loading.hardware"
-          nameKey="ram_tier"
-          valueKey="device_count"
-        />
-      </section>
-    </div>
-
-    <!-- Device Health chart row 2: runtime pressure (Swap + Battery) -->
-    <div class="charts-row two-col">
-      <section class="section">
-        <BarChart
-          title="Swap pressure"
-          :data="swapDistribution"
-          :loading="loading.deviceHealth"
-          nameKey="swap_pressure"
-          valueKey="device_count"
-          :horizontal="true"
-        />
-      </section>
-      <section class="section">
-        <PieChart
-          title="Battery health"
-          :data="batteryDist"
-          :loading="loading.deviceHealth"
-          nameKey="battery_health_score"
-          valueKey="device_count"
-        />
-      </section>
-    </div>
-
-    <!-- OS Health -->
-    <section class="section">
-      <h2>OS health</h2>
-      <div class="metrics-row four-col">
-        <MetricCard label="Healthy" :value="osHealth.healthy" :loading="loading.osHealth" />
-        <MetricCard label="Acceptable" :value="osHealth.acceptable" :loading="loading.osHealth" />
-        <MetricCard label="Degraded" :value="osHealth.degraded" :loading="loading.osHealth" />
-        <MetricCard label="Avg uptime" :value="osHealth.avgUptimeDays" unit="days" :loading="loading.osHealth" />
-      </div>
-    </section>
-
-    <div class="charts-row two-col">
-      <section class="section">
-        <BarChart
-          title="OS currency"
-          :data="osCurrencyDist"
-          :loading="loading.osHealth"
-          nameKey="os_currency"
-          valueKey="device_count"
-          :horizontal="true"
-        />
-      </section>
-      <section class="section">
-        <BarChart
-          title="Uptime risk"
-          :data="uptimeRiskDist"
-          :loading="loading.osHealth"
-          nameKey="uptime_risk"
-          valueKey="device_count"
-          :horizontal="true"
-        />
-      </section>
-    </div>
-
-    <!-- VPN & connectivity (renamed from "Network confidence") -->
-    <section class="section">
-      <h2>VPN &amp; connectivity</h2>
-      <div class="metrics-row four-col">
-        <MetricCard label="Total hosts" :value="vpn.totalDevices" :loading="loading.vpn" />
-        <MetricCard label="VPN active" :value="vpn.vpnActive" :loading="loading.vpn" />
-        <MetricCard label="Direct" :value="vpn.directConnected" :loading="loading.vpn" />
-        <MetricCard label="Disconnected" :value="vpn.disconnected" :loading="loading.vpn" />
-      </div>
-    </section>
-
-    <div class="charts-row">
-      <section class="section">
-        <PieChart
-          title="Network path"
-          :data="humanizedVpnConfDist"
-          :loading="loading.vpn"
-          nameKey="network_confidence"
-          valueKey="device_count"
-        />
-      </section>
-    </div>
-
-    <!-- Process Landscape -->
-    <section class="section">
-      <h2>Process landscape</h2>
-      <div class="metrics-row four-col">
-        <MetricCard label="Unique processes" :value="processClassTotals.uniqueProcesses" :loading="loading.processes" />
-        <MetricCard label="User apps" :value="processClassTotals.userApps" :loading="loading.processes" />
-        <MetricCard label="Mgmt agents" :value="processClassTotals.mgmtAgents" :loading="loading.processes" />
-        <MetricCard label="System" :value="processClassTotals.system" :loading="loading.processes" />
-      </div>
-    </section>
-
-    <div class="charts-row two-col">
-      <section class="section">
-        <BarChart
-          title="RAM by process class"
-          :data="processClassData"
-          :loading="loading.processes"
-          nameKey="process_class"
-          valueKey="total_rss_mb"
-        />
-      </section>
-      <section class="section">
-        <BarChart
-          title="Management agent overhead"
-          :data="mgmtAgents"
-          :loading="loading.processes"
-          nameKey="process_name"
-          valueKey="avg_rss_mb"
-        />
-      </section>
-    </div>
-
-    <!-- App Adoption -->
     <section class="section">
       <h2>App adoption</h2>
       <div class="metrics-row four-col">
@@ -314,7 +184,6 @@
       </section>
     </div>
 
-    <!-- Crashes -->
     <section class="section" v-if="crashes.totalCrashes > 0">
       <h2>Crash overview</h2>
       <div class="metrics-row four-col">
@@ -324,6 +193,129 @@
         <MetricCard label="Top crasher" :value="crashes.topCrasher" :loading="loading.crashes" />
       </div>
     </section>
+
+    <!-- ═══ 4. NETWORK (Wi-Fi + VPN) ═════════════════════════ -->
+    <section class="section">
+      <div class="section-header-with-caption">
+        <h2>Network health</h2>
+        <span v-if="overview.wifiSamples" class="section-caption">
+          Based on {{ overview.wifiSamples.toLocaleString() }} samples across {{ overview.wifiHosts }} hosts
+        </span>
+      </div>
+      <div class="metrics-row three-col">
+        <MetricCard label="Avg RSSI" :value="wifi.avgRssi" unit="dBm" :loading="loading.wifi" />
+        <MetricCard label="Avg SNR" :value="wifi.avgSnr" unit="dB" :loading="loading.wifi" />
+        <MetricCard label="Avg Tx Rate" :value="wifi.avgTxRate" unit="Mbps" :loading="loading.wifi" />
+      </div>
+    </section>
+
+    <div class="charts-row two-col">
+      <section class="section">
+        <PieChart
+          title="Wi-Fi signal quality"
+          :data="wifiDistribution"
+          :loading="loading.wifi"
+          nameKey="signal_quality"
+          valueKey="cnt"
+        />
+      </section>
+      <section class="section">
+        <BarChart
+          title="Weakest Wi-Fi hosts"
+          :data="worstWifi"
+          :loading="loading.wifi"
+          nameKey="hostname"
+          valueKey="abs_rssi"
+        />
+      </section>
+    </div>
+
+    <section class="section">
+      <TimeSeriesChart
+        title="Fleet RSSI trend"
+        :data="wifiTimeseries"
+        :loading="loading.wifiTs"
+        xKey="hour"
+        yKey="avg_rssi"
+        color="#3b82f6"
+      />
+    </section>
+
+    <section class="section">
+      <h2>VPN &amp; connectivity</h2>
+      <div class="metrics-row four-col">
+        <MetricCard label="Total hosts" :value="vpn.totalDevices" :loading="loading.vpn" />
+        <MetricCard label="VPN active" :value="vpn.vpnActive" :loading="loading.vpn" />
+        <MetricCard label="Direct" :value="vpn.directConnected" :loading="loading.vpn" />
+        <MetricCard label="Disconnected" :value="vpn.disconnected" :loading="loading.vpn" />
+      </div>
+    </section>
+
+    <div class="charts-row">
+      <section class="section">
+        <PieChart
+          title="Network path"
+          :data="humanizedVpnConfDist"
+          :loading="loading.vpn"
+          nameKey="network_confidence"
+          valueKey="device_count"
+        />
+      </section>
+    </div>
+
+    <!-- ═══ 5. USERS / AGENT DIAGNOSTICS ═════════════════════ -->
+    <section class="section">
+      <h2>Fleet agent health</h2>
+      <div class="metrics-row four-col">
+        <MetricCard label="Total hosts" :value="fleetd.totalHosts" :loading="loading.fleetd" />
+        <MetricCard label="Enrolled" :value="fleetd.enrolledHosts" :loading="loading.fleetd" />
+        <MetricCard label="Versions" :value="fleetd.uniqueVersions" :loading="loading.fleetd" />
+        <MetricCard label="Avg uptime" :value="fleetd.avgUptimeHours" unit="hrs" :loading="loading.fleetd" />
+      </div>
+    </section>
+
+    <div class="charts-row">
+      <section class="section">
+        <PieChart
+          title="Uptime distribution"
+          :data="uptimeDist"
+          :loading="loading.uptime"
+          nameKey="uptime_bucket"
+          valueKey="device_count"
+        />
+      </section>
+    </div>
+
+    <section class="section">
+      <h2>Process landscape</h2>
+      <div class="metrics-row four-col">
+        <MetricCard label="Unique processes" :value="processClassTotals.uniqueProcesses" :loading="loading.processes" />
+        <MetricCard label="User apps" :value="processClassTotals.userApps" :loading="loading.processes" />
+        <MetricCard label="Mgmt agents" :value="processClassTotals.mgmtAgents" :loading="loading.processes" />
+        <MetricCard label="System" :value="processClassTotals.system" :loading="loading.processes" />
+      </div>
+    </section>
+
+    <div class="charts-row two-col">
+      <section class="section">
+        <BarChart
+          title="RAM by process class"
+          :data="processClassData"
+          :loading="loading.processes"
+          nameKey="process_class"
+          valueKey="total_rss_mb"
+        />
+      </section>
+      <section class="section">
+        <BarChart
+          title="Management agent overhead"
+          :data="mgmtAgents"
+          :loading="loading.processes"
+          nameKey="process_name"
+          valueKey="avg_rss_mb"
+        />
+      </section>
+    </div>
   </div>
 </template>
 

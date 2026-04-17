@@ -210,7 +210,17 @@ export const firehoseDeviceQueries: QueryConfig[] = [
       WHERE 1=1
         AND if({filterSearch:String} != '', hostname LIKE concat('%', {filterSearch:String}, '%') OR hardware_serial LIKE concat('%', {filterSearch:String}, '%') OR hardware_model LIKE concat('%', {filterSearch:String}, '%'), true)
         AND if({filterModel:String} != '', hardware_model = {filterModel:String}, true)
-        AND if({filterRamTier:String} != '', multiIf(memory_gb <= 8, '8GB', memory_gb <= 16, '16GB', memory_gb <= 18, '18GB', memory_gb <= 24, '24GB', memory_gb <= 32, '32GB', memory_gb <= 36, '36GB', memory_gb <= 48, '48GB', memory_gb <= 64, '64GB', '128GB+') = {filterRamTier:String}, true)
+        AND if({filterRamTier:String} != '', memory_gb <= multiIf(
+          {filterRamTier:String} = '8GB', 8,
+          {filterRamTier:String} = '16GB', 16,
+          {filterRamTier:String} = '18GB', 18,
+          {filterRamTier:String} = '24GB', 24,
+          {filterRamTier:String} = '32GB', 32,
+          {filterRamTier:String} = '36GB', 36,
+          {filterRamTier:String} = '48GB', 48,
+          {filterRamTier:String} = '64GB', 64,
+          999999
+        ), true)
     `,
   },
 ]

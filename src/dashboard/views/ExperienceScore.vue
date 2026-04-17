@@ -383,7 +383,7 @@ async function fetchFleetScore() {
   loading.value.fleet = true
   try {
     const [summaryRows] = await Promise.all([
-      query('firehose.scores.fleet_summary'),
+      query('firehose.scores.fleet_summary', queryParams.value),
     ])
 
     const score = summaryRows[0]?.avg_score ?? null
@@ -407,7 +407,7 @@ async function fetchCategoryScores() {
   loading.value.categories = true
   try {
     const [rows] = await Promise.all([
-      query('firehose.scores.categories'),
+      query('firehose.scores.categories', queryParams.value),
     ])
 
     categories.value = categories.value.map(cat => {
@@ -432,9 +432,9 @@ async function fetchDistribution(category = null) {
   try {
     let rows
     if (category) {
-      rows = await query('firehose.scores.grade_distribution_category', { category })
+      rows = await query('firehose.scores.grade_distribution_category', { ...queryParams.value, category })
     } else {
-      rows = await query('firehose.scores.grade_distribution')
+      rows = await query('firehose.scores.grade_distribution', queryParams.value)
     }
     const dist = {}
     for (const r of rows) {
@@ -451,7 +451,7 @@ async function fetchDistribution(category = null) {
 async function fetchMovers() {
   loading.value.movers = true
   try {
-    const rows = await query('firehose.scores.biggest_movers', { limit: 10 })
+    const rows = await query('firehose.scores.biggest_movers', { ...queryParams.value, limit: 10 })
     movers.value = rows.map(r => ({
       host_identifier: r.host_id,
       hostname: r.hostname,
@@ -522,10 +522,10 @@ async function fetchDimensions() {
   loading.value.dimensions = true
   try {
     const [cpuRows, modelRows, ramRows, swapRows] = await Promise.all([
-      query('firehose.scores.dimension_cpu'),
-      query('firehose.scores.dimension_model'),
-      query('firehose.scores.dimension_ram'),
-      query('firehose.scores.dimension_swap'),
+      query('firehose.scores.dimension_cpu', queryParams.value),
+      query('firehose.scores.dimension_model', queryParams.value),
+      query('firehose.scores.dimension_ram', queryParams.value),
+      query('firehose.scores.dimension_swap', queryParams.value),
     ])
 
     const mapDim = rows => rows.map(r => ({
@@ -557,7 +557,7 @@ async function fetchDeviceList() {
   if (wcMode.value) return
   loading.value.deviceList = true
   try {
-    const rows = await query('firehose.scores.device_list', { limit: 200 })
+    const rows = await query('firehose.scores.device_list', { ...queryParams.value, limit: 200 })
     deviceList.value = rows.map(r => ({
       host_id: r.host_id,
       hostname: r.hostname,

@@ -17,12 +17,68 @@
  */
 import type { QueryConfig } from '../types'
 
+// ── Filtered hosts CTE ───────────────────────────────────
+// Reusable CTE that applies the fleet filter bar (search/model/ramTier/platform).
+// Any downstream query that wants to respect the filter bar should reference
+// `filtered_hosts` as its host_id source. When all filter params are empty,
+// this yields every host in hardware_inventory (via the `if(..., true)` idiom).
+//
+// Platform comes from fleetd_info (LEFT JOIN so hosts missing fleetd data
+// aren't dropped when no platform filter is set).
+const FILTERED_HOSTS_CTE = `
+filtered_hosts AS (
+  SELECT hi.host_id FROM (
+    SELECT host_id,
+      argMax(hostname, timestamp) AS hostname,
+      argMax(hardware_model, timestamp) AS hardware_model,
+      argMax(hardware_serial, timestamp) AS hardware_serial,
+      argMax(memory_gb, timestamp) AS memory_gb
+    FROM hardware_inventory GROUP BY host_id
+  ) hi
+  LEFT JOIN (
+    SELECT host_id, argMax(platform, timestamp) AS platform
+    FROM fleetd_info GROUP BY host_id
+  ) fi ON hi.host_id = fi.host_id
+  WHERE 1=1
+    AND if({filterSearch:String} != '',
+      hi.hostname LIKE concat('%', {filterSearch:String}, '%')
+      OR hi.hardware_serial LIKE concat('%', {filterSearch:String}, '%')
+      OR hi.hardware_model LIKE concat('%', {filterSearch:String}, '%'),
+      true)
+    AND if({filterModel:String} != '', hi.hardware_model = {filterModel:String}, true)
+    AND if({filterOs:String} != '', fi.platform = {filterOs:String}, true)
+    -- RAM filter is "at most N GB" (inclusive) — selecting 24GB returns
+    -- hosts with <= 24GB (i.e. 8, 16, 18, 24). "128GB+" effectively matches all.
+    AND if({filterRamTier:String} != '', hi.memory_gb <= multiIf(
+      {filterRamTier:String} = '8GB', 8,
+      {filterRamTier:String} = '16GB', 16,
+      {filterRamTier:String} = '18GB', 18,
+      {filterRamTier:String} = '24GB', 24,
+      {filterRamTier:String} = '32GB', 32,
+      {filterRamTier:String} = '36GB', 36,
+      {filterRamTier:String} = '48GB', 48,
+      {filterRamTier:String} = '64GB', 64,
+      999999
+    ), true)
+)`
+
+// Shared filter params for all queries that apply the fleet filter bar.
+// The filter-bar composable sends these as `search`/`model`/`ramTier`/`os`;
+// filter-builder.ts maps `os` → `filterOs:String` which the CTE then reads.
+const FILTER_PARAMS = [
+  { name: 'search', type: 'string' as const, required: false },
+  { name: 'model', type: 'string' as const, required: false },
+  { name: 'ramTier', type: 'string' as const, required: false },
+  { name: 'os', type: 'string' as const, required: false },
+]
+
 // ── Per-device score CTE ─────────────────────────────────
 // Reusable WITH clause that computes all 5 category scores per device.
-// ifNull() ensures LEFT-JOINed NULLs get reasonable defaults ("no data = assume OK")
-// rather than falling to CASE ELSE minimum scores.
+// Now prefixes filtered_hosts so the scoring set respects the fleet filter bar.
 const DEVICE_SCORES_CTE = `
-WITH device_scores AS (
+WITH
+${FILTERED_HOSTS_CTE},
+device_scores AS (
   SELECT
     h.host_id AS host_id,
     h.hostname AS hostname,
@@ -119,7 +175,9 @@ WITH device_scores AS (
       argMax(battery_health_score, timestamp) AS battery_health_score,
       argMax(swap_pressure, timestamp) AS swap_pressure,
       argMax(compression_pressure, timestamp) AS compression_pressure
-    FROM device_health GROUP BY host_id
+    FROM device_health
+    WHERE host_id IN (SELECT host_id FROM filtered_hosts)
+    GROUP BY host_id
   ) h
   LEFT JOIN (
     SELECT host_id,
@@ -179,7 +237,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'alt',
     description: 'Fleet composite score average and device count',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -193,7 +251,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'alt',
     description: 'Per-category score averages',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -211,7 +269,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'alt',
     description: 'Grade A/B/C/D/F device counts (composite)',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT composite_grade AS grade, count() AS cnt
@@ -226,6 +284,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     client: 'alt',
     description: 'Grade A/B/C/D/F device counts for a specific category',
     params: [
+      ...FILTER_PARAMS,
       { name: 'category', type: 'enum' as const, required: true, values: ['device_health', 'performance', 'network', 'security', 'software', 'composite'] },
     ],
     sql: `
@@ -263,6 +322,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     client: 'alt',
     description: 'Per-device scores with all categories',
     params: [
+      ...FILTER_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 500, default: 200 },
     ],
     sql: `
@@ -290,7 +350,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'alt',
     description: 'Average scores broken down by OS currency',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -316,7 +376,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'alt',
     description: 'Average scores broken down by hardware model',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -342,7 +402,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'alt',
     description: 'Average scores broken down by RAM tier',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -364,7 +424,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'alt',
     description: 'Average scores broken down by CPU class',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -386,7 +446,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'alt',
     description: 'Average scores broken down by swap pressure',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -413,6 +473,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     client: 'alt',
     description: 'Devices with the largest score change vs 7 days ago',
     params: [
+      ...FILTER_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 50, default: 10 },
     ],
     sql: `
@@ -479,7 +540,10 @@ export const firehoseScoreQueries: QueryConfig[] = [
             argMax(battery_health_score, timestamp) AS battery_health_score,
             argMax(swap_pressure, timestamp) AS swap_pressure,
             argMax(compression_pressure, timestamp) AS compression_pressure
-          FROM device_health WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
+          FROM device_health
+          WHERE timestamp < now() - INTERVAL 7 DAY
+            AND host_id IN (SELECT host_id FROM filtered_hosts)
+          GROUP BY host_id
         ) h
         LEFT JOIN (
           SELECT host_id,

@@ -42,11 +42,11 @@
       </div>
 
       <div class="filter-group">
-        <span class="filter-label">RAM</span>
+        <span class="filter-label" title="Filters hosts with RAM at or below the selected tier">RAM ≤</span>
         <div class="select-wrapper">
           <select v-model="selectedRAMTier" class="filter-select">
             <option value="">All</option>
-            <option v-for="r in ramTierOptions" :key="r" :value="r">{{ r }}</option>
+            <option v-for="r in ramTierOptions" :key="r" :value="r">{{ formatRamOption(r) }}</option>
           </select>
           <svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none">
             <path d="M1 1l4 4 4-4" stroke="#515774" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -109,6 +109,13 @@ const isFirehose = computed(() => !route.path.startsWith('/overview') && !route.
 
 const localSearch = ref(searchText.value)
 let debounceTimer = null
+
+// RAM filter is "at most N GB" — show options as "≤ 24 GB".
+// The legacy "128GB+" option is effectively "no cap" under max semantics.
+function formatRamOption(tier) {
+  if (tier === '128GB+') return 'Any (incl. 128 GB+)'
+  return tier.replace('GB', ' GB')
+}
 
 watch(localSearch, (val) => {
   clearTimeout(debounceTimer)
