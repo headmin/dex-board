@@ -220,10 +220,13 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { query } from '../services/api'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
+
+const route = useRoute()
 
 const { searchText: globalSearch, selectedModel, selectedRAMTier } = useFleetFilter()
 
@@ -404,12 +407,8 @@ async function fetchDevices() {
   }
 }
 
-// Deep-link from HostTile: /devices?hostId=<uuid> auto-opens the drawer
-// for that host. Done after fetch so `devices` is populated and we can match.
-import { useRoute, useRouter } from 'vue-router'
-const route = useRoute()
-const router = useRouter()
-
+// Deep-link from HostTile: /devices?hostId=<uuid> auto-opens the drawer for
+// that host. Runs after fetch so `devices` is populated and we can match.
 async function autoSelectFromQuery() {
   const hostId = route.query.hostId
   if (!hostId) return
