@@ -164,37 +164,94 @@
       </div>
     </section>
 
-    <!-- ─── Distribution + Movers Row ──────────────────────── -->
-    <section class="two-col">
-      <GradeDistribution
-        :title="expandedCategory ? `${expandedCategoryLabel} grade distribution` : 'Fleet grade distribution'"
-        :data="distribution"
-        :loading="loading.distribution"
-      />
+    <!-- ─── Biggest Movers (promoted: what changed overnight) ─ -->
+    <section class="full-width">
       <BiggestMovers
-        title="Biggest movers (WoW)"
+        title="Biggest movers (7d)"
         :data="movers"
         :loading="loading.movers"
         :fetchDetail="fetchMoverDetail"
       />
     </section>
 
-    <!-- ─── Fleet Comparison ────────────────────────────────── -->
-    <section class="full-width">
-      <TeamComparisonBar
-        title="Fleet comparison"
-        :data="teams"
-        :loading="loading.teams"
-      />
-    </section>
-
-    <!-- ─── Dimension Breakdown ────────────────────────────── -->
+    <!-- ─── Dimension Breakdown (pattern finder) ───────────── -->
     <section class="full-width">
       <DimensionBreakdown
         :data="dimensionData"
         :loading="loading.dimensions"
         @row-click="onDimensionClick"
       />
+    </section>
+
+    <!-- ─── Device Scores Table (with inline grade distribution) -->
+    <section v-if="!wcMode" class="full-width">
+      <div class="chart-container">
+        <div class="device-table-header">
+          <div class="device-table-title-group">
+            <h3>Device scores ({{ filteredDeviceList.length }})</h3>
+            <div v-if="totalGraded > 0" class="mini-distribution" :title="distributionTooltip">
+              <div
+                v-for="g in ['A','B','C','D','F']"
+                :key="g"
+                class="mini-dist-segment"
+                :class="'grade-' + g"
+                :style="{ width: distributionPct(g) + '%' }"
+              >
+                <span v-if="distributionPct(g) >= 8" class="mini-dist-label">{{ g }} {{ distribution[g] || 0 }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="device-search-group">
+            <svg class="device-search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M7.333 12.667A5.333 5.333 0 107.333 2a5.333 5.333 0 000 10.667zM14 14l-2.9-2.9" stroke="#8b8fa2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input
+              type="text"
+              class="device-search-input"
+              placeholder="Search hostname..."
+              v-model="deviceSearch"
+            />
+          </div>
+        </div>
+        <SkeletonLoader v-if="loading.deviceList" variant="chart" height="280px" />
+        <div v-else-if="!filteredDeviceList.length" class="empty-state">No devices match your search</div>
+        <div v-else class="device-table-wrap">
+          <table class="device-table">
+            <thead>
+              <tr>
+                <th @click="deviceSortBy('hostname')" class="sortable">Hostname {{ deviceSortIcon('hostname') }}</th>
+                <th @click="deviceSortBy('composite_score')" class="sortable">Score {{ deviceSortIcon('composite_score') }}</th>
+                <th @click="deviceSortBy('composite_grade')" class="sortable">Grade {{ deviceSortIcon('composite_grade') }}</th>
+                <th @click="deviceSortBy('device_health_score')" class="sortable">Health {{ deviceSortIcon('device_health_score') }}</th>
+                <th @click="deviceSortBy('software_score')" class="sortable">Software {{ deviceSortIcon('software_score') }}</th>
+                <th @click="deviceSortBy('performance_score')" class="sortable">Perf {{ deviceSortIcon('performance_score') }}</th>
+                <th @click="deviceSortBy('security_score')" class="sortable">Security {{ deviceSortIcon('security_score') }}</th>
+                <th @click="deviceSortBy('network_score')" class="sortable">Network {{ deviceSortIcon('network_score') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="d in filteredDeviceList" :key="d.host_id">
+                <td class="device-hostname">{{ d.hostname || d.host_id.slice(0, 12) }}</td>
+                <td class="device-score-cell">{{ d.composite_score }}</td>
+                <td><GradeBadge :grade="d.composite_grade" /></td>
+                <td class="device-score-cell" :style="{ color: signalColor(d.device_health_score) }">{{ d.device_health_score }}</td>
+                <td class="device-score-cell" :style="{ color: signalColor(d.software_score) }">{{ d.software_score }}</td>
+                <td class="device-score-cell" :style="{ color: signalColor(d.performance_score) }">{{ d.performance_score }}</td>
+                <td class="device-score-cell" :style="{ color: signalColor(d.security_score) }">{{ d.security_score }}</td>
+                <td class="device-score-cell" :style="{ color: signalColor(d.network_score) }">{{ d.network_score }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    <section v-else class="full-width">
+      <div class="wc-drill-notice">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Per-device score table hidden — Workers Council mode active
+      </div>
     </section>
   </div>
 </template>
@@ -207,10 +264,9 @@ import { useTimeRange } from '../composables/useTimeRange'
 import TimeRangeFilter from '../components/TimeRangeFilter.vue'
 import GradeCard from '../components/GradeCard.vue'
 import GradeBadge from '../components/GradeBadge.vue'
+import SkeletonLoader from '../components/SkeletonLoader.vue'
 import { useWorkersCouncil } from '../composables/useWorkersCouncil'
-import GradeDistribution from '../components/GradeDistribution.vue'
 import BiggestMovers from '../components/BiggestMovers.vue'
-import TeamComparisonBar from '../components/TeamComparisonBar.vue'
 import DimensionBreakdown from '../components/DimensionBreakdown.vue'
 
 const { filterParams, setOSFilter, setModelFilter, setRAMFilter } = useFleetFilter()
@@ -234,21 +290,20 @@ const loading = ref({
   categories: false,
   distribution: false,
   movers: false,
-  teams: false,
-  dimensions: false
+  dimensions: false,
+  deviceList: false
 })
 
 const fleet = ref({ grade: '—', score: null, delta: null, sparkline: [], deviceCount: 0 })
 const categories = ref([
   { key: 'device_health', label: 'Device Health', grade: '—', score: null, delta: null, sparkline: [] },
+  { key: 'software', label: 'Software', grade: '—', score: null, delta: null, sparkline: [] },
   { key: 'performance', label: 'Performance', grade: '—', score: null, delta: null, sparkline: [] },
-  { key: 'network', label: 'Network', grade: '—', score: null, delta: null, sparkline: [] },
   { key: 'security', label: 'Security', grade: '—', score: null, delta: null, sparkline: [] },
-  { key: 'software', label: 'Software', grade: '—', score: null, delta: null, sparkline: [] }
+  { key: 'network', label: 'Network', grade: '—', score: null, delta: null, sparkline: [] }
 ])
 const distribution = ref({})
 const movers = ref([])
-const teams = ref([])
 const dimensionData = ref({ os: [], model: [], ram: [], team: [] })
 const expandedCategory = ref(null)
 const signals = ref([])
@@ -264,6 +319,49 @@ const leastUsedApps = ref([])
 const drillApp = ref(null)
 const drillDevices = ref([])
 const drillLoading = ref(false)
+
+// Device list state
+const deviceList = ref([])
+const deviceSearch = ref('')
+const deviceSortCol = ref('composite_score')
+const deviceSortAsc = ref(true)
+
+const filteredDeviceList = computed(() => {
+  let list = deviceList.value
+  if (deviceSearch.value) {
+    const s = deviceSearch.value.toLowerCase()
+    list = list.filter(d =>
+      (d.hostname || '').toLowerCase().includes(s) ||
+      (d.host_id || '').toLowerCase().includes(s) ||
+      (d.cpu_class || '').toLowerCase().includes(s) ||
+      (d.ram_tier || '').toLowerCase().includes(s)
+    )
+  }
+  const col = deviceSortCol.value
+  const asc = deviceSortAsc.value
+  return [...list].sort((a, b) => {
+    const av = a[col] ?? -1
+    const bv = b[col] ?? -1
+    if (av < bv) return asc ? -1 : 1
+    if (av > bv) return asc ? 1 : -1
+    return 0
+  })
+})
+
+const totalGraded = computed(() =>
+  ['A','B','C','D','F'].reduce((s, g) => s + (distribution.value[g] || 0), 0)
+)
+
+function distributionPct(grade) {
+  const total = totalGraded.value
+  if (!total) return 0
+  return ((distribution.value[grade] || 0) / total) * 100
+}
+
+const distributionTooltip = computed(() => {
+  const parts = ['A','B','C','D','F'].map(g => `${g}: ${distribution.value[g] || 0}`)
+  return `Grade distribution — ${parts.join(', ')}`
+})
 
 const expandedCategoryLabel = computed(() => {
   const cat = categories.value.find(c => c.key === expandedCategory.value)
@@ -352,8 +450,20 @@ async function fetchDistribution(category = null) {
 // ─── Fetch Biggest Movers ─────────────────────────────────────
 async function fetchMovers() {
   loading.value.movers = true
-  // No WoW comparison data in firehose yet — show empty
-  movers.value = []
+  try {
+    const rows = await query('firehose.scores.biggest_movers', { limit: 10 })
+    movers.value = rows.map(r => ({
+      host_identifier: r.host_id,
+      hostname: r.hostname,
+      hardware_model: '',
+      prev_grade: r.prev_grade,
+      curr_grade: r.curr_grade,
+      delta: Number(r.delta)
+    }))
+  } catch (e) {
+    console.error('Movers fetch failed:', e)
+    movers.value = []
+  }
   loading.value.movers = false
 }
 
@@ -407,14 +517,6 @@ async function fetchMoverDetail(hostId) {
   return { categories: cats, insight }
 }
 
-// ─── Fetch Team Scores ────────────────────────────────────────
-async function fetchTeams() {
-  loading.value.teams = true
-  // No team_id in firehose data — show empty
-  teams.value = []
-  loading.value.teams = false
-}
-
 // ─── Fetch Dimension Breakdowns ───────────────────────────────
 async function fetchDimensions() {
   loading.value.dimensions = true
@@ -448,6 +550,42 @@ function onDimensionClick({ dimension, value }) {
   if (dimension === 'os') setOSFilter(value)
   else if (dimension === 'model') setModelFilter(value)
   else if (dimension === 'ram') setRAMFilter(value)
+}
+
+// ─── Fetch Device Scores List ────────────────────────────
+async function fetchDeviceList() {
+  if (wcMode.value) return
+  loading.value.deviceList = true
+  try {
+    const rows = await query('firehose.scores.device_list', { limit: 200 })
+    deviceList.value = rows.map(r => ({
+      host_id: r.host_id,
+      hostname: r.hostname,
+      cpu_class: r.cpu_class,
+      ram_tier: r.ram_tier,
+      device_health_score: Number(r.device_health_score),
+      performance_score: Number(r.performance_score),
+      network_score: Number(r.network_score),
+      security_score: Number(r.security_score),
+      software_score: Number(r.software_score),
+      composite_score: Number(r.composite_score),
+      composite_grade: r.composite_grade,
+      data_sources: r.data_sources
+    }))
+  } catch (e) {
+    console.error('Device list fetch failed:', e)
+  }
+  loading.value.deviceList = false
+}
+
+function deviceSortBy(col) {
+  if (deviceSortCol.value === col) { deviceSortAsc.value = !deviceSortAsc.value }
+  else { deviceSortCol.value = col; deviceSortAsc.value = col === 'hostname' }
+}
+
+function deviceSortIcon(col) {
+  if (deviceSortCol.value !== col) return ''
+  return deviceSortAsc.value ? '▲' : '▼'
 }
 
 // ─── Signal Breakdown for Category Drill-down ─────────────────
@@ -536,7 +674,7 @@ async function fetchSignals(categoryKey) {
       const txScore = tx >= 400 ? 100 : tx >= 200 ? 85 : tx >= 100 ? 60 : 30
 
       signalDefs = [
-        { name: 'WiFi Signal (RSSI)', weight: 0.40, score: rssiScore, detail: `Fleet avg ${rssi.toFixed(1)} dBm (${w.unique_hosts || 0} hosts reporting)` },
+        { name: 'WiFi Signal (RSSI)', weight: 0.40, score: rssiScore, detail: `Fleet avg ${rssi.toFixed(1)} dBm across ${w.unique_hosts || 0} hosts on WiFi` },
         { name: 'Signal-to-Noise', weight: 0.30, score: snrScore, detail: `Fleet avg ${snr.toFixed(1)} dB` },
         { name: 'Transmit Rate', weight: 0.20, score: txScore, detail: `Fleet avg ${Math.round(tx)} Mbps` },
         { name: 'Network Confidence', weight: 0.10, score: vpnConnPct, detail: `${vpnConnPct}% connected — ${v.vpn_active || 0} VPN, ${v.direct_connected || 0} direct, ${v.disconnected || 0} disconnected` },
@@ -694,8 +832,8 @@ function fetchAll() {
   fetchCategoryScores()
   fetchDistribution()
   fetchMovers()
-  fetchTeams()
   fetchDimensions()
+  fetchDeviceList()
 }
 
 // React to filter and time range changes
@@ -1212,6 +1350,153 @@ onMounted(() => {
   .category-cards {
     grid-template-columns: 1fr;
   }
+}
+
+/* ─── Device scores table ────────────────────── */
+.device-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--pad-medium);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.device-table-title-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.device-table-header h3 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--fleet-black);
+  white-space: nowrap;
+}
+
+/* Mini stacked grade distribution (replaces the full GradeDistribution component) */
+.mini-distribution {
+  display: flex;
+  height: 20px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  flex: 1;
+  max-width: 360px;
+  min-width: 180px;
+  border: 1px solid var(--fleet-black-10);
+}
+
+.mini-dist-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 400ms ease-out;
+  overflow: hidden;
+}
+
+.mini-dist-segment.grade-A { background: #3db67b; }
+.mini-dist-segment.grade-B { background: #4a90d9; }
+.mini-dist-segment.grade-C { background: #ebbc43; }
+.mini-dist-segment.grade-D { background: #e07b3a; }
+.mini-dist-segment.grade-F { background: #d66c7b; }
+
+.mini-dist-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  padding: 0 4px;
+  letter-spacing: 0.3px;
+}
+
+.device-search-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.device-search-icon {
+  position: absolute;
+  left: 10px;
+  pointer-events: none;
+}
+
+.device-search-input {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  padding: 6px 12px 6px 30px;
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius);
+  width: 220px;
+  background: var(--fleet-white);
+  outline: none;
+  transition: border-color 150ms ease-in-out;
+}
+
+.device-search-input:focus {
+  border-color: var(--fleet-black);
+}
+
+.device-table-wrap {
+  overflow-x: auto;
+}
+
+.device-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.device-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fleet-black-50);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--fleet-black-10);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.device-table th.sortable {
+  cursor: pointer;
+}
+
+.device-table th.sortable:hover {
+  color: var(--fleet-black);
+}
+
+.device-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--fleet-black-5);
+  color: var(--fleet-black-75);
+}
+
+.device-table tbody tr:hover {
+  background: var(--fleet-black-5);
+}
+
+.device-hostname {
+  font-weight: 500;
+  color: var(--fleet-black);
+}
+
+.device-score-cell {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  text-align: left;
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--pad-xlarge);
+  color: var(--fleet-black-50);
+  font-size: var(--font-size-sm);
 }
 
 /* ─── Workers Council drill-down notice ──────── */

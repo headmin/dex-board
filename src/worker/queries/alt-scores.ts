@@ -407,4 +407,138 @@ export const firehoseScoreQueries: QueryConfig[] = [
       ORDER BY avg_score DESC
     `,
   },
+  {
+    name: 'firehose.scores.biggest_movers',
+    domain: 'scores',
+    client: 'alt',
+    description: 'Devices with the largest score change vs 7 days ago',
+    params: [
+      { name: 'limit', type: 'number' as const, required: false, min: 1, max: 50, default: 10 },
+    ],
+    sql: `
+      ${DEVICE_SCORES_CTE},
+      -- Prior period: scores from data before 7 days ago
+      prior_device_scores AS (
+        SELECT
+          h.host_id AS host_id,
+          h.hostname AS hostname,
+
+          round(
+            0.30 * (CASE h.cpu_class
+              WHEN 'apple_m5' THEN 100 WHEN 'apple_m4' THEN 95 WHEN 'apple_m3' THEN 90
+              WHEN 'apple_m2' THEN 85  WHEN 'apple_m1' THEN 80
+              WHEN 'intel_i9' THEN 75  WHEN 'intel_i7' THEN 70 WHEN 'intel_i5' THEN 60
+              ELSE 50 END)
+          + 0.25 * (CASE h.ram_tier
+              WHEN '32gb_plus' THEN 100 WHEN '16gb' THEN 80 WHEN '8gb' THEN 50 ELSE 30 END)
+          + 0.25 * (CASE ifNull(h.battery_health_score, 'good')
+              WHEN 'good' THEN 100 WHEN 'degraded' THEN 60 WHEN 'replace' THEN 20 ELSE 80 END)
+          + 0.20 * (CASE h.swap_pressure
+              WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 WHEN 'severe' THEN 30 ELSE 75 END)
+          ) AS device_health_score,
+
+          round(
+            0.35 * (CASE h.swap_pressure
+              WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 WHEN 'severe' THEN 30 ELSE 75 END)
+          + 0.30 * (CASE h.compression_pressure
+              WHEN 'low' THEN 100 WHEN 'moderate' THEN 85 WHEN 'high' THEN 65 ELSE 75 END)
+          + 0.20 * (CASE
+              WHEN ifNull(p.max_rss_mb, 0) < 2048 THEN 100
+              WHEN p.max_rss_mb < 4096 THEN 80
+              WHEN p.max_rss_mb < 8192 THEN 60
+              ELSE 30 END)
+          + 0.15 * (CASE ifNull(o.uptime_risk, 'normal')
+              WHEN 'just_rebooted' THEN 100 WHEN 'fresh' THEN 100
+              WHEN 'normal' THEN 90 WHEN 'stale_7d' THEN 60 WHEN 'stale_14d' THEN 30 ELSE 80 END)
+          ) AS performance_score,
+
+          round(
+            0.50 * (CASE ifNull(o.os_currency, 'current')
+              WHEN 'current' THEN 100 WHEN 'n_minus_1' THEN 70
+              WHEN 'n_minus_2' THEN 40 WHEN 'legacy' THEN 20 ELSE 80 END)
+          + 0.50 * (CASE ifNull(o.dex_os_health, 'acceptable')
+              WHEN 'healthy' THEN 100 WHEN 'acceptable' THEN 70 WHEN 'degraded' THEN 30 ELSE 70 END)
+          ) AS security_score,
+
+          round(
+            0.40 * (CASE
+              WHEN ifNull(c.total_crashes, 0) = 0 THEN 100 WHEN c.total_crashes = 1 THEN 85
+              WHEN c.total_crashes <= 4 THEN 65  WHEN c.total_crashes <= 9 THEN 40 ELSE 20 END)
+          + 0.35 * (CASE
+              WHEN ifNull(a.active_pct, 70) >= 80 THEN 100 WHEN a.active_pct >= 60 THEN 80
+              WHEN a.active_pct >= 40 THEN 60 ELSE 40 END)
+          + 0.25 * (CASE
+              WHEN ifNull(a.app_count, 50) < 80 THEN 100 WHEN a.app_count < 120 THEN 80
+              WHEN a.app_count < 160 THEN 60 ELSE 40 END)
+          ) AS software_score
+
+        FROM (
+          SELECT host_id, argMax(hostname, timestamp) AS hostname,
+            argMax(cpu_class, timestamp) AS cpu_class,
+            argMax(ram_tier, timestamp) AS ram_tier,
+            argMax(battery_health_score, timestamp) AS battery_health_score,
+            argMax(swap_pressure, timestamp) AS swap_pressure,
+            argMax(compression_pressure, timestamp) AS compression_pressure
+          FROM device_health WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
+        ) h
+        LEFT JOIN (
+          SELECT host_id,
+            argMax(os_currency, timestamp) AS os_currency,
+            argMax(uptime_risk, timestamp) AS uptime_risk,
+            argMax(dex_os_health, timestamp) AS dex_os_health
+          FROM os_health WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
+        ) o ON h.host_id = o.host_id
+        LEFT JOIN (
+          SELECT host_id, max(rss_mb) AS max_rss_mb
+          FROM process_health WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
+        ) p ON h.host_id = p.host_id
+        LEFT JOIN (
+          SELECT host_id, sum(crash_count_7d) AS total_crashes
+          FROM crash_summary
+          WHERE timestamp < now() - INTERVAL 7 DAY
+            AND (host_id, timestamp) IN (
+              SELECT host_id, max(timestamp) FROM crash_summary
+              WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
+            )
+          GROUP BY host_id
+        ) c ON h.host_id = c.host_id
+        LEFT JOIN (
+          SELECT host_id,
+            count() AS app_count,
+            countIf(usage_tier IN ('active_today', 'active_week')) * 100.0 / count() AS active_pct
+          FROM adoption_gap
+          WHERE timestamp < now() - INTERVAL 7 DAY
+            AND (host_id, timestamp) IN (
+              SELECT host_id, max(timestamp) FROM adoption_gap
+              WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
+            )
+          GROUP BY host_id
+        ) a ON h.host_id = a.host_id
+      ),
+      prior_scored AS (
+        SELECT *,
+          round(0.25 * device_health_score + 0.35 * performance_score + 0.20 * security_score + 0.20 * software_score) AS composite_score
+        FROM prior_device_scores
+      )
+      SELECT
+        curr.host_id,
+        curr.hostname,
+        curr.composite_score AS curr_score,
+        curr.composite_grade AS curr_grade,
+        prev.composite_score AS prev_score,
+        CASE
+          WHEN prev.composite_score >= 90 THEN 'A'
+          WHEN prev.composite_score >= 75 THEN 'B'
+          WHEN prev.composite_score >= 60 THEN 'C'
+          WHEN prev.composite_score >= 40 THEN 'D'
+          ELSE 'F'
+        END AS prev_grade,
+        curr.composite_score - prev.composite_score AS delta
+      FROM scored curr
+      INNER JOIN prior_scored prev ON curr.host_id = prev.host_id
+      WHERE abs(curr.composite_score - prev.composite_score) > 0
+      ORDER BY abs(curr.composite_score - prev.composite_score) DESC
+      {{LIMIT}}
+    `,
+  },
 ]

@@ -7,28 +7,43 @@
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
-    <!-- Fleet Overview Metrics -->
+    <!-- Fleet Overview Metrics — scope on left, coverage on right -->
     <section class="section">
       <h2>Fleet overview</h2>
       <div class="metrics-row four-col">
-        <MetricCard label="Total devices" :value="overview.totalDevices" :loading="loading.overview" />
-        <MetricCard label="Wi-Fi hosts" :value="overview.wifiHosts" :loading="loading.overview" />
-        <MetricCard label="App hosts" :value="overview.appHosts" :loading="loading.overview" />
+        <MetricCard label="Total hosts" :value="overview.totalDevices" :loading="loading.overview" />
         <MetricCard label="Unique apps" :value="overview.uniqueApps" :loading="loading.overview" />
+        <MetricCard
+          label="Hosts on Wi-Fi"
+          :value="overview.wifiHosts"
+          :subtitle="overview.totalDevices ? `${Math.round(overview.wifiHosts / overview.totalDevices * 100)}% of fleet` : ''"
+          :loading="loading.overview"
+        />
+        <MetricCard
+          label="Hosts reporting apps"
+          :value="overview.appHosts"
+          :subtitle="overview.totalDevices ? `${Math.round(overview.appHosts / overview.totalDevices * 100)}% of fleet` : ''"
+          :loading="loading.overview"
+        />
       </div>
     </section>
 
-    <!-- Wi-Fi Health -->
+    <!-- Wi-Fi Health — signal quality only (samples moved to caption) -->
     <section class="section">
-      <h2>Network health</h2>
-      <div class="metrics-row four-col">
+      <div class="section-header-with-caption">
+        <h2>Network health</h2>
+        <span v-if="overview.wifiSamples" class="section-caption">
+          Based on {{ overview.wifiSamples.toLocaleString() }} samples across {{ overview.wifiHosts }} hosts
+        </span>
+      </div>
+      <div class="metrics-row three-col">
         <MetricCard label="Avg RSSI" :value="wifi.avgRssi" unit="dBm" :loading="loading.wifi" />
         <MetricCard label="Avg SNR" :value="wifi.avgSnr" unit="dB" :loading="loading.wifi" />
         <MetricCard label="Avg Tx Rate" :value="wifi.avgTxRate" unit="Mbps" :loading="loading.wifi" />
-        <MetricCard label="Samples" :value="overview.wifiSamples" :loading="loading.overview" />
       </div>
     </section>
 
+    <!-- Wi-Fi charts — both Wi-Fi-related -->
     <div class="charts-row two-col">
       <section class="section">
         <PieChart
@@ -40,12 +55,12 @@
         />
       </section>
       <section class="section">
-        <PieChart
-          title="RAM distribution"
-          :data="ramTiers"
-          :loading="loading.hardware"
-          nameKey="ram_tier"
-          valueKey="device_count"
+        <BarChart
+          title="Weakest Wi-Fi hosts"
+          :data="worstWifi"
+          :loading="loading.wifi"
+          nameKey="hostname"
+          valueKey="abs_rssi"
         />
       </section>
     </div>
@@ -62,14 +77,18 @@
       />
     </section>
 
-    <!-- Top Memory Hogs -->
+    <!-- Application memory usage (Unique apps already in Fleet overview) -->
     <section class="section">
-      <h2>Application health</h2>
-      <div class="metrics-row four-col">
-        <MetricCard label="Unique apps" :value="apps.uniqueApps" :loading="loading.apps" />
+      <div class="section-header-with-caption">
+        <h2>Application memory usage</h2>
+        <span v-if="overview.appSamples" class="section-caption">
+          Based on {{ overview.appSamples.toLocaleString() }} app samples across {{ overview.appHosts }} hosts
+        </span>
+      </div>
+      <div class="metrics-row three-col">
         <MetricCard label="Avg app memory" :value="apps.avgMemory" unit="MB" :loading="loading.apps" />
         <MetricCard label="P95 memory" :value="apps.p95Memory" unit="MB" :loading="loading.apps" />
-        <MetricCard label="App samples" :value="overview.appSamples" :loading="loading.overview" />
+        <MetricCard label="Hosts reporting apps" :value="overview.appHosts" :loading="loading.overview" />
       </div>
     </section>
 
@@ -105,7 +124,7 @@
       </div>
     </section>
 
-    <div class="charts-row two-col">
+    <div class="charts-row">
       <section class="section">
         <PieChart
           title="Uptime distribution"
@@ -113,15 +132,6 @@
           :loading="loading.uptime"
           nameKey="uptime_bucket"
           valueKey="device_count"
-        />
-      </section>
-      <section class="section">
-        <BarChart
-          title="Weakest Wi-Fi devices"
-          :data="worstWifi"
-          :loading="loading.wifi"
-          nameKey="hostname"
-          valueKey="abs_rssi"
         />
       </section>
     </div>
@@ -137,6 +147,7 @@
       </div>
     </section>
 
+    <!-- Device Health chart row 1: hardware inventory (CPU + RAM) -->
     <div class="charts-row two-col">
       <section class="section">
         <BarChart
@@ -149,6 +160,19 @@
         />
       </section>
       <section class="section">
+        <PieChart
+          title="RAM distribution"
+          :data="ramTiers"
+          :loading="loading.hardware"
+          nameKey="ram_tier"
+          valueKey="device_count"
+        />
+      </section>
+    </div>
+
+    <!-- Device Health chart row 2: runtime pressure (Swap + Battery) -->
+    <div class="charts-row two-col">
+      <section class="section">
         <BarChart
           title="Swap pressure"
           :data="swapDistribution"
@@ -156,6 +180,15 @@
           nameKey="swap_pressure"
           valueKey="device_count"
           :horizontal="true"
+        />
+      </section>
+      <section class="section">
+        <PieChart
+          title="Battery health"
+          :data="batteryDist"
+          :loading="loading.deviceHealth"
+          nameKey="battery_health_score"
+          valueKey="device_count"
         />
       </section>
     </div>
@@ -194,33 +227,24 @@
       </section>
     </div>
 
-    <!-- Network Confidence (VPN) -->
+    <!-- VPN & connectivity (renamed from "Network confidence") -->
     <section class="section">
-      <h2>Network confidence</h2>
+      <h2>VPN &amp; connectivity</h2>
       <div class="metrics-row four-col">
-        <MetricCard label="Total devices" :value="vpn.totalDevices" :loading="loading.vpn" />
+        <MetricCard label="Total hosts" :value="vpn.totalDevices" :loading="loading.vpn" />
         <MetricCard label="VPN active" :value="vpn.vpnActive" :loading="loading.vpn" />
         <MetricCard label="Direct" :value="vpn.directConnected" :loading="loading.vpn" />
         <MetricCard label="Disconnected" :value="vpn.disconnected" :loading="loading.vpn" />
       </div>
     </section>
 
-    <div class="charts-row two-col">
+    <div class="charts-row">
       <section class="section">
         <PieChart
           title="Network path"
-          :data="vpnConfDist"
+          :data="humanizedVpnConfDist"
           :loading="loading.vpn"
           nameKey="network_confidence"
-          valueKey="device_count"
-        />
-      </section>
-      <section class="section">
-        <PieChart
-          title="Battery health"
-          :data="batteryDist"
-          :loading="loading.deviceHealth"
-          nameKey="battery_health_score"
           valueKey="device_count"
         />
       </section>
@@ -304,7 +328,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { query } from '../services/api'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
@@ -338,6 +362,20 @@ const osCurrencyDist = ref([])
 const uptimeRiskDist = ref([])
 const vpn = ref({ totalDevices: 0, vpnActive: 0, directConnected: 0, disconnected: 0 })
 const vpnConfDist = ref([])
+
+// Humanize the raw enum values from ClickHouse so pie chart legend
+// reads "Direct" / "VPN tunnel" / "Disconnected" instead of snake_case.
+const VPN_LABELS = {
+  direct_connected: 'Direct',
+  tunnel_active: 'VPN tunnel',
+  disconnected: 'Disconnected',
+}
+const humanizedVpnConfDist = computed(() =>
+  vpnConfDist.value.map(row => ({
+    ...row,
+    network_confidence: VPN_LABELS[row.network_confidence] || row.network_confidence,
+  }))
+)
 const batteryDist = ref([])
 const processClassData = ref([])
 const processClassTotals = ref({ uniqueProcesses: 0, userApps: 0, mgmtAgents: 0, system: 0 })
@@ -500,7 +538,12 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 .section { margin-bottom: 32px; }
 .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
 .metrics-row.four-col { grid-template-columns: repeat(4, 1fr); }
-.charts-row.two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 24px; }
-@media (max-width: 1024px) { .metrics-row.four-col { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 768px) { .metrics-row, .metrics-row.four-col { grid-template-columns: 1fr; } .charts-row.two-col { grid-template-columns: 1fr; } .dashboard-header { flex-direction: column; gap: 8px; } }
+.metrics-row.three-col { grid-template-columns: repeat(3, 1fr); }
+.charts-row { margin-bottom: 24px; }
+.charts-row.two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.section-header-with-caption { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+.section-header-with-caption h2 { margin: 0; }
+.section-caption { font-size: var(--font-size-xs); color: var(--fleet-black-50); font-style: italic; }
+@media (max-width: 1024px) { .metrics-row.four-col { grid-template-columns: repeat(2, 1fr); } .metrics-row.three-col { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .metrics-row, .metrics-row.four-col, .metrics-row.three-col { grid-template-columns: 1fr; } .charts-row.two-col { grid-template-columns: 1fr; } .dashboard-header { flex-direction: column; gap: 8px; } }
 </style>
