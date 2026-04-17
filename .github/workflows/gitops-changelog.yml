@@ -24,59 +24,236 @@ jobs:
           path: fleet
           fetch-depth: 0  # Full history for git log
 
-      - name: Generate changelog.json
+      - name: Generate changelog files
         run: |
           cd fleet
           git log \
-            --format='{"sha":"%H","short_sha":"%h","author":"%an","email":"%ae","message":"%s","timestamp":"%aI"}' \
+            --format='%x00%H%x01%h%x01%an%x01%ae%x01%s%x01%aI' \
             --name-only \
             -- it-and-security/ \
           | python3 -c "
           import sys, json
+          from datetime import datetime, timezone
+          from pathlib import Path
 
+          # --- Parse git log into entries ---
+          # Git outputs NUL (%x00) at record start, SOH (%x01) between fields.
+          raw = sys.stdin.read()
           entries = []
-          current = None
 
-          for line in sys.stdin:
-              line = line.strip()
-              if not line:
+          for block in raw.split('\x00'):
+              block = block.strip()
+              if not block:
                   continue
-              if line.startswith('{'):
-                  if current:
-                      entries.append(current)
-                  obj = json.loads(line)
-                  current = {
-                      'sha': obj['sha'],
-                      'short_sha': obj['short_sha'],
-                      'author': obj['author'],
-                      'email': obj['email'],
-                      'message': obj['message'],
-                      'timestamp': obj['timestamp'],
-                      'files': []
-                  }
-              elif current:
-                  current['files'].append(line)
 
-          if current:
-              entries.append(current)
+              lines = block.split('\n')
+              parts = lines[0].split('\x01')
+              if len(parts) != 6:
+                  continue
 
-          # Keep last 500 commits to limit file size
+              files = [l.strip() for l in lines[1:] if l.strip()]
+              entries.append({
+                  'sha': parts[0],
+                  'short_sha': parts[1],
+                  'author': parts[2],
+                  'email': parts[3],
+                  'message': parts[4],
+                  'timestamp': parts[5],
+                  'files': files
+              })
+
           entries = entries[:500]
 
+          # --- Write changelog.json ---
           with open('../dex-board/changelog.json', 'w') as f:
               json.dump(entries, f, indent=2)
-
           print(f'Generated changelog.json with {len(entries)} commits')
+
+          # --- Classify a file path into categories ---
+          def classify_file(path):
+              '''Return (change_type, scope, category_key, category_value).'''
+              parts = path.split('/')
+              # it-and-security/lib/<platform>/<type>/...
+              if len(parts) >= 4 and parts[1] == 'lib':
+                  platform = parts[2]
+                  resource_type = parts[3] if len(parts) > 3 else ''
+                  name = Path(parts[-1]).stem if len(parts) > 4 else ''
+
+                  if 'policies' in resource_type:
+                      return 'policy', platform, 'policies', f'{platform}/{name}'
+                  elif 'configuration-profiles' in resource_type or 'declaration-profiles' in resource_type:
+                      return 'profile', platform, 'profiles', f'{platform}/{name}'
+                  elif 'scripts' in resource_type:
+                      return 'script', platform, 'scripts', f'{platform}/{name}'
+                  elif 'software' in resource_type:
+                      return 'software', platform, 'software', f'{platform}/{name}'
+                  elif 'reports' in resource_type:
+                      return 'report', platform, 'reports', f'{platform}/{name}'
+                  elif 'labels' in resource_type:
+                      return 'label', platform, 'labels', f'{platform}/{name}'
+                  elif 'agent-options' in resource_type:
+                      return 'config', platform, 'other', f'{platform}/{name}'
+              elif len(parts) >= 3 and parts[1] == 'fleets':
+                  fleet_name = Path(parts[2]).stem
+                  return 'config', 'fleet', 'fleets', fleet_name
+              elif parts[-1] == 'default.yml':
+                  return 'config', 'global', 'other', 'default.yml'
+              return 'other', 'global', 'other', path
+
+          def detect_scope(categories):
+              '''Determine scope from categorized files.'''
+              platforms = set()
+              for files in categories.values():
+                  for f in files:
+                      if '/' in f:
+                          platforms.add(f.split('/')[0])
+              if len(platforms) > 1:
+                  return 'cross-platform'
+              elif len(platforms) == 1:
+                  return platforms.pop()
+              return 'global'
+
+          # --- Write changelog.jsonl (enriched timeline format) ---
+          with open('../dex-board/changelog.jsonl', 'w') as f:
+              for entry in entries:
+                  categories = {
+                      'fleets': [], 'policies': [], 'profiles': [],
+                      'scripts': [], 'software': [], 'reports': [],
+                      'labels': [], 'other': []
+                  }
+                  change_types = set()
+
+                  for file_path in entry['files']:
+                      ct, scope, cat_key, cat_val = classify_file(file_path)
+                      change_types.add(ct)
+                      if cat_val and cat_val not in categories[cat_key]:
+                          categories[cat_key].append(cat_val)
+
+                  # Pick dominant change type
+                  type_priority = ['security', 'policy', 'profile', 'software', 'script', 'report', 'label', 'config', 'other']
+                  change_type = 'other'
+                  for t in type_priority:
+                      if t in change_types:
+                          change_type = t
+                          break
+
+                  # Detect security-related from message
+                  msg_lower = entry['message'].lower()
+                  if any(kw in msg_lower for kw in ['cve-', 'vulnerability', 'security', 'santa', 'firewall', 'defender', 'encryption']):
+                      change_type = 'security'
+
+                  scope = detect_scope(categories)
+
+                  record = {
+                      'sha': entry['sha'],
+                      'short_sha': entry['short_sha'],
+                      'author': entry['author'],
+                      'email': entry['email'],
+                      'message': entry['message'],
+                      'timestamp': entry['timestamp'],
+                      'commit_url': f'https://github.com/fleetdm/fleet/commit/{entry[\"sha\"]}',
+                      'change_type': change_type,
+                      'scope': scope,
+                      'files_changed': len(entry['files']),
+                      'files': entry['files'],
+                      'categories': categories
+                  }
+                  f.write(json.dumps(record) + '\n')
+
+          print(f'Generated changelog.jsonl with {len(entries)} records')
+
+          # --- Build gitops-structure.json from current tree ---
+          structure = {
+              'generated': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+              'source_repo': 'fleetdm/fleet',
+              'source_path': 'it-and-security/',
+              'source_url': 'https://github.com/fleetdm/fleet/tree/main/it-and-security',
+              'latest_commit': {
+                  'sha': entries[0]['sha'],
+                  'short_sha': entries[0]['short_sha'],
+                  'message': entries[0]['message'],
+                  'timestamp': entries[0]['timestamp'],
+                  'commit_url': f'https://github.com/fleetdm/fleet/commit/{entries[0][\"sha\"]}'
+              } if entries else None,
+              'fleets': [],
+              'global_config': None,
+              'platforms': {}
+          }
+
+          base = Path('it-and-security')
+          if base.exists():
+              # Fleets
+              fleets_dir = base / 'fleets'
+              if fleets_dir.exists():
+                  for f in sorted(fleets_dir.glob('*.yml')):
+                      structure['fleets'].append({
+                          'name': f.stem,
+                          'file': str(f),
+                          'url': f'https://github.com/fleetdm/fleet/blob/main/{f}'
+                      })
+
+              # Global config
+              default_yml = base / 'default.yml'
+              if default_yml.exists():
+                  structure['global_config'] = {
+                      'file': str(default_yml),
+                      'url': f'https://github.com/fleetdm/fleet/blob/main/{default_yml}'
+                  }
+
+              # Walk lib/ for platform resources
+              lib_dir = base / 'lib'
+              if lib_dir.exists():
+                  for platform_dir in sorted(lib_dir.iterdir()):
+                      if not platform_dir.is_dir():
+                          continue
+                      platform = platform_dir.name
+                      platform_data = {}
+
+                      for resource_dir in sorted(platform_dir.iterdir()):
+                          if not resource_dir.is_dir():
+                              continue
+                          resource_type = resource_dir.name.replace('-', '_')
+                          items = []
+                          for item in sorted(resource_dir.iterdir()):
+                              if item.name.startswith('.'):
+                                  continue
+                              items.append({
+                                  'name': item.stem,
+                                  'file': str(item),
+                                  'url': f'https://github.com/fleetdm/fleet/blob/main/{item}'
+                              })
+                          if items:
+                              platform_data[resource_type] = items
+
+                      if platform_data:
+                          structure['platforms'][platform] = platform_data
+
+              # Summary counts
+              summary = {
+                  'platforms': list(structure['platforms'].keys()),
+                  'fleets': len(structure['fleets'])
+              }
+              totals = {}
+              for platform, resources in structure['platforms'].items():
+                  for rtype, items in resources.items():
+                      totals[rtype] = totals.get(rtype, 0) + len(items)
+              summary.update(totals)
+              summary['total_files'] = sum(totals.values()) + summary['fleets'] + (1 if structure['global_config'] else 0)
+              structure['summary'] = summary
+
+          with open('../dex-board/gitops-structure.json', 'w') as f:
+              json.dump(structure, f, indent=2)
+          print(f'Generated gitops-structure.json')
           "
 
-      - name: Commit changelog.json
+      - name: Commit changelog files
         run: |
           cd dex-board
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add changelog.json
+          git add changelog.json changelog.jsonl gitops-structure.json
           if git diff --cached --quiet; then
-            echo "No changes to changelog.json"
+            echo "No changes to changelog files"
           else
             git commit -m "Update GitOps changelog from fleetdm/fleet"
             git push
