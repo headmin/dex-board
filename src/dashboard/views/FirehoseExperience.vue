@@ -605,18 +605,17 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 .clickable-wrap.active { box-shadow: 0 0 0 2px #4a90d9; }
 .clickable-wrap > :first-child { border-color: transparent; }
 
-/* Drill-down panel — appears below Device Health when a card is clicked.
-   Uses a subtle tinted background so it reads as grouped with the clicked card
-   without going full dark-theme. */
-.drill-section { background: var(--fleet-off-white, #f4f4f6); border: 1px solid var(--fleet-black-10); border-radius: var(--radius); padding: 20px 24px; margin-top: -8px; margin-bottom: 24px; }
+/* Drill-down panel — highlighted context using Fleet's vibrant-blue tint
+   (same accent used for signal badges / methodology boxes elsewhere). */
+.drill-section { background: rgba(106, 103, 254, 0.06); border: 1px solid rgba(106, 103, 254, 0.2); border-left: 3px solid var(--fleet-vibrant-blue); border-radius: var(--radius); padding: 20px 24px; margin-top: -8px; margin-bottom: 24px; }
 .drill-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .drill-header h3 { color: var(--fleet-black); font-size: var(--font-size-sm); font-weight: 600; margin: 0; }
 .drill-count { color: var(--fleet-black-50); font-weight: 400; margin-left: 4px; }
-.drill-close { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); color: var(--fleet-black-50); border-radius: var(--radius); width: 28px; height: 28px; cursor: pointer; font-size: 14px; transition: all 150ms ease; }
-.drill-close:hover { background: var(--fleet-black-5); color: var(--fleet-black); border-color: var(--fleet-black-25); }
+.drill-close { background: var(--fleet-white); border: 1px solid rgba(106, 103, 254, 0.25); color: var(--fleet-vibrant-blue); border-radius: var(--radius); width: 28px; height: 28px; cursor: pointer; font-size: 14px; transition: all 150ms ease; }
+.drill-close:hover { background: rgba(106, 103, 254, 0.1); border-color: var(--fleet-vibrant-blue); }
 .drill-loading, .drill-empty { color: var(--fleet-black-50); font-size: var(--font-size-sm); padding: 24px 0; text-align: center; }
 
-.host-tile-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.host-tile-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
 @media (max-width: 1024px) { .host-tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .host-tile-grid { grid-template-columns: 1fr; } }
 @media (max-width: 1024px) { .metrics-row.four-col { grid-template-columns: repeat(2, 1fr); } .metrics-row.three-col { grid-template-columns: repeat(2, 1fr); } }

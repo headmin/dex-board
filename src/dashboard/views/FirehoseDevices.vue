@@ -404,7 +404,35 @@ async function fetchDevices() {
   }
 }
 
-onMounted(() => fetchDevices())
+// Deep-link from HostTile: /devices?hostId=<uuid> auto-opens the drawer
+// for that host. Done after fetch so `devices` is populated and we can match.
+import { useRoute, useRouter } from 'vue-router'
+const route = useRoute()
+const router = useRouter()
+
+async function autoSelectFromQuery() {
+  const hostId = route.query.hostId
+  if (!hostId) return
+  const match = devices.value.find(d => d.host_id === hostId)
+  if (match) {
+    await selectDevice(match)
+  } else {
+    // Fall back to a minimal stub so the drawer still opens with whatever
+    // fields we have from the URL alone; the detail fetch will fill it in.
+    await selectDevice({ host_id: hostId, hostname: '' })
+  }
+}
+
+onMounted(async () => {
+  await fetchDevices()
+  await autoSelectFromQuery()
+})
+
+// If the user navigates between hosts without unmounting (e.g. clicks another
+// HostTile while already on /devices), re-select when hostId changes.
+watch(() => route.query.hostId, (newId, oldId) => {
+  if (newId && newId !== oldId) autoSelectFromQuery()
+})
 </script>
 
 <style scoped>

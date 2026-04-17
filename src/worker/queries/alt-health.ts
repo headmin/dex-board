@@ -46,34 +46,45 @@ export const firehoseHealthQueries: QueryConfig[] = [
       ] },
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 50 },
     ],
+    // LEFT JOIN hardware_inventory so tiles get hardware_serial — uniquely
+    // identifies a host in Fleet's search, unlike hostname (which can collide
+    // across imaging generations / tenants).
     sql: `
       SELECT
-        host_id,
-        hostname,
-        cpu_class,
-        cpu_brand,
-        ram_tier,
-        ram_gb,
-        swap_pressure,
-        compression_pressure,
-        battery_percent,
-        battery_cycles,
-        battery_health_score,
-        battery_state,
-        timestamp AS last_seen
-      FROM device_health
-      WHERE (host_id, timestamp) IN (
+        dh.host_id AS host_id,
+        dh.hostname AS hostname,
+        dh.cpu_class AS cpu_class,
+        dh.cpu_brand AS cpu_brand,
+        dh.ram_tier AS ram_tier,
+        dh.ram_gb AS ram_gb,
+        dh.swap_pressure AS swap_pressure,
+        dh.compression_pressure AS compression_pressure,
+        dh.battery_percent AS battery_percent,
+        dh.battery_cycles AS battery_cycles,
+        dh.battery_health_score AS battery_health_score,
+        dh.battery_state AS battery_state,
+        hw.hardware_serial AS hardware_serial,
+        hw.hardware_model AS hardware_model,
+        dh.timestamp AS last_seen
+      FROM device_health dh
+      LEFT JOIN (
+        SELECT host_id,
+          argMax(hardware_serial, timestamp) AS hardware_serial,
+          argMax(hardware_model, timestamp) AS hardware_model
+        FROM hardware_inventory GROUP BY host_id
+      ) hw ON dh.host_id = hw.host_id
+      WHERE (dh.host_id, dh.timestamp) IN (
         SELECT host_id, max(timestamp) FROM device_health GROUP BY host_id
       )
       AND multiIf(
-        {condition:String} = 'severe_swap', swap_pressure = 'severe',
-        {condition:String} = 'elevated_swap', swap_pressure = 'elevated',
-        {condition:String} = 'degraded_battery', battery_health_score = 'degraded',
-        {condition:String} = 'replace_battery', battery_health_score = 'replace',
-        {condition:String} = 'high_compression', compression_pressure = 'high',
+        {condition:String} = 'severe_swap', dh.swap_pressure = 'severe',
+        {condition:String} = 'elevated_swap', dh.swap_pressure = 'elevated',
+        {condition:String} = 'degraded_battery', dh.battery_health_score = 'degraded',
+        {condition:String} = 'replace_battery', dh.battery_health_score = 'replace',
+        {condition:String} = 'high_compression', dh.compression_pressure = 'high',
         false
       )
-      ORDER BY hostname
+      ORDER BY dh.hostname
       {{LIMIT}}
     `,
   },

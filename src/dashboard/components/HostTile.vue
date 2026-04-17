@@ -25,19 +25,69 @@
       </div>
     </div>
 
-    <div class="tile-footer">
+    <div class="tile-meta">
       <span class="last-seen">Last seen {{ relativeTime(host.last_seen) }}</span>
+    </div>
+
+    <div class="tile-actions">
+      <button class="tile-action" @click="openInDex" title="Open this host in the DEX Devices view">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 3h12v10H2zM2 6h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        DEX host details
+      </button>
+      <a class="tile-action primary" :href="openInFleetUrl" target="_blank" rel="noopener noreferrer" title="Open this host in Fleet (new tab)">
+        Open in Fleet
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M6 3h7v7M13 3L6 10M10 2H3v11h11v-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useFleetFilter } from '../composables/useFleetFilter'
 
 const props = defineProps({
   host: { type: Object, required: true },
   // Which condition triggered this tile — used to highlight the relevant metric
   condition: { type: String, default: '' },
+  // Fleet UI base URL. Defaults to Fleet dogfood; caller may override per-tile
+  // or via a wrapping provider to point at prod / internal Fleet instances.
+  fleetServerUrl: { type: String, default: 'https://dogfood.fleetdm.com' },
+})
+
+const router = useRouter()
+const { searchText } = useFleetFilter()
+
+// "DEX host details" routes to /devices with ?hostId=<uuid>. The Devices view
+// reads that param on mount and auto-selects the matching row, expanding the
+// detail drawer. We also seed searchText so the device list below is filtered
+// to the same host, keeping the view visually coherent.
+function openInDex() {
+  searchText.value = props.host.hostname || props.host.host_id || ''
+  router.push({ path: '/devices', query: { hostId: props.host.host_id } })
+}
+
+// Fleet deep-link: /hosts/manage/labels/7 is Fleet's "All hosts" label
+// context. Fleet's search is a substring match across hostname/serial/UUID,
+// so precision matters. Priority:
+//   1. hardware_serial — globally unique per Apple device, short, searchable
+//   2. host_id (osquery UUID) — globally unique, longer, also indexed by Fleet
+//   3. hostname — last-resort fallback (can collide)
+const FLEET_ALL_HOSTS_LABEL_ID = 7
+const openInFleetUrl = computed(() => {
+  const q = props.host.hardware_serial || props.host.host_id || props.host.hostname || ''
+  const params = new URLSearchParams({
+    query: q,
+    page: '0',
+    order_key: 'display_name',
+    order_direction: 'asc',
+  })
+  return `${props.fleetServerUrl}/hosts/manage/labels/${FLEET_ALL_HOSTS_LABEL_ID}?${params.toString()}`
 })
 
 // First letter of hostname drives both avatar letter and a deterministic color
@@ -110,13 +160,17 @@ function relativeTime(ts) {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius);
-  padding: 16px 18px;
+  padding: 16px 18px 12px;
   color: var(--fleet-black);
   display: flex;
   flex-direction: column;
   gap: 14px;
   transition: border-color 150ms ease, box-shadow 150ms ease;
   box-shadow: var(--box-shadow);
+  /* Equal-height tiles in the grid — actions stay pinned to the bottom
+     regardless of how long hostnames/metrics are. */
+  height: 100%;
+  min-height: 200px;
 }
 
 .host-tile:hover {
@@ -214,13 +268,72 @@ function relativeTime(ts) {
   color: #b05c1a;
 }
 
-.tile-footer {
+/* Meta row (last seen, etc.) sits just above the actions. Push it to the
+   bottom of the tile with margin-top: auto so equal-height tiles align. */
+.tile-meta {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   padding-top: 10px;
   border-top: 1px solid var(--fleet-black-5);
   font-size: var(--font-size-xs);
   color: var(--fleet-black-50);
+  margin-top: auto;
+}
+
+.last-seen {
+  white-space: nowrap;
+}
+
+/* Actions row gets its own strip — consistent layout per tile regardless
+   of hostname / last-seen text length. */
+.tile-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.tile-action {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fleet-black-75);
+  background: transparent;
+  border: 1px solid var(--fleet-black-10);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 150ms ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile-action:hover {
+  background: var(--fleet-black-5);
+  color: var(--fleet-black);
+  border-color: var(--fleet-black-25);
+}
+
+.tile-action svg {
+  flex-shrink: 0;
+}
+
+/* Primary action gets the Fleet vibrant-blue accent to stand out in the row */
+.tile-action.primary {
+  background: rgba(106, 103, 254, 0.08);
+  border-color: rgba(106, 103, 254, 0.25);
+  color: var(--fleet-vibrant-blue);
+}
+
+.tile-action.primary:hover {
+  background: rgba(106, 103, 254, 0.15);
+  border-color: var(--fleet-vibrant-blue);
 }
 </style>
