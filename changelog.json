@@ -1,5 +1,80 @@
 [
   {
+    "sha": "649fc0a65614db3c8d44b9e136a7cded11cb3c2a",
+    "short_sha": "649fc0a656",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add macOS Fleet Desktop label and attach to policy (#43760)",
+    "timestamp": "2026-04-20T09:39:50-05:00",
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/lib/all/labels/macs-with-fleet-desktop-installed.yml",
+      "it-and-security/lib/macos/policies/update-fleet-desktop.yml"
+    ]
+  },
+  {
+    "sha": "18c35e3a5419a6d7094b60c7184f600f7b546e96",
+    "short_sha": "18c35e3a54",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add battery capacity ratio check (#43758)",
+    "timestamp": "2026-04-20T09:23:40-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/battery-health-check.yml"
+    ]
+  },
+  {
+    "sha": "3dbe90a1b6187acedfe38e763ee7919021ef9d18",
+    "short_sha": "3dbe90a1b6",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update custom icon assets (#43753)",
+    "timestamp": "2026-04-20T08:55:50-05:00",
+    "files": [
+      "it-and-security/lib/all/icons/fleet-desktop-icon.png",
+      "it-and-security/lib/all/icons/keynote-theme-swan.png"
+    ]
+  },
+  {
+    "sha": "3bd2335b8c5f616860481d1d93ece1e9afd58d64",
+    "short_sha": "3bd2335b8c",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Updated scoping of Fleet-maintained apps on Workstations (#43752)",
+    "timestamp": "2026-04-20T08:48:55-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
+    "sha": "d8772bbb8d4614b48e0fd3d40eb36814509b8c27",
+    "short_sha": "d8772bbb8d",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Use app-specific labels for macOS software (#43751)",
+    "timestamp": "2026-04-20T08:39:11-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
+    "sha": "7f92a3b8ac2f870a3b30b4000c28d3a1a8de1a0a",
+    "short_sha": "7f92a3b8ac",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Fleet Desktop update policy and bump package (#43750)",
+    "timestamp": "2026-04-20T08:19:16-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/macos/policies/update-1password.yml",
+      "it-and-security/lib/macos/policies/update-fleet-desktop.yml",
+      "it-and-security/lib/macos/software/fleet-desktop.yml"
+    ]
+  },
+  {
     "sha": "7980b636a06b7c7971a43a0321da5028eb4f80cd",
     "short_sha": "7980b636a0",
     "author": "Allen Houchins",
@@ -6241,75 +6316,6 @@
     "files": [
       "it-and-security/lib/collect-software-permissions-system.queries.yaml",
       "it-and-security/lib/collect-software-permissions-user.queries.yaml",
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "0014a2b102a1eb0cc90a71f55dab46d8fc250eff",
-    "short_sha": "0014a2b102",
-    "author": "Grant Bilstad",
-    "email": "82750216+pacamaster@users.noreply.github.com",
-    "message": "Revert \"Update workstations-canary.yml\" (#17911)",
-    "timestamp": "2024-03-27T14:59:04-06:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "c7c07d9112b563378c9acd1e7990813b89900c83",
-    "short_sha": "c7c07d9112",
-    "author": "Grant Bilstad",
-    "email": "82750216+pacamaster@users.noreply.github.com",
-    "message": "Revert \"Update workstations.yml\" (#17910)",
-    "timestamp": "2024-03-27T14:58:37-06:00",
-    "files": [
-      "it-and-security/lib/windows-device-health.policies.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "465099fa31b3e1e953db476e0a53b875286bcd14",
-    "short_sha": "465099fa31",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Update workstations-canary.yml (#17907)",
-    "timestamp": "2024-03-27T15:53:59-04:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "cf531a242aab67012e71a51459614bd3606a6473",
-    "short_sha": "cf531a242a",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Update workstations.yml (#17906)",
-    "timestamp": "2024-03-27T15:50:47-04:00",
-    "files": [
-      "it-and-security/lib/windows-device-health.policies.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "1675b4ee736b3c312bb659528039814aac1368c2",
-    "short_sha": "1675b4ee73",
-    "author": "Rachael Shaw",
-    "email": "r@rachael.wtf",
-    "message": "Update agent options for canary team (#17901)",
-    "timestamp": "2024-03-27T12:52:05-05:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "593a59255c4f39af33d8d60e9f2b68206b4ae1b4",
-    "short_sha": "593a59255c",
-    "author": "Dave Herder",
-    "email": "27025660+dherder@users.noreply.github.com",
-    "message": "Update workstations-canary.yml (#17761)",
-    "timestamp": "2024-03-26T15:55:06-07:00",
-    "files": [
-      "it-and-security/lib/windows-install-bitdefender.ps1",
       "it-and-security/teams/workstations-canary.yml"
     ]
   }

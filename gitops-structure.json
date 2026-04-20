@@ -1,14 +1,14 @@
 {
-  "generated": "2026-04-20T12:20:34Z",
+  "generated": "2026-04-20T18:18:00Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "7980b636a06b7c7971a43a0321da5028eb4f80cd",
-    "short_sha": "7980b636a0",
-    "message": "Update workstations.yml (#43620)",
-    "timestamp": "2026-04-15T11:41:52-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/7980b636a06b7c7971a43a0321da5028eb4f80cd"
+    "sha": "649fc0a65614db3c8d44b9e136a7cded11cb3c2a",
+    "short_sha": "649fc0a656",
+    "message": "Add macOS Fleet Desktop label and attach to policy (#43760)",
+    "timestamp": "2026-04-20T09:39:50-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/649fc0a65614db3c8d44b9e136a7cded11cb3c2a"
   },
   "fleets": [
     {
@@ -122,6 +122,11 @@
           "name": "macs-with-1password-installed",
           "file": "it-and-security/lib/all/labels/macs-with-1password-installed.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macs-with-1password-installed.yml"
+        },
+        {
+          "name": "macs-with-fleet-desktop-installed",
+          "file": "it-and-security/lib/all/labels/macs-with-fleet-desktop-installed.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macs-with-fleet-desktop-installed.yml"
         },
         {
           "name": "macs-with-fleet-maintained-apps-installed",
@@ -572,6 +577,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/update-claude.yml"
         },
         {
+          "name": "update-fleet-desktop",
+          "file": "it-and-security/lib/macos/policies/update-fleet-desktop.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/update-fleet-desktop.yml"
+        },
+        {
           "name": "update-safari",
           "file": "it-and-security/lib/macos/policies/update-safari.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/update-safari.yml"
@@ -849,16 +859,16 @@
     "fleets": 6,
     "agent_options": 2,
     "icons": 4,
-    "labels": 17,
+    "labels": 18,
     "reports": 14,
     "configuration_profiles": 39,
     "declaration_profiles": 6,
-    "policies": 29,
+    "policies": 30,
     "scripts": 15,
     "software": 16,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 152
+    "total_files": 154
   }
 }
