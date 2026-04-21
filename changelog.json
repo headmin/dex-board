@@ -1,5 +1,41 @@
 [
   {
+    "sha": "92488b2115a1fe77b153e7f5c383887a792b5520",
+    "short_sha": "92488b2115",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add display_name for Touch ID sudo script (#43852)",
+    "timestamp": "2026-04-21T10:52:04-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/icons/touch-id.png"
+    ]
+  },
+  {
+    "sha": "842316c4bcf6e0dccb290b373b22cc25152a81eb",
+    "short_sha": "842316c4bc",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Touch ID sudo script and icon (#43848)",
+    "timestamp": "2026-04-21T10:10:51-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/icons/touch-id.png",
+      "it-and-security/lib/macos/scripts/enable-touch-id-sudo.sh"
+    ]
+  },
+  {
+    "sha": "a060f3ec827a421a12b541b4b60dcdf55c946849",
+    "short_sha": "a060f3ec82",
+    "author": "github-actions[bot]",
+    "email": "41898282+github-actions[bot]@users.noreply.github.com",
+    "message": "Update 1Password policy versions (#43840)",
+    "timestamp": "2026-04-21T08:11:54-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/update-1password.yml"
+    ]
+  },
+  {
     "sha": "649fc0a65614db3c8d44b9e136a7cded11cb3c2a",
     "short_sha": "649fc0a656",
     "author": "Allen Houchins",
@@ -6281,42 +6317,6 @@
     "timestamp": "2024-04-04T09:33:17-05:00",
     "files": [
       "it-and-security/lib/macos-device-health.policies.yml"
-    ]
-  },
-  {
-    "sha": "8f1f1b7eb93e623540168d02b2bec3921a3c34bd",
-    "short_sha": "8f1f1b7eb9",
-    "author": "Rachael Shaw",
-    "email": "r@rachael.wtf",
-    "message": "Update canary agent options (#17948)",
-    "timestamp": "2024-03-29T15:17:25-05:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "9c39c6a4317c6a7b710da7c7218c096e632f683b",
-    "short_sha": "9c39c6a431",
-    "author": "Rachael Shaw",
-    "email": "r@rachael.wtf",
-    "message": "Fix TCC query file names (#17941)",
-    "timestamp": "2024-03-28T14:07:42-05:00",
-    "files": [
-      "it-and-security/lib/collect-software-permissions-system.queries.yml",
-      "it-and-security/lib/collect-software-permissions-user.queries.yml"
-    ]
-  },
-  {
-    "sha": "66dd003f7d6ca52ae917407451de76fa942dc0e0",
-    "short_sha": "66dd003f7d",
-    "author": "Rachael Shaw",
-    "email": "r@rachael.wtf",
-    "message": "Add TCC tables with all available data (#17935)",
-    "timestamp": "2024-03-28T13:23:48-05:00",
-    "files": [
-      "it-and-security/lib/collect-software-permissions-system.queries.yaml",
-      "it-and-security/lib/collect-software-permissions-user.queries.yaml",
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]
