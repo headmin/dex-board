@@ -1,5 +1,17 @@
 [
   {
+    "sha": "051bf059582aaa0f2636e339dae1d818d17238fe",
+    "short_sha": "051bf05958",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Fleet Desktop login item profile (#43956)",
+    "timestamp": "2026-04-22T10:55:28-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/configuration-profiles/fleet-desktop-login-item.mobileconfig"
+    ]
+  },
+  {
     "sha": "83dca8ce79a070100974756f40eeb89e6028ec0a",
     "short_sha": "83dca8ce79",
     "author": "Allen Houchins",
@@ -6305,17 +6317,6 @@
     "timestamp": "2024-04-11T15:36:09-04:00",
     "files": [
       "it-and-security/lib/macos-device-health.policies.yml"
-    ]
-  },
-  {
-    "sha": "842c258d7cd405081e1f9697da3314f39622541a",
-    "short_sha": "842c258d7c",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Update workstations-canary.yml (#18051)",
-    "timestamp": "2024-04-04T16:54:16-04:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]

@@ -1,14 +1,14 @@
 {
-  "generated": "2026-04-22T12:18:25Z",
+  "generated": "2026-04-22T18:20:31Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "83dca8ce79a070100974756f40eeb89e6028ec0a",
-    "short_sha": "83dca8ce79",
-    "message": "Fix display name formatting for Touch ID script (#43882)",
-    "timestamp": "2026-04-21T13:39:26-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/83dca8ce79a070100974756f40eeb89e6028ec0a"
+    "sha": "051bf059582aaa0f2636e339dae1d818d17238fe",
+    "short_sha": "051bf05958",
+    "message": "Add Fleet Desktop login item profile (#43956)",
+    "timestamp": "2026-04-22T10:55:28-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/051bf059582aaa0f2636e339dae1d818d17238fe"
   },
   "fleets": [
     {
@@ -422,6 +422,11 @@
           "name": "firewall",
           "file": "it-and-security/lib/macos/configuration-profiles/firewall.mobileconfig",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/configuration-profiles/firewall.mobileconfig"
+        },
+        {
+          "name": "fleet-desktop-login-item",
+          "file": "it-and-security/lib/macos/configuration-profiles/fleet-desktop-login-item.mobileconfig",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/configuration-profiles/fleet-desktop-login-item.mobileconfig"
         },
         {
           "name": "fleet-okta-conditional-access",
@@ -871,7 +876,7 @@
     "icons": 5,
     "labels": 18,
     "reports": 14,
-    "configuration_profiles": 39,
+    "configuration_profiles": 40,
     "declaration_profiles": 6,
     "policies": 30,
     "scripts": 16,
@@ -879,6 +884,6 @@
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 156
+    "total_files": 157
   }
 }
