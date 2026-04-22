@@ -1,5 +1,27 @@
 [
   {
+    "sha": "83dca8ce79a070100974756f40eeb89e6028ec0a",
+    "short_sha": "83dca8ce79",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Fix display name formatting for Touch ID script (#43882)",
+    "timestamp": "2026-04-21T13:39:26-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
+    "sha": "f07e1019861726f46fb86236647a73b005ca0c2c",
+    "short_sha": "f07e101986",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update enable-touch-id-sudo.sh (#43880)",
+    "timestamp": "2026-04-21T13:31:27-05:00",
+    "files": [
+      "it-and-security/lib/macos/scripts/enable-touch-id-sudo.sh"
+    ]
+  },
+  {
     "sha": "92488b2115a1fe77b153e7f5c383887a792b5520",
     "short_sha": "92488b2115",
     "author": "Allen Houchins",
@@ -6294,29 +6316,6 @@
     "timestamp": "2024-04-04T16:54:16-04:00",
     "files": [
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "8194459ee9d60e755347e2c8a3a3488d7cb48118",
-    "short_sha": "8194459ee9",
-    "author": "Lucas Manuel Rodriguez",
-    "email": "lucas@fleetdm.com",
-    "message": "Use osqueryd edge on servers canary team (#18058)",
-    "timestamp": "2024-04-04T15:24:16-03:00",
-    "files": [
-      "it-and-security/lib/servers-canary.agent-options.yml",
-      "it-and-security/teams/servers-canary.yml"
-    ]
-  },
-  {
-    "sha": "5a3c54c0b6dfd5c3b46e5e667fb5ffc99885b29b",
-    "short_sha": "5a3c54c0b6",
-    "author": "Victor Lyuboslavsky",
-    "email": "victor.lyuboslavsky@gmail.com",
-    "message": "Updated 1Password policy to only search 1 level deep for performance reasons. (#18003)",
-    "timestamp": "2024-04-04T09:33:17-05:00",
-    "files": [
-      "it-and-security/lib/macos-device-health.policies.yml"
     ]
   }
 ]

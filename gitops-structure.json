@@ -1,14 +1,14 @@
 {
-  "generated": "2026-04-21T18:20:22Z",
+  "generated": "2026-04-22T00:15:47Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "92488b2115a1fe77b153e7f5c383887a792b5520",
-    "short_sha": "92488b2115",
-    "message": "Add display_name for Touch ID sudo script (#43852)",
-    "timestamp": "2026-04-21T10:52:04-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/92488b2115a1fe77b153e7f5c383887a792b5520"
+    "sha": "83dca8ce79a070100974756f40eeb89e6028ec0a",
+    "short_sha": "83dca8ce79",
+    "message": "Fix display name formatting for Touch ID script (#43882)",
+    "timestamp": "2026-04-21T13:39:26-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/83dca8ce79a070100974756f40eeb89e6028ec0a"
   },
   "fleets": [
     {
