@@ -1,5 +1,41 @@
 [
   {
+    "sha": "57b5d7e72bf4384e89280355f456a868da293a2a",
+    "short_sha": "57b5d7e72b",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update slack-logo.png (#44117)",
+    "timestamp": "2026-04-24T09:18:36-05:00",
+    "files": [
+      "it-and-security/lib/all/icons/slack-logo.png"
+    ]
+  },
+  {
+    "sha": "09987f34d468b582369c3a59b85343ee9a3a4e23",
+    "short_sha": "09987f34d4",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add macOS report to collect default browser (#44116)",
+    "timestamp": "2026-04-24T09:09:33-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/reports/collect-default-browser.yml"
+    ]
+  },
+  {
+    "sha": "96be7ab97249da7617713892c4ad1beda630444f",
+    "short_sha": "96be7ab972",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Slack icon and update Linux package URLs (#44115)",
+    "timestamp": "2026-04-24T09:04:59-05:00",
+    "files": [
+      "it-and-security/lib/all/icons/slack-logo.png",
+      "it-and-security/lib/linux/software/slack-deb.yml",
+      "it-and-security/lib/linux/software/slack-rpm.yml"
+    ]
+  },
+  {
     "sha": "051bf059582aaa0f2636e339dae1d818d17238fe",
     "short_sha": "051bf05958",
     "author": "Allen Houchins",
@@ -6284,39 +6320,6 @@
       "it-and-security/teams/servers-canary.yml",
       "it-and-security/teams/servers.yml",
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "419634d368b6bff8e90d046afa9003e67a5904b0",
-    "short_sha": "419634d368",
-    "author": "Joanne Stableford",
-    "email": "59930035+JoStableford@users.noreply.github.com",
-    "message": "Configure google calendar integration in dogfood with API key (#18220)",
-    "timestamp": "2024-04-12T16:54:41-04:00",
-    "files": [
-      "it-and-security/default.yml"
-    ]
-  },
-  {
-    "sha": "5eb8cf618e0c321bde3b2883398c422eaaefd513",
-    "short_sha": "5eb8cf618e",
-    "author": "Joanne Stableford",
-    "email": "59930035+JoStableford@users.noreply.github.com",
-    "message": "Add calendar integration settings into workstation canary team (#18219)",
-    "timestamp": "2024-04-11T15:36:40-04:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "9eaaaf8af312f44c03584c7b61121271354213da",
-    "short_sha": "9eaaaf8af3",
-    "author": "Joanne Stableford",
-    "email": "59930035+JoStableford@users.noreply.github.com",
-    "message": "Update macos-device-health.policies.yml to add check macOS version (#18218)",
-    "timestamp": "2024-04-11T15:36:09-04:00",
-    "files": [
-      "it-and-security/lib/macos-device-health.policies.yml"
     ]
   }
 ]

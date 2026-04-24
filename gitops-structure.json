@@ -1,14 +1,14 @@
 {
-  "generated": "2026-04-24T12:17:52Z",
+  "generated": "2026-04-24T18:13:03Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "051bf059582aaa0f2636e339dae1d818d17238fe",
-    "short_sha": "051bf05958",
-    "message": "Add Fleet Desktop login item profile (#43956)",
-    "timestamp": "2026-04-22T10:55:28-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/051bf059582aaa0f2636e339dae1d818d17238fe"
+    "sha": "57b5d7e72bf4384e89280355f456a868da293a2a",
+    "short_sha": "57b5d7e72b",
+    "message": "Update slack-logo.png (#44117)",
+    "timestamp": "2026-04-24T09:18:36-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/57b5d7e72bf4384e89280355f456a868da293a2a"
   },
   "fleets": [
     {
@@ -80,6 +80,11 @@
           "name": "nudge-logo",
           "file": "it-and-security/lib/all/icons/nudge-logo.png",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/icons/nudge-logo.png"
+        },
+        {
+          "name": "slack-logo",
+          "file": "it-and-security/lib/all/icons/slack-logo.png",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/icons/slack-logo.png"
         },
         {
           "name": "touch-id",
@@ -604,6 +609,11 @@
       ],
       "reports": [
         {
+          "name": "collect-default-browser",
+          "file": "it-and-security/lib/macos/reports/collect-default-browser.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/reports/collect-default-browser.yml"
+        },
+        {
           "name": "collect-macos-27-incompatible-apps",
           "file": "it-and-security/lib/macos/reports/collect-macos-27-incompatible-apps.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/reports/collect-macos-27-incompatible-apps.yml"
@@ -873,9 +883,9 @@
     ],
     "fleets": 6,
     "agent_options": 2,
-    "icons": 5,
+    "icons": 6,
     "labels": 18,
-    "reports": 14,
+    "reports": 15,
     "configuration_profiles": 40,
     "declaration_profiles": 6,
     "policies": 30,
@@ -884,6 +894,6 @@
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 157
+    "total_files": 159
   }
 }
