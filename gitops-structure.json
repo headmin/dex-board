@@ -1,14 +1,14 @@
 {
-  "generated": "2026-04-25T00:17:58Z",
+  "generated": "2026-04-25T06:28:22Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "57b5d7e72bf4384e89280355f456a868da293a2a",
-    "short_sha": "57b5d7e72b",
-    "message": "Update slack-logo.png (#44117)",
-    "timestamp": "2026-04-24T09:18:36-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/57b5d7e72bf4384e89280355f456a868da293a2a"
+    "sha": "474c6f3b2eb6716eaf7ac08b7aba58c698951d17",
+    "short_sha": "474c6f3b2e",
+    "message": "Fix deprecation warnings (#44186)",
+    "timestamp": "2026-04-24T23:24:04-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/474c6f3b2eb6716eaf7ac08b7aba58c698951d17"
   },
   "fleets": [
     {
@@ -562,9 +562,9 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml"
         },
         {
-          "name": "install-nudge",
-          "file": "it-and-security/lib/macos/policies/install-nudge.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/install-nudge.yml"
+          "name": "install-nudge-assets",
+          "file": "it-and-security/lib/macos/policies/install-nudge-assets.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/install-nudge-assets.yml"
         },
         {
           "name": "install-santa-extension",
@@ -577,14 +577,19 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/latest-macos.yml"
         },
         {
+          "name": "nudge-installed",
+          "file": "it-and-security/lib/macos/policies/nudge-installed.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/nudge-installed.yml"
+        },
+        {
           "name": "patch-fleet-maintained-apps",
           "file": "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
         },
         {
-          "name": "update-1password",
-          "file": "it-and-security/lib/macos/policies/update-1password.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/update-1password.yml"
+          "name": "santa-endpoint-security-extension-active",
+          "file": "it-and-security/lib/macos/policies/santa-endpoint-security-extension-active.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/santa-endpoint-security-extension-active.yml"
         },
         {
           "name": "update-claude",
@@ -651,9 +656,9 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/scripts/enable-touch-id-sudo.sh"
         },
         {
-          "name": "install-nudge",
-          "file": "it-and-security/lib/macos/scripts/install-nudge.sh",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/scripts/install-nudge.sh"
+          "name": "load-santa-system-extension",
+          "file": "it-and-security/lib/macos/scripts/load-santa-system-extension.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/scripts/load-santa-system-extension.sh"
         },
         {
           "name": "nudge-postinstall",
@@ -696,11 +701,6 @@
           "name": "nudge",
           "file": "it-and-security/lib/macos/software/nudge.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/software/nudge.yml"
-        },
-        {
-          "name": "santa",
-          "file": "it-and-security/lib/macos/software/santa.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/software/santa.yml"
         }
       ]
     },
@@ -772,11 +772,6 @@
           "name": "patch-fleet-maintained-apps",
           "file": "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml"
-        },
-        {
-          "name": "update-1password",
-          "file": "it-and-security/lib/windows/policies/update-1password.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/policies/update-1password.yml"
         },
         {
           "name": "update-claude",
@@ -890,10 +885,10 @@
     "declaration_profiles": 6,
     "policies": 30,
     "scripts": 16,
-    "software": 16,
+    "software": 15,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 159
+    "total_files": 158
   }
 }

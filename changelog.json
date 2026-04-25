@@ -1,5 +1,148 @@
 [
   {
+    "sha": "474c6f3b2eb6716eaf7ac08b7aba58c698951d17",
+    "short_sha": "474c6f3b2e",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Fix deprecation warnings (#44186)",
+    "timestamp": "2026-04-24T23:24:04-05:00",
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/company-owned-mobile-devices.yml",
+      "it-and-security/fleets/personal-mobile-devices.yml",
+      "it-and-security/fleets/servers.yml",
+      "it-and-security/fleets/testing-and-qa.yml",
+      "it-and-security/fleets/unassigned.yml",
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
+    "sha": "79874af4a39d72485bb1144bbed121ed3cb4e024",
+    "short_sha": "79874af4a3",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Santa system extension policy and script (#43498)",
+    "timestamp": "2026-04-24T23:04:24-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/macos/policies/santa-endpoint-security-extension-active.yml",
+      "it-and-security/lib/macos/scripts/load-santa-system-extension.sh",
+      "it-and-security/lib/macos/software/santa.yml"
+    ]
+  },
+  {
+    "sha": "466ab4467f4749143ecbe45e9efab2ddd68b624b",
+    "short_sha": "466ab4467f",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Enable Nudge auto-install and comment policy (#44185)",
+    "timestamp": "2026-04-24T22:39:28-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
+    "sha": "7fde291af9cd4afb9f1bc05ed1c108570ce38d3f",
+    "short_sha": "7fde291af9",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Enable 1Password in fleets and patch policies (#44182)",
+    "timestamp": "2026-04-24T22:20:57-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
+    "sha": "caef4603b55cf722501e399d35b696181fa05792",
+    "short_sha": "caef4603b5",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Disable 1Password auto-install and patch checks (#44181)",
+    "timestamp": "2026-04-24T22:10:07-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/1password-installed.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/windows/policies/1password-installed.yml",
+      "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
+    "sha": "93a2543b4eeeb829acf8c4cdc8353e98795db5c8",
+    "short_sha": "93a2543b4e",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Revert \"Comment out 1Password fleet policy and app\" (#44180)",
+    "timestamp": "2026-04-24T21:55:25-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
+    "sha": "8dcc43d267eb6238192a5f27b811325f1388b474",
+    "short_sha": "8dcc43d267",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Comment out 1Password fleet policy and app (#44178)",
+    "timestamp": "2026-04-24T21:41:43-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
+    "sha": "a4229fbc4272423f5ce9ba554d29eaed0ce800df",
+    "short_sha": "a4229fbc42",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Transition 1Password to Fleet-maintained app version (#44177)",
+    "timestamp": "2026-04-24T21:21:00-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/windows-with-fleet-maintained-apps-installed.yml",
+      "it-and-security/lib/macos/policies/1password-installed.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/macos/policies/update-1password.yml",
+      "it-and-security/lib/windows/policies/1password-installed.yml",
+      "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/windows/policies/update-1password.yml"
+    ]
+  },
+  {
+    "sha": "8cc7c3ccec264daf4241f53501e73e47bd32320d",
+    "short_sha": "8cc7c3ccec",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Transition Nudge to Fleet-maintained app (#44176)",
+    "timestamp": "2026-04-24T21:13:59-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
+      "it-and-security/lib/macos/policies/install-nudge-assets.yml",
+      "it-and-security/lib/macos/policies/install-nudge.yml",
+      "it-and-security/lib/macos/policies/nudge-installed.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/macos/scripts/install-nudge.sh"
+    ]
+  },
+  {
+    "sha": "6af2dece0558734a38d7db1fda100476a153c288",
+    "short_sha": "6af2dece05",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update santa-configuration.mobileconfig (#44175)",
+    "timestamp": "2026-04-24T20:56:54-05:00",
+    "files": [
+      "it-and-security/lib/macos/configuration-profiles/santa-configuration.mobileconfig"
+    ]
+  },
+  {
     "sha": "57b5d7e72bf4384e89280355f456a868da293a2a",
     "short_sha": "57b5d7e72b",
     "author": "Allen Houchins",
@@ -6202,124 +6345,6 @@
     "timestamp": "2024-05-16T13:10:42-06:00",
     "files": [
       "it-and-security/teams/explore-data.yml"
-    ]
-  },
-  {
-    "sha": "4a6cd9c79fdfe685bf65a336aa10fe990c90d7e1",
-    "short_sha": "4a6cd9c79f",
-    "author": "JD",
-    "email": "spokanemac@users.noreply.github.com",
-    "message": "Update GitOps config to macOS Sonoma 14.5 (#19034)",
-    "timestamp": "2024-05-15T15:50:37-06:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "9258f53ca3a1e22f8a733ec02c0dbe78b8605c1f",
-    "short_sha": "9258f53ca3",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Move commands into /lib (#18794)",
-    "timestamp": "2024-05-07T17:57:02-04:00",
-    "files": [
-      "it-and-security/lib/macos-send-fleetd.xml"
-    ]
-  },
-  {
-    "sha": "0b66bc4a9b1a9f94f52d856ca3ec7f37f42fb729",
-    "short_sha": "0b66bc4a9b",
-    "author": "JD",
-    "email": "spokanemac@users.noreply.github.com",
-    "message": "Add Windows AV policy (#18551)",
-    "timestamp": "2024-04-29T07:53:04-07:00",
-    "files": [
-      "it-and-security/lib/collect-windows-defender.queries.yml",
-      "it-and-security/lib/windows-device-health.policies.yml"
-    ]
-  },
-  {
-    "sha": "3a538e9729499c9ce14963ba4ad080de19b8eb79",
-    "short_sha": "3a538e9729",
-    "author": "Luke Heath",
-    "email": "luke@fleetdm.com",
-    "message": "Update policies via GitOps (#18537)",
-    "timestamp": "2024-04-25T09:56:50-05:00",
-    "files": [
-      "it-and-security/lib/macos-device-health.policies.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "b82d5f4ef9d49fd1b57fb40219b9bfb3bae60ab0",
-    "short_sha": "b82d5f4ef9",
-    "author": "Luke Heath",
-    "email": "luke@fleetdm.com",
-    "message": "Add MDM commands directory to /it-and-security (#18535)",
-    "timestamp": "2024-04-25T09:05:18-05:00",
-    "files": [
-      "it-and-security/mdm-commands/apple/send-fleetd.xml"
-    ]
-  },
-  {
-    "sha": "3f2e6738ca7b3142eff0f363d07c54d74869c074",
-    "short_sha": "3f2e6738ca",
-    "author": "Marko Lisica",
-    "email": "83164494+marko-lisica@users.noreply.github.com",
-    "message": "Test DDM OS updates (#18481)",
-    "timestamp": "2024-04-23T17:13:15+02:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "665ace580d1e0f1e36be51854d7f1613a4898228",
-    "short_sha": "665ace580d",
-    "author": "Lucas Manuel Rodriguez",
-    "email": "lucas@fleetdm.com",
-    "message": "Add new query to workstations canary to help fleetd release verification (#18349)",
-    "timestamp": "2024-04-16T18:22:28-03:00",
-    "files": [
-      "it-and-security/lib/collect-fleetd-information.yml",
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "daba6237d2f15070c4ed2d6f09f6d65173eeb569",
-    "short_sha": "daba6237d2",
-    "author": "Victor Lyuboslavsky",
-    "email": "victor.lyuboslavsky@gmail.com",
-    "message": "Fixing broken \"macOS - Check if latest version\" policy. (#18304)",
-    "timestamp": "2024-04-16T14:57:18-05:00",
-    "files": [
-      "it-and-security/lib/macos-device-health.policies.yml"
-    ]
-  },
-  {
-    "sha": "791ce63c73ed4c93ce9fed2f4480d587315a4791",
-    "short_sha": "791ce63c73",
-    "author": "Lucas Manuel Rodriguez",
-    "email": "lucas@fleetdm.com",
-    "message": "Dogfood fleetd and osquery `edge` releases (#18341)",
-    "timestamp": "2024-04-16T16:01:06-03:00",
-    "files": [
-      "it-and-security/lib/servers-canary.agent-options.yml",
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "160448f7d311dc7381fc91a8e20772cb6352654c",
-    "short_sha": "160448f7d3",
-    "author": "Rachael Shaw",
-    "email": "r@rachael.wtf",
-    "message": "Add spaces after emojis in team names (#18249)",
-    "timestamp": "2024-04-15T17:52:15-05:00",
-    "files": [
-      "it-and-security/teams/servers-canary.yml",
-      "it-and-security/teams/servers.yml",
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]
