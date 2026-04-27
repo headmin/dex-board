@@ -1,5 +1,17 @@
 [
   {
+    "sha": "e3a06135cee1d5b482532af04a71606921c3351e",
+    "short_sha": "e3a06135ce",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Enable osquery eventing and macOS FIM config (#44215)",
+    "timestamp": "2026-04-27T13:17:47-05:00",
+    "files": [
+      "it-and-security/fleets/testing-and-qa.yml",
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
     "sha": "474c6f3b2eb6716eaf7ac08b7aba58c698951d17",
     "short_sha": "474c6f3b2e",
     "author": "Allen Houchins",
@@ -6334,17 +6346,6 @@
     "timestamp": "2024-05-17T12:37:19-05:00",
     "files": [
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "910c0bc4c312effb5a1db31e3192d6daf49cc6a6",
-    "short_sha": "910c0bc4c3",
-    "author": "JD",
-    "email": "spokanemac@users.noreply.github.com",
-    "message": "Rename Explore data (fleetdm.com) team (#19074)",
-    "timestamp": "2024-05-16T13:10:42-06:00",
-    "files": [
-      "it-and-security/teams/explore-data.yml"
     ]
   }
 ]

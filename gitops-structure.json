@@ -1,14 +1,14 @@
 {
-  "generated": "2026-04-27T12:28:28Z",
+  "generated": "2026-04-27T18:24:44Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "474c6f3b2eb6716eaf7ac08b7aba58c698951d17",
-    "short_sha": "474c6f3b2e",
-    "message": "Fix deprecation warnings (#44186)",
-    "timestamp": "2026-04-24T23:24:04-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/474c6f3b2eb6716eaf7ac08b7aba58c698951d17"
+    "sha": "e3a06135cee1d5b482532af04a71606921c3351e",
+    "short_sha": "e3a06135ce",
+    "message": "Enable osquery eventing and macOS FIM config (#44215)",
+    "timestamp": "2026-04-27T13:17:47-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/e3a06135cee1d5b482532af04a71606921c3351e"
   },
   "fleets": [
     {
