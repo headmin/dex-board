@@ -1,5 +1,48 @@
 [
   {
+    "sha": "2b3654607c95f7a5c84cfa72227f92146fb1444b",
+    "short_sha": "2b3654607c",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add spacing to report description blocks (#44409)",
+    "timestamp": "2026-04-29T12:13:45-05:00",
+    "files": [
+      "it-and-security/lib/all/reports/collect-chromium-browser-extensions.yml",
+      "it-and-security/lib/all/reports/collect-firefox-browser-extensions.yml",
+      "it-and-security/lib/all/reports/collect-listening-ports.yml",
+      "it-and-security/lib/all/reports/collect-local-user-accounts.yml",
+      "it-and-security/lib/all/reports/collect-safari-browser-extensions.yml",
+      "it-and-security/lib/all/reports/collect-usb-devices.yml"
+    ]
+  },
+  {
+    "sha": "3c8bf05fa3964022e31b5ae85bebd6c134c6c530",
+    "short_sha": "3c8bf05fa3",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add security policies and reports to Workstations (#43457)",
+    "timestamp": "2026-04-29T11:00:42-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/reports/collect-chromium-browser-extensions.yml",
+      "it-and-security/lib/all/reports/collect-firefox-browser-extensions.yml",
+      "it-and-security/lib/all/reports/collect-listening-ports.yml",
+      "it-and-security/lib/all/reports/collect-local-user-accounts.yml",
+      "it-and-security/lib/all/reports/collect-safari-browser-extensions.yml",
+      "it-and-security/lib/all/reports/collect-usb-devices.yml",
+      "it-and-security/lib/linux/policies/sshd-permitrootlogin-restricted.yml",
+      "it-and-security/lib/macos/policies/firewall-enabled.yml",
+      "it-and-security/lib/macos/policies/gatekeeper-enabled.yml",
+      "it-and-security/lib/macos/policies/local-admin-count-reasonable.yml",
+      "it-and-security/lib/macos/policies/remote-login-disabled.yml",
+      "it-and-security/lib/macos/policies/screen-lock-inactivity.yml",
+      "it-and-security/lib/macos/policies/sip-enabled.yml",
+      "it-and-security/lib/windows/policies/remote-desktop-disabled.yml",
+      "it-and-security/lib/windows/policies/screen-lock-timeout-configured.yml",
+      "it-and-security/lib/windows/policies/secure-boot-enabled.yml"
+    ]
+  },
+  {
     "sha": "e3a06135cee1d5b482532af04a71606921c3351e",
     "short_sha": "e3a06135ce",
     "author": "Allen Houchins",
@@ -6324,28 +6367,6 @@
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "431d6919fe4ea9a42aac98a1a4741d0208c3c908",
-    "short_sha": "431d6919fe",
-    "author": "Lucas Manuel Rodriguez",
-    "email": "lucas@fleetdm.com",
-    "message": "Enable users and software on servers canary team (#19118)",
-    "timestamp": "2024-05-17T15:25:21-03:00",
-    "files": [
-      "it-and-security/teams/servers-canary.yml"
-    ]
-  },
-  {
-    "sha": "0ce6a9fbee969ccfa851faae6212a63b46a7bc53",
-    "short_sha": "0ce6a9fbee",
-    "author": "Rachael Shaw",
-    "email": "r@rachael.wtf",
-    "message": "Update \"macOS - Check if latest version\" policy description/resolution (#19120)",
-    "timestamp": "2024-05-17T12:37:19-05:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]

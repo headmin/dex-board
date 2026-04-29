@@ -1,14 +1,14 @@
 {
-  "generated": "2026-04-29T12:28:17Z",
+  "generated": "2026-04-29T18:27:30Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "e3a06135cee1d5b482532af04a71606921c3351e",
-    "short_sha": "e3a06135ce",
-    "message": "Enable osquery eventing and macOS FIM config (#44215)",
-    "timestamp": "2026-04-27T13:17:47-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/e3a06135cee1d5b482532af04a71606921c3351e"
+    "sha": "2b3654607c95f7a5c84cfa72227f92146fb1444b",
+    "short_sha": "2b3654607c",
+    "message": "Add spacing to report description blocks (#44409)",
+    "timestamp": "2026-04-29T12:13:45-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/2b3654607c95f7a5c84cfa72227f92146fb1444b"
   },
   "fleets": [
     {
@@ -186,6 +186,16 @@
       ],
       "reports": [
         {
+          "name": "collect-chromium-browser-extensions",
+          "file": "it-and-security/lib/all/reports/collect-chromium-browser-extensions.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/reports/collect-chromium-browser-extensions.yml"
+        },
+        {
+          "name": "collect-firefox-browser-extensions",
+          "file": "it-and-security/lib/all/reports/collect-firefox-browser-extensions.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/reports/collect-firefox-browser-extensions.yml"
+        },
+        {
           "name": "collect-fleetd-information",
           "file": "it-and-security/lib/all/reports/collect-fleetd-information.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/reports/collect-fleetd-information.yml"
@@ -196,9 +206,29 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/reports/collect-known-vulnerable-chrome-extensions.yml"
         },
         {
+          "name": "collect-listening-ports",
+          "file": "it-and-security/lib/all/reports/collect-listening-ports.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/reports/collect-listening-ports.yml"
+        },
+        {
+          "name": "collect-local-user-accounts",
+          "file": "it-and-security/lib/all/reports/collect-local-user-accounts.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/reports/collect-local-user-accounts.yml"
+        },
+        {
           "name": "collect-operating-system-information",
           "file": "it-and-security/lib/all/reports/collect-operating-system-information.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/reports/collect-operating-system-information.yml"
+        },
+        {
+          "name": "collect-safari-browser-extensions",
+          "file": "it-and-security/lib/all/reports/collect-safari-browser-extensions.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/reports/collect-safari-browser-extensions.yml"
+        },
+        {
+          "name": "collect-usb-devices",
+          "file": "it-and-security/lib/all/reports/collect-usb-devices.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/reports/collect-usb-devices.yml"
         },
         {
           "name": "dex-queries",
@@ -270,6 +300,11 @@
           "name": "disk-space-check",
           "file": "it-and-security/lib/linux/policies/disk-space-check.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/policies/disk-space-check.yml"
+        },
+        {
+          "name": "sshd-permitrootlogin-restricted",
+          "file": "it-and-security/lib/linux/policies/sshd-permitrootlogin-restricted.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/policies/sshd-permitrootlogin-restricted.yml"
         }
       ],
       "reports": [
@@ -562,6 +597,16 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml"
         },
         {
+          "name": "firewall-enabled",
+          "file": "it-and-security/lib/macos/policies/firewall-enabled.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/firewall-enabled.yml"
+        },
+        {
+          "name": "gatekeeper-enabled",
+          "file": "it-and-security/lib/macos/policies/gatekeeper-enabled.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/gatekeeper-enabled.yml"
+        },
+        {
           "name": "install-nudge-assets",
           "file": "it-and-security/lib/macos/policies/install-nudge-assets.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/install-nudge-assets.yml"
@@ -577,6 +622,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/latest-macos.yml"
         },
         {
+          "name": "local-admin-count-reasonable",
+          "file": "it-and-security/lib/macos/policies/local-admin-count-reasonable.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/local-admin-count-reasonable.yml"
+        },
+        {
           "name": "nudge-installed",
           "file": "it-and-security/lib/macos/policies/nudge-installed.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/nudge-installed.yml"
@@ -587,9 +637,24 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
         },
         {
+          "name": "remote-login-disabled",
+          "file": "it-and-security/lib/macos/policies/remote-login-disabled.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/remote-login-disabled.yml"
+        },
+        {
           "name": "santa-endpoint-security-extension-active",
           "file": "it-and-security/lib/macos/policies/santa-endpoint-security-extension-active.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/santa-endpoint-security-extension-active.yml"
+        },
+        {
+          "name": "screen-lock-inactivity",
+          "file": "it-and-security/lib/macos/policies/screen-lock-inactivity.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/screen-lock-inactivity.yml"
+        },
+        {
+          "name": "sip-enabled",
+          "file": "it-and-security/lib/macos/policies/sip-enabled.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/sip-enabled.yml"
         },
         {
           "name": "update-claude",
@@ -774,6 +839,21 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml"
         },
         {
+          "name": "remote-desktop-disabled",
+          "file": "it-and-security/lib/windows/policies/remote-desktop-disabled.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/policies/remote-desktop-disabled.yml"
+        },
+        {
+          "name": "screen-lock-timeout-configured",
+          "file": "it-and-security/lib/windows/policies/screen-lock-timeout-configured.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/policies/screen-lock-timeout-configured.yml"
+        },
+        {
+          "name": "secure-boot-enabled",
+          "file": "it-and-security/lib/windows/policies/secure-boot-enabled.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/policies/secure-boot-enabled.yml"
+        },
+        {
           "name": "update-claude",
           "file": "it-and-security/lib/windows/policies/update-claude.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/policies/update-claude.yml"
@@ -880,15 +960,15 @@
     "agent_options": 2,
     "icons": 6,
     "labels": 18,
-    "reports": 15,
+    "reports": 21,
     "configuration_profiles": 40,
     "declaration_profiles": 6,
-    "policies": 30,
+    "policies": 40,
     "scripts": 16,
     "software": 15,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 158
+    "total_files": 174
   }
 }
