@@ -1,14 +1,14 @@
 {
-  "generated": "2026-04-30T00:23:44Z",
+  "generated": "2026-04-30T06:49:07Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "2b3654607c95f7a5c84cfa72227f92146fb1444b",
-    "short_sha": "2b3654607c",
-    "message": "Add spacing to report description blocks (#44409)",
-    "timestamp": "2026-04-29T12:13:45-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/2b3654607c95f7a5c84cfa72227f92146fb1444b"
+    "sha": "a67f14d388ba614feafe1965b38b85142ee92db0",
+    "short_sha": "a67f14d388",
+    "message": "Patch Adobe Acrobat automatically on workstation devices (#44316)",
+    "timestamp": "2026-04-29T20:30:27-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/a67f14d388ba614feafe1965b38b85142ee92db0"
   },
   "fleets": [
     {

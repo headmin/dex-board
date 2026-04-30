@@ -1,5 +1,20 @@
 [
   {
+    "sha": "a67f14d388ba614feafe1965b38b85142ee92db0",
+    "short_sha": "a67f14d388",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Patch Adobe Acrobat automatically on workstation devices (#44316)",
+    "timestamp": "2026-04-29T20:30:27-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
+      "it-and-security/lib/all/labels/windows-with-fleet-maintained-apps-installed.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
     "sha": "2b3654607c95f7a5c84cfa72227f92146fb1444b",
     "short_sha": "2b3654607c",
     "author": "Allen Houchins",
@@ -6354,18 +6369,6 @@
     "timestamp": "2024-05-20T14:59:59-05:00",
     "files": [
       "it-and-security/default.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "d5f666bfa36a6f0d2b6be3acb2162d39563b17c7",
-    "short_sha": "d5f666bfa3",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Update \"macOS - Check if latest version\" policy (#19138)",
-    "timestamp": "2024-05-20T12:48:28-04:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]
   }
