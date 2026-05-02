@@ -1,14 +1,14 @@
 {
-  "generated": "2026-05-02T00:22:42Z",
+  "generated": "2026-05-02T06:36:24Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "a67f14d388ba614feafe1965b38b85142ee92db0",
-    "short_sha": "a67f14d388",
-    "message": "Patch Adobe Acrobat automatically on workstation devices (#44316)",
-    "timestamp": "2026-04-29T20:30:27-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/a67f14d388ba614feafe1965b38b85142ee92db0"
+    "sha": "69840387f0841d218def6b2b428160c865f77a2b",
+    "short_sha": "69840387f0",
+    "message": "Pin appindicator extension, verify tarball & timeout (#44631)",
+    "timestamp": "2026-05-01T23:54:36-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/69840387f0841d218def6b2b428160c865f77a2b"
   },
   "fleets": [
     {

@@ -1,5 +1,27 @@
 [
   {
+    "sha": "69840387f0841d218def6b2b428160c865f77a2b",
+    "short_sha": "69840387f0",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Pin appindicator extension, verify tarball & timeout (#44631)",
+    "timestamp": "2026-05-01T23:54:36-05:00",
+    "files": [
+      "it-and-security/lib/linux/scripts/install-fleet-desktop-required-extension.sh"
+    ]
+  },
+  {
+    "sha": "fa380635900a5e713c5dafbd1e0bfd7a8a89237e",
+    "short_sha": "fa38063590",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Fix Fleet Desktop not launching on OpenSUSE 16 (#44482)",
+    "timestamp": "2026-05-01T23:26:56-05:00",
+    "files": [
+      "it-and-security/lib/linux/scripts/install-fleet-desktop-required-extension.sh"
+    ]
+  },
+  {
     "sha": "a67f14d388ba614feafe1965b38b85142ee92db0",
     "short_sha": "a67f14d388",
     "author": "Allen Houchins",
@@ -6346,30 +6368,6 @@
     "files": [
       "it-and-security/lib/windows-enable-ms-defender.ps1",
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "d2e23d1af3be5567a4e185e6348875fedeb18283",
-    "short_sha": "d2e23d1af3",
-    "author": "Marko Lisica",
-    "email": "83164494+marko-lisica@users.noreply.github.com",
-    "message": "Doogfooding - testing malformed declaration (#19170)",
-    "timestamp": "2024-05-23T00:01:56+02:00",
-    "files": [
-      "it-and-security/lib/configuration-profiles/passcode-settings-ddm.json",
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "1b5daad8b5005fa67e59ee3609b39dd9642fa88c",
-    "short_sha": "1b5daad8b5",
-    "author": "Rachael Shaw",
-    "email": "r@rachael.wtf",
-    "message": "GitOps updates (#19147)",
-    "timestamp": "2024-05-20T14:59:59-05:00",
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]
