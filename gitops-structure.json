@@ -1,14 +1,14 @@
 {
-  "generated": "2026-05-04T00:22:28Z",
+  "generated": "2026-05-04T06:57:20Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "69840387f0841d218def6b2b428160c865f77a2b",
-    "short_sha": "69840387f0",
-    "message": "Pin appindicator extension, verify tarball & timeout (#44631)",
-    "timestamp": "2026-05-01T23:54:36-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/69840387f0841d218def6b2b428160c865f77a2b"
+    "sha": "442f6d0df3831fc0af7ac3a365fcf7ba48f57b4f",
+    "short_sha": "442f6d0df3",
+    "message": "Add screen-lock MDM profiles and exclusion labels (#44581)",
+    "timestamp": "2026-05-03T21:57:32-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/442f6d0df3831fc0af7ac3a365fcf7ba48f57b4f"
   },
   "fleets": [
     {
@@ -129,6 +129,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macos-compatibility-extension-installed.yml"
         },
         {
+          "name": "macos-screen-lock-exclusions",
+          "file": "it-and-security/lib/all/labels/macos-screen-lock-exclusions.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macos-screen-lock-exclusions.yml"
+        },
+        {
           "name": "macs-with-1password-installed",
           "file": "it-and-security/lib/all/labels/macs-with-1password-installed.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macs-with-1password-installed.yml"
@@ -172,6 +177,11 @@
           "name": "virtual-machines",
           "file": "it-and-security/lib/all/labels/virtual-machines.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/virtual-machines.yml"
+        },
+        {
+          "name": "windows-screen-lock-exclusions",
+          "file": "it-and-security/lib/all/labels/windows-screen-lock-exclusions.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/windows-screen-lock-exclusions.yml"
         },
         {
           "name": "windows-with-fleet-maintained-apps-installed",
@@ -529,6 +539,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/configuration-profiles/santa-rules.mobileconfig"
         },
         {
+          "name": "screen-lock-inactivity",
+          "file": "it-and-security/lib/macos/configuration-profiles/screen-lock-inactivity.mobileconfig",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/configuration-profiles/screen-lock-inactivity.mobileconfig"
+        },
+        {
           "name": "secure-terminal-keyboard",
           "file": "it-and-security/lib/macos/configuration-profiles/secure-terminal-keyboard.mobileconfig",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/configuration-profiles/secure-terminal-keyboard.mobileconfig"
@@ -797,6 +812,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/configuration-profiles/Password settings.xml"
         },
         {
+          "name": "Screen lock timeout",
+          "file": "it-and-security/lib/windows/configuration-profiles/Screen lock timeout.xml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/configuration-profiles/Screen lock timeout.xml"
+        },
+        {
           "name": "Windows Defender compliance settings",
           "file": "it-and-security/lib/windows/configuration-profiles/Windows Defender compliance settings.xml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/configuration-profiles/Windows Defender compliance settings.xml"
@@ -959,9 +979,9 @@
     "fleets": 6,
     "agent_options": 2,
     "icons": 6,
-    "labels": 18,
+    "labels": 20,
     "reports": 21,
-    "configuration_profiles": 40,
+    "configuration_profiles": 42,
     "declaration_profiles": 6,
     "policies": 40,
     "scripts": 16,
@@ -969,6 +989,6 @@
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 174
+    "total_files": 178
   }
 }
