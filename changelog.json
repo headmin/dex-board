@@ -1,5 +1,71 @@
 [
   {
+    "sha": "6a5c67dbdf072f626ccce432ab5419abfa68ba42",
+    "short_sha": "6a5c67dbdf",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Remove enrollment profile policy and test label (#44683)",
+    "timestamp": "2026-05-04T13:15:58-05:00",
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/testing-and-qa.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/nudge-test-devices.yml",
+      "it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml"
+    ]
+  },
+  {
+    "sha": "16e8557f4b7dc6ee9be442b0fe95c4d56948e762",
+    "short_sha": "16e8557f4b",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Remove Fleet Desktop login item profile (#44673)",
+    "timestamp": "2026-05-04T10:56:42-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/configuration-profiles/fleet-desktop-login-item.mobileconfig"
+    ]
+  },
+  {
+    "sha": "ad79c4a410927cb173363b136ec4b465cbc52ae3",
+    "short_sha": "ad79c4a410",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Convert Fleet Desktop.app to FMA and patch policy (#44654)",
+    "timestamp": "2026-05-04T09:50:43-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/macs-with-fleet-desktop-installed.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/macos/policies/update-fleet-desktop.yml",
+      "it-and-security/lib/macos/software/fleet-desktop.yml"
+    ]
+  },
+  {
+    "sha": "dc58f84c3f5936465cc04b8beef5e9d42b9c6182",
+    "short_sha": "dc58f84c3f",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Enable host expiry (90 days) for Workstations and mobile device teams (#44650)",
+    "timestamp": "2026-05-04T09:20:11-05:00",
+    "files": [
+      "it-and-security/fleets/company-owned-mobile-devices.yml",
+      "it-and-security/fleets/personal-mobile-devices.yml",
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
+    "sha": "8a991b8a4c5f80908d11f54d1899cc217a713968",
+    "short_sha": "8a991b8a4c",
+    "author": "kilo-code-bot[bot]",
+    "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
+    "message": "Enable host expiry for Testing & QA team (30 days) (#44649)",
+    "timestamp": "2026-05-04T09:13:09-05:00",
+    "files": [
+      "it-and-security/fleets/testing-and-qa.yml"
+    ]
+  },
+  {
     "sha": "442f6d0df3831fc0af7ac3a365fcf7ba48f57b4f",
     "short_sha": "442f6d0df3",
     "author": "Allen Houchins",
@@ -6311,69 +6377,6 @@
     "timestamp": "2024-06-10T14:49:42-07:00",
     "files": [
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "dd89ab6998992ad5813d918f69be3f96f3bcea12",
-    "short_sha": "dd89ab6998",
-    "author": "Luke Heath",
-    "email": "luke@fleetdm.com",
-    "message": "Update macos MDM migration demo script (#19621)",
-    "timestamp": "2024-06-10T10:48:35-07:00",
-    "files": [
-      "it-and-security/lib/macos-mdm-migration.sh"
-    ]
-  },
-  {
-    "sha": "9a4b6a4abe8cde340a74a52b36f6e8e1d6f9bba1",
-    "short_sha": "9a4b6a4abe",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Dogfood policies: deduplicate (#19613)",
-    "timestamp": "2024-06-10T12:00:06-04:00",
-    "files": [
-      "it-and-security/lib/macos-device-health-canary.policies.yml",
-      "it-and-security/lib/macos-device-health.policies.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "3a4a2904d21e5cf00f14f5418dca5d4c9318afd9",
-    "short_sha": "3a4a2904d2",
-    "author": "Luke Heath",
-    "email": "luke@fleetdm.com",
-    "message": "Update canary profiles and policies (#19598)",
-    "timestamp": "2024-06-07T13:10:24-07:00",
-    "files": [
-      "it-and-security/lib/configuration-profiles/macos-disable-update-notifications.mobileconfig",
-      "it-and-security/lib/macos-device-health-canary.policies.yml",
-      "it-and-security/lib/macos-mdm-migration.sh",
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "1746f020c7ea2c5f768273f940f6a4daf9f1ff27",
-    "short_sha": "1746f020c7",
-    "author": "Drew Baker",
-    "email": "89049099+Drew-P-drawers@users.noreply.github.com",
-    "message": "move min mac os required policy (#19431)",
-    "timestamp": "2024-05-31T17:45:18-04:00",
-    "files": [
-      "it-and-security/lib/macos-device-health.policies.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "94be5c0a9c2918ba7218fe51d57b9e8382f6279e",
-    "short_sha": "94be5c0a9c",
-    "author": "JD",
-    "email": "spokanemac@users.noreply.github.com",
-    "message": "Adds VM team to gitops (#19316)",
-    "timestamp": "2024-05-29T11:19:24-07:00",
-    "files": [
-      "it-and-security/teams/virtual-machines.yml"
     ]
   }
 ]

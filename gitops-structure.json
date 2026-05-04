@@ -1,14 +1,14 @@
 {
-  "generated": "2026-05-04T12:29:27Z",
+  "generated": "2026-05-04T18:29:29Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "442f6d0df3831fc0af7ac3a365fcf7ba48f57b4f",
-    "short_sha": "442f6d0df3",
-    "message": "Add screen-lock MDM profiles and exclusion labels (#44581)",
-    "timestamp": "2026-05-03T21:57:32-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/442f6d0df3831fc0af7ac3a365fcf7ba48f57b4f"
+    "sha": "6a5c67dbdf072f626ccce432ab5419abfa68ba42",
+    "short_sha": "6a5c67dbdf",
+    "message": "Remove enrollment profile policy and test label (#44683)",
+    "timestamp": "2026-05-04T13:15:58-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/6a5c67dbdf072f626ccce432ab5419abfa68ba42"
   },
   "fleets": [
     {
@@ -152,11 +152,6 @@
           "name": "macs-with-microsoft-autoupdate-installed",
           "file": "it-and-security/lib/all/labels/macs-with-microsoft-autoupdate-installed.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macs-with-microsoft-autoupdate-installed.yml"
-        },
-        {
-          "name": "nudge-test-devices",
-          "file": "it-and-security/lib/all/labels/nudge-test-devices.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/nudge-test-devices.yml"
         },
         {
           "name": "rpm-based-linux-hosts",
@@ -474,11 +469,6 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/configuration-profiles/firewall.mobileconfig"
         },
         {
-          "name": "fleet-desktop-login-item",
-          "file": "it-and-security/lib/macos/configuration-profiles/fleet-desktop-login-item.mobileconfig",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/configuration-profiles/fleet-desktop-login-item.mobileconfig"
-        },
-        {
           "name": "fleet-okta-conditional-access",
           "file": "it-and-security/lib/macos/configuration-profiles/fleet-okta-conditional-access.mobileconfig",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/configuration-profiles/fleet-okta-conditional-access.mobileconfig"
@@ -607,11 +597,6 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/disk-space-check.yml"
         },
         {
-          "name": "enrollment-profile-up-to-date",
-          "file": "it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml"
-        },
-        {
           "name": "firewall-enabled",
           "file": "it-and-security/lib/macos/policies/firewall-enabled.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/firewall-enabled.yml"
@@ -675,11 +660,6 @@
           "name": "update-claude",
           "file": "it-and-security/lib/macos/policies/update-claude.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/update-claude.yml"
-        },
-        {
-          "name": "update-fleet-desktop",
-          "file": "it-and-security/lib/macos/policies/update-fleet-desktop.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/update-fleet-desktop.yml"
         },
         {
           "name": "update-safari",
@@ -761,11 +741,6 @@
           "name": "1password",
           "file": "it-and-security/lib/macos/software/1password.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/software/1password.yml"
-        },
-        {
-          "name": "fleet-desktop",
-          "file": "it-and-security/lib/macos/software/fleet-desktop.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/software/fleet-desktop.yml"
         },
         {
           "name": "fleet-keynote-theme",
@@ -979,16 +954,16 @@
     "fleets": 6,
     "agent_options": 2,
     "icons": 6,
-    "labels": 20,
+    "labels": 19,
     "reports": 21,
-    "configuration_profiles": 42,
+    "configuration_profiles": 41,
     "declaration_profiles": 6,
-    "policies": 40,
+    "policies": 38,
     "scripts": 16,
-    "software": 15,
+    "software": 14,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 178
+    "total_files": 173
   }
 }
