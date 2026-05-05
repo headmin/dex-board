@@ -1,5 +1,53 @@
 [
   {
+    "sha": "c563c8b89cb964cd57c88c3ae55a7a86f807d6df",
+    "short_sha": "c563c8b89c",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add macOS configuration for Fleet Desktop launch agent (#44693)",
+    "timestamp": "2026-05-04T14:33:37-05:00",
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/macs-with-fleet-desktop-launch-agent-profile.yml",
+      "it-and-security/lib/macos/configuration-profiles/fleet-desktop-launch-agent.mobileconfig",
+      "it-and-security/lib/macos/policies/install-fleet-desktop-launch-agent.yml",
+      "it-and-security/lib/macos/software/fleet-desktop-launch-agent.yml"
+    ]
+  },
+  {
+    "sha": "4be56c10645353424b989c12ce45e5335330b0c2",
+    "short_sha": "4be56c1064",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Revert \"Add Fleet Desktop launch agent configuration profile\" (#44688)",
+    "timestamp": "2026-05-04T13:40:09-05:00",
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/macs-with-fleet-desktop-launch-agent-profile.yml",
+      "it-and-security/lib/macos/configuration-profiles/fleet-desktop-launch-agent.mobileconfig",
+      "it-and-security/lib/macos/policies/install-fleet-desktop-launch-agent.yml",
+      "it-and-security/lib/macos/software/fleet-desktop-launch-agent.yml"
+    ]
+  },
+  {
+    "sha": "0d35759b83be7c988924ed71bf52b0f8d7792b58",
+    "short_sha": "0d35759b83",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Fleet Desktop launch agent configuration profile (#44679)",
+    "timestamp": "2026-05-04T13:29:12-05:00",
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/macs-with-fleet-desktop-launch-agent-profile.yml",
+      "it-and-security/lib/macos/configuration-profiles/fleet-desktop-launch-agent.mobileconfig",
+      "it-and-security/lib/macos/policies/install-fleet-desktop-launch-agent.yml",
+      "it-and-security/lib/macos/software/fleet-desktop-launch-agent.yml"
+    ]
+  },
+  {
     "sha": "6a5c67dbdf072f626ccce432ab5419abfa68ba42",
     "short_sha": "6a5c67dbdf",
     "author": "Allen Houchins",
@@ -6343,40 +6391,6 @@
     "timestamp": "2024-06-12T09:34:57-04:00",
     "files": [
       "it-and-security/lib/windows-remove-fleetd.ps1"
-    ]
-  },
-  {
-    "sha": "a035752a9b4c71f791168102aff0669ee0dd8aa0",
-    "short_sha": "a035752a9b",
-    "author": "Drew Baker",
-    "email": "89049099+Drew-P-drawers@users.noreply.github.com",
-    "message": "Adding macos-system-maintenance-script to workstations canary \ud83d\udc23 team (#19675)",
-    "timestamp": "2024-06-11T18:47:04-04:00",
-    "files": [
-      "it-and-security/lib/macos-system-maintenance.sh",
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "c716c5d21a96cd36a59dbe2434e03ff29c18a5a3",
-    "short_sha": "c716c5d21a",
-    "author": "Drew Baker",
-    "email": "89049099+Drew-P-drawers@users.noreply.github.com",
-    "message": "Add system maintenance policy to workstations canary (#19664)",
-    "timestamp": "2024-06-11T18:04:13-04:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "fd1500747c6ba42bf2fac98de6b20d2fa8968872",
-    "short_sha": "fd1500747c",
-    "author": "Luke Heath",
-    "email": "luke@fleetdm.com",
-    "message": "Update macos MDM migration demo policy (#19632)",
-    "timestamp": "2024-06-10T14:49:42-07:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]
