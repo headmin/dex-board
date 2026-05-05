@@ -1,5 +1,39 @@
 [
   {
+    "sha": "791ebda4e6de78c8b3f00a4ef04157f7aedf482a",
+    "short_sha": "791ebda4e6",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Re-add install policies for 1Password and Nudge (#44755)",
+    "timestamp": "2026-05-05T12:47:03-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
+    "sha": "5c26b6d7550b351be407ad4660e2b594226e3779",
+    "short_sha": "5c26b6d755",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Remove 1Password custom package (#44751)",
+    "timestamp": "2026-05-05T12:10:49-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/software/1password.yml"
+    ]
+  },
+  {
+    "sha": "c30648cb570c9f694888bfde513b75ecc547a6ba",
+    "short_sha": "c30648cb57",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update policy that checks launch agent plist file presence (#44731)",
+    "timestamp": "2026-05-05T09:01:35-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/install-fleet-desktop-launch-agent.yml"
+    ]
+  },
+  {
     "sha": "c563c8b89cb964cd57c88c3ae55a7a86f807d6df",
     "short_sha": "c563c8b89c",
     "author": "Allen Houchins",
@@ -6356,41 +6390,6 @@
       "it-and-security/lib/configuration-profiles/ios-passcode-settings-ddm.json",
       "it-and-security/lib/configuration-profiles/ios-restrictions.mobileconfig",
       "it-and-security/teams/iphones.yml"
-    ]
-  },
-  {
-    "sha": "c961df618e60ce51645e7edfafced5cbf6f775de",
-    "short_sha": "c961df618e",
-    "author": "Drew Baker",
-    "email": "89049099+Drew-P-drawers@users.noreply.github.com",
-    "message": "Adding fallback wallpaper to system maintenance script (#19858)",
-    "timestamp": "2024-06-19T15:04:22-04:00",
-    "files": [
-      "it-and-security/lib/macos-system-maintenance.sh"
-    ]
-  },
-  {
-    "sha": "30e4b252aa892222bbb9eb637bcdadeac9dbdfe5",
-    "short_sha": "30e4b252aa",
-    "author": "Dave Herder",
-    "email": "27025660+dherder@users.noreply.github.com",
-    "message": "adding a subset of cis benchmarks policies to canary workstations team (#19572)",
-    "timestamp": "2024-06-12T08:19:51-07:00",
-    "files": [
-      "it-and-security/lib/macos-cis.policies.yml",
-      "it-and-security/lib/windows-cis.policies.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "943a4566f4cf2f0e82e466eec657aeade4cf18e2",
-    "short_sha": "943a4566f4",
-    "author": "Martin Angers",
-    "email": "martin.n.angers@gmail.com",
-    "message": "Fix the `windows-remove-fleetd.ps1` script so that the agent can be reinstalled (#19643)",
-    "timestamp": "2024-06-12T09:34:57-04:00",
-    "files": [
-      "it-and-security/lib/windows-remove-fleetd.ps1"
     ]
   }
 ]

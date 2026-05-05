@@ -1,14 +1,14 @@
 {
-  "generated": "2026-05-05T12:21:49Z",
+  "generated": "2026-05-05T18:27:20Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "c563c8b89cb964cd57c88c3ae55a7a86f807d6df",
-    "short_sha": "c563c8b89c",
-    "message": "Add macOS configuration for Fleet Desktop launch agent (#44693)",
-    "timestamp": "2026-05-04T14:33:37-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/c563c8b89cb964cd57c88c3ae55a7a86f807d6df"
+    "sha": "791ebda4e6de78c8b3f00a4ef04157f7aedf482a",
+    "short_sha": "791ebda4e6",
+    "message": "Re-add install policies for 1Password and Nudge (#44755)",
+    "timestamp": "2026-05-05T12:47:03-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/791ebda4e6de78c8b3f00a4ef04157f7aedf482a"
   },
   "fleets": [
     {
@@ -753,11 +753,6 @@
       ],
       "software": [
         {
-          "name": "1password",
-          "file": "it-and-security/lib/macos/software/1password.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/software/1password.yml"
-        },
-        {
           "name": "fleet-desktop-launch-agent",
           "file": "it-and-security/lib/macos/software/fleet-desktop-launch-agent.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/software/fleet-desktop-launch-agent.yml"
@@ -980,10 +975,10 @@
     "declaration_profiles": 6,
     "policies": 39,
     "scripts": 16,
-    "software": 15,
+    "software": 14,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 177
+    "total_files": 176
   }
 }
