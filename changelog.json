@@ -1,5 +1,16 @@
 [
   {
+    "sha": "bfb6f3b010ec03ba3fa5631fcc3c91d23a27e623",
+    "short_sha": "bfb6f3b010",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Enable Apple hardware attestation for workstations (#44860)",
+    "timestamp": "2026-05-06T13:04:07-05:00",
+    "files": [
+      "it-and-security/default.yml"
+    ]
+  },
+  {
     "sha": "791ebda4e6de78c8b3f00a4ef04157f7aedf482a",
     "short_sha": "791ebda4e6",
     "author": "Allen Houchins",
@@ -6374,21 +6385,6 @@
     "message": "Dogfood: \ud83d\udcf1 iPhones (#20038)",
     "timestamp": "2024-06-28T11:11:05-04:00",
     "files": [
-      "it-and-security/teams/iphones.yml"
-    ]
-  },
-  {
-    "sha": "addb665c8bdf4a0e7640fd4f1ad7927e5dcc7d80",
-    "short_sha": "addb665c8b",
-    "author": "Lucas Manuel Rodriguez",
-    "email": "lucas@fleetdm.com",
-    "message": "Dogfood iPhones team GitOps (#19897)",
-    "timestamp": "2024-06-20T17:13:24-03:00",
-    "files": [
-      "it-and-security/lib/configuration-profiles/ios-content-filtering.mobileconfig",
-      "it-and-security/lib/configuration-profiles/ios-lock-screen-message.mobileconfig",
-      "it-and-security/lib/configuration-profiles/ios-passcode-settings-ddm.json",
-      "it-and-security/lib/configuration-profiles/ios-restrictions.mobileconfig",
       "it-and-security/teams/iphones.yml"
     ]
   }
