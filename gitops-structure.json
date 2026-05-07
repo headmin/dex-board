@@ -1,14 +1,14 @@
 {
-  "generated": "2026-05-07T12:33:25Z",
+  "generated": "2026-05-07T18:31:46Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "bfb6f3b010ec03ba3fa5631fcc3c91d23a27e623",
-    "short_sha": "bfb6f3b010",
-    "message": "Enable Apple hardware attestation for workstations (#44860)",
-    "timestamp": "2026-05-06T13:04:07-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/bfb6f3b010ec03ba3fa5631fcc3c91d23a27e623"
+    "sha": "e20cbb6d61ffbaa3ed15b5ce5d8ab4c5eebe8304",
+    "short_sha": "e20cbb6d61",
+    "message": "Disable auto-updates for new macOS hosts (#44957)",
+    "timestamp": "2026-05-07T13:08:06-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/e20cbb6d61ffbaa3ed15b5ce5d8ab4c5eebe8304"
   },
   "fleets": [
     {

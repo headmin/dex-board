@@ -1,5 +1,16 @@
 [
   {
+    "sha": "e20cbb6d61ffbaa3ed15b5ce5d8ab4c5eebe8304",
+    "short_sha": "e20cbb6d61",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Disable auto-updates for new macOS hosts (#44957)",
+    "timestamp": "2026-05-07T13:08:06-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
     "sha": "bfb6f3b010ec03ba3fa5631fcc3c91d23a27e623",
     "short_sha": "bfb6f3b010",
     "author": "Allen Houchins",
@@ -6375,17 +6386,6 @@
     "timestamp": "2024-07-08T15:22:59-07:00",
     "files": [
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "9e695dae39dcd4e183a79ab5b23f2cf7f52bcf34",
-    "short_sha": "9e695dae39",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Dogfood: \ud83d\udcf1 iPhones (#20038)",
-    "timestamp": "2024-06-28T11:11:05-04:00",
-    "files": [
-      "it-and-security/teams/iphones.yml"
     ]
   }
 ]
