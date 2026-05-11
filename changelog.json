@@ -1,5 +1,22 @@
 [
   {
+    "sha": "d56aa7136e0ec7456e9c0679693d9c38304cdc8c",
+    "short_sha": "d56aa7136e",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Move Safari report to macOS and remove mappings (#45153)",
+    "timestamp": "2026-05-11T11:44:08-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/reports/collect-chromium-browser-extensions.yml",
+      "it-and-security/lib/all/reports/collect-firefox-browser-extensions.yml",
+      "it-and-security/lib/all/reports/collect-listening-ports.yml",
+      "it-and-security/lib/all/reports/collect-local-user-accounts.yml",
+      "it-and-security/lib/all/reports/collect-usb-devices.yml",
+      "it-and-security/lib/macos/reports/collect-safari-browser-extensions.yml"
+    ]
+  },
+  {
     "sha": "e20cbb6d61ffbaa3ed15b5ce5d8ab4c5eebe8304",
     "short_sha": "e20cbb6d61",
     "author": "Allen Houchins",
@@ -6375,17 +6392,6 @@
     "timestamp": "2024-07-09T11:16:42-04:00",
     "files": [
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "d73446d1fe684d84ecd24a4b6c9ba134a3d20eb8",
-    "short_sha": "d73446d1fe",
-    "author": "Luke Heath",
-    "email": "luke@fleetdm.com",
-    "message": "Set workstations to use DDM for macOS updates (#20178)",
-    "timestamp": "2024-07-08T15:22:59-07:00",
-    "files": [
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]
