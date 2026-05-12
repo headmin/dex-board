@@ -1,14 +1,14 @@
 {
-  "generated": "2026-05-11T18:35:11Z",
+  "generated": "2026-05-12T00:25:24Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "d56aa7136e0ec7456e9c0679693d9c38304cdc8c",
-    "short_sha": "d56aa7136e",
-    "message": "Move Safari report to macOS and remove mappings (#45153)",
-    "timestamp": "2026-05-11T11:44:08-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/d56aa7136e0ec7456e9c0679693d9c38304cdc8c"
+    "sha": "49993af29e2c558ea79524607b6cc3c13055a059",
+    "short_sha": "49993af29e",
+    "message": "Update Okta Verify policy resolution and install flag (#45185)",
+    "timestamp": "2026-05-11T15:20:38-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/49993af29e2c558ea79524607b6cc3c13055a059"
   },
   "fleets": [
     {

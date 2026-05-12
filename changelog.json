@@ -1,5 +1,27 @@
 [
   {
+    "sha": "49993af29e2c558ea79524607b6cc3c13055a059",
+    "short_sha": "49993af29e",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update Okta Verify policy resolution and install flag (#45185)",
+    "timestamp": "2026-05-11T15:20:38-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
+    "sha": "89bbda05772e592e1cd08c61320912099b789734",
+    "short_sha": "89bbda0577",
+    "author": "Victor Lyuboslavsky",
+    "email": "2685025+getvictor@users.noreply.github.com",
+    "message": "Improve error handling in `create-admin-user.ps1` script (#45176)",
+    "timestamp": "2026-05-11T14:59:52-05:00",
+    "files": [
+      "it-and-security/lib/windows/scripts/create-admin-user.ps1"
+    ]
+  },
+  {
     "sha": "d56aa7136e0ec7456e9c0679693d9c38304cdc8c",
     "short_sha": "d56aa7136e",
     "author": "Allen Houchins",
@@ -6369,29 +6391,6 @@
       "it-and-security/teams/company-owned-ipads.yml",
       "it-and-security/teams/company-owned-iphones.yml",
       "it-and-security/teams/complaince-exclusions.yml"
-    ]
-  },
-  {
-    "sha": "0f0933ebf367853a19c9edbcdadf80eb79805a3d",
-    "short_sha": "0f0933ebf3",
-    "author": "Luke Heath",
-    "email": "luke@fleetdm.com",
-    "message": "Add homebrew install and update script (#20318)",
-    "timestamp": "2024-07-15T10:09:50-07:00",
-    "files": [
-      "it-and-security/lib/install-update-homebrew.sh",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "543354540adcb2c6e0b86edaa053da46ed1ed01d",
-    "short_sha": "543354540a",
-    "author": "Drew Baker",
-    "email": "89049099+Drew-P-drawers@users.noreply.github.com",
-    "message": "Update workstations-canary.yml (#20267)",
-    "timestamp": "2024-07-09T11:16:42-04:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]
