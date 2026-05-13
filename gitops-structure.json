@@ -1,14 +1,14 @@
 {
-  "generated": "2026-05-13T12:39:05Z",
+  "generated": "2026-05-13T18:34:52Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "49993af29e2c558ea79524607b6cc3c13055a059",
-    "short_sha": "49993af29e",
-    "message": "Update Okta Verify policy resolution and install flag (#45185)",
-    "timestamp": "2026-05-11T15:20:38-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/49993af29e2c558ea79524607b6cc3c13055a059"
+    "sha": "ef996f2830a0865aac47835b1e867002adb750c4",
+    "short_sha": "ef996f2830",
+    "message": "Remove quotes from policy resolution text (#45390)",
+    "timestamp": "2026-05-13T11:25:26-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/ef996f2830a0865aac47835b1e867002adb750c4"
   },
   "fleets": [
     {
@@ -114,6 +114,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/departments.yml"
         },
         {
+          "name": "hosts-with-npm-package-inventory",
+          "file": "it-and-security/lib/all/labels/hosts-with-npm-package-inventory.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/hosts-with-npm-package-inventory.yml"
+        },
+        {
           "name": "idp-group-saml-aws-vpn",
           "file": "it-and-security/lib/all/labels/idp-group-saml-aws-vpn.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/idp-group-saml-aws-vpn.yml"
@@ -194,6 +199,18 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/x86-based-windows-hosts.yml"
         }
       ],
+      "policies": [
+        {
+          "name": "npm-supply-chain-compromised-packages",
+          "file": "it-and-security/lib/all/policies/npm-supply-chain-compromised-packages.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/policies/npm-supply-chain-compromised-packages.yml"
+        },
+        {
+          "name": "npm-user-npmrc-min-release-age",
+          "file": "it-and-security/lib/all/policies/npm-user-npmrc-min-release-age.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/policies/npm-user-npmrc-min-release-age.yml"
+        }
+      ],
       "reports": [
         {
           "name": "collect-chromium-browser-extensions",
@@ -239,6 +256,18 @@
           "name": "dex-queries",
           "file": "it-and-security/lib/all/reports/dex-queries.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/reports/dex-queries.yml"
+        }
+      ],
+      "scripts": [
+        {
+          "name": "configure-npmrc-min-release-age",
+          "file": "it-and-security/lib/all/scripts/configure-npmrc-min-release-age.ps1",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/scripts/configure-npmrc-min-release-age.ps1"
+        },
+        {
+          "name": "configure-npmrc-min-release-age",
+          "file": "it-and-security/lib/all/scripts/configure-npmrc-min-release-age.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/scripts/configure-npmrc-min-release-age.sh"
         }
       ]
     },
@@ -969,16 +998,16 @@
     "fleets": 6,
     "agent_options": 2,
     "icons": 6,
-    "labels": 20,
+    "labels": 21,
+    "policies": 41,
     "reports": 21,
+    "scripts": 18,
     "configuration_profiles": 42,
     "declaration_profiles": 6,
-    "policies": 39,
-    "scripts": 16,
     "software": 14,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 176
+    "total_files": 181
   }
 }

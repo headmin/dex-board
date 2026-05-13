@@ -1,5 +1,44 @@
 [
   {
+    "sha": "ef996f2830a0865aac47835b1e867002adb750c4",
+    "short_sha": "ef996f2830",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Remove quotes from policy resolution text (#45390)",
+    "timestamp": "2026-05-13T11:25:26-05:00",
+    "files": [
+      "it-and-security/lib/all/policies/npm-supply-chain-compromised-packages.yml"
+    ]
+  },
+  {
+    "sha": "d49251cc184e45358be1883ed9c42c81d9251ac7",
+    "short_sha": "d49251cc18",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Remove platform constraint from npm package label (#45382)",
+    "timestamp": "2026-05-13T11:15:01-05:00",
+    "files": [
+      "it-and-security/lib/all/labels/hosts-with-npm-package-inventory.yml"
+    ]
+  },
+  {
+    "sha": "51968ceebbf923434fd24a791e3c31d132e6b3ab",
+    "short_sha": "51968ceebb",
+    "author": "fleetdm-bot",
+    "email": "luke+fleetbot@fleetdm.com",
+    "message": "Add compromised npm package detection policy to Workstations (#45264)",
+    "timestamp": "2026-05-13T10:10:42-05:00",
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/hosts-with-npm-package-inventory.yml",
+      "it-and-security/lib/all/policies/npm-supply-chain-compromised-packages.yml",
+      "it-and-security/lib/all/policies/npm-user-npmrc-min-release-age.yml",
+      "it-and-security/lib/all/scripts/configure-npmrc-min-release-age.ps1",
+      "it-and-security/lib/all/scripts/configure-npmrc-min-release-age.sh"
+    ]
+  },
+  {
     "sha": "49993af29e2c558ea79524607b6cc3c13055a059",
     "short_sha": "49993af29e",
     "author": "Allen Houchins",
@@ -6354,43 +6393,6 @@
     "timestamp": "2024-07-19T10:58:43-07:00",
     "files": [
       "it-and-security/teams/compliance-exclusions.yml"
-    ]
-  },
-  {
-    "sha": "e348fe75c7ddd3e61ea94dfe87ed172b5d301393",
-    "short_sha": "e348fe75c7",
-    "author": "Dave Herder",
-    "email": "27025660+dherder@users.noreply.github.com",
-    "message": "adding crowdstrike detection on canary (#20619)",
-    "timestamp": "2024-07-19T10:23:48-07:00",
-    "files": [
-      "it-and-security/lib/collect-crowdstrike-info.queries.yml",
-      "it-and-security/lib/collect-crowdstrike-info.yml",
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "1e50254c74a13f304812b8cdf92805551bf8f361",
-    "short_sha": "1e50254c74",
-    "author": "Luke Heath",
-    "email": "luke@fleetdm.com",
-    "message": "Update homebrew install and update script (#20533)",
-    "timestamp": "2024-07-18T12:48:53-07:00",
-    "files": [
-      "it-and-security/lib/install-update-homebrew.sh"
-    ]
-  },
-  {
-    "sha": "02f4bfb794c13dc39288e81e9b0705ea14716720",
-    "short_sha": "02f4bfb794",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Dogfood: best practice teams (#20359)",
-    "timestamp": "2024-07-15T19:22:15-04:00",
-    "files": [
-      "it-and-security/teams/company-owned-ipads.yml",
-      "it-and-security/teams/company-owned-iphones.yml",
-      "it-and-security/teams/complaince-exclusions.yml"
     ]
   }
 ]
