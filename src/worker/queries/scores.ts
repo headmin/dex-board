@@ -467,6 +467,68 @@ export const scoreQueries: QueryConfig[] = [
       ORDER BY bucket
     `,
   },
+  {
+    name: 'scores.fma_release_devices',
+    domain: 'scores',
+    description: 'Devices that applied a specific FMA app release (exact version_to match)',
+    params: [
+      { name: 'softwarePattern', type: 'string' as const, required: true },
+      { name: 'versionTo', type: 'string' as const, required: true },
+      { name: 'releaseTime', type: 'string' as const, required: true },
+      { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 180, default: 30 },
+    ],
+    sql: `
+      SELECT
+        software_name,
+        patch_type,
+        old_version,
+        new_version,
+        count(DISTINCT host_identifier) AS device_count,
+        round(avg(days_to_patch), 1) AS avg_lag,
+        round(max(days_to_patch), 1) AS max_lag,
+        min(event_time) AS first_applied,
+        max(event_time) AS last_applied,
+        dateDiff('hour', parseDateTimeBestEffort({releaseTime:String}), min(event_time)) AS hours_to_first_patch,
+        dateDiff('hour', parseDateTimeBestEffort({releaseTime:String}), max(event_time)) AS hours_to_last_patch
+      FROM dex_patch_events
+      WHERE positionCaseInsensitive(software_name, {softwarePattern:String}) > 0
+        AND new_version = {versionTo:String}
+        AND event_time >= parseDateTimeBestEffort({releaseTime:String})
+        AND event_time <= parseDateTimeBestEffort({releaseTime:String}) + INTERVAL {windowDays:UInt32} DAY
+      GROUP BY software_name, patch_type, old_version, new_version
+      ORDER BY device_count DESC
+    `,
+  },
+  {
+    name: 'scores.release_rollout',
+    domain: 'scores',
+    description: 'Patch waves that hit hosts in the window after a GitOps release commit',
+    params: [
+      { name: 'softwarePattern', type: 'string' as const, required: true },
+      { name: 'commitTime', type: 'string' as const, required: true },
+      { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 90, default: 14 },
+    ],
+    sql: `
+      SELECT
+        software_name,
+        patch_type,
+        old_version,
+        new_version,
+        count(DISTINCT host_identifier) AS device_count,
+        round(avg(days_to_patch), 1) AS avg_lag,
+        round(max(days_to_patch), 1) AS max_lag,
+        min(event_time) AS first_applied,
+        max(event_time) AS last_applied,
+        dateDiff('hour', parseDateTimeBestEffort({commitTime:String}), min(event_time)) AS hours_to_first_patch,
+        dateDiff('hour', parseDateTimeBestEffort({commitTime:String}), max(event_time)) AS hours_to_last_patch
+      FROM dex_patch_events
+      WHERE positionCaseInsensitive(software_name, {softwarePattern:String}) > 0
+        AND event_time >= parseDateTimeBestEffort({commitTime:String})
+        AND event_time <= parseDateTimeBestEffort({commitTime:String}) + INTERVAL {windowDays:UInt32} DAY
+      GROUP BY software_name, patch_type, old_version, new_version
+      ORDER BY device_count DESC, first_applied
+    `,
+  },
 
   // ─── GitOps: impact analysis ───────────────────────────
   {

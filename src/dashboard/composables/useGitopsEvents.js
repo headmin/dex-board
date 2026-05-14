@@ -1,6 +1,8 @@
 import { ref } from 'vue'
 import dayjs from 'dayjs'
 
+const CHANGELOG_JSONL_URL = 'https://raw.githubusercontent.com/headmin/fleet-gitops-changelog/refs/heads/main/changelog.jsonl'
+
 const gitopsEvents = ref([])
 let fetched = false
 
@@ -8,9 +10,45 @@ async function fetchGitopsEvents() {
   if (fetched) return
   try {
     const res = await fetch('/gitops-events.json')
-    if (res.ok) gitopsEvents.value = await res.json()
+    if (res.ok) {
+      gitopsEvents.value = await res.json()
+      fetched = true
+      return
+    }
   } catch {
-    // silent — markers simply won't appear if file is missing
+    // fall through to jsonl
+  }
+  try {
+    const res = await fetch(CHANGELOG_JSONL_URL)
+    if (res.ok) {
+      const text = await res.text()
+      gitopsEvents.value = text
+        .trim()
+        .split('\n')
+        .filter(Boolean)
+        .map(line => {
+          const c = JSON.parse(line)
+          const cats = c.categories || {}
+          return {
+            hash: c.short_sha || (c.sha || '').slice(0, 10),
+            sha: c.sha,
+            timestamp: c.timestamp,
+            author: c.author,
+            email: c.email,
+            message: c.message,
+            files: c.files || [],
+            changeTypes: c.change_type ? [c.change_type] : [],
+            scope: c.scope,
+            categoriesSoftware: cats.software || [],
+            categoriesPolicies: cats.policies || [],
+            categoriesProfiles: cats.profiles || [],
+            categoriesScripts: cats.scripts || [],
+            teamsAffected: cats.fleets || []
+          }
+        })
+    }
+  } catch {
+    // silent — markers simply won't appear if neither file is reachable
   }
   fetched = true
 }

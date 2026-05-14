@@ -10,6 +10,12 @@
           :class="{ active: selectedRange === r.value }"
           @click="selectedRange = r.value"
         >{{ r.label }}</button>
+        <button
+          class="range-btn release-toggle"
+          :class="{ active: releasesOnly }"
+          :title="releasesOnly ? 'Showing software releases only' : 'Show software releases only'"
+          @click="releasesOnly = !releasesOnly"
+        >Releases only</button>
       </div>
     </header>
 
@@ -50,6 +56,73 @@
       </div>
     </section>
 
+    <!-- Upstream Fleet-maintained app releases (from fmalibrary.com) -->
+    <section v-if="fmaReleasesInRange.length" class="section">
+      <h2>App releases</h2>
+      <p class="section-hint">
+        Vendor-published Fleet-maintained app versions in this window · click "Show hosts patched" to
+        match each release against <code>dex_patch_events</code> for the {{ fmaWindowDays }} days that follow.
+      </p>
+      <div class="fma-grid">
+        <div v-for="r in fmaReleasesInRange" :key="r.id" class="fma-card">
+          <div class="fma-head">
+            <span class="fma-app">{{ r.app }}</span>
+            <span class="fma-platform" :class="'platform-' + r.platform">{{ r.platform }}</span>
+            <span v-if="r.event_type === 'added'" class="fma-badge added">new app</span>
+          </div>
+          <div class="fma-version edp-mono">
+            <template v-if="r.version_from">{{ r.version_from }} → </template>
+            <strong>{{ r.version_to }}</strong>
+          </div>
+          <div class="fma-time">{{ formatTime(r.timestamp) }}</div>
+          <button
+            class="rollout-btn fma-load-btn"
+            :class="{ active: fmaDeviceCounts[r.id] }"
+            :disabled="fmaDeviceLoading[r.id]"
+            @click="loadFmaReleaseDevices(r)"
+          >
+            {{
+              fmaDeviceLoading[r.id]
+                ? 'Loading…'
+                : fmaDeviceCounts[r.id]
+                  ? (totalDevicesForRelease(r.id) > 0
+                      ? totalDevicesForRelease(r.id) + ' host(s) patched · refresh'
+                      : 'No hosts patched in ' + fmaWindowDays + 'd · refresh')
+                  : 'Show hosts patched'
+            }}
+          </button>
+          <div v-if="fmaDeviceCounts[r.id] && fmaDeviceCounts[r.id].length" class="fma-rollout">
+            <table class="edp-table release-rollout-table">
+              <thead>
+                <tr>
+                  <th>Match</th>
+                  <th>From → To</th>
+                  <th>Hosts</th>
+                  <th>First (+lag)</th>
+                  <th>Avg / Max</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(w, wi) in fmaDeviceCounts[r.id]" :key="wi">
+                  <td>{{ w.software_name }}</td>
+                  <td class="edp-mono">{{ w.old_version || '—' }} → {{ w.new_version }}</td>
+                  <td><strong>{{ w.device_count }}</strong></td>
+                  <td>
+                    {{ formatTime(w.first_applied) }}
+                    <span class="rollout-rel">(+{{ formatHours(w.hours_to_first_patch) }})</span>
+                  </td>
+                  <td>
+                    <span :class="lagClass(w.avg_lag)">{{ w.avg_lag }}d</span> /
+                    <span :class="lagClass(w.max_lag)">{{ w.max_lag }}d</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Timeline -->
     <section class="section">
       <h2>Deployment timeline</h2>
@@ -59,15 +132,15 @@
 
       <div v-else class="timeline">
         <div
-          v-for="(commit, idx) in enrichedCommits"
+          v-for="(commit, idx) in displayedCommits"
           :key="commit.hash"
           class="timeline-entry"
-          :class="{ expanded: expandedHash === commit.hash, 'has-impact': commit.hasImpact }"
+          :class="{ expanded: expandedHash === commit.hash, 'has-impact': commit.hasImpact, 'is-release': isReleaseCommit(commit) }"
         >
           <!-- Timeline connector -->
           <div class="timeline-rail">
             <div class="timeline-dot" :class="commitDotClass(commit)"></div>
-            <div v-if="idx < enrichedCommits.length - 1" class="timeline-line"></div>
+            <div v-if="idx < displayedCommits.length - 1" class="timeline-line"></div>
           </div>
 
           <!-- Commit card -->
@@ -397,6 +470,61 @@
                 </template>
               </div>
 
+              <!-- Release rollout: what app updates hit hosts in the window after this release commit -->
+              <div v-if="isReleaseCommit(commit)" class="detail-section">
+                <h4>Release rollout — what hit hosts in the {{ releaseWindowDays }}d after this commit</h4>
+                <p class="impact-explainer">
+                  This commit changed software config for
+                  <strong>{{ (commit.categoriesSoftware || []).join(', ') || 'a Fleet-maintained app' }}</strong>.
+                  Below: patches recorded in <code>dex_patch_events</code> for matching software names in the
+                  {{ releaseWindowDays }} days after the commit.
+                </p>
+                <button
+                  class="rollout-btn"
+                  :class="{ active: releaseRollouts[commit.hash] }"
+                  :disabled="releaseRolloutLoading[commit.hash]"
+                  @click.stop="loadReleaseRollout(commit)"
+                >
+                  {{
+                    releaseRolloutLoading[commit.hash]
+                      ? 'Loading…'
+                      : releaseRollouts[commit.hash]
+                        ? 'Refresh rollout data'
+                        : 'Show what app updates hit hosts'
+                  }}
+                </button>
+                <div v-if="releaseRollouts[commit.hash]" class="release-rollout-panel">
+                  <p v-if="!releaseRollouts[commit.hash].length" class="detail-empty">
+                    No matching patches recorded on hosts in the {{ releaseWindowDays }} days after this commit.
+                  </p>
+                  <table v-else class="edp-table release-rollout-table">
+                    <thead>
+                      <tr>
+                        <th>Software</th>
+                        <th>Version</th>
+                        <th>Hosts</th>
+                        <th>First applied</th>
+                        <th>Last applied</th>
+                        <th>Lag (avg / max)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(w, wi) in releaseRollouts[commit.hash]" :key="wi">
+                        <td>{{ w.software_name }} <span class="patch-type">{{ w.patch_type }}</span></td>
+                        <td class="edp-mono">{{ w.old_version || '—' }} → {{ w.new_version }}</td>
+                        <td><strong>{{ w.device_count }}</strong></td>
+                        <td>{{ formatTime(w.first_applied) }} <span class="rollout-rel">(+{{ formatHours(w.hours_to_first_patch) }})</span></td>
+                        <td>{{ formatTime(w.last_applied) }} <span class="rollout-rel">(+{{ formatHours(w.hours_to_last_patch) }})</span></td>
+                        <td>
+                          <span :class="lagClass(w.avg_lag)">{{ w.avg_lag }}d</span> /
+                          <span :class="lagClass(w.max_lag)">{{ w.max_lag }}d</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
               <!-- Pinned devices -->
               <div class="detail-section">
                 <h4>Pinned devices</h4>
@@ -439,8 +567,8 @@
           </div>
         </div>
 
-        <div v-if="enrichedCommits.length === 0 && !loading" class="timeline-empty">
-          No deployments in the selected time range.
+        <div v-if="displayedCommits.length === 0 && !loading" class="timeline-empty">
+          {{ releasesOnly ? 'No software releases in the selected time range.' : 'No deployments in the selected time range.' }}
         </div>
       </div>
     </section>
@@ -452,14 +580,16 @@ import { ref, computed, watch, onMounted } from 'vue'
 import dayjs from 'dayjs'
 import { useGitopsEvents } from '../composables/useGitopsEvents'
 import { useTimelineEvents } from '../composables/useTimelineEvents'
+import { useFmaReleases } from '../composables/useFmaReleases'
 import MultiSeriesChart from '../components/MultiSeriesChart.vue'
 import BarChart from '../components/BarChart.vue'
 
 const { gitopsEvents, fetchGitopsEvents } = useGitopsEvents()
+const { releases: fmaReleases, fetchFmaReleases, fetchReleaseDevices } = useFmaReleases()
 const {
   deviceTags, tagDevice, untagDevice,
   fetchScoreHeatmap, fetchScoreChanges, fetchPatchSummary,
-  fetchRolloutProgress, fetchImpactSummary, fetchTopMovers, searchDevices,
+  fetchRolloutProgress, fetchReleaseRollout, fetchImpactSummary, fetchTopMovers, searchDevices,
   fetchDeviceHealthAroundCommit, fetchDeviceScoresAroundCommit, fetchDevicePatchesAroundCommit,
   detectFleetEvents, correlateWithCommits
 } = useTimelineEvents()
@@ -476,6 +606,17 @@ const expandedHash = ref(null)
 const expandedEventKey = ref(null)
 const showScoreInfo = ref(false)
 const dismissedEvents = ref({})  // { commitHash: { eventIdx: true } }
+
+// Release rollout (per-commit, lazy-loaded)
+const releasesOnly = ref(false)
+const releaseWindowDays = 14
+const releaseRollouts = ref({})        // { commitHash: Array<patchWaveRow> }
+const releaseRolloutLoading = ref({})  // { commitHash: boolean }
+
+// FMA upstream releases (per-release, lazy-loaded)
+const fmaWindowDays = 30
+const fmaDeviceCounts = ref({})        // { release.id: Array<patchWaveRow> }
+const fmaDeviceLoading = ref({})       // { release.id: boolean }
 
 // Data
 const scoreHeatmapData = ref([])
@@ -508,6 +649,88 @@ const commitsInRange = computed(() => {
 const enrichedCommits = computed(() =>
   correlateWithCommits(commitsInRange.value, fleetEvents.value, deviceTags.value)
 )
+
+// True when a commit is a Fleet-maintained software release (config touched lib/<platform>/software/*)
+function isReleaseCommit(commit) {
+  const types = commit.changeTypes || []
+  const cats = commit.categoriesSoftware || []
+  return types.includes('software') || cats.length > 0
+}
+
+// What the timeline actually renders (full list, or releases only when toggled)
+const displayedCommits = computed(() =>
+  releasesOnly.value
+    ? enrichedCommits.value.filter(isReleaseCommit)
+    : enrichedCommits.value
+)
+
+// Derive a substring pattern usable by scores.release_rollout.
+// changelog.jsonl uses platform-scoped slugs like "macos/1password"; dex_patch_events
+// stores human-readable names like "1Password". We match on the trailing segment.
+function releasePattern(commit) {
+  const cats = commit.categoriesSoftware || []
+  if (cats.length) {
+    const last = cats[0].split('/').pop() || cats[0]
+    return last.replace(/[-_]/g, ' ')
+  }
+  // Fallback: try to pull a name out of the file paths
+  const file = (commit.files || []).find(f => f.includes('/software/'))
+  if (file) {
+    const m = file.match(/\/software\/([^/]+?)(?:\.yml|\.yaml)?$/)
+    if (m) return m[1].replace(/[-_]/g, ' ')
+  }
+  return ''
+}
+
+async function loadReleaseRollout(commit) {
+  if (releaseRolloutLoading.value[commit.hash]) return
+  const pattern = releasePattern(commit)
+  if (!pattern) {
+    releaseRollouts.value = { ...releaseRollouts.value, [commit.hash]: [] }
+    return
+  }
+  releaseRolloutLoading.value = { ...releaseRolloutLoading.value, [commit.hash]: true }
+  try {
+    const rows = await fetchReleaseRollout(pattern, commit.timestamp, releaseWindowDays)
+    releaseRollouts.value = { ...releaseRollouts.value, [commit.hash]: rows || [] }
+  } finally {
+    releaseRolloutLoading.value = { ...releaseRolloutLoading.value, [commit.hash]: false }
+  }
+}
+
+function formatHours(h) {
+  const n = Number(h)
+  if (!isFinite(n)) return '?'
+  if (n < 24) return `${Math.round(n)}h`
+  return `${Math.round(n / 24)}d`
+}
+
+// Upstream FMA releases (vendor-published) in the selected window
+const fmaReleasesInRange = computed(() => {
+  const start = dayjs(dateRange.value.start)
+  const end = dayjs(dateRange.value.end)
+  return fmaReleases.value.filter(r => {
+    const t = dayjs(r.timestamp)
+    return t.isAfter(start) && t.isBefore(end)
+  })
+})
+
+async function loadFmaReleaseDevices(release) {
+  if (fmaDeviceLoading.value[release.id]) return
+  fmaDeviceLoading.value = { ...fmaDeviceLoading.value, [release.id]: true }
+  try {
+    const rows = await fetchReleaseDevices(release, fmaWindowDays)
+    fmaDeviceCounts.value = { ...fmaDeviceCounts.value, [release.id]: rows || [] }
+  } finally {
+    fmaDeviceLoading.value = { ...fmaDeviceLoading.value, [release.id]: false }
+  }
+}
+
+function totalDevicesForRelease(releaseId) {
+  const rows = fmaDeviceCounts.value[releaseId]
+  if (!rows) return null
+  return rows.reduce((sum, r) => sum + Number(r.device_count || 0), 0)
+}
 
 // ─── Heatmap ────────────────────────────────────────
 
@@ -882,7 +1105,7 @@ async function loadTimeline() {
   loading.value = true
   try {
     const { start, end } = dateRange.value
-    await fetchGitopsEvents()
+    await Promise.all([fetchGitopsEvents(), fetchFmaReleases()])
 
     const [heatmap, scores, patches] = await Promise.all([
       fetchScoreHeatmap(start, end),
@@ -1936,4 +2159,71 @@ onMounted(() => loadTimeline())
   padding: 1px 6px;
   border-radius: 8px;
 }
+
+/* Release toggle + per-release rollout panel */
+.release-toggle { margin-left: 8px; }
+.timeline-entry.is-release .timeline-dot { box-shadow: 0 0 0 3px #fef3c7; }
+.release-rollout-panel { margin-top: 10px; }
+.release-rollout-table { font-size: 12px; }
+.release-rollout-table .patch-type {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  color: #92400e;
+  background: #fef3c7;
+  padding: 1px 5px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+.rollout-rel {
+  margin-left: 4px;
+  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+/* Upstream FMA releases */
+.fma-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.fma-card {
+  background: var(--fleet-white, #fff);
+  border: 1px solid var(--fleet-black-10, #e5e7eb);
+  border-radius: var(--radius, 6px);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.fma-head { display: flex; align-items: center; gap: 6px; }
+.fma-app { font-weight: 600; font-size: 13px; }
+.fma-platform {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--fleet-off-white, #f5f5f5);
+  color: var(--fleet-black-75, #444);
+}
+.fma-platform.platform-mac { background: #e0e7ff; color: #3730a3; }
+.fma-platform.platform-darwin { background: #e0e7ff; color: #3730a3; }
+.fma-platform.platform-windows { background: #dbeafe; color: #1e40af; }
+.fma-platform.platform-linux { background: #dcfce7; color: #166534; }
+.fma-badge.added {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: #fef3c7;
+  color: #92400e;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.fma-version { font-size: 12px; }
+.fma-time { font-size: 11px; color: var(--fleet-black-50, #6b7280); }
+.fma-load-btn { align-self: flex-start; }
+.fma-rollout { margin-top: 6px; }
 </style>

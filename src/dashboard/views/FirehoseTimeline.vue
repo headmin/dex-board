@@ -17,6 +17,74 @@
       </div>
     </section>
 
+    <!-- Upstream Fleet-maintained app releases (from fmalibrary.com) -->
+    <section v-if="fmaReleases.length" class="section">
+      <div class="fma-header-row">
+        <h2>App releases</h2>
+        <span class="fma-meta">
+          Vendor-published Fleet-maintained app versions ·
+          showing {{ fmaTopReleases.length }} of {{ fmaReleases.length }} ·
+          click a release to match against hosts ({{ fmaWindowDays }}d window)
+        </span>
+      </div>
+      <div class="fma-grid">
+        <div v-for="r in fmaTopReleases" :key="r.id" class="fma-card">
+          <div class="fma-head">
+            <span class="fma-app">{{ r.app }}</span>
+            <span class="fma-platform" :class="'platform-' + r.platform">{{ r.platform }}</span>
+            <span v-if="r.event_type === 'added'" class="fma-badge added">new app</span>
+          </div>
+          <div class="fma-version">
+            <template v-if="r.version_from">{{ r.version_from }} → </template>
+            <strong>{{ r.version_to }}</strong>
+          </div>
+          <div class="fma-time">{{ formatTime(r.timestamp) }}</div>
+          <button
+            class="fma-load-btn"
+            :class="{ loaded: fmaDeviceCounts[r.id] }"
+            :disabled="fmaDeviceLoading[r.id]"
+            @click="loadFmaReleaseDevices(r)"
+          >
+            <template v-if="fmaDeviceLoading[r.id]">Loading…</template>
+            <template v-else-if="fmaDeviceCounts[r.id]">
+              {{
+                totalDevicesForRelease(r.id) > 0
+                  ? totalDevicesForRelease(r.id) + ' host(s) patched · refresh'
+                  : 'No hosts patched in ' + fmaWindowDays + 'd · refresh'
+              }}
+            </template>
+            <template v-else>Show hosts patched</template>
+          </button>
+          <table v-if="fmaDeviceCounts[r.id] && fmaDeviceCounts[r.id].length" class="fma-rollout-table">
+            <thead>
+              <tr>
+                <th>Match</th>
+                <th>From → To</th>
+                <th>Hosts</th>
+                <th>First (+lag)</th>
+                <th>Avg/Max</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(w, wi) in fmaDeviceCounts[r.id]" :key="wi">
+                <td>{{ w.software_name }}</td>
+                <td class="mono">{{ w.old_version || '—' }} → {{ w.new_version }}</td>
+                <td><strong>{{ w.device_count }}</strong></td>
+                <td>
+                  {{ formatTime(w.first_applied) }}
+                  <span class="rollout-rel">(+{{ formatHours(w.hours_to_first_patch) }})</span>
+                </td>
+                <td>{{ w.avg_lag }}d / {{ w.max_lag }}d</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <button v-if="fmaTopReleases.length < fmaReleases.length" class="fma-more-btn" @click="fmaLimit += 12">
+        Show 12 more releases
+      </button>
+    </section>
+
     <!-- Filter bar -->
     <section class="filter-bar">
       <input v-model="search" class="search-input" placeholder="Search commits, authors, files..." />
@@ -110,6 +178,7 @@ import { ref, computed, onMounted } from 'vue'
 import MetricCard from '../components/MetricCard.vue'
 import BarChart from '../components/BarChart.vue'
 import PieChart from '../components/PieChart.vue'
+import { useFmaReleases } from '../composables/useFmaReleases'
 
 const CHANGELOG_URL = 'https://raw.githubusercontent.com/headmin/fleet-gitops-changelog/refs/heads/main/changelog.json'
 
@@ -171,7 +240,43 @@ async function fetchChangelog() {
   finally { loading.value = false }
 }
 
-onMounted(() => fetchChangelog())
+// ─── FMA upstream app releases ──────────────────────
+const { releases: fmaReleases, fetchFmaReleases, fetchReleaseDevices } = useFmaReleases()
+const fmaWindowDays = 30
+const fmaLimit = ref(12)
+const fmaDeviceCounts = ref({})
+const fmaDeviceLoading = ref({})
+
+const fmaTopReleases = computed(() => fmaReleases.value.slice(0, fmaLimit.value))
+
+async function loadFmaReleaseDevices(release) {
+  if (fmaDeviceLoading.value[release.id]) return
+  fmaDeviceLoading.value = { ...fmaDeviceLoading.value, [release.id]: true }
+  try {
+    const rows = await fetchReleaseDevices(release, fmaWindowDays)
+    fmaDeviceCounts.value = { ...fmaDeviceCounts.value, [release.id]: rows || [] }
+  } finally {
+    fmaDeviceLoading.value = { ...fmaDeviceLoading.value, [release.id]: false }
+  }
+}
+
+function totalDevicesForRelease(id) {
+  const rows = fmaDeviceCounts.value[id]
+  if (!rows) return null
+  return rows.reduce((sum, r) => sum + Number(r.device_count || 0), 0)
+}
+
+function formatHours(h) {
+  const n = Number(h)
+  if (!isFinite(n)) return '?'
+  if (n < 24) return `${Math.round(n)}h`
+  return `${Math.round(n / 24)}d`
+}
+
+onMounted(() => {
+  fetchChangelog()
+  fetchFmaReleases()
+})
 </script>
 
 <style scoped>
@@ -221,4 +326,31 @@ h1 { font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-black)
 .empty-state { text-align: center; padding: 40px; color: var(--fleet-black-50); font-family: var(--font-mono); }
 @media (max-width: 1024px) { .metrics-row.four-col { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) { .metrics-row, .metrics-row.four-col { grid-template-columns: 1fr; } .charts-row.two-col { grid-template-columns: 1fr; } .filter-bar { flex-direction: column; } .dashboard-header { flex-direction: column; gap: 8px; } .commit-header { flex-wrap: wrap; } }
+
+/* FMA upstream releases */
+.fma-header-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.fma-header-row h2 { font-family: var(--font-mono); font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black); margin: 0; }
+.fma-meta { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); }
+.fma-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.fma-card { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius); padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.fma-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.fma-app { font-weight: 600; font-size: 13px; color: var(--fleet-black); }
+.fma-platform { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; padding: 1px 6px; border-radius: 6px; background: var(--fleet-off-white); color: var(--fleet-black-75); }
+.fma-platform.platform-mac, .fma-platform.platform-darwin { background: #e0e7ff; color: #3730a3; }
+.fma-platform.platform-windows { background: #dbeafe; color: #1e40af; }
+.fma-platform.platform-linux { background: #dcfce7; color: #166534; }
+.fma-badge.added { font-family: var(--font-mono); font-size: 10px; padding: 1px 6px; border-radius: 6px; background: #fef3c7; color: #92400e; text-transform: uppercase; font-weight: 700; }
+.fma-version { font-family: var(--font-mono); font-size: 12px; color: var(--fleet-black-75); }
+.fma-time { font-family: var(--font-mono); font-size: 11px; color: var(--fleet-black-50); }
+.fma-load-btn { align-self: flex-start; font-family: var(--font-mono); font-size: var(--font-size-xs); padding: 6px 12px; border: 1px solid #6a67fe; background: var(--fleet-white); color: #6a67fe; border-radius: var(--radius); cursor: pointer; transition: background 150ms; }
+.fma-load-btn:hover:not(:disabled) { background: #f8f7ff; }
+.fma-load-btn:disabled { opacity: 0.6; cursor: wait; }
+.fma-load-btn.loaded { background: #6a67fe; color: var(--fleet-white); border-color: #6a67fe; }
+.fma-rollout-table { width: 100%; margin-top: 4px; border-collapse: collapse; font-size: 11px; font-family: var(--font-mono); }
+.fma-rollout-table th { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--fleet-black-10); color: var(--fleet-black-50); font-weight: 600; }
+.fma-rollout-table td { padding: 4px 6px; border-bottom: 1px solid var(--fleet-black-5); color: var(--fleet-black-75); vertical-align: top; }
+.fma-rollout-table td.mono { font-family: var(--font-mono); }
+.fma-rollout-table .rollout-rel { color: var(--fleet-black-50); margin-left: 4px; }
+.fma-more-btn { margin-top: 12px; font-family: var(--font-mono); font-size: var(--font-size-xs); padding: 6px 12px; border: 1px solid var(--fleet-black-10); background: var(--fleet-white); color: var(--fleet-black-75); border-radius: var(--radius); cursor: pointer; }
+.fma-more-btn:hover { border-color: #3b82f6; color: var(--fleet-black); }
 </style>
