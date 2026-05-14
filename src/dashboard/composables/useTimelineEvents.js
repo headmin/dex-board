@@ -51,6 +51,11 @@ async function fetchPatchSummary(startDate, endDate) {
   return await query('scores.timeline_patches', { startDate, endDate })
 }
 
+async function fetchReleaseRollout(softwarePattern, commitTimestamp, windowDays = 14) {
+  const commitTime = dayjs(commitTimestamp).format('YYYY-MM-DD HH:mm:ss')
+  return await query('scores.release_rollout', { softwarePattern, commitTime, windowDays })
+}
+
 async function fetchRolloutProgress(softwareName, newVersion) {
   // Get time span first
   const spanRows = await query('scores.rollout_span', { softwareName, newVersion })
@@ -194,6 +199,7 @@ export function useTimelineEvents() {
     fetchScoreHeatmap,
     fetchScoreChanges,
     fetchPatchSummary,
+    fetchReleaseRollout,
     fetchRolloutProgress,
     fetchImpactSummary,
     fetchTopMovers,
