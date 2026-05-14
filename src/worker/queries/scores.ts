@@ -470,6 +470,7 @@ export const scoreQueries: QueryConfig[] = [
   {
     name: 'scores.fma_release_devices',
     domain: 'scores',
+    client: 'alt' as const,
     description: 'Devices that applied a specific FMA app release (exact version_to match)',
     params: [
       { name: 'softwarePattern', type: 'string' as const, required: true },
@@ -502,6 +503,7 @@ export const scoreQueries: QueryConfig[] = [
   {
     name: 'scores.release_rollout',
     domain: 'scores',
+    client: 'alt' as const,
     description: 'Patch waves that hit hosts in the window after a GitOps release commit',
     params: [
       { name: 'softwarePattern', type: 'string' as const, required: true },
