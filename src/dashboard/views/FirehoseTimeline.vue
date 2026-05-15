@@ -211,10 +211,11 @@
               </div>
               <div v-if="isBucketExpanded(day.date, bucket.software_name)" class="patch-bucket-drilldown" @click.stop>
                 <div v-if="isBucketLoading(day.date, bucket.software_name)" class="patch-bucket-loading">Loading transitions…</div>
-                <table v-else-if="drilldownRows(day.date, bucket.software_name).length" class="drilldown-table">
+                <table v-else-if="drilldownRowsSorted(day.date, bucket.software_name).length" class="drilldown-table">
                   <thead>
                     <tr>
-                      <th>From → To</th>
+                      <th>Target</th>
+                      <th>From</th>
                       <th>Hosts</th>
                       <th>Avg lag</th>
                       <th>Max lag</th>
@@ -222,8 +223,13 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(w, wi) in drilldownRows(day.date, bucket.software_name)" :key="wi">
-                      <td class="mono">{{ w.old_version || '—' }} <span class="ver-arrow">→</span> {{ w.new_version }}</td>
+                    <tr
+                      v-for="(w, wi) in drilldownRowsSorted(day.date, bucket.software_name)"
+                      :key="wi"
+                      :class="{ 'target-group-start': isNewTargetGroup(drilldownRowsSorted(day.date, bucket.software_name), wi) }"
+                    >
+                      <td class="mono target-cell">{{ w.new_version }}</td>
+                      <td class="mono from-cell">{{ w.old_version || '—' }}</td>
                       <td><strong>{{ w.device_count }}</strong></td>
                       <td>{{ w.avg_lag }}d</td>
                       <td>{{ w.max_lag }}d</td>
@@ -375,8 +381,49 @@ watch(minHosts, () => {
 function bucketKey(day, sw) { return `${day}::${sw}` }
 function isBucketExpanded(day, sw) { return !!expandedBuckets.value[bucketKey(day, sw)] }
 function isBucketLoading(day, sw)  { return !!bucketLoading.value[bucketKey(day, sw)] }
-function drilldownRows(day, sw)    { return bucketDrilldowns.value[bucketKey(day, sw)] || [] }
 function bucketAnchorId(day, sw)   { return 'bucket-' + bucketKey(day, sw).replace(/[^a-zA-Z0-9-]/g, '-') }
+
+// Natural version compare — splits on '.', treats numeric segments numerically.
+// e.g. '148.0.7778.97' < '148.0.7778.168' (lexically would be the opposite).
+function compareVersion(a, b) {
+  const norm = v => (v || '').split('.').map(p => /^\d+$/.test(p) ? parseInt(p, 10) : p)
+  const ax = norm(a), bx = norm(b)
+  const n = Math.max(ax.length, bx.length)
+  for (let i = 0; i < n; i++) {
+    const av = ax[i], bv = bx[i]
+    if (av === undefined) return -1
+    if (bv === undefined) return 1
+    if (typeof av === 'number' && typeof bv === 'number') {
+      if (av !== bv) return av - bv
+    } else if (String(av) !== String(bv)) {
+      return String(av) < String(bv) ? -1 : 1
+    }
+  }
+  return 0
+}
+
+function drilldownRows(day, sw) { return bucketDrilldowns.value[bucketKey(day, sw)] || [] }
+
+// Drilldown rows sorted by target version (latest first) so paths converging
+// on the same new_version cluster together. Within a target, oldest source
+// first (shows the longest version jumps at the top of each group).
+function drilldownRowsSorted(day, sw) {
+  const rows = drilldownRows(day, sw)
+  return rows.slice().sort((a, b) => {
+    const t = compareVersion(b.new_version, a.new_version)   // new_version DESC
+    if (t !== 0) return t
+    const s = compareVersion(a.old_version, b.old_version)   // old_version ASC
+    if (s !== 0) return s
+    return (a.hour || '').localeCompare(b.hour || '')        // earliest hour first
+  })
+}
+
+// True when this row's new_version differs from the previous row's — used to
+// draw a subtle separator above the first row of each target-version group.
+function isNewTargetGroup(rows, idx) {
+  if (idx === 0) return false
+  return rows[idx].new_version !== rows[idx - 1].new_version
+}
 
 async function toggleBucket(day, sw) {
   const k = bucketKey(day, sw)
@@ -799,6 +846,9 @@ h1 { font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-black)
 .drilldown-table th { text-align: left; padding: 4px 8px 6px; color: var(--fleet-black-50); font-weight: 600; border-bottom: 1px solid var(--fleet-black-10); }
 .drilldown-table td { padding: 4px 8px; color: var(--fleet-black-75); border-bottom: 1px solid var(--fleet-black-5); }
 .drilldown-table td.mono { font-family: var(--font-mono); white-space: nowrap; }
+.drilldown-table td.target-cell { font-weight: 600; color: var(--fleet-black); }
+.drilldown-table td.from-cell { color: var(--fleet-black-50); }
+.drilldown-table tr.target-group-start td { border-top: 2px solid var(--fleet-black-10); padding-top: 8px; }
 .drilldown-table .ver-arrow { margin: 0 4px; color: var(--fleet-black-50); }
 
 @media (max-width: 900px) {
