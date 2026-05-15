@@ -23,12 +23,30 @@
         <h2>App releases</h2>
         <span class="fma-meta">
           Vendor-published Fleet-maintained app versions ·
-          showing {{ fmaTopReleases.length }} of {{ fmaReleases.length }} ·
-          click a release to match against hosts ({{ fmaWindowDays }}d window)
+          showing {{ visibleFmaReleases.length }} of {{ fmaReleases.length }} ·
+          {{ fmaWindowDays }}d patch window
         </span>
       </div>
+      <div class="fma-controls">
+        <div class="fma-chip-group">
+          <button
+            v-for="opt in osOptions" :key="opt.value"
+            class="fma-chip" :class="{ active: osFilter === opt.value }"
+            @click="osFilter = opt.value"
+          >{{ opt.label }} <span class="fma-chip-count">{{ osCounts[opt.value] || 0 }}</span></button>
+        </div>
+        <label class="fma-toggle">
+          <input type="checkbox" v-model="onlyWithData" />
+          <span>Only show releases with patch data</span>
+          <span v-if="onlyWithData && fmaEagerLoaded" class="fma-toggle-meta">({{ releasesWithData }}/{{ fmaTopReleases.length }} match)</span>
+        </label>
+      </div>
+      <div v-if="!fmaEagerLoaded" class="fma-loading">Loading patch matches for {{ fmaTopReleases.length }} releases…</div>
+      <div v-else-if="!visibleFmaReleases.length" class="fma-empty">
+        No releases match the current filter. Try a different OS or untick "Only show releases with patch data".
+      </div>
       <div class="fma-grid">
-        <div v-for="r in fmaTopReleases" :key="r.id" class="fma-card">
+        <div v-for="r in visibleFmaReleases" :key="r.id" class="fma-card">
           <div class="fma-head">
             <span class="fma-app">{{ r.app }}</span>
             <span class="fma-platform" :class="'platform-' + r.platform">{{ r.platform }}</span>
@@ -58,23 +76,27 @@
           <table v-if="fmaDeviceCounts[r.id] && fmaDeviceCounts[r.id].length" class="fma-rollout-table">
             <thead>
               <tr>
-                <th>Match</th>
-                <th>From → To</th>
-                <th>Hosts</th>
-                <th>First (+lag)</th>
-                <th>Avg/Max</th>
+                <th class="col-match">Match</th>
+                <th class="col-version">Version</th>
+                <th class="col-hosts">Hosts</th>
+                <th class="col-first">First (+lag)</th>
+                <th class="col-lag">Avg/Max</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(w, wi) in fmaDeviceCounts[r.id]" :key="wi">
-                <td>{{ w.software_name }}</td>
-                <td class="mono">{{ w.old_version || '—' }} → {{ w.new_version }}</td>
-                <td><strong>{{ w.device_count }}</strong></td>
-                <td>
-                  {{ formatTime(w.first_applied) }}
-                  <span class="rollout-rel">(+{{ formatHours(w.hours_to_first_patch) }})</span>
+                <td class="col-match" :title="w.software_name">{{ w.software_name }}</td>
+                <td class="col-version mono">
+                  <span class="ver-from">{{ w.old_version || '—' }}</span>
+                  <span class="ver-arrow">→</span>
+                  <span class="ver-to">{{ w.new_version }}</span>
                 </td>
-                <td>{{ w.avg_lag }}d / {{ w.max_lag }}d</td>
+                <td class="col-hosts"><strong>{{ w.device_count }}</strong></td>
+                <td class="col-first">
+                  <span class="when">{{ formatTime(w.first_applied) }}</span>
+                  <span class="rollout-rel">+{{ formatHours(w.hours_to_first_patch) }}</span>
+                </td>
+                <td class="col-lag">{{ w.avg_lag }}d / {{ w.max_lag }}d</td>
               </tr>
             </tbody>
           </table>
@@ -104,15 +126,40 @@
     <!-- Timeline -->
     <section class="section">
       <div class="timeline">
-        <div v-for="(group, date) in groupedCommits" :key="date" class="timeline-day">
+        <div v-for="day in groupedEntries" :key="day.date" class="timeline-day">
           <div class="day-header">
             <span class="day-dot"></span>
-            <span class="day-label">{{ formatDate(date) }}</span>
-            <span class="day-count">{{ group.length }} commit{{ group.length > 1 ? 's' : '' }}</span>
+            <span class="day-label">{{ formatDate(day.date) }}</span>
+            <span class="day-count">
+              {{ day.commits.length }} commit{{ day.commits.length === 1 ? '' : 's' }}
+              <template v-if="day.patches.length"> · {{ day.patches.length }} patch wave{{ day.patches.length === 1 ? '' : 's' }}</template>
+            </span>
+          </div>
+
+          <!-- Patch waves: hosts that applied an app upgrade on this day -->
+          <div
+            v-for="p in day.patches" :key="day.date + '-' + p.idx"
+            class="patch-card"
+          >
+            <div class="patch-header">
+              <span class="patch-badge">PATCH</span>
+              <span class="patch-name">{{ p.software_name }}</span>
+              <span class="patch-versions mono">
+                <span class="ver-from">{{ p.old_version || '—' }}</span>
+                <span class="ver-arrow">→</span>
+                <span class="ver-to">{{ p.new_version }}</span>
+              </span>
+              <span class="patch-time">{{ formatTime(p.hour) }}</span>
+            </div>
+            <div class="patch-meta">
+              <span class="patch-hosts"><strong>{{ p.device_count }}</strong> host{{ p.device_count === 1 ? '' : 's' }} patched</span>
+              <span class="patch-source">via osquery</span>
+              <span v-if="p.avg_lag !== undefined" class="patch-lag">avg {{ p.avg_lag }}d · max {{ p.max_lag }}d</span>
+            </div>
           </div>
 
           <div
-            v-for="c in group" :key="c.sha"
+            v-for="c in day.commits" :key="c.sha"
             class="commit-card"
             :class="{ expanded: expandedSha === c.sha }"
             @click="toggleExpand(c.sha)"
@@ -174,11 +221,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import MetricCard from '../components/MetricCard.vue'
 import BarChart from '../components/BarChart.vue'
 import PieChart from '../components/PieChart.vue'
 import { useFmaReleases } from '../composables/useFmaReleases'
+import { useTimelineEvents } from '../composables/useTimelineEvents'
+import dayjs from 'dayjs'
 
 const CHANGELOG_URL = 'https://raw.githubusercontent.com/headmin/fleet-gitops-changelog/refs/heads/main/changelog.json'
 
@@ -215,6 +264,54 @@ const groupedCommits = computed(() => {
   return groups
 })
 
+// ─── Patch events on the timeline (from dex_patch_events on ALT) ──
+const { fetchPatchSummary } = useTimelineEvents()
+const patchEvents = ref([])
+
+async function loadPatchEvents() {
+  // Match the date span of the changelog we already loaded; default to 14d.
+  const end = dayjs()
+  const start = end.subtract(14, 'day')
+  try {
+    const rows = await fetchPatchSummary(
+      start.format('YYYY-MM-DD HH:mm:ss'),
+      end.format('YYYY-MM-DD HH:mm:ss')
+    )
+    patchEvents.value = (rows || []).map((r, idx) => ({
+      ...r,
+      idx,
+      device_count: Number(r.device_count || 0),
+      avg_lag: r.avg_lag !== undefined ? Number(r.avg_lag) : undefined,
+      max_lag: r.max_lag !== undefined ? Number(r.max_lag) : undefined,
+    }))
+  } catch (e) {
+    // Don't break the page if the worker query fails; just skip patch waves.
+    patchEvents.value = []
+  }
+}
+
+// Merged daily structure: each day carries its commits AND patch waves.
+const groupedEntries = computed(() => {
+  const days = {}
+  for (const c of filteredCommits.value) {
+    const d = c.timestamp.split('T')[0]
+    if (!days[d]) days[d] = { date: d, commits: [], patches: [] }
+    days[d].commits.push(c)
+  }
+  for (const p of patchEvents.value) {
+    const ts = (p.hour || '').toString().replace('T', ' ')
+    const d = ts.split(' ')[0]
+    if (!d) continue
+    if (!days[d]) days[d] = { date: d, commits: [], patches: [] }
+    days[d].patches.push(p)
+  }
+  // Sort patches within a day newest first by hour
+  for (const day of Object.values(days)) {
+    day.patches.sort((a, b) => (b.hour || '').localeCompare(a.hour || ''))
+  }
+  return Object.values(days).sort((a, b) => b.date.localeCompare(a.date))
+})
+
 const authorStats = computed(() => {
   const counts = {}
   for (const c of commits.value) counts[c.author] = (counts[c.author] || 0) + 1
@@ -243,11 +340,53 @@ async function fetchChangelog() {
 // ─── FMA upstream app releases ──────────────────────
 const { releases: fmaReleases, fetchFmaReleases, fetchReleaseDevices } = useFmaReleases()
 const fmaWindowDays = 30
-const fmaLimit = ref(12)
+const fmaLimit = ref(24)
 const fmaDeviceCounts = ref({})
 const fmaDeviceLoading = ref({})
+const fmaEagerLoaded = ref(false)
 
-const fmaTopReleases = computed(() => fmaReleases.value.slice(0, fmaLimit.value))
+// OS filter — chips at the top of the section.
+// FMA records use 'mac' and 'darwin' for macOS; merge them under one label.
+const osFilter = ref('all')
+const osOptions = [
+  { value: 'all',     label: 'All' },
+  { value: 'mac',     label: 'macOS' },
+  { value: 'windows', label: 'Windows' },
+  { value: 'linux',   label: 'Linux' },
+]
+function platformBucket(p) {
+  const v = (p || '').toLowerCase()
+  if (v === 'mac' || v === 'darwin' || v === 'macos') return 'mac'
+  if (v === 'win' || v === 'windows') return 'windows'
+  if (v === 'linux') return 'linux'
+  return v || 'all'
+}
+const osCounts = computed(() => {
+  const c = { all: fmaReleases.value.length, mac: 0, windows: 0, linux: 0 }
+  for (const r of fmaReleases.value) {
+    const b = platformBucket(r.platform)
+    if (b in c) c[b]++
+  }
+  return c
+})
+
+// Toggle: hide cards where the worker came back with zero matches.
+const onlyWithData = ref(true)
+
+const fmaTopReleases = computed(() => {
+  if (osFilter.value === 'all') return fmaReleases.value.slice(0, fmaLimit.value)
+  return fmaReleases.value.filter(r => platformBucket(r.platform) === osFilter.value).slice(0, fmaLimit.value)
+})
+
+const visibleFmaReleases = computed(() => {
+  if (!fmaEagerLoaded.value) return fmaTopReleases.value
+  if (!onlyWithData.value) return fmaTopReleases.value
+  return fmaTopReleases.value.filter(r => (totalDevicesForRelease(r.id) || 0) > 0)
+})
+
+const releasesWithData = computed(() =>
+  fmaTopReleases.value.filter(r => (totalDevicesForRelease(r.id) || 0) > 0).length
+)
 
 async function loadFmaReleaseDevices(release) {
   if (fmaDeviceLoading.value[release.id]) return
@@ -273,9 +412,27 @@ function formatHours(h) {
   return `${Math.round(n / 24)}d`
 }
 
-onMounted(() => {
+// Eager-load patch counts so we can hide cards with zero matches.
+// Refires whenever the set of visible-but-uncounted releases changes
+// (initial load, OS filter switch, "Show 12 more" click).
+async function eagerLoadFmaCounts() {
+  const targets = fmaTopReleases.value.filter(r => !fmaDeviceCounts.value[r.id] && !fmaDeviceLoading.value[r.id])
+  if (!targets.length) {
+    if (fmaReleases.value.length) fmaEagerLoaded.value = true
+    return
+  }
+  await Promise.all(targets.map(r => loadFmaReleaseDevices(r)))
+  fmaEagerLoaded.value = true
+}
+
+watch(fmaTopReleases, () => { eagerLoadFmaCounts() })
+
+onMounted(async () => {
   fetchChangelog()
-  fetchFmaReleases()
+  loadPatchEvents()
+  await fetchFmaReleases()
+  // fmaReleases now populated → eager-load counts for the top slice
+  eagerLoadFmaCounts()
 })
 </script>
 
@@ -346,11 +503,51 @@ h1 { font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-black)
 .fma-load-btn:hover:not(:disabled) { background: #f8f7ff; }
 .fma-load-btn:disabled { opacity: 0.6; cursor: wait; }
 .fma-load-btn.loaded { background: #6a67fe; color: var(--fleet-white); border-color: #6a67fe; }
-.fma-rollout-table { width: 100%; margin-top: 4px; border-collapse: collapse; font-size: 11px; font-family: var(--font-mono); }
-.fma-rollout-table th { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--fleet-black-10); color: var(--fleet-black-50); font-weight: 600; }
-.fma-rollout-table td { padding: 4px 6px; border-bottom: 1px solid var(--fleet-black-5); color: var(--fleet-black-75); vertical-align: top; }
+.fma-rollout-table { width: 100%; margin-top: 4px; border-collapse: collapse; font-size: 11px; font-family: var(--font-mono); table-layout: fixed; }
+.fma-rollout-table th { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--fleet-black-10); color: var(--fleet-black-50); font-weight: 600; white-space: nowrap; }
+.fma-rollout-table td { padding: 4px 6px; border-bottom: 1px solid var(--fleet-black-5); color: var(--fleet-black-75); vertical-align: top; white-space: nowrap; }
 .fma-rollout-table td.mono { font-family: var(--font-mono); }
-.fma-rollout-table .rollout-rel { color: var(--fleet-black-50); margin-left: 4px; }
+.fma-rollout-table .col-match { width: 28%; overflow: hidden; text-overflow: ellipsis; }
+.fma-rollout-table .col-version { width: 32%; }
+.fma-rollout-table .col-hosts { width: 8%; text-align: right; }
+.fma-rollout-table .col-first { width: 20%; }
+.fma-rollout-table .col-lag { width: 12%; text-align: right; }
+.fma-rollout-table .ver-from, .fma-rollout-table .ver-to { white-space: nowrap; }
+.fma-rollout-table .ver-arrow { margin: 0 4px; color: var(--fleet-black-50); }
+.fma-rollout-table .when { display: inline; }
+.fma-rollout-table .rollout-rel { color: var(--fleet-black-50); margin-left: 6px; font-size: 10px; }
+
+/* FMA control strip */
+.fma-controls { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+.fma-chip-group { display: flex; gap: 4px; }
+.fma-chip {
+  font-family: var(--font-mono); font-size: var(--font-size-xs);
+  padding: 4px 10px; border: 1px solid var(--fleet-black-10); background: var(--fleet-white);
+  color: var(--fleet-black-75); border-radius: 999px; cursor: pointer; transition: border-color 100ms;
+}
+.fma-chip:hover { border-color: #6a67fe; color: var(--fleet-black); }
+.fma-chip.active { background: #6a67fe; border-color: #6a67fe; color: var(--fleet-white); }
+.fma-chip-count { font-size: 10px; opacity: 0.7; margin-left: 4px; }
+.fma-toggle { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-75); cursor: pointer; }
+.fma-toggle input { cursor: pointer; }
+.fma-toggle-meta { color: var(--fleet-black-50); }
+.fma-loading, .fma-empty { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); padding: 16px 0; }
+
+/* Patch wave cards in the deployment timeline */
+.patch-card {
+  background: #f8fafc; border: 1px solid var(--fleet-black-10); border-left: 3px solid #6a67fe;
+  border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px;
+}
+.patch-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+.patch-badge { font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.5px; padding: 2px 6px; border-radius: 4px; background: #6a67fe; color: var(--fleet-white); flex-shrink: 0; }
+.patch-name { font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black); font-weight: 500; }
+.patch-versions { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-75); white-space: nowrap; }
+.patch-versions .ver-arrow { margin: 0 4px; color: var(--fleet-black-50); }
+.patch-time { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); margin-left: auto; flex-shrink: 0; }
+.patch-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); }
+.patch-hosts { color: var(--fleet-black-75); }
+.patch-source { color: var(--fleet-black-50); }
+.patch-lag { color: var(--fleet-black-50); }
 .fma-more-btn { margin-top: 12px; font-family: var(--font-mono); font-size: var(--font-size-xs); padding: 6px 12px; border: 1px solid var(--fleet-black-10); background: var(--fleet-white); color: var(--fleet-black-75); border-radius: var(--radius); cursor: pointer; }
 .fma-more-btn:hover { border-color: #3b82f6; color: var(--fleet-black); }
 </style>

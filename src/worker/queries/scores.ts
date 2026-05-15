@@ -328,6 +328,7 @@ export const scoreQueries: QueryConfig[] = [
   {
     name: 'scores.timeline_patches',
     domain: 'scores',
+    client: 'alt' as const,
     description: 'Patch events in a time window for timeline',
     params: [
       { name: 'startDate', type: 'string' as const, required: true },
