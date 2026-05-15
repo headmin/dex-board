@@ -57,49 +57,29 @@
             <strong>{{ r.version_to }}</strong>
           </div>
           <div class="fma-time">{{ formatTime(r.timestamp) }}</div>
-          <button
-            class="fma-load-btn"
-            :class="{ loaded: fmaDeviceCounts[r.id] }"
-            :disabled="fmaDeviceLoading[r.id]"
-            @click="loadFmaReleaseDevices(r)"
-          >
-            <template v-if="fmaDeviceLoading[r.id]">Loading…</template>
-            <template v-else-if="fmaDeviceCounts[r.id]">
-              {{
-                totalDevicesForRelease(r.id) > 0
-                  ? totalDevicesForRelease(r.id) + ' host(s) patched · refresh'
-                  : 'No hosts patched in ' + fmaWindowDays + 'd · refresh'
-              }}
-            </template>
-            <template v-else>Show hosts patched</template>
-          </button>
-          <table v-if="fmaDeviceCounts[r.id] && fmaDeviceCounts[r.id].length" class="fma-rollout-table">
-            <thead>
-              <tr>
-                <th class="col-match">Match</th>
-                <th class="col-version">Version</th>
-                <th class="col-hosts">Hosts</th>
-                <th class="col-first">First (+lag)</th>
-                <th class="col-lag">Avg/Max</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(w, wi) in fmaDeviceCounts[r.id]" :key="wi">
-                <td class="col-match" :title="w.software_name">{{ w.software_name }}</td>
-                <td class="col-version mono">
-                  <span class="ver-from">{{ w.old_version || '—' }}</span>
-                  <span class="ver-arrow">→</span>
-                  <span class="ver-to">{{ w.new_version }}</span>
-                </td>
-                <td class="col-hosts"><strong>{{ w.device_count }}</strong></td>
-                <td class="col-first">
-                  <span class="when">{{ formatTime(w.first_applied) }}</span>
-                  <span class="rollout-rel">+{{ formatHours(w.hours_to_first_patch) }}</span>
-                </td>
-                <td class="col-lag">{{ w.avg_lag }}d / {{ w.max_lag }}d</td>
-              </tr>
-            </tbody>
-          </table>
+          <div v-if="fmaDeviceLoading[r.id]" class="fma-stats fma-stats-loading">Loading…</div>
+          <template v-else-if="fmaDeviceCounts[r.id]">
+            <div class="fma-stats">
+              <div class="fma-headline">
+                <strong>{{ totalDevicesForRelease(r.id) || 0 }}</strong>
+                <span class="fma-headline-label">{{ totalDevicesForRelease(r.id) === 1 ? 'host patched' : 'hosts patched' }}</span>
+              </div>
+              <div v-if="totalDevicesForRelease(r.id) > 0" class="fma-caption">
+                avg {{ aggregateLag(r.id).avg }}d · max {{ aggregateLag(r.id).max }}d · via osquery
+              </div>
+              <div v-else class="fma-caption fma-caption-empty">
+                no matching transitions in {{ fmaWindowDays }}d window
+              </div>
+            </div>
+            <a
+              v-if="totalDevicesForRelease(r.id) > 0"
+              class="fma-cta"
+              :href="ctaHref(r)"
+              @click.prevent="jumpToTimeline(r)"
+            >See in timeline →</a>
+            <button v-else class="fma-cta fma-cta-secondary" @click="loadFmaReleaseDevices(r)">Refresh</button>
+          </template>
+          <button v-else class="fma-load-btn" @click="loadFmaReleaseDevices(r)">Show hosts patched</button>
         </div>
       </div>
       <button v-if="fmaTopReleases.length < fmaReleases.length" class="fma-more-btn" @click="fmaLimit += 12">
@@ -124,74 +104,141 @@
     </section>
 
     <!-- Timeline -->
-    <section class="section">
+    <section class="section" id="deployment-timeline">
+      <div class="timeline-controls">
+        <div class="event-chip-group">
+          <button
+            v-for="t in eventTypes" :key="t.key"
+            class="event-chip" :class="{ active: eventTypeFilter[t.key] }"
+            @click="toggleEventType(t.key)"
+          >
+            <span class="event-chip-dot" :style="{ background: t.color }"></span>
+            {{ t.label }}
+            <span class="event-chip-count">{{ eventTypeCounts[t.key] || 0 }}</span>
+          </button>
+        </div>
+        <label class="hosts-slider-label">
+          <span>Min hosts/wave</span>
+          <input type="range" min="1" max="100" v-model.number="minHosts" class="hosts-slider" />
+          <span class="hosts-slider-value">{{ minHosts }}</span>
+        </label>
+      </div>
+
       <div class="timeline">
         <div v-for="day in groupedEntries" :key="day.date" class="timeline-day">
           <div class="day-header">
             <span class="day-dot"></span>
             <span class="day-label">{{ formatDate(day.date) }}</span>
             <span class="day-count">
-              {{ day.commits.length }} commit{{ day.commits.length === 1 ? '' : 's' }}
-              <template v-if="day.patches.length"> · {{ day.patches.length }} patch wave{{ day.patches.length === 1 ? '' : 's' }}</template>
+              <template v-if="eventTypeFilter.commits">{{ day.commits.length }} commit{{ day.commits.length === 1 ? '' : 's' }}</template>
+              <template v-if="eventTypeFilter.releases && day.releases.length"> · {{ day.releases.length }} release{{ day.releases.length === 1 ? '' : 's' }}</template>
+              <template v-if="eventTypeFilter.patches && day.patchBuckets.length"> · {{ day.patchBuckets.length }} app{{ day.patchBuckets.length === 1 ? '' : 's' }} patched ({{ day.totalPatchedHosts }} hosts)</template>
             </span>
           </div>
 
-          <!-- Patch waves: hosts that applied an app upgrade on this day -->
-          <div
-            v-for="p in day.patches" :key="day.date + '-' + p.idx"
-            class="patch-card"
-          >
-            <div class="patch-header">
-              <span class="patch-badge">PATCH</span>
-              <span class="patch-name">{{ p.software_name }}</span>
-              <span class="patch-versions mono">
-                <span class="ver-from">{{ p.old_version || '—' }}</span>
+          <!-- 1. Vendor releases (RSS) — first in the cause→effect reading order -->
+          <template v-if="eventTypeFilter.releases">
+            <div
+              v-for="rel in day.releases" :key="day.date + '-rel-' + rel.id"
+              class="release-card"
+            >
+              <span class="release-badge">RELEASE</span>
+              <span class="release-name">{{ rel.app }}</span>
+              <span class="release-platform" :class="'platform-' + rel.platform">{{ rel.platform }}</span>
+              <span class="release-versions mono">
+                <template v-if="rel.version_from">{{ rel.version_from }}</template>
+                <template v-else>new</template>
                 <span class="ver-arrow">→</span>
-                <span class="ver-to">{{ p.new_version }}</span>
+                {{ rel.version_to }}
               </span>
-              <span class="patch-time">{{ formatTime(p.hour) }}</span>
+              <span class="release-time">{{ formatTime(rel.timestamp) }}</span>
             </div>
-            <div class="patch-meta">
-              <span class="patch-hosts"><strong>{{ p.device_count }}</strong> host{{ p.device_count === 1 ? '' : 's' }} patched</span>
-              <span class="patch-source">via osquery</span>
-              <span v-if="p.avg_lag !== undefined" class="patch-lag">avg {{ p.avg_lag }}d · max {{ p.max_lag }}d</span>
-            </div>
-          </div>
+          </template>
 
-          <div
-            v-for="c in day.commits" :key="c.sha"
-            class="commit-card"
-            :class="{ expanded: expandedSha === c.sha }"
-            @click="toggleExpand(c.sha)"
-          >
-            <div class="commit-header">
-              <span class="commit-sha">{{ c.short_sha }}</span>
-              <span class="commit-message">{{ c.message }}</span>
-              <span class="commit-time">{{ formatTime(c.timestamp) }}</span>
-            </div>
-            <div class="commit-meta">
-              <span class="commit-author">{{ c.author }}</span>
-              <span class="commit-files-count">{{ c.files.length }} file{{ c.files.length > 1 ? 's' : '' }}</span>
-              <span v-for="tag in fileTags(c.files)" :key="tag" class="file-tag" :class="tag">{{ tag }}</span>
-            </div>
-
-            <!-- Expanded detail -->
-            <div v-if="expandedSha === c.sha" class="commit-detail">
-              <div class="file-list">
-                <div v-for="f in c.files" :key="f" class="file-entry">
-                  <span class="file-icon">{{ fileIcon(f) }}</span>
-                  <span class="file-path">{{ f }}</span>
-                </div>
+          <!-- 2. GitOps commits -->
+          <template v-if="eventTypeFilter.commits">
+            <div
+              v-for="c in day.commits" :key="c.sha"
+              class="commit-card"
+              :class="{ expanded: expandedSha === c.sha }"
+              @click="toggleExpand(c.sha)"
+            >
+              <div class="commit-header">
+                <span class="commit-sha">{{ c.short_sha }}</span>
+                <span class="commit-message">{{ c.message }}</span>
+                <span class="commit-time">{{ formatTime(c.timestamp) }}</span>
               </div>
-              <a :href="`https://github.com/fleetdm/fleet/commit/${c.sha}`" target="_blank" class="github-link">
-                View on GitHub &rarr;
-              </a>
+              <div class="commit-meta">
+                <span class="commit-author">{{ c.author }}</span>
+                <span class="commit-files-count">{{ c.files.length }} file{{ c.files.length > 1 ? 's' : '' }}</span>
+                <span v-for="tag in fileTags(c.files)" :key="tag" class="file-tag" :class="tag">{{ tag }}</span>
+              </div>
+
+              <div v-if="expandedSha === c.sha" class="commit-detail">
+                <div class="file-list">
+                  <div v-for="f in c.files" :key="f" class="file-entry">
+                    <span class="file-icon">{{ fileIcon(f) }}</span>
+                    <span class="file-path">{{ f }}</span>
+                  </div>
+                </div>
+                <a :href="`https://github.com/fleetdm/fleet/commit/${c.sha}`" target="_blank" class="github-link">
+                  View on GitHub &rarr;
+                </a>
+              </div>
             </div>
-          </div>
+          </template>
+
+          <!-- 3. Endpoint patch buckets (per-software, expandable) -->
+          <template v-if="eventTypeFilter.patches">
+            <div
+              v-for="bucket in day.patchBuckets" :key="day.date + '-bk-' + bucket.software_name"
+              class="patch-bucket"
+              :class="{ expanded: isBucketExpanded(day.date, bucket.software_name), highlighted: highlightedBucket === day.date + '::' + bucket.software_name }"
+              :id="bucketAnchorId(day.date, bucket.software_name)"
+            >
+              <div class="patch-bucket-row" @click="toggleBucket(day.date, bucket.software_name)">
+                <span class="patch-bucket-caret">{{ isBucketExpanded(day.date, bucket.software_name) ? '▼' : '▶' }}</span>
+                <span class="patch-badge">PATCH</span>
+                <span class="patch-bucket-name">{{ bucket.software_name }}</span>
+                <span class="patch-bucket-versions mono">
+                  {{ bucket.earliest_from || '—' }}
+                  <span class="ver-arrow">→</span>
+                  {{ bucket.latest_to }}
+                </span>
+                <span class="patch-bucket-hosts"><strong>{{ bucket.hosts }}</strong> host{{ bucket.hosts === 1 ? '' : 's' }}</span>
+                <span class="patch-bucket-transitions">{{ bucket.transitions }} transition{{ bucket.transitions === 1 ? '' : 's' }}</span>
+                <span class="patch-bucket-lag">avg {{ bucket.avg_lag }}d</span>
+              </div>
+              <div v-if="isBucketExpanded(day.date, bucket.software_name)" class="patch-bucket-drilldown" @click.stop>
+                <div v-if="isBucketLoading(day.date, bucket.software_name)" class="patch-bucket-loading">Loading transitions…</div>
+                <table v-else-if="drilldownRows(day.date, bucket.software_name).length" class="drilldown-table">
+                  <thead>
+                    <tr>
+                      <th>From → To</th>
+                      <th>Hosts</th>
+                      <th>Avg lag</th>
+                      <th>Max lag</th>
+                      <th>Hour</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(w, wi) in drilldownRows(day.date, bucket.software_name)" :key="wi">
+                      <td class="mono">{{ w.old_version || '—' }} <span class="ver-arrow">→</span> {{ w.new_version }}</td>
+                      <td><strong>{{ w.device_count }}</strong></td>
+                      <td>{{ w.avg_lag }}d</td>
+                      <td>{{ w.max_lag }}d</td>
+                      <td>{{ formatTime(w.hour) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div v-else class="patch-bucket-loading">No transitions returned.</div>
+              </div>
+            </div>
+          </template>
         </div>
 
-        <div v-if="!loading && filteredCommits.length === 0" class="empty-state">
-          No commits match your filters.
+        <div v-if="!loading && filteredCommits.length === 0 && !patchBuckets.length" class="empty-state">
+          No activity matches your filters.
         </div>
       </div>
     </section>
@@ -264,53 +311,123 @@ const groupedCommits = computed(() => {
   return groups
 })
 
-// ─── Patch events on the timeline (from dex_patch_events on ALT) ──
-const { fetchPatchSummary } = useTimelineEvents()
-const patchEvents = ref([])
+// ─── Endpoint patch events (bucketed) + filters ─────
+const { fetchPatchSummaryBucketed, fetchSoftwareDayPatches } = useTimelineEvents()
+const patchBuckets = ref([])
+const expandedBuckets = ref({})         // { 'YYYY-MM-DD::software_name': true }
+const bucketDrilldowns = ref({})        // { key: rows[] }
+const bucketLoading = ref({})           // { key: true }
+const highlightedBucket = ref(null)     // for deep-link visual ping
 
-async function loadPatchEvents() {
-  // Match the date span of the changelog we already loaded; default to 14d.
+// Persisted filter state
+const FILTER_STORAGE_KEY = 'firehose-timeline-event-filter'
+function loadFilter() {
+  try {
+    const raw = localStorage.getItem(FILTER_STORAGE_KEY)
+    if (raw) return { commits: true, releases: true, patches: true, ...JSON.parse(raw) }
+  } catch {}
+  return { commits: true, releases: true, patches: true }
+}
+const eventTypeFilter = ref(loadFilter())
+function toggleEventType(key) {
+  eventTypeFilter.value = { ...eventTypeFilter.value, [key]: !eventTypeFilter.value[key] }
+  try { localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(eventTypeFilter.value)) } catch {}
+}
+
+const eventTypes = [
+  { key: 'commits',  label: 'Commits',          color: '#3b82f6' },
+  { key: 'releases', label: 'Releases (RSS)',   color: '#14b8a6' },
+  { key: 'patches',  label: 'Endpoint patches', color: '#6a67fe' },
+]
+
+// Min-hosts slider with light debouncing
+const minHosts = ref(1)
+let minHostsDebounceTimer = null
+
+async function loadPatchBuckets() {
   const end = dayjs()
   const start = end.subtract(14, 'day')
   try {
-    const rows = await fetchPatchSummary(
+    const rows = await fetchPatchSummaryBucketed(
       start.format('YYYY-MM-DD HH:mm:ss'),
-      end.format('YYYY-MM-DD HH:mm:ss')
+      end.format('YYYY-MM-DD HH:mm:ss'),
+      minHosts.value,
     )
-    patchEvents.value = (rows || []).map((r, idx) => ({
+    patchBuckets.value = (rows || []).map(r => ({
       ...r,
-      idx,
-      device_count: Number(r.device_count || 0),
-      avg_lag: r.avg_lag !== undefined ? Number(r.avg_lag) : undefined,
-      max_lag: r.max_lag !== undefined ? Number(r.max_lag) : undefined,
+      hosts: Number(r.hosts || 0),
+      transitions: Number(r.transitions || 0),
+      avg_lag: r.avg_lag !== undefined ? Number(r.avg_lag) : 0,
+      max_lag: r.max_lag !== undefined ? Number(r.max_lag) : 0,
     }))
+    // Slider change invalidates cached drill-downs since the underlying set changed
+    bucketDrilldowns.value = {}
   } catch (e) {
-    // Don't break the page if the worker query fails; just skip patch waves.
-    patchEvents.value = []
+    patchBuckets.value = []
   }
 }
 
-// Merged daily structure: each day carries its commits AND patch waves.
+watch(minHosts, () => {
+  if (minHostsDebounceTimer) clearTimeout(minHostsDebounceTimer)
+  minHostsDebounceTimer = setTimeout(() => loadPatchBuckets(), 200)
+})
+
+function bucketKey(day, sw) { return `${day}::${sw}` }
+function isBucketExpanded(day, sw) { return !!expandedBuckets.value[bucketKey(day, sw)] }
+function isBucketLoading(day, sw)  { return !!bucketLoading.value[bucketKey(day, sw)] }
+function drilldownRows(day, sw)    { return bucketDrilldowns.value[bucketKey(day, sw)] || [] }
+function bucketAnchorId(day, sw)   { return 'bucket-' + bucketKey(day, sw).replace(/[^a-zA-Z0-9-]/g, '-') }
+
+async function toggleBucket(day, sw) {
+  const k = bucketKey(day, sw)
+  const wasOpen = !!expandedBuckets.value[k]
+  expandedBuckets.value = { ...expandedBuckets.value, [k]: !wasOpen }
+  if (wasOpen) return
+  // Lazy fetch on first expand
+  if (bucketDrilldowns.value[k]) return
+  bucketLoading.value = { ...bucketLoading.value, [k]: true }
+  try {
+    const rows = await fetchSoftwareDayPatches(sw, day)
+    bucketDrilldowns.value = { ...bucketDrilldowns.value, [k]: rows || [] }
+  } finally {
+    bucketLoading.value = { ...bucketLoading.value, [k]: false }
+  }
+}
+
+// Merged daily structure: each day carries commits, releases, and patch buckets.
 const groupedEntries = computed(() => {
   const days = {}
+  const ensure = (d) => {
+    if (!days[d]) days[d] = { date: d, commits: [], releases: [], patchBuckets: [], totalPatchedHosts: 0 }
+    return days[d]
+  }
   for (const c of filteredCommits.value) {
     const d = c.timestamp.split('T')[0]
-    if (!days[d]) days[d] = { date: d, commits: [], patches: [] }
-    days[d].commits.push(c)
+    ensure(d).commits.push(c)
   }
-  for (const p of patchEvents.value) {
-    const ts = (p.hour || '').toString().replace('T', ' ')
-    const d = ts.split(' ')[0]
+  const releasesByDayMap = fmaReleasesByDay()
+  for (const [d, list] of Object.entries(releasesByDayMap)) {
+    ensure(d).releases.push(...list)
+  }
+  for (const b of patchBuckets.value) {
+    const d = (b.day || '').toString().slice(0, 10)
     if (!d) continue
-    if (!days[d]) days[d] = { date: d, commits: [], patches: [] }
-    days[d].patches.push(p)
+    const day = ensure(d)
+    day.patchBuckets.push(b)
+    day.totalPatchedHosts += Number(b.hosts || 0)
   }
-  // Sort patches within a day newest first by hour
   for (const day of Object.values(days)) {
-    day.patches.sort((a, b) => (b.hour || '').localeCompare(a.hour || ''))
+    day.patchBuckets.sort((a, b) => b.hosts - a.hosts)
+    day.releases.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''))
   }
   return Object.values(days).sort((a, b) => b.date.localeCompare(a.date))
 })
+
+const eventTypeCounts = computed(() => ({
+  commits:  filteredCommits.value.length,
+  releases: fmaReleases.value.length,
+  patches:  patchBuckets.value.length,
+}))
 
 const authorStats = computed(() => {
   const counts = {}
@@ -338,7 +455,7 @@ async function fetchChangelog() {
 }
 
 // ─── FMA upstream app releases ──────────────────────
-const { releases: fmaReleases, fetchFmaReleases, fetchReleaseDevices } = useFmaReleases()
+const { releases: fmaReleases, fetchFmaReleases, fetchReleaseDevices, releasesByDay: fmaReleasesByDay } = useFmaReleases()
 const fmaWindowDays = 30
 const fmaLimit = ref(24)
 const fmaDeviceCounts = ref({})
@@ -405,6 +522,62 @@ function totalDevicesForRelease(id) {
   return rows.reduce((sum, r) => sum + Number(r.device_count || 0), 0)
 }
 
+// Weighted-by-host avg lag, plus max-of-max. Used by the slim FMA card.
+function aggregateLag(id) {
+  const rows = fmaDeviceCounts.value[id] || []
+  let totalHosts = 0
+  let weightedSum = 0
+  let maxLag = 0
+  for (const r of rows) {
+    const hosts = Number(r.device_count || 0)
+    const avg = Number(r.avg_lag || 0)
+    const max = Number(r.max_lag || 0)
+    weightedSum += hosts * avg
+    totalHosts += hosts
+    if (max > maxLag) maxLag = max
+  }
+  const avg = totalHosts > 0 ? +(weightedSum / totalHosts).toFixed(1) : 0
+  return { avg, max: +maxLag.toFixed(1) }
+}
+
+// Pick the most-patched software name from a release's matched rows.
+// Used to build the timeline deep-link.
+function dominantSoftware(id) {
+  const rows = fmaDeviceCounts.value[id] || []
+  if (!rows.length) return ''
+  return rows.slice().sort((a, b) => Number(b.device_count) - Number(a.device_count))[0].software_name || ''
+}
+
+// Find the day on which the bulk of the patching happened for this release.
+function dominantDay(id) {
+  const rows = fmaDeviceCounts.value[id] || []
+  const byDay = {}
+  for (const r of rows) {
+    const d = (r.first_applied || '').toString().split(/[T ]/)[0]
+    if (!d) continue
+    byDay[d] = (byDay[d] || 0) + Number(r.device_count || 0)
+  }
+  const entries = Object.entries(byDay)
+  if (!entries.length) return ''
+  entries.sort((a, b) => b[1] - a[1])
+  return entries[0][0]
+}
+
+function ctaHref(release) {
+  const day = dominantDay(release.id)
+  const sw = dominantSoftware(release.id)
+  if (!day || !sw) return '#deployment-timeline'
+  return `#patch/${day}/${encodeURIComponent(sw)}`
+}
+
+function jumpToTimeline(release) {
+  const href = ctaHref(release)
+  window.location.hash = href
+  // The timeline section will pick up the hash via its watcher.
+  const el = document.getElementById('deployment-timeline')
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 function formatHours(h) {
   const n = Number(h)
   if (!isFinite(n)) return '?'
@@ -427,12 +600,37 @@ async function eagerLoadFmaCounts() {
 
 watch(fmaTopReleases, () => { eagerLoadFmaCounts() })
 
+// ── Deep-link receiver: #patch/{day}/{software_name} ──
+function applyHash() {
+  const hash = (window.location.hash || '').replace(/^#/, '')
+  const m = hash.match(/^patch\/([0-9]{4}-[0-9]{2}-[0-9]{2})\/(.+)$/)
+  if (!m) return
+  const day = m[1]
+  const sw = decodeURIComponent(m[2])
+  const k = bucketKey(day, sw)
+  // Open the bucket (this also triggers the lazy drill-down fetch)
+  if (!expandedBuckets.value[k]) toggleBucket(day, sw)
+  // Wait a tick for the DOM, then scroll + ping
+  setTimeout(() => {
+    const el = document.getElementById(bucketAnchorId(day, sw))
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    highlightedBucket.value = k
+    setTimeout(() => { if (highlightedBucket.value === k) highlightedBucket.value = null }, 2400)
+  }, 80)
+}
+
 onMounted(async () => {
   fetchChangelog()
-  loadPatchEvents()
+  loadPatchBuckets()
   await fetchFmaReleases()
   // fmaReleases now populated → eager-load counts for the top slice
   eagerLoadFmaCounts()
+  // If the page was opened with a deep-link, honor it now that data exists.
+  if (window.location.hash) {
+    // give patchBuckets a moment to settle, then resolve hash
+    setTimeout(applyHash, 250)
+  }
+  window.addEventListener('hashchange', applyHash)
 })
 </script>
 
@@ -502,20 +700,19 @@ h1 { font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-black)
 .fma-load-btn { align-self: flex-start; font-family: var(--font-mono); font-size: var(--font-size-xs); padding: 6px 12px; border: 1px solid #6a67fe; background: var(--fleet-white); color: #6a67fe; border-radius: var(--radius); cursor: pointer; transition: background 150ms; }
 .fma-load-btn:hover:not(:disabled) { background: #f8f7ff; }
 .fma-load-btn:disabled { opacity: 0.6; cursor: wait; }
-.fma-load-btn.loaded { background: #6a67fe; color: var(--fleet-white); border-color: #6a67fe; }
-.fma-rollout-table { width: 100%; margin-top: 4px; border-collapse: collapse; font-size: 11px; font-family: var(--font-mono); table-layout: fixed; }
-.fma-rollout-table th { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--fleet-black-10); color: var(--fleet-black-50); font-weight: 600; white-space: nowrap; }
-.fma-rollout-table td { padding: 4px 6px; border-bottom: 1px solid var(--fleet-black-5); color: var(--fleet-black-75); vertical-align: top; white-space: nowrap; }
-.fma-rollout-table td.mono { font-family: var(--font-mono); }
-.fma-rollout-table .col-match { width: 28%; overflow: hidden; text-overflow: ellipsis; }
-.fma-rollout-table .col-version { width: 32%; }
-.fma-rollout-table .col-hosts { width: 8%; text-align: right; }
-.fma-rollout-table .col-first { width: 20%; }
-.fma-rollout-table .col-lag { width: 12%; text-align: right; }
-.fma-rollout-table .ver-from, .fma-rollout-table .ver-to { white-space: nowrap; }
-.fma-rollout-table .ver-arrow { margin: 0 4px; color: var(--fleet-black-50); }
-.fma-rollout-table .when { display: inline; }
-.fma-rollout-table .rollout-rel { color: var(--fleet-black-50); margin-left: 6px; font-size: 10px; }
+
+/* Slim summary stats inside an FMA card */
+.fma-stats { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--fleet-black-5); display: flex; flex-direction: column; gap: 4px; }
+.fma-stats-loading { color: var(--fleet-black-50); font-family: var(--font-mono); font-size: var(--font-size-xs); }
+.fma-headline { display: flex; align-items: baseline; gap: 6px; }
+.fma-headline strong { font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: #6a67fe; line-height: 1; }
+.fma-headline-label { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-75); }
+.fma-caption { font-family: var(--font-mono); font-size: 11px; color: var(--fleet-black-50); }
+.fma-caption-empty { font-style: italic; }
+.fma-cta { display: inline-block; align-self: flex-start; margin-top: 4px; padding: 4px 0; font-family: var(--font-mono); font-size: var(--font-size-xs); color: #6a67fe; text-decoration: none; font-weight: 600; cursor: pointer; }
+.fma-cta:hover { text-decoration: underline; }
+.fma-cta-secondary { align-self: flex-start; background: none; border: 1px solid var(--fleet-black-10); padding: 4px 10px; border-radius: var(--radius); color: var(--fleet-black-75); cursor: pointer; }
+.fma-cta-secondary:hover { border-color: #6a67fe; color: #6a67fe; }
 
 /* FMA control strip */
 .fma-controls { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -533,21 +730,81 @@ h1 { font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-black)
 .fma-toggle-meta { color: var(--fleet-black-50); }
 .fma-loading, .fma-empty { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); padding: 16px 0; }
 
-/* Patch wave cards in the deployment timeline */
-.patch-card {
-  background: #f8fafc; border: 1px solid var(--fleet-black-10); border-left: 3px solid #6a67fe;
-  border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px;
+/* ── Timeline control strip ── */
+.timeline-controls {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
+  padding: 10px 12px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius);
 }
-.patch-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
-.patch-badge { font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.5px; padding: 2px 6px; border-radius: 4px; background: #6a67fe; color: var(--fleet-white); flex-shrink: 0; }
-.patch-name { font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black); font-weight: 500; }
-.patch-versions { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-75); white-space: nowrap; }
-.patch-versions .ver-arrow { margin: 0 4px; color: var(--fleet-black-50); }
-.patch-time { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); margin-left: auto; flex-shrink: 0; }
-.patch-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); }
-.patch-hosts { color: var(--fleet-black-75); }
-.patch-source { color: var(--fleet-black-50); }
-.patch-lag { color: var(--fleet-black-50); }
+.event-chip-group { display: flex; gap: 4px; }
+.event-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: var(--font-size-xs);
+  padding: 4px 10px; border: 1px solid var(--fleet-black-10); background: var(--fleet-white);
+  color: var(--fleet-black-50); border-radius: 999px; cursor: pointer; transition: all 100ms;
+}
+.event-chip:hover { color: var(--fleet-black); border-color: var(--fleet-black-50); }
+.event-chip.active { color: var(--fleet-black); border-color: var(--fleet-black); background: var(--fleet-off-white); }
+.event-chip-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+.event-chip-count { font-size: 10px; opacity: 0.75; }
+.hosts-slider-label { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-75); margin-left: auto; }
+.hosts-slider { width: 140px; }
+.hosts-slider-value { font-weight: 700; color: var(--fleet-black); min-width: 24px; text-align: right; }
+
+/* ── Release (RSS) cards in the timeline ── */
+.release-card {
+  display: flex; align-items: baseline; gap: 8px;
+  background: #f0fdfa; border: 1px solid var(--fleet-black-10); border-left: 3px solid #14b8a6;
+  border-radius: var(--radius); padding: 8px 14px; margin-bottom: 8px;
+  font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black);
+  flex-wrap: wrap;
+}
+.release-badge { font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.5px; padding: 2px 6px; border-radius: 4px; background: #14b8a6; color: var(--fleet-white); flex-shrink: 0; }
+.release-name { font-weight: 500; }
+.release-platform { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; padding: 1px 6px; border-radius: 6px; background: var(--fleet-off-white); color: var(--fleet-black-75); }
+.release-platform.platform-mac, .release-platform.platform-darwin { background: #e0e7ff; color: #3730a3; }
+.release-platform.platform-windows { background: #dbeafe; color: #1e40af; }
+.release-platform.platform-linux { background: #dcfce7; color: #166534; }
+.release-versions { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-75); white-space: nowrap; }
+.release-versions .ver-arrow { margin: 0 4px; color: var(--fleet-black-50); }
+.release-time { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); margin-left: auto; flex-shrink: 0; }
+
+/* ── Endpoint patch buckets (per-software per-day) ── */
+.patch-bucket {
+  background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-left: 3px solid #6a67fe;
+  border-radius: var(--radius); margin-bottom: 8px; transition: background 150ms, box-shadow 150ms;
+}
+.patch-bucket.highlighted { box-shadow: 0 0 0 3px rgba(106, 103, 254, 0.25); background: #f8f7ff; }
+.patch-bucket-row {
+  display: grid; align-items: center;
+  grid-template-columns: 16px auto 1fr auto auto auto auto;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black);
+}
+.patch-bucket-row:hover { background: #fafaff; }
+.patch-bucket.expanded .patch-bucket-row { border-bottom: 1px solid var(--fleet-black-5); }
+.patch-bucket-caret { font-size: 10px; color: var(--fleet-black-50); text-align: center; }
+.patch-bucket .patch-badge { /* reuses badge style from bucket bg */
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.5px; padding: 2px 6px; border-radius: 4px; background: #6a67fe; color: var(--fleet-white); flex-shrink: 0;
+}
+.patch-bucket-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.patch-bucket-versions { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
+.patch-bucket-versions .ver-arrow { margin: 0 4px; }
+.patch-bucket-hosts { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-75); white-space: nowrap; }
+.patch-bucket-transitions, .patch-bucket-lag { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); white-space: nowrap; }
+.patch-bucket-drilldown { padding: 10px 14px; background: #fafaff; }
+.patch-bucket-loading { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); padding: 4px 0; }
+.drilldown-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 11px; }
+.drilldown-table th { text-align: left; padding: 4px 8px 6px; color: var(--fleet-black-50); font-weight: 600; border-bottom: 1px solid var(--fleet-black-10); }
+.drilldown-table td { padding: 4px 8px; color: var(--fleet-black-75); border-bottom: 1px solid var(--fleet-black-5); }
+.drilldown-table td.mono { font-family: var(--font-mono); white-space: nowrap; }
+.drilldown-table .ver-arrow { margin: 0 4px; color: var(--fleet-black-50); }
+
+@media (max-width: 900px) {
+  .patch-bucket-row { grid-template-columns: 16px auto 1fr auto; }
+  .patch-bucket-versions, .patch-bucket-transitions, .patch-bucket-lag { display: none; }
+}
 .fma-more-btn { margin-top: 12px; font-family: var(--font-mono); font-size: var(--font-size-xs); padding: 6px 12px; border: 1px solid var(--fleet-black-10); background: var(--fleet-white); color: var(--fleet-black-75); border-radius: var(--radius); cursor: pointer; }
 .fma-more-btn:hover { border-color: #3b82f6; color: var(--fleet-black); }
 </style>

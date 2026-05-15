@@ -51,6 +51,16 @@ async function fetchPatchSummary(startDate, endDate) {
   return await query('scores.timeline_patches', { startDate, endDate })
 }
 
+async function fetchPatchSummaryBucketed(startDate, endDate, minHosts = 1) {
+  return await query('scores.timeline_patches_summary', { startDate, endDate, minHosts })
+}
+
+async function fetchSoftwareDayPatches(softwareName, day) {
+  const start = dayjs(day).startOf('day').format('YYYY-MM-DD HH:mm:ss')
+  const end = dayjs(day).endOf('day').format('YYYY-MM-DD HH:mm:ss')
+  return await query('scores.timeline_patches', { startDate: start, endDate: end, softwareName, day })
+}
+
 async function fetchReleaseRollout(softwarePattern, commitTimestamp, windowDays = 14) {
   const commitTime = dayjs(commitTimestamp).format('YYYY-MM-DD HH:mm:ss')
   return await query('scores.release_rollout', { softwarePattern, commitTime, windowDays })
@@ -199,6 +209,8 @@ export function useTimelineEvents() {
     fetchScoreHeatmap,
     fetchScoreChanges,
     fetchPatchSummary,
+    fetchPatchSummaryBucketed,
+    fetchSoftwareDayPatches,
     fetchReleaseRollout,
     fetchRolloutProgress,
     fetchImpactSummary,

@@ -329,10 +329,12 @@ export const scoreQueries: QueryConfig[] = [
     name: 'scores.timeline_patches',
     domain: 'scores',
     client: 'alt' as const,
-    description: 'Patch events in a time window for timeline',
+    description: 'Patch events in a time window for timeline (optionally filtered by software/day for drill-down)',
     params: [
       { name: 'startDate', type: 'string' as const, required: true },
       { name: 'endDate', type: 'string' as const, required: true },
+      { name: 'softwareName', type: 'string' as const, required: false, default: '' },
+      { name: 'day', type: 'string' as const, required: false, default: '' },
     ],
     sql: `
       SELECT
@@ -348,8 +350,40 @@ export const scoreQueries: QueryConfig[] = [
         max(event_time) AS last_applied
       FROM dex_patch_events
       WHERE event_time >= {startDate:String} AND event_time <= {endDate:String}
+        AND ({softwareName:String} = '' OR software_name = {softwareName:String})
+        AND ({day:String} = '' OR toDate(event_time) = toDate({day:String}))
       GROUP BY hour, software_name, patch_type, old_version, new_version
       ORDER BY hour DESC
+    `,
+  },
+  {
+    name: 'scores.timeline_patches_summary',
+    domain: 'scores',
+    client: 'alt' as const,
+    description: 'Per-day, per-software aggregate of patch events for the bucketed timeline',
+    params: [
+      { name: 'startDate', type: 'string' as const, required: true },
+      { name: 'endDate', type: 'string' as const, required: true },
+      { name: 'minHosts', type: 'number' as const, required: false, min: 1, max: 10000, default: 1 },
+    ],
+    sql: `
+      SELECT
+        toDate(event_time) AS day,
+        software_name,
+        patch_type,
+        countDistinct(host_identifier) AS hosts,
+        countDistinct(concat(old_version, '|', new_version)) AS transitions,
+        argMin(old_version, event_time) AS earliest_from,
+        argMax(new_version, event_time) AS latest_to,
+        round(avg(days_to_patch), 1) AS avg_lag,
+        round(max(days_to_patch), 1) AS max_lag,
+        min(event_time) AS first_applied,
+        max(event_time) AS last_applied
+      FROM dex_patch_events
+      WHERE event_time >= {startDate:String} AND event_time <= {endDate:String}
+      GROUP BY day, software_name, patch_type
+      HAVING hosts >= {minHosts:UInt32}
+      ORDER BY day DESC, hosts DESC
     `,
   },
 

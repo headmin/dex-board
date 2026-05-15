@@ -44,11 +44,26 @@ async function fetchReleaseDevices(release, windowDays = 30) {
   })
 }
 
+// Bucket loaded FMA releases by their date (YYYY-MM-DD). Returns an object
+// keyed by day with arrays of releases. Useful for interleaving release
+// cards into the per-day deployment timeline.
+function releasesByDay() {
+  const map = {}
+  for (const r of releases.value) {
+    const d = (r.timestamp || '').slice(0, 10)
+    if (!d) continue
+    if (!map[d]) map[d] = []
+    map[d].push(r)
+  }
+  return map
+}
+
 export function useFmaReleases() {
   return {
     releases,
     fetchFmaReleases,
     releasesInRange,
+    releasesByDay,
     fetchReleaseDevices
   }
 }
