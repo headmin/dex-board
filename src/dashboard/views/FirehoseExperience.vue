@@ -256,26 +256,7 @@
           {{ topPatchMovers.length }} apps · sorted by hosts patched
         </span>
       </div>
-      <table class="mttp-table">
-        <thead>
-          <tr>
-            <th class="mttp-col-app">App</th>
-            <th class="mttp-col-num">Hosts</th>
-            <th class="mttp-col-num">MTTP</th>
-            <th class="mttp-col-range">Range</th>
-            <th class="mttp-col-num">Distinct lag values</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="r in topPatchMovers" :key="r.software_name + r.day">
-            <td class="mttp-col-app">{{ r.software_name }}</td>
-            <td class="mttp-col-num"><strong>{{ r.hosts }}</strong></td>
-            <td class="mttp-col-num">{{ r.avg_lag }}d</td>
-            <td class="mttp-col-range mono">{{ r.min_lag }}–{{ r.max_lag }}d</td>
-            <td class="mttp-col-num">{{ r.distinct_lags }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <MttpTable :rows="topPatchMovers" />
     </section>
 
     <!-- ═══ 4. NETWORK (Wi-Fi + VPN) ═════════════════════════ -->
@@ -427,6 +408,7 @@ import TimeSeriesChart from '../components/TimeSeriesChart.vue'
 import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
 import HostTile from '../components/HostTile.vue'
+import MttpTable from '../components/MttpTable.vue'
 
 // Shared filter bar — propagates to every firehose query that respects
 // FILTER_PARAMS. Wrap this in a computed so queries re-fetch when the user
@@ -798,15 +780,4 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 @media (max-width: 1024px) { .metrics-row.four-col { grid-template-columns: repeat(2, 1fr); } .metrics-row.three-col { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) { .metrics-row, .metrics-row.four-col, .metrics-row.three-col { grid-template-columns: 1fr; } .charts-row.two-col { grid-template-columns: 1fr; } .dashboard-header { flex-direction: column; gap: 8px; } }
 
-/* MTTP top movers table */
-.mttp-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius); overflow: hidden; }
-.mttp-table th { text-align: left; padding: 10px 14px; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--fleet-black-10); background: var(--fleet-off-white); }
-.mttp-table td { padding: 10px 14px; color: var(--fleet-black-75); border-bottom: 1px solid var(--fleet-black-5); }
-.mttp-table tr:last-child td { border-bottom: none; }
-.mttp-table tr:hover td { background: var(--fleet-off-white); }
-.mttp-table .mttp-col-app { font-weight: 500; color: var(--fleet-black); }
-.mttp-table .mttp-col-num { text-align: right; font-family: var(--font-mono); white-space: nowrap; }
-.mttp-table .mttp-col-num strong { color: #6a67fe; font-weight: 700; }
-.mttp-table .mttp-col-range { text-align: right; font-family: var(--font-mono); color: var(--fleet-black-50); white-space: nowrap; }
-.mttp-table .mono { font-family: var(--font-mono); }
 </style>
