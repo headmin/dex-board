@@ -4,6 +4,7 @@
  * Source: alt ClickHouse → fleetd_info (materialized from osquery result logs)
  */
 import type { QueryConfig } from '../types'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
 
 export const firehoseFleetdQueries: QueryConfig[] = [
   {
@@ -53,8 +54,9 @@ export const firehoseFleetdQueries: QueryConfig[] = [
     domain: 'software',
     client: 'alt',
     description: 'Fleet-wide fleetd summary',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         count() AS total_hosts,
         countIf(enrolled = true) AS enrolled_hosts,
@@ -67,6 +69,7 @@ export const firehoseFleetdQueries: QueryConfig[] = [
           argMax(version, timestamp) AS version,
           argMax(uptime_seconds, timestamp) AS up_sec
         FROM fleetd_info
+        WHERE host_id IN (SELECT host_id FROM filtered_hosts)
         GROUP BY host_id
       )
     `,

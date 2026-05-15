@@ -5,6 +5,7 @@
  * (materialized from dex-queries.yml "crash summary" + "crash detail")
  */
 import type { QueryConfig } from '../types'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
 
 export const firehoseCrashQueries: QueryConfig[] = [
   {
@@ -12,8 +13,9 @@ export const firehoseCrashQueries: QueryConfig[] = [
     domain: 'software',
     client: 'alt',
     description: 'Fleet crash overview: total crashes, severity distribution, top crashers',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         countDistinct(host_id) AS devices_with_crashes,
         sum(crash_count_7d) AS total_crashes_7d,
@@ -24,6 +26,7 @@ export const firehoseCrashQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM crash_summary GROUP BY host_id
       )
+      AND host_id IN (SELECT host_id FROM filtered_hosts)
     `,
   },
   {

@@ -5,6 +5,7 @@
  * (materialized from dex-queries.yml "VPN gate" — network confidence signal)
  */
 import type { QueryConfig } from '../types'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
 
 export const firehoseVpnQueries: QueryConfig[] = [
   {
@@ -12,8 +13,9 @@ export const firehoseVpnQueries: QueryConfig[] = [
     domain: 'network',
     client: 'alt',
     description: 'Fleet VPN/network confidence overview',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         countDistinct(host_id) AS total_devices,
         countDistinctIf(host_id, network_confidence = 'tunnel_active') AS vpn_active,
@@ -24,6 +26,7 @@ export const firehoseVpnQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM vpn_gate GROUP BY host_id
       )
+      AND host_id IN (SELECT host_id FROM filtered_hosts)
     `,
   },
   {

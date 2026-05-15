@@ -5,6 +5,7 @@
  * (materialized from dex-queries.yml "device health" + "OS health")
  */
 import type { QueryConfig } from '../types'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
 
 export const firehoseHealthQueries: QueryConfig[] = [
   // ── Device Health ──────────────────────────────────────
@@ -13,8 +14,9 @@ export const firehoseHealthQueries: QueryConfig[] = [
     domain: 'health',
     client: 'alt',
     description: 'Fleet-wide device health: CPU class, RAM tier, swap/battery distributions',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         countDistinct(host_id) AS total_devices,
         countDistinctIf(host_id, swap_pressure = 'severe') AS severe_swap,
@@ -28,27 +30,38 @@ export const firehoseHealthQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM device_health GROUP BY host_id
       )
+      AND host_id IN (SELECT host_id FROM filtered_hosts)
     `,
   },
   {
     // Per-condition host drill-down. Returns the *latest* snapshot per host
     // that matches the given condition, with enough fields to render a tile.
     // Used by clickable metric cards (e.g. "Degraded battery: 3").
+    // Per-condition host drill-down. Single query handles all tile contexts:
+    // device-health (swap/battery/compression), OS (dex_os_health tiers, uptime
+    // risk), VPN (disconnected), and crashes. LEFT JOINs give every tile the
+    // same shape regardless of which condition triggered it — so HostTile
+    // renders consistently.
     name: 'firehose.health.hosts_by_condition',
     domain: 'health',
     client: 'alt',
-    description: 'Hosts matching a specific device-health condition (tile drill-down)',
+    description: 'Hosts matching a specific device-health/OS/VPN/crash condition (tile drill-down)',
     params: [
       { name: 'condition', type: 'enum' as const, required: true, values: [
+        // device_health
         'severe_swap', 'elevated_swap',
         'degraded_battery', 'replace_battery',
         'high_compression',
+        // os_health
+        'degraded_os', 'acceptable_os', 'healthy_os',
+        'uptime_risk_stale',
+        // vpn
+        'vpn_disconnected',
+        // crashes
+        'has_crashes',
       ] },
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 50 },
     ],
-    // LEFT JOIN hardware_inventory so tiles get hardware_serial — uniquely
-    // identifies a host in Fleet's search, unlike hostname (which can collide
-    // across imaging generations / tenants).
     sql: `
       SELECT
         dh.host_id AS host_id,
@@ -65,6 +78,12 @@ export const firehoseHealthQueries: QueryConfig[] = [
         dh.battery_state AS battery_state,
         hw.hardware_serial AS hardware_serial,
         hw.hardware_model AS hardware_model,
+        os.dex_os_health AS dex_os_health,
+        os.os_currency AS os_currency,
+        os.uptime_risk AS uptime_risk,
+        os.uptime_days AS uptime_days,
+        v.network_confidence AS network_confidence,
+        c.total_crashes_7d AS total_crashes_7d,
         dh.timestamp AS last_seen
       FROM device_health dh
       LEFT JOIN (
@@ -73,15 +92,39 @@ export const firehoseHealthQueries: QueryConfig[] = [
           argMax(hardware_model, timestamp) AS hardware_model
         FROM hardware_inventory GROUP BY host_id
       ) hw ON dh.host_id = hw.host_id
+      LEFT JOIN (
+        SELECT host_id,
+          argMax(dex_os_health, timestamp) AS dex_os_health,
+          argMax(os_currency, timestamp) AS os_currency,
+          argMax(uptime_risk, timestamp) AS uptime_risk,
+          argMax(uptime_days, timestamp) AS uptime_days
+        FROM os_health GROUP BY host_id
+      ) os ON dh.host_id = os.host_id
+      LEFT JOIN (
+        SELECT host_id, argMax(network_confidence, timestamp) AS network_confidence
+        FROM vpn_gate GROUP BY host_id
+      ) v ON dh.host_id = v.host_id
+      LEFT JOIN (
+        SELECT host_id, sum(crash_count_7d) AS total_crashes_7d
+        FROM crash_summary
+        WHERE (host_id, timestamp) IN (SELECT host_id, max(timestamp) FROM crash_summary GROUP BY host_id)
+        GROUP BY host_id
+      ) c ON dh.host_id = c.host_id
       WHERE (dh.host_id, dh.timestamp) IN (
         SELECT host_id, max(timestamp) FROM device_health GROUP BY host_id
       )
       AND multiIf(
-        {condition:String} = 'severe_swap', dh.swap_pressure = 'severe',
-        {condition:String} = 'elevated_swap', dh.swap_pressure = 'elevated',
-        {condition:String} = 'degraded_battery', dh.battery_health_score = 'degraded',
-        {condition:String} = 'replace_battery', dh.battery_health_score = 'replace',
-        {condition:String} = 'high_compression', dh.compression_pressure = 'high',
+        {condition:String} = 'severe_swap',       dh.swap_pressure = 'severe',
+        {condition:String} = 'elevated_swap',     dh.swap_pressure = 'elevated',
+        {condition:String} = 'degraded_battery',  dh.battery_health_score = 'degraded',
+        {condition:String} = 'replace_battery',   dh.battery_health_score = 'replace',
+        {condition:String} = 'high_compression',  dh.compression_pressure = 'high',
+        {condition:String} = 'degraded_os',       os.dex_os_health = 'degraded',
+        {condition:String} = 'acceptable_os',     os.dex_os_health = 'acceptable',
+        {condition:String} = 'healthy_os',        os.dex_os_health = 'healthy',
+        {condition:String} = 'uptime_risk_stale', os.uptime_risk IN ('stale_7d', 'stale_14d'),
+        {condition:String} = 'vpn_disconnected',  v.network_confidence = 'disconnected',
+        {condition:String} = 'has_crashes',       c.total_crashes_7d > 0,
         false
       )
       ORDER BY dh.hostname
@@ -204,8 +247,9 @@ export const firehoseHealthQueries: QueryConfig[] = [
     domain: 'health',
     client: 'alt',
     description: 'Fleet OS health: currency, uptime risk, DEX health score counts',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         countDistinct(host_id) AS total_devices,
         countDistinctIf(host_id, dex_os_health = 'healthy') AS healthy,
@@ -219,6 +263,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM os_health GROUP BY host_id
       )
+      AND host_id IN (SELECT host_id FROM filtered_hosts)
     `,
   },
   {

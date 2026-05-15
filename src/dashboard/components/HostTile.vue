@@ -114,6 +114,16 @@ const primaryLabel = computed(() => {
       return 'Battery health'
     case 'high_compression':
       return 'Compression'
+    case 'degraded_os':
+    case 'acceptable_os':
+    case 'healthy_os':
+      return 'OS health'
+    case 'uptime_risk_stale':
+      return 'Uptime'
+    case 'vpn_disconnected':
+      return 'Network'
+    case 'has_crashes':
+      return 'Crashes (7d)'
     default:
       return 'Status'
   }
@@ -129,6 +139,16 @@ const primaryValue = computed(() => {
       return props.host.battery_health_score || '—'
     case 'high_compression':
       return props.host.compression_pressure || '—'
+    case 'degraded_os':
+    case 'acceptable_os':
+    case 'healthy_os':
+      return props.host.dex_os_health || '—'
+    case 'uptime_risk_stale':
+      return props.host.uptime_days != null ? `${props.host.uptime_days}d` : '—'
+    case 'vpn_disconnected':
+      return props.host.network_confidence || '—'
+    case 'has_crashes':
+      return props.host.total_crashes_7d ?? '—'
     default:
       return '—'
   }
@@ -136,8 +156,16 @@ const primaryValue = computed(() => {
 
 const primaryClass = computed(() => {
   const v = String(primaryValue.value).toLowerCase()
-  if (['severe', 'replace', 'high'].includes(v)) return 'state-critical'
-  if (['elevated', 'degraded', 'moderate'].includes(v)) return 'state-warn'
+  if (['severe', 'replace', 'high', 'disconnected', 'degraded'].includes(v)) return 'state-critical'
+  if (['elevated', 'moderate', 'acceptable'].includes(v)) return 'state-warn'
+  // Numeric crash count: any crashes = warning, many = critical
+  if (props.condition === 'has_crashes') {
+    const n = Number(props.host.total_crashes_7d) || 0
+    if (n >= 5) return 'state-critical'
+    if (n >= 1) return 'state-warn'
+  }
+  // Stale uptime gets a warn color
+  if (props.condition === 'uptime_risk_stale') return 'state-warn'
   return ''
 })
 

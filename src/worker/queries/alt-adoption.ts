@@ -5,6 +5,7 @@
  * (materialized from dex-queries.yml "adoption gap" — app recency check)
  */
 import type { QueryConfig } from '../types'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
 
 export const firehoseAdoptionQueries: QueryConfig[] = [
   {
@@ -12,8 +13,9 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
     domain: 'software',
     client: 'alt',
     description: 'Fleet app adoption overview: usage tier counts',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         countDistinct(host_id) AS total_devices,
         countDistinct(bundle_identifier) AS unique_apps,
@@ -27,6 +29,7 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id
       )
+      AND host_id IN (SELECT host_id FROM filtered_hosts)
     `,
   },
   {

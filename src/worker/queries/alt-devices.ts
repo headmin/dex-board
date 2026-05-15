@@ -4,6 +4,7 @@
  * Source: alt ClickHouse → wifi_signal, running_apps, hardware_inventory, fleetd_info
  */
 import type { QueryConfig } from '../types'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
 
 export const firehoseDeviceQueries: QueryConfig[] = [
   {
@@ -105,18 +106,19 @@ export const firehoseDeviceQueries: QueryConfig[] = [
     domain: 'devices',
     client: 'alt',
     description: 'Fleet-wide overview metrics across all firehose tables',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
-        (SELECT countDistinct(host_id) FROM wifi_signal) AS wifi_hosts,
-        (SELECT countDistinct(host_id) FROM running_apps) AS app_hosts,
-        (SELECT countDistinct(host_id) FROM hardware_inventory) AS hw_hosts,
-        (SELECT countDistinct(host_id) FROM fleetd_info) AS fleetd_hosts,
-        (SELECT round(avg(rssi), 1) FROM wifi_signal) AS avg_rssi,
-        (SELECT round(avg(snr), 1) FROM wifi_signal) AS avg_snr,
-        (SELECT countDistinct(app_name) FROM running_apps WHERE app_name != '') AS unique_apps,
-        (SELECT count() FROM wifi_signal) AS wifi_samples,
-        (SELECT count() FROM running_apps) AS app_samples
+        (SELECT countDistinct(host_id) FROM wifi_signal WHERE host_id IN (SELECT host_id FROM filtered_hosts)) AS wifi_hosts,
+        (SELECT countDistinct(host_id) FROM running_apps WHERE host_id IN (SELECT host_id FROM filtered_hosts)) AS app_hosts,
+        (SELECT countDistinct(host_id) FROM hardware_inventory WHERE host_id IN (SELECT host_id FROM filtered_hosts)) AS hw_hosts,
+        (SELECT countDistinct(host_id) FROM fleetd_info WHERE host_id IN (SELECT host_id FROM filtered_hosts)) AS fleetd_hosts,
+        (SELECT round(avg(rssi), 1) FROM wifi_signal WHERE host_id IN (SELECT host_id FROM filtered_hosts)) AS avg_rssi,
+        (SELECT round(avg(snr), 1) FROM wifi_signal WHERE host_id IN (SELECT host_id FROM filtered_hosts)) AS avg_snr,
+        (SELECT countDistinct(app_name) FROM running_apps WHERE app_name != '' AND host_id IN (SELECT host_id FROM filtered_hosts)) AS unique_apps,
+        (SELECT count() FROM wifi_signal WHERE host_id IN (SELECT host_id FROM filtered_hosts)) AS wifi_samples,
+        (SELECT count() FROM running_apps WHERE host_id IN (SELECT host_id FROM filtered_hosts)) AS app_samples
     `,
   },
   {
