@@ -159,6 +159,31 @@
                 Per-device app drill-down disabled — Workers Council mode active
               </div>
             </div>
+
+            <div v-if="softwarePatchMovers.length" class="detail-section">
+              <h4>Top patch movers (7d)</h4>
+              <p class="section-hint">Mean time to patch per app · sorted by hosts patched</p>
+              <table class="mttp-table">
+                <thead>
+                  <tr>
+                    <th class="mttp-col-app">App</th>
+                    <th class="mttp-col-num">Hosts</th>
+                    <th class="mttp-col-num">MTTP</th>
+                    <th class="mttp-col-range">Range</th>
+                    <th class="mttp-col-num">Distinct</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="r in softwarePatchMovers" :key="r.software_name">
+                    <td class="mttp-col-app">{{ r.software_name }}</td>
+                    <td class="mttp-col-num"><strong>{{ r.hosts }}</strong></td>
+                    <td class="mttp-col-num">{{ r.avg_lag }}d</td>
+                    <td class="mttp-col-range mono">{{ r.min_lag }}–{{ r.max_lag }}d</td>
+                    <td class="mttp-col-num">{{ r.distinct_lags }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </template>
       </div>
@@ -314,6 +339,7 @@ const patchStats = ref({})
 const patchTimeline = ref([])
 const mostUsedApps = ref([])
 const leastUsedApps = ref([])
+const softwarePatchMovers = ref([])
 
 // App drill-down state
 const drillApp = ref(null)
@@ -741,13 +767,52 @@ async function fetchSignals(categoryKey) {
 
 async function fetchSoftwareDetail() {
   try {
-    const [adoptRows, tierRows, osRows, crashTopRows, staleRows] = await Promise.all([
+    const end = new Date()
+    const start = new Date(end.getTime() - 7 * 24 * 3600 * 1000)
+    const fmt = (d) => d.toISOString().slice(0, 19).replace('T', ' ')
+
+    const [adoptRows, tierRows, osRows, crashTopRows, staleRows, patchSummaryRows] = await Promise.all([
       query('firehose.adoption.summary'),
       query('firehose.adoption.tier_distribution'),
       query('firehose.health.os_summary'),
       query('firehose.crashes.top_crashers', { limit: 8 }),
       query('firehose.adoption.stale_apps', { limit: 8 }),
+      query('scores.timeline_patches_summary', { startDate: fmt(start), endDate: fmt(end), minHosts: 1 }).catch(() => []),
     ])
+
+    // Collapse per-day rows into per-software for the table
+    const bySw = new Map()
+    for (const r of (patchSummaryRows || [])) {
+      const k = r.software_name
+      if (!bySw.has(k)) {
+        bySw.set(k, {
+          software_name: k,
+          hosts: 0,
+          weightedLagSum: 0,
+          min_lag: Number(r.min_lag),
+          max_lag: Number(r.max_lag),
+          maxDistinct: Number(r.distinct_lags || 0),
+        })
+      }
+      const agg = bySw.get(k)
+      const hosts = Number(r.hosts || 0)
+      agg.hosts += hosts
+      agg.weightedLagSum += hosts * Number(r.avg_lag || 0)
+      agg.min_lag = Math.min(agg.min_lag, Number(r.min_lag))
+      agg.max_lag = Math.max(agg.max_lag, Number(r.max_lag))
+      agg.maxDistinct = Math.max(agg.maxDistinct, Number(r.distinct_lags || 0))
+    }
+    softwarePatchMovers.value = Array.from(bySw.values())
+      .map(a => ({
+        software_name: a.software_name,
+        hosts: a.hosts,
+        avg_lag: a.hosts > 0 ? +(a.weightedLagSum / a.hosts).toFixed(2) : 0,
+        min_lag: +a.min_lag.toFixed(2),
+        max_lag: +a.max_lag.toFixed(2),
+        distinct_lags: a.maxDistinct,
+      }))
+      .sort((x, y) => y.hosts - x.hosts)
+      .slice(0, 10)
 
     const ad = adoptRows[0] || {}
     const os = osRows[0] || {}
@@ -1523,4 +1588,17 @@ onMounted(() => {
   stroke: #065f46;
   flex-shrink: 0;
 }
+
+/* MTTP top movers table in Software signal breakdown */
+.section-hint { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); margin: 0 0 12px; }
+.mttp-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius); overflow: hidden; }
+.mttp-table th { text-align: left; padding: 10px 14px; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--fleet-black-10); background: var(--fleet-off-white); }
+.mttp-table td { padding: 8px 14px; color: var(--fleet-black-75); border-bottom: 1px solid var(--fleet-black-5); }
+.mttp-table tr:last-child td { border-bottom: none; }
+.mttp-table tr:hover td { background: var(--fleet-off-white); }
+.mttp-table .mttp-col-app { font-weight: 500; color: var(--fleet-black); }
+.mttp-table .mttp-col-num { text-align: right; font-family: var(--font-mono); white-space: nowrap; }
+.mttp-table .mttp-col-num strong { color: #6a67fe; font-weight: 700; }
+.mttp-table .mttp-col-range { text-align: right; font-family: var(--font-mono); color: var(--fleet-black-50); white-space: nowrap; }
+.mttp-table .mono { font-family: var(--font-mono); }
 </style>
