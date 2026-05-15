@@ -45,21 +45,16 @@
       </div>
     </section>
 
-    <!-- Drill-down: host tiles for the clicked condition -->
-    <section v-if="drillCondition" class="section drill-section">
+    <!-- Drill-down for Device Health — renders here when a DH card was clicked -->
+    <section v-if="drillCondition && drillAnchor === 'device_health'" class="section drill-section">
       <div class="drill-header">
         <h3>{{ drillTitle }} <span class="drill-count">· {{ drillHosts.length }} host{{ drillHosts.length === 1 ? '' : 's' }}</span></h3>
-        <button class="drill-close" @click="drillCondition = null" aria-label="Close drill-down">✕</button>
+        <button class="drill-close" @click="closeDrill" aria-label="Close drill-down">✕</button>
       </div>
       <div v-if="drillLoading" class="drill-loading">Loading hosts...</div>
       <div v-else-if="!drillHosts.length" class="drill-empty">No hosts match this condition right now.</div>
       <div v-else class="host-tile-grid">
-        <HostTile
-          v-for="h in drillHosts"
-          :key="h.host_id"
-          :host="h"
-          :condition="drillCondition"
-        />
+        <HostTile v-for="h in drillHosts" :key="h.host_id" :host="h" :condition="drillCondition" />
       </div>
     </section>
 
@@ -111,10 +106,29 @@
     <section class="section">
       <h2>OS health</h2>
       <div class="metrics-row four-col">
-        <MetricCard label="Healthy" :value="osHealth.healthy" :loading="loading.osHealth" />
-        <MetricCard label="Acceptable" :value="osHealth.acceptable" :loading="loading.osHealth" />
-        <MetricCard label="Degraded" :value="osHealth.degraded" :loading="loading.osHealth" />
+        <div class="clickable-wrap" :class="{ active: drillCondition === 'healthy_os' }" @click="toggleDrill('healthy_os')" role="button" tabindex="0">
+          <MetricCard label="Healthy" :value="osHealth.healthy" :loading="loading.osHealth" />
+        </div>
+        <div class="clickable-wrap" :class="{ active: drillCondition === 'acceptable_os' }" @click="toggleDrill('acceptable_os')" role="button" tabindex="0">
+          <MetricCard label="Acceptable" :value="osHealth.acceptable" :loading="loading.osHealth" />
+        </div>
+        <div class="clickable-wrap" :class="{ active: drillCondition === 'degraded_os' }" @click="toggleDrill('degraded_os')" role="button" tabindex="0">
+          <MetricCard label="Degraded" :value="osHealth.degraded" :loading="loading.osHealth" />
+        </div>
         <MetricCard label="Avg uptime" :value="osHealth.avgUptimeDays" unit="days" :loading="loading.osHealth" />
+      </div>
+    </section>
+
+    <!-- Drill-down for OS health -->
+    <section v-if="drillCondition && drillAnchor === 'os'" class="section drill-section">
+      <div class="drill-header">
+        <h3>{{ drillTitle }} <span class="drill-count">· {{ drillHosts.length }} host{{ drillHosts.length === 1 ? '' : 's' }}</span></h3>
+        <button class="drill-close" @click="closeDrill" aria-label="Close drill-down">✕</button>
+      </div>
+      <div v-if="drillLoading" class="drill-loading">Loading hosts...</div>
+      <div v-else-if="!drillHosts.length" class="drill-empty">No hosts match this condition right now.</div>
+      <div v-else class="host-tile-grid">
+        <HostTile v-for="h in drillHosts" :key="h.host_id" :host="h" :condition="drillCondition" />
       </div>
     </section>
 
@@ -211,11 +225,57 @@
     <section class="section" v-if="crashes.totalCrashes > 0">
       <h2>Crash overview</h2>
       <div class="metrics-row four-col">
-        <MetricCard label="Devices w/ crashes" :value="crashes.devicesWithCrashes" :loading="loading.crashes" />
+        <div class="clickable-wrap" :class="{ active: drillCondition === 'has_crashes' }" @click="toggleDrill('has_crashes')" role="button" tabindex="0">
+          <MetricCard label="Hosts w/ crashes" :value="crashes.devicesWithCrashes" :loading="loading.crashes" />
+        </div>
         <MetricCard label="Total crashes (7d)" :value="crashes.totalCrashes" :loading="loading.crashes" />
         <MetricCard label="Critical" :value="crashes.critical" :loading="loading.crashes" />
         <MetricCard label="Top crasher" :value="crashes.topCrasher" :loading="loading.crashes" />
       </div>
+    </section>
+
+    <!-- Drill-down for Crashes -->
+    <section v-if="drillCondition && drillAnchor === 'crashes'" class="section drill-section">
+      <div class="drill-header">
+        <h3>{{ drillTitle }} <span class="drill-count">· {{ drillHosts.length }} host{{ drillHosts.length === 1 ? '' : 's' }}</span></h3>
+        <button class="drill-close" @click="closeDrill" aria-label="Close drill-down">✕</button>
+      </div>
+      <div v-if="drillLoading" class="drill-loading">Loading hosts...</div>
+      <div v-else-if="!drillHosts.length" class="drill-empty">No hosts match this condition right now.</div>
+      <div v-else class="host-tile-grid">
+        <HostTile v-for="h in drillHosts" :key="h.host_id" :host="h" :condition="drillCondition" />
+      </div>
+    </section>
+
+    <!-- ═══ TOP MOVERS — MTTP per app over the selected window ═══ -->
+    <section class="section" v-if="topPatchMovers.length">
+      <div class="section-header-with-caption">
+        <h2>Top patch movers</h2>
+        <span class="section-caption">
+          Mean time to patch per app over the last {{ topPatchMoversWindowDays }}d ·
+          {{ topPatchMovers.length }} apps · sorted by hosts patched
+        </span>
+      </div>
+      <table class="mttp-table">
+        <thead>
+          <tr>
+            <th class="mttp-col-app">App</th>
+            <th class="mttp-col-num">Hosts</th>
+            <th class="mttp-col-num">MTTP</th>
+            <th class="mttp-col-range">Range</th>
+            <th class="mttp-col-num">Distinct lag values</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="r in topPatchMovers" :key="r.software_name + r.day">
+            <td class="mttp-col-app">{{ r.software_name }}</td>
+            <td class="mttp-col-num"><strong>{{ r.hosts }}</strong></td>
+            <td class="mttp-col-num">{{ r.avg_lag }}d</td>
+            <td class="mttp-col-range mono">{{ r.min_lag }}–{{ r.max_lag }}d</td>
+            <td class="mttp-col-num">{{ r.distinct_lags }}</td>
+          </tr>
+        </tbody>
+      </table>
     </section>
 
     <!-- ═══ 4. NETWORK (Wi-Fi + VPN) ═════════════════════════ -->
@@ -271,7 +331,22 @@
         <MetricCard label="Total hosts" :value="vpn.totalDevices" :loading="loading.vpn" />
         <MetricCard label="VPN active" :value="vpn.vpnActive" :loading="loading.vpn" />
         <MetricCard label="Direct" :value="vpn.directConnected" :loading="loading.vpn" />
-        <MetricCard label="Disconnected" :value="vpn.disconnected" :loading="loading.vpn" />
+        <div class="clickable-wrap" :class="{ active: drillCondition === 'vpn_disconnected' }" @click="toggleDrill('vpn_disconnected')" role="button" tabindex="0">
+          <MetricCard label="Disconnected" :value="vpn.disconnected" :loading="loading.vpn" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Drill-down for VPN -->
+    <section v-if="drillCondition && drillAnchor === 'vpn'" class="section drill-section">
+      <div class="drill-header">
+        <h3>{{ drillTitle }} <span class="drill-count">· {{ drillHosts.length }} host{{ drillHosts.length === 1 ? '' : 's' }}</span></h3>
+        <button class="drill-close" @click="closeDrill" aria-label="Close drill-down">✕</button>
+      </div>
+      <div v-if="drillLoading" class="drill-loading">Loading hosts...</div>
+      <div v-else-if="!drillHosts.length" class="drill-empty">No hosts match this condition right now.</div>
+      <div v-else class="host-tile-grid">
+        <HostTile v-for="h in drillHosts" :key="h.host_id" :host="h" :condition="drillCondition" />
       </div>
     </section>
 
@@ -344,13 +419,20 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { query } from '../services/api'
+import { useFleetFilter } from '../composables/useFleetFilter'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
 import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
 import HostTile from '../components/HostTile.vue'
+
+// Shared filter bar — propagates to every firehose query that respects
+// FILTER_PARAMS. Wrap this in a computed so queries re-fetch when the user
+// changes the filter.
+const { filterParams } = useFleetFilter()
+const queryParams = computed(() => ({ ...filterParams.value }))
 
 const error = ref(null)
 const loading = ref({
@@ -380,10 +462,13 @@ const uptimeRiskDist = ref([])
 const vpn = ref({ totalDevices: 0, vpnActive: 0, directConnected: 0, disconnected: 0 })
 const vpnConfDist = ref([])
 
-// ─── Device-health drill-down (clickable metric cards) ──────
+// ─── Drill-down state (clickable metric cards across sections) ──────
 // Clicking a metric like "Degraded battery: 3" expands an inline tile grid
 // of the matching hosts. Condition enum matches the SQL in hosts_by_condition.
+// `drillAnchor` drives WHICH section renders the tile panel, so tiles always
+// appear right below the card that was clicked.
 const drillCondition = ref(null)
+const drillAnchor = ref(null)
 const drillHosts = ref([])
 const drillLoading = ref(false)
 
@@ -393,17 +478,45 @@ const DRILL_TITLES = {
   degraded_battery: 'Degraded battery',
   replace_battery: 'Battery needs replacement',
   high_compression: 'High compression pressure',
+  healthy_os: 'Healthy OS',
+  acceptable_os: 'Acceptable OS',
+  degraded_os: 'Degraded OS',
+  uptime_risk_stale: 'Stale uptime (≥7d)',
+  vpn_disconnected: 'Disconnected from network',
+  has_crashes: 'Hosts with crashes (7d)',
 }
+
+// Maps each condition to the section that renders its drill panel.
+const DRILL_ANCHORS = {
+  severe_swap: 'device_health',
+  elevated_swap: 'device_health',
+  degraded_battery: 'device_health',
+  replace_battery: 'device_health',
+  high_compression: 'device_health',
+  healthy_os: 'os',
+  acceptable_os: 'os',
+  degraded_os: 'os',
+  uptime_risk_stale: 'os',
+  vpn_disconnected: 'vpn',
+  has_crashes: 'crashes',
+}
+
 const drillTitle = computed(() => DRILL_TITLES[drillCondition.value] || '')
+
+function closeDrill() {
+  drillCondition.value = null
+  drillAnchor.value = null
+  drillHosts.value = []
+}
 
 async function toggleDrill(condition) {
   // Click same card again → close
   if (drillCondition.value === condition) {
-    drillCondition.value = null
-    drillHosts.value = []
+    closeDrill()
     return
   }
   drillCondition.value = condition
+  drillAnchor.value = DRILL_ANCHORS[condition] || 'device_health'
   drillLoading.value = true
   drillHosts.value = []
   try {
@@ -443,7 +556,9 @@ async function fetchAll() {
 
   try {
     const [ov, wSummary, wDist, wDevices, wTs, appSummary, appTop, hogs, ram, fSummary, uptime, dhSummary, cpuDist, swapDist, battDist, osSummary, osCurrency, uptimeRisk, vpnSum, vpnConf, procClass, procAgents, adoptSum, adoptTiers, adoptStale, crashSum, crashTop] = await Promise.all([
-      query('firehose.devices.overview'),
+      // The 7 summary/overview queries respect the fleet filter bar; others
+      // still return fleet-wide data for now (see Phase 2 follow-up).
+      query('firehose.devices.overview', queryParams.value),
       query('firehose.wifi.summary'),
       query('firehose.wifi.quality_distribution'),
       query('firehose.wifi.quality', { limit: 10 }),
@@ -452,23 +567,23 @@ async function fetchAll() {
       query('firehose.apps.top', { limit: 10 }),
       query('firehose.apps.memory_hogs', { limit: 10 }),
       query('firehose.hardware.memory_tiers'),
-      query('firehose.fleetd.summary'),
+      query('firehose.fleetd.summary', queryParams.value),
       query('firehose.fleetd.uptime'),
-      query('firehose.health.device_summary'),
+      query('firehose.health.device_summary', queryParams.value),
       query('firehose.health.cpu_distribution'),
       query('firehose.health.swap_distribution'),
       query('firehose.health.battery_overview'),
-      query('firehose.health.os_summary'),
+      query('firehose.health.os_summary', queryParams.value),
       query('firehose.health.os_currency_distribution'),
       query('firehose.health.uptime_distribution'),
-      query('firehose.vpn.summary'),
+      query('firehose.vpn.summary', queryParams.value),
       query('firehose.vpn.confidence_distribution'),
       query('firehose.processes.by_class'),
       query('firehose.processes.mgmt_agents'),
-      query('firehose.adoption.summary'),
+      query('firehose.adoption.summary', queryParams.value),
       query('firehose.adoption.tier_distribution'),
       query('firehose.adoption.stale_apps', { limit: 10 }),
-      query('firehose.crashes.summary'),
+      query('firehose.crashes.summary', queryParams.value),
       query('firehose.crashes.top_crashers', { limit: 5 }),
     ])
 
@@ -577,7 +692,69 @@ async function fetchAll() {
   }
 }
 
-onMounted(() => fetchAll())
+// Top patch movers — MTTP aggregate from dex_patch_events on ALT.
+// Pulls the same scores.timeline_patches_summary feeding the /timeline page,
+// collapsed across the window so each (software_name) shows up once with
+// summed hosts, mean lag, range and distinct-lag count.
+const topPatchMoversWindowDays = 7
+const topPatchMovers = ref([])
+
+async function fetchTopPatchMovers() {
+  try {
+    const end = new Date()
+    const start = new Date(end.getTime() - topPatchMoversWindowDays * 24 * 3600 * 1000)
+    const fmt = (d) => d.toISOString().slice(0, 19).replace('T', ' ')
+    const rows = await query('scores.timeline_patches_summary', {
+      startDate: fmt(start), endDate: fmt(end), minHosts: 1,
+    })
+    // Collapse per-day rows into per-software rows for the table.
+    const bySw = new Map()
+    for (const r of (rows || [])) {
+      const k = r.software_name
+      if (!bySw.has(k)) {
+        bySw.set(k, {
+          software_name: k,
+          hosts: 0,
+          weightedLagSum: 0,
+          min_lag: Number(r.min_lag),
+          max_lag: Number(r.max_lag),
+          distinctSet: new Set(),
+        })
+      }
+      const agg = bySw.get(k)
+      const hosts = Number(r.hosts || 0)
+      agg.hosts += hosts
+      agg.weightedLagSum += hosts * Number(r.avg_lag || 0)
+      agg.min_lag = Math.min(agg.min_lag, Number(r.min_lag))
+      agg.max_lag = Math.max(agg.max_lag, Number(r.max_lag))
+      agg.distinctSet.add(Number(r.distinct_lags || 0))
+    }
+    topPatchMovers.value = Array.from(bySw.values())
+      .map(a => ({
+        software_name: a.software_name,
+        hosts: a.hosts,
+        avg_lag: a.hosts > 0 ? +(a.weightedLagSum / a.hosts).toFixed(2) : 0,
+        min_lag: +a.min_lag.toFixed(2),
+        max_lag: +a.max_lag.toFixed(2),
+        // For collapsed rows, use the max single-day distinct count as a proxy —
+        // a true distinct count across days would need a server-side rewrite.
+        distinct_lags: Math.max(...a.distinctSet, 0) || 0,
+      }))
+      .sort((a, b) => b.hosts - a.hosts)
+      .slice(0, 12)
+  } catch (e) {
+    topPatchMovers.value = []
+  }
+}
+
+onMounted(() => { fetchAll(); fetchTopPatchMovers() })
+
+// Re-fetch when the fleet filter bar changes. Any open drill-down is
+// invalidated (its host list may no longer be in scope) so close it too.
+watch(filterParams, () => {
+  closeDrill()
+  fetchAll()
+}, { deep: true })
 </script>
 
 <style scoped>
@@ -620,4 +797,16 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 @media (max-width: 640px) { .host-tile-grid { grid-template-columns: 1fr; } }
 @media (max-width: 1024px) { .metrics-row.four-col { grid-template-columns: repeat(2, 1fr); } .metrics-row.three-col { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) { .metrics-row, .metrics-row.four-col, .metrics-row.three-col { grid-template-columns: 1fr; } .charts-row.two-col { grid-template-columns: 1fr; } .dashboard-header { flex-direction: column; gap: 8px; } }
+
+/* MTTP top movers table */
+.mttp-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius); overflow: hidden; }
+.mttp-table th { text-align: left; padding: 10px 14px; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--fleet-black-10); background: var(--fleet-off-white); }
+.mttp-table td { padding: 10px 14px; color: var(--fleet-black-75); border-bottom: 1px solid var(--fleet-black-5); }
+.mttp-table tr:last-child td { border-bottom: none; }
+.mttp-table tr:hover td { background: var(--fleet-off-white); }
+.mttp-table .mttp-col-app { font-weight: 500; color: var(--fleet-black); }
+.mttp-table .mttp-col-num { text-align: right; font-family: var(--font-mono); white-space: nowrap; }
+.mttp-table .mttp-col-num strong { color: #6a67fe; font-weight: 700; }
+.mttp-table .mttp-col-range { text-align: right; font-family: var(--font-mono); color: var(--fleet-black-50); white-space: nowrap; }
+.mttp-table .mono { font-family: var(--font-mono); }
 </style>

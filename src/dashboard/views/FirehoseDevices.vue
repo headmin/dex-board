@@ -160,6 +160,25 @@
         </div>
       </section>
 
+      <section class="section" v-if="devicePatches.length">
+        <h3>Top patches — last {{ devicePatches.length }} app upgrades on this host</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>When</th><th>App</th><th>From → To</th><th>Lag (days)</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="(p, pi) in devicePatches" :key="pi">
+                <td class="muted">{{ formatPatchTime(p.event_time) }}</td>
+                <td class="hostname">{{ p.software_name }}</td>
+                <td class="muted mono">{{ p.old_version || '—' }} → {{ p.new_version }}</td>
+                <td>{{ Number(p.days_to_patch).toFixed(2) }}d</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <div v-if="detail.last_error" class="error-box">
         <strong>Last fleetd error:</strong>
         <pre>{{ detail.last_error }}</pre>
@@ -247,6 +266,17 @@ const deviceVPN = ref({})
 const deviceCrashes = ref([])
 const deviceProcesses = ref([])
 const deviceAdoption = ref([])
+const devicePatches = ref([])
+
+function formatPatchTime(ts) {
+  if (!ts) return ''
+  const d = new Date(ts)
+  if (isNaN(d.getTime())) return String(ts)
+  const now = new Date()
+  const sameDay = d.toDateString() === now.toDateString()
+  const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  return sameDay ? time : `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${time}`
+}
 
 // ── Computed ────────────────────────────────────────
 const filteredDevices = computed(() => {
@@ -351,6 +381,7 @@ async function selectDevice(device) {
   deviceCrashes.value = []
   deviceProcesses.value = []
   deviceAdoption.value = []
+  devicePatches.value = []
   window.scrollTo({ top: 0, behavior: 'smooth' })
 
   loading.value.detail = true
@@ -358,7 +389,7 @@ async function selectDevice(device) {
   loading.value.deviceApps = true
 
   try {
-    const [det, wTs, apps, health, os, vpn, crashes, procs, adoption] = await Promise.all([
+    const [det, wTs, apps, health, os, vpn, crashes, procs, adoption, patches] = await Promise.all([
       query('firehose.devices.detail', { hostId: device.host_id }).catch(() => []),
       query('firehose.wifi.device_timeseries', { hostId: device.host_id }).catch(() => []),
       query('firehose.apps.per_device', { hostId: device.host_id }).catch(() => []),
@@ -368,6 +399,7 @@ async function selectDevice(device) {
       query('firehose.crashes.per_device', { hostId: device.host_id }).catch(() => []),
       query('firehose.processes.per_device', { hostId: device.host_id }).catch(() => []),
       query('firehose.adoption.per_device', { hostId: device.host_id }).catch(() => []),
+      query('scores.device_top_patches', { hostIdentifier: device.host_id, limit: 10 }).catch(() => []),
     ])
     if (det[0]) detail.value = { ...device, ...det[0] }
     deviceWifiTs.value = wTs
@@ -378,6 +410,7 @@ async function selectDevice(device) {
     deviceCrashes.value = crashes
     deviceProcesses.value = procs
     deviceAdoption.value = adoption
+    devicePatches.value = patches || []
   } catch (e) {
     error.value = `Device detail: ${e.message}`
   } finally {
@@ -470,6 +503,7 @@ h3 { font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black)
 .clickable-row.selected { background: #eff6ff; }
 .hostname { font-family: var(--font-mono); font-weight: 500; }
 .muted { color: var(--fleet-black-50); font-size: var(--font-size-xs); }
+.mono { font-family: var(--font-mono); }
 .rssi-excellent { color: #16a34a; font-weight: 600; }
 .rssi-good { color: #65a30d; }
 .rssi-fair { color: #ca8a04; }

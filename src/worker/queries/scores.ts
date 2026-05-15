@@ -695,4 +695,27 @@ export const scoreQueries: QueryConfig[] = [
       ORDER BY event_time DESC
     `,
   },
+  {
+    name: 'scores.device_top_patches',
+    domain: 'scores',
+    client: 'alt' as const,
+    description: 'Top-N recent patch transitions for one host (sorted by event_time desc)',
+    params: [
+      { name: 'hostIdentifier', type: 'string' as const, required: true },
+      { name: 'limit', type: 'number' as const, required: false, min: 1, max: 100, default: 10 },
+    ],
+    sql: `
+      SELECT
+        event_time,
+        patch_type,
+        software_name,
+        old_version,
+        new_version,
+        days_to_patch
+      FROM dex_patch_events FINAL
+      WHERE host_identifier = {hostIdentifier:String}
+      ORDER BY event_time DESC
+      {{LIMIT}}
+    `,
+  },
 ]

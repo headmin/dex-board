@@ -170,7 +170,7 @@
         title="Biggest movers (7d)"
         :data="movers"
         :loading="loading.movers"
-        :fetchDetail="fetchMoverDetail"
+        :fetchDetail="buildMoverDetail"
       />
     </section>
 
@@ -452,13 +452,16 @@ async function fetchMovers() {
   loading.value.movers = true
   try {
     const rows = await query('firehose.scores.biggest_movers', { ...queryParams.value, limit: 10 })
+    // The query now returns per-category curr_*/prev_* so the expansion panel
+    // doesn't need a second query — we pass the whole row through.
     movers.value = rows.map(r => ({
       host_identifier: r.host_id,
       hostname: r.hostname,
       hardware_model: '',
       prev_grade: r.prev_grade,
       curr_grade: r.curr_grade,
-      delta: Number(r.delta)
+      delta: Number(r.delta),
+      _raw: r,
     }))
   } catch (e) {
     console.error('Movers fetch failed:', e)
@@ -467,26 +470,26 @@ async function fetchMovers() {
   loading.value.movers = false
 }
 
-// ─── Fetch Mover Detail (category breakdown for a device) ─────
-async function fetchMoverDetail(hostId) {
-  const [currRows, prevRows] = await Promise.all([
-    query('scores.device_categories', { hostIdentifier: hostId, timeRange: timeRangeHours.value }),
-    query('scores.device_categories', { hostIdentifier: hostId, timeRange: timeRangeHours.value })
-  ])
+// ─── Build Mover Detail (category breakdown) from cached row ──
+// No second fetch needed — biggest_movers already returns per-category
+// curr_*/prev_* for the same host. Previously this called a query twice
+// with identical params (so every delta rendered as "—").
+function buildMoverDetail(hostId) {
+  const mover = movers.value.find(m => m.host_identifier === hostId)
+  const row = mover ? mover._raw : null
 
-  const curr = currRows[0] || {}
-  const prev = prevRows[0] || {}
+  const num = (v) => (v === null || v === undefined || v === '') ? null : Number(v)
 
   const cats = [
-    { key: 'performance', label: 'Performance', weight: 30 },
+    { key: 'performance',   label: 'Performance',   weight: 30 },
     { key: 'device_health', label: 'Device Health', weight: 25 },
-    { key: 'network', label: 'Network', weight: 20 },
-    { key: 'security', label: 'Security', weight: 15 },
-    { key: 'software', label: 'Software', weight: 10 }
+    { key: 'network',       label: 'Network',       weight: 20 },
+    { key: 'security',      label: 'Security',      weight: 15 },
+    { key: 'software',      label: 'Software',      weight: 10 },
   ].map(c => {
-    const currVal = curr[c.key] ?? null
-    const prevVal = prev[c.key] ?? null
-    const delta = (currVal !== null && prevVal !== null) ? currVal - prevVal : null
+    const currVal = row ? num(row[`curr_${c.key}`]) : null
+    const prevVal = row ? num(row[`prev_${c.key}`]) : null
+    const delta = (currVal !== null && prevVal !== null) ? +(currVal - prevVal).toFixed(1) : null
     return { ...c, curr: currVal, prev: prevVal, delta, isDriver: false }
   })
 

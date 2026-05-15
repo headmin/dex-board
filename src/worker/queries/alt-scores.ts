@@ -16,61 +16,7 @@
  * means "assume OK" rather than "assume worst case".
  */
 import type { QueryConfig } from '../types'
-
-// ── Filtered hosts CTE ───────────────────────────────────
-// Reusable CTE that applies the fleet filter bar (search/model/ramTier/platform).
-// Any downstream query that wants to respect the filter bar should reference
-// `filtered_hosts` as its host_id source. When all filter params are empty,
-// this yields every host in hardware_inventory (via the `if(..., true)` idiom).
-//
-// Platform comes from fleetd_info (LEFT JOIN so hosts missing fleetd data
-// aren't dropped when no platform filter is set).
-const FILTERED_HOSTS_CTE = `
-filtered_hosts AS (
-  SELECT hi.host_id FROM (
-    SELECT host_id,
-      argMax(hostname, timestamp) AS hostname,
-      argMax(hardware_model, timestamp) AS hardware_model,
-      argMax(hardware_serial, timestamp) AS hardware_serial,
-      argMax(memory_gb, timestamp) AS memory_gb
-    FROM hardware_inventory GROUP BY host_id
-  ) hi
-  LEFT JOIN (
-    SELECT host_id, argMax(platform, timestamp) AS platform
-    FROM fleetd_info GROUP BY host_id
-  ) fi ON hi.host_id = fi.host_id
-  WHERE 1=1
-    AND if({filterSearch:String} != '',
-      hi.hostname LIKE concat('%', {filterSearch:String}, '%')
-      OR hi.hardware_serial LIKE concat('%', {filterSearch:String}, '%')
-      OR hi.hardware_model LIKE concat('%', {filterSearch:String}, '%'),
-      true)
-    AND if({filterModel:String} != '', hi.hardware_model = {filterModel:String}, true)
-    AND if({filterOs:String} != '', fi.platform = {filterOs:String}, true)
-    -- RAM filter is "at most N GB" (inclusive) — selecting 24GB returns
-    -- hosts with <= 24GB (i.e. 8, 16, 18, 24). "128GB+" effectively matches all.
-    AND if({filterRamTier:String} != '', hi.memory_gb <= multiIf(
-      {filterRamTier:String} = '8GB', 8,
-      {filterRamTier:String} = '16GB', 16,
-      {filterRamTier:String} = '18GB', 18,
-      {filterRamTier:String} = '24GB', 24,
-      {filterRamTier:String} = '32GB', 32,
-      {filterRamTier:String} = '36GB', 36,
-      {filterRamTier:String} = '48GB', 48,
-      {filterRamTier:String} = '64GB', 64,
-      999999
-    ), true)
-)`
-
-// Shared filter params for all queries that apply the fleet filter bar.
-// The filter-bar composable sends these as `search`/`model`/`ramTier`/`os`;
-// filter-builder.ts maps `os` → `filterOs:String` which the CTE then reads.
-const FILTER_PARAMS = [
-  { name: 'search', type: 'string' as const, required: false },
-  { name: 'model', type: 'string' as const, required: false },
-  { name: 'ramTier', type: 'string' as const, required: false },
-  { name: 'os', type: 'string' as const, required: false },
-]
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
 
 // ── Per-device score CTE ─────────────────────────────────
 // Reusable WITH clause that computes all 5 category scores per device.
@@ -597,7 +543,20 @@ export const firehoseScoreQueries: QueryConfig[] = [
           WHEN prev.composite_score >= 40 THEN 'D'
           ELSE 'F'
         END AS prev_grade,
-        curr.composite_score - prev.composite_score AS delta
+        curr.composite_score - prev.composite_score AS delta,
+        -- Per-category curr/prev so the expansion panel can render the
+        -- breakdown without a second query.
+        curr.device_health_score AS curr_device_health,
+        curr.performance_score   AS curr_performance,
+        curr.network_score       AS curr_network,
+        curr.security_score      AS curr_security,
+        curr.software_score      AS curr_software,
+        prev.device_health_score AS prev_device_health,
+        prev.performance_score   AS prev_performance,
+        -- Network is excluded from the prior CTE (informational only, not in composite)
+        NULL                     AS prev_network,
+        prev.security_score      AS prev_security,
+        prev.software_score      AS prev_software
       FROM scored curr
       INNER JOIN prior_scored prev ON curr.host_id = prev.host_id
       WHERE abs(curr.composite_score - prev.composite_score) > 0
