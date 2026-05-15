@@ -207,9 +207,19 @@
                 </span>
                 <span class="patch-bucket-hosts"><strong>{{ bucket.hosts }}</strong> host{{ bucket.hosts === 1 ? '' : 's' }}</span>
                 <span class="patch-bucket-transitions">{{ bucket.transitions }} transition{{ bucket.transitions === 1 ? '' : 's' }}</span>
-                <span class="patch-bucket-lag">avg {{ bucket.avg_lag }}d</span>
+                <span class="patch-bucket-lag" :title="'Mean time to patch — average days between fleet-first sighting and per-host apply'">
+                  MTTP {{ bucket.avg_lag }}d
+                  <span class="patch-bucket-distinct" v-if="bucket.distinct_lags > 1">· {{ bucket.distinct_lags }} distinct</span>
+                </span>
               </div>
               <div v-if="isBucketExpanded(day.date, bucket.software_name)" class="patch-bucket-drilldown" @click.stop>
+                <div class="patch-bucket-summary">
+                  <strong>Mean time to patch: {{ bucket.avg_lag }} days</strong>
+                  <span class="patch-bucket-summary-meta">
+                    range {{ bucket.min_lag }}–{{ bucket.max_lag }}d ·
+                    {{ bucket.distinct_lags }} distinct lag value{{ bucket.distinct_lags === 1 ? '' : 's' }} across {{ bucket.hosts }} host{{ bucket.hosts === 1 ? '' : 's' }}
+                  </span>
+                </div>
                 <div v-if="isBucketLoading(day.date, bucket.software_name)" class="patch-bucket-loading">Loading transitions…</div>
                 <table v-else-if="drilldownRowsSorted(day.date, bucket.software_name).length" class="drilldown-table">
                   <thead>
@@ -841,6 +851,15 @@ h1 { font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-black)
 .patch-bucket-hosts { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-75); white-space: nowrap; }
 .patch-bucket-transitions, .patch-bucket-lag { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); white-space: nowrap; }
 .patch-bucket-drilldown { padding: 10px 14px; background: #fafaff; }
+.patch-bucket-summary {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding: 6px 8px; margin-bottom: 8px;
+  background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius);
+  font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black);
+}
+.patch-bucket-summary strong { color: #6a67fe; font-weight: 700; }
+.patch-bucket-summary-meta { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); }
+.patch-bucket-distinct { color: var(--fleet-black-50); margin-left: 4px; }
 .patch-bucket-loading { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); padding: 4px 0; }
 .drilldown-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 11px; }
 .drilldown-table th { text-align: left; padding: 4px 8px 6px; color: var(--fleet-black-50); font-weight: 600; border-bottom: 1px solid var(--fleet-black-10); }

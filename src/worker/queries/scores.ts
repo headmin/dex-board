@@ -375,8 +375,10 @@ export const scoreQueries: QueryConfig[] = [
         countDistinct(concat(old_version, '|', new_version)) AS transitions,
         argMin(old_version, event_time) AS earliest_from,
         argMax(new_version, event_time) AS latest_to,
-        round(avg(days_to_patch), 1) AS avg_lag,
-        round(max(days_to_patch), 1) AS max_lag,
+        round(avg(days_to_patch), 2) AS avg_lag,
+        round(max(days_to_patch), 2) AS max_lag,
+        round(min(days_to_patch), 2) AS min_lag,
+        countDistinct(days_to_patch) AS distinct_lags,
         min(event_time) AS first_applied,
         max(event_time) AS last_applied
       FROM dex_patch_events

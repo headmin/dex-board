@@ -55,9 +55,14 @@ SELECT
   t.app_name                                             AS software_name,
   t.prev_version                                         AS old_version,
   t.version                                              AS new_version,
-  toDateTime(a.first_seen)                               AS patch_available_date,
-  toDateTime(t.timestamp)                                AS patch_applied_date,
-  toFloat32(dateDiff('day', a.first_seen, t.timestamp))  AS days_to_patch
+  toDateTime(a.first_seen)                                              AS patch_available_date,
+  toDateTime(t.timestamp)                                               AS patch_applied_date,
+  -- Fractional days at hour precision. Day-precision (dateDiff('day',...))
+  -- collapses all transitions within a calendar day to the same integer,
+  -- so within a (target, day) cluster every row looks identical. Hour /
+  -- 24 keeps the lag varying with the actual apply hour while staying
+  -- bounded by the source data's hourly granularity.
+  toFloat32(round(dateDiff('hour', a.first_seen, t.timestamp) / 24.0, 2)) AS days_to_patch
 FROM transitions t
 LEFT JOIN available_dates a
   ON a.app_name = t.app_name AND a.version = t.version
