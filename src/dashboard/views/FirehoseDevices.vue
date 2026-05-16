@@ -142,14 +142,14 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>App</th>
-                <th>Memory (MB)</th>
-                <th>Threads</th>
-                <th>Bundle ID</th>
+                <th @click="sortAppsBy('app_name')" class="sortable">App {{ appSortIcon('app_name') }}</th>
+                <th @click="sortAppsBy('memory_mb')" class="sortable">Memory (MB) {{ appSortIcon('memory_mb') }}</th>
+                <th @click="sortAppsBy('threads')" class="sortable">Threads {{ appSortIcon('threads') }}</th>
+                <th @click="sortAppsBy('bundle_identifier')" class="sortable">Bundle ID {{ appSortIcon('bundle_identifier') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="a in deviceApps" :key="a.pid">
+              <tr v-for="a in sortedDeviceApps" :key="a.pid">
                 <td class="hostname">{{ a.app_name }}</td>
                 <td :class="memClass(a.memory_mb)">{{ a.memory_mb }}</td>
                 <td>{{ a.threads }}</td>
@@ -301,6 +301,8 @@ const loading = ref({ list: false, detail: false, deviceWifi: false, deviceApps:
 const devices = ref([])
 const sortCol = ref('hostname')
 const sortAsc = ref(true)
+const appSortCol = ref('memory_mb')
+const appSortAsc = ref(false)  // memory desc by default — biggest hogs at the top
 
 const selected = ref(null)
 const detail = ref({})
@@ -315,6 +317,25 @@ const deviceAdoption = ref([])
 const devicePatches = ref([])
 const deviceDrivers = ref(null)
 const driversFlash = ref(false)
+
+const sortedDeviceApps = computed(() => {
+  const rows = deviceApps.value.slice()
+  const col = appSortCol.value
+  const asc = appSortAsc.value
+  rows.sort((a, b) => {
+    const av = a[col]
+    const bv = b[col]
+    const aNum = Number(av), bNum = Number(bv)
+    let cmp
+    if (isFinite(aNum) && isFinite(bNum) && !(typeof av === 'string' && av && isNaN(Number(av)))) {
+      cmp = aNum - bNum
+    } else {
+      cmp = String(av ?? '').localeCompare(String(bv ?? ''))
+    }
+    return asc ? cmp : -cmp
+  })
+  return rows
+})
 
 // Staleness — bucket the time since last check-in into Active / Stale / Inactive.
 // last_seen = max(timestamp) across every firehose table this host writes to,
@@ -445,6 +466,18 @@ function formatUptime(seconds) {
   const days = Math.floor(seconds / 86400)
   const hours = Math.floor((seconds % 86400) / 3600)
   return days > 0 ? `${days}d ${hours}h` : `${hours}h`
+}
+
+function sortAppsBy(col) {
+  if (appSortCol.value === col) { appSortAsc.value = !appSortAsc.value }
+  // First click on a numeric column defaults to descending (high → low,
+  // which is what you usually want for "Memory" and "Threads").
+  else { appSortCol.value = col; appSortAsc.value = !['memory_mb', 'threads'].includes(col) }
+}
+
+function appSortIcon(col) {
+  if (appSortCol.value !== col) return ''
+  return appSortAsc.value ? '▲' : '▼'
 }
 
 function sortBy(col) {

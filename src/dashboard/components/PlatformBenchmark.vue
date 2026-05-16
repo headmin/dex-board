@@ -17,12 +17,18 @@
     </div>
 
     <!-- Small cohort warning -->
-    <div v-if="activeCohortData && activeCohortData.device_count < 5 && activeCohortData.device_count > 0" class="cohort-warning">
-      Only {{ activeCohortData.device_count }} device{{ activeCohortData.device_count === 1 ? '' : 's' }} in this cohort — benchmarks may not be representative.
+    <div v-if="activeCohortData && activeCohortData.device_count >= 3 && activeCohortData.device_count < 5" class="cohort-warning">
+      Only {{ activeCohortData.device_count }} hosts in this cohort — percentiles may not be representative.
     </div>
 
     <!-- Loading -->
     <div v-if="loading" class="benchmark-loading">Loading benchmarks...</div>
+
+    <!-- Cohort too small to benchmark — show honest empty state rather than degenerate bars -->
+    <div v-else-if="activeCohortData && activeCohortData.device_count < 3" class="benchmark-empty">
+      <strong>Not enough hosts in this cohort to benchmark.</strong>
+      <p>Need at least 3 hosts; this cohort has {{ activeCohortData.device_count }}. Try the <em>Fleet</em> tab or pick a less-specific cohort.</p>
+    </div>
 
     <!-- Score Benchmark Rows -->
     <div v-else-if="activeCohortData" class="benchmark-rows">
