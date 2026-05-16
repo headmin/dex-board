@@ -533,6 +533,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
       SELECT
         curr.host_id,
         curr.hostname,
+        hi.computer_name,
         curr.composite_score AS curr_score,
         curr.composite_grade AS curr_grade,
         prev.composite_score AS prev_score,
@@ -559,6 +560,10 @@ export const firehoseScoreQueries: QueryConfig[] = [
         prev.software_score      AS prev_software
       FROM scored curr
       INNER JOIN prior_scored prev ON curr.host_id = prev.host_id
+      LEFT JOIN (
+        SELECT host_id, argMax(computer_name, timestamp) AS computer_name
+        FROM hardware_inventory GROUP BY host_id
+      ) hi ON curr.host_id = hi.host_id
       WHERE abs(curr.composite_score - prev.composite_score) > 0
       ORDER BY abs(curr.composite_score - prev.composite_score) DESC
       {{LIMIT}}

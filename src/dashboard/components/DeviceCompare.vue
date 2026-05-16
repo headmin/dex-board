@@ -4,7 +4,7 @@
       <h2>Host comparison</h2>
       <div class="compare-header-actions">
         <div class="mode-toggle">
-          <button class="mode-btn" :class="{ active: mode === 'device' }" @click="mode = 'device'">vs Device</button>
+          <button class="mode-btn" :class="{ active: mode === 'device' }" @click="mode = 'device'">vs Host</button>
           <button class="mode-btn" :class="{ active: mode === 'platform' }" @click="mode = 'platform'">vs Platform</button>
         </div>
         <button class="close-compare" @click="$emit('close')">Exit comparison</button>
@@ -14,10 +14,10 @@
     <!-- Device Selectors — both sides are pick-able -->
     <div class="compare-selectors">
       <div class="selector-card" :class="{ loaded: leftData }">
-        <div class="selector-label">Device A</div>
+        <div class="selector-label">Host A</div>
         <div class="select-wrapper">
           <select v-model="selectedLeft" class="device-select" @change="onLeftChange">
-            <option value="">Pick a device...</option>
+            <option value="">Pick a host...</option>
             <option v-for="d in leftOptions" :key="d.host_identifier" :value="d.host_identifier">
               {{ d.hostname }} — {{ d.hardware_model }}
             </option>
@@ -39,10 +39,10 @@
 
       <template v-if="mode === 'device'">
         <div class="selector-card" :class="{ loaded: rightData }">
-          <div class="selector-label">Device B</div>
+          <div class="selector-label">Host B</div>
           <div class="select-wrapper">
             <select v-model="selectedRight" class="device-select" @change="onRightChange">
-              <option value="">Pick a device...</option>
+              <option value="">Pick a host...</option>
               <option v-for="d in rightOptions" :key="d.host_identifier" :value="d.host_identifier">
                 {{ d.hostname }} — {{ d.hardware_model }}
               </option>
@@ -172,7 +172,7 @@
     </template>
 
     <div v-else class="compare-empty">
-      Pick two devices to see a side-by-side comparison of scores, software, and patch velocity.
+      Pick two hosts to see a side-by-side comparison of scores, software, and patch velocity.
     </div>
   </div>
 </template>

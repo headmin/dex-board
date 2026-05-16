@@ -133,6 +133,8 @@ export const firehoseDeviceQueries: QueryConfig[] = [
       SELECT
         h.hostname, h.computer_name, h.cpu_brand, h.cpu_logical_cores,
         h.hardware_model, h.hardware_serial, h.memory_gb,
+        h.last_seen,
+        dateDiff('hour', h.last_seen, now()) AS hours_since_last_seen,
         w.rssi, w.noise, w.snr, w.signal_quality, w.transmit_rate,
         w.channel, w.channel_width, w.security_type,
         f.version, f.osquery_version, f.platform, f.uptime_seconds, f.last_error
@@ -143,7 +145,8 @@ export const firehoseDeviceQueries: QueryConfig[] = [
           argMax(cpu_logical_cores, timestamp) AS cpu_logical_cores,
           argMax(hardware_model, timestamp) AS hardware_model,
           argMax(hardware_serial, timestamp) AS hardware_serial,
-          argMax(memory_gb, timestamp) AS memory_gb
+          argMax(memory_gb, timestamp) AS memory_gb,
+          toDateTime(max(timestamp)) AS last_seen
         FROM hardware_inventory WHERE host_id = {filterHostId:String}
       ) h
       CROSS JOIN (

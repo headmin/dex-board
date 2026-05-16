@@ -224,8 +224,8 @@
                 <router-link
                   :to="{ path: '/devices', query: { hostId: d.host_id, focus: 'movers' } }"
                   class="host-link"
-                  :title="`Inspect ${d.hostname} →`"
-                >{{ d.hostname }}</router-link>
+                  :title="`Inspect ${displayHost(d)} →`"
+                >{{ displayHost(d) }}</router-link>
               </td>
               <td>{{ d.cpu_brand }}</td>
               <td>{{ d.memory_gb }} GB</td>
@@ -247,6 +247,7 @@ import { query } from '../services/api'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import MetricCard from '../components/MetricCard.vue'
 import BarChart from '../components/BarChart.vue'
+import { displayHost } from '../composables/displayName'
 
 const { searchText: globalSearch, selectedModel, selectedRAMTier } = useFleetFilter()
 

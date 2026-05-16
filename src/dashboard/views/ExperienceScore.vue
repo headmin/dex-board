@@ -465,6 +465,7 @@ async function fetchMovers() {
     movers.value = rows.map(r => ({
       host_identifier: r.host_id,
       hostname: r.hostname,
+      computer_name: r.computer_name,
       hardware_model: '',
       prev_grade: r.prev_grade,
       curr_grade: r.curr_grade,

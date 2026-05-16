@@ -7,7 +7,7 @@
       <div v-for="mover in data" :key="mover.host_identifier">
         <div class="mover-row" :class="{ clickable: true, expanded: expandedId === mover.host_identifier }" @click="toggle(mover)">
           <div class="mover-info">
-            <span class="mover-name">{{ mover.hostname }}</span>
+            <span class="mover-name">{{ displayHost(mover) }}</span>
             <span class="mover-model">{{ mover.hardware_model }}</span>
           </div>
           <div class="mover-change">
@@ -61,6 +61,7 @@
 import { ref } from 'vue'
 import SkeletonLoader from './SkeletonLoader.vue'
 import GradeBadge from './GradeBadge.vue'
+import { displayHost } from '../composables/displayName'
 
 const props = defineProps({
   title: { type: String, default: 'Biggest Movers (WoW)' },
