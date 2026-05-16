@@ -25,6 +25,16 @@
 
         <!-- Category breakdown drill-down -->
         <div v-if="expandedId === mover.host_identifier" class="mover-detail">
+          <!-- Inspect host CTA is rendered FIRST in the panel so it's visible
+               immediately on expand, regardless of whether the category
+               breakdown is still loading. -->
+          <div class="mover-detail-actions">
+            <router-link
+              :to="{ path: '/devices', query: { hostId: expandedId, focus: 'movers' } }"
+              class="inspect-cta"
+              @click.stop
+            >Inspect host on /devices →</router-link>
+          </div>
           <div v-if="detailLoading" class="detail-loading">Analyzing score changes...</div>
           <template v-else>
             <div class="detail-header">
@@ -45,11 +55,6 @@
               </span>
             </div>
             <div v-if="detailInsight" class="detail-insight">{{ detailInsight }}</div>
-            <router-link
-              v-if="expandedId"
-              :to="{ path: '/devices', query: { hostId: expandedId, focus: 'movers' } }"
-              class="inspect-cta"
-            >Inspect device →</router-link>
           </template>
         </div>
       </div>
@@ -305,21 +310,23 @@ h3 {
   font-size: var(--font-size-sm);
 }
 
+.mover-detail-actions {
+  display: flex; justify-content: flex-end;
+  margin-bottom: var(--pad-small);
+}
 .inspect-cta {
-  display: inline-block;
-  margin-top: var(--pad-small);
+  display: inline-flex;
+  align-items: center;
   padding: 6px 12px;
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: #6a67fe;
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
+  font-weight: 700;
+  color: var(--fleet-white);
+  background: var(--fleet-vibrant-blue);
+  border: 1px solid var(--fleet-vibrant-blue);
   border-radius: var(--radius);
   text-decoration: none;
+  transition: filter 100ms;
 }
-.inspect-cta:hover {
-  border-color: #6a67fe;
-  background: rgba(106, 103, 254, 0.06);
-}
+.inspect-cta:hover { filter: brightness(1.08); }
 </style>

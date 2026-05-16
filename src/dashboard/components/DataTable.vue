@@ -142,25 +142,27 @@ const getStatusClass = (value) => {
 </script>
 
 <style scoped>
+/* Aligned with the /hosts table look: borderless container, transparent
+   thead with a 2px bottom rule, mono uppercase header labels, dense
+   8px/12px padding. Used across /reports and any future view that picks
+   up <DataTable>. */
 .table-container {
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
+  background: transparent;
 }
 
 .table-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--pad-medium);
-  border-bottom: 1px solid var(--fleet-black-10);
+  margin-bottom: var(--pad-small);
 }
 
 .table-header h3 {
-  font-size: var(--font-size-small);
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
   color: var(--fleet-black);
   margin: 0;
+  font-family: var(--font-mono);
 }
 
 .table-wrapper {
@@ -171,25 +173,26 @@ const getStatusClass = (value) => {
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--font-size-xsmall);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
 }
 
 .table th,
 .table td {
-  padding: var(--pad-small) var(--pad-medium);
+  padding: 8px 12px;
   text-align: left;
   vertical-align: middle;
 }
 
 .table thead th {
-  padding: var(--pad-smedium) var(--pad-medium);
-  background-color: var(--fleet-black-5);
-  color: var(--fleet-black-75);
+  background: transparent;
+  color: var(--fleet-black-50);
   text-transform: uppercase;
-  font-size: var(--font-size-xxsmall);
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-wide);
-  border-bottom: 1px solid var(--fleet-black-10);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--fleet-black-10);
   user-select: none;
 }
 .table thead th.sortable { cursor: pointer; }

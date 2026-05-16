@@ -666,15 +666,15 @@ h2 {
 
 .data-table th {
   text-align: left;
-  padding: 12px 16px;
+  padding: 8px 12px;
   font-weight: 600;
   color: var(--fleet-black-50);
-  background: var(--fleet-black-3);
-  border-bottom: 1px solid var(--fleet-black-10);
-  font-family: var(--font-body);
+  background: transparent;
+  border-bottom: 2px solid var(--fleet-black-10);
+  font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-wide);
+  letter-spacing: 0.5px;
 }
 
 .data-table th.sortable {
@@ -688,7 +688,7 @@ h2 {
 }
 
 .data-table td {
-  padding: 12px 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--fleet-black-5);
 }
 
