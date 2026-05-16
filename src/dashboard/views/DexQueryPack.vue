@@ -11,7 +11,7 @@
     <section class="section">
       <h2>Overview</h2>
       <div class="metrics-row four-col">
-        <MetricCard label="Active devices" :value="overview.deviceCount" :loading="loading.overview" />
+        <MetricCard label="Active hosts" :value="overview.deviceCount" :loading="loading.overview" />
         <MetricCard label="Health events" :value="overview.healthEvents" :loading="loading.overview" />
         <MetricCard label="P95 memory %" :value="overview.p95Memory" :loading="loading.overview" />
         <MetricCard label="P95 disk %" :value="overview.p95Disk" :loading="loading.overview" />
@@ -42,7 +42,7 @@
             yKey="avg_memory"
             :threshold="85"
             thresholdLabel="Warning"
-            color="#4a90d9"
+            color="var(--rainbow-blue)"
           />
           <TimeSeriesChart
             title="Average disk usage %"
@@ -140,7 +140,7 @@
       <section class="section">
         <h2>Hardware inventory</h2>
         <div class="metrics-row four-col">
-          <MetricCard label="Total devices" :value="hw.deviceCount" :loading="loading.hardware" />
+          <MetricCard label="Total hosts" :value="hw.deviceCount" :loading="loading.hardware" />
           <MetricCard label="Avg RAM (GB)" :value="hw.avgRam" :loading="loading.hardware" />
           <MetricCard label="Avg disk (GB)" :value="hw.avgDiskTotal" :loading="loading.hardware" />
           <MetricCard label="Hardware models" :value="hw.modelCount" :loading="loading.hardware" />

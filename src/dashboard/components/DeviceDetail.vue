@@ -3,7 +3,7 @@
     <div class="device-detail-panel">
       <header class="panel-header">
         <div class="header-info">
-          <h2>{{ device.hostname || device.computer_name || 'Unknown Device' }}</h2>
+          <h2>{{ device.hostname || device.computer_name || 'Unknown host' }}</h2>
           <div class="header-meta">
             <span class="meta-badge">{{ device.hardware_model || 'Unknown model' }}</span>
             <span class="meta-badge">{{ device.os_name }} {{ device.os_version }}</span>
@@ -65,7 +65,7 @@
 
         <!-- Device Information -->
         <section class="detail-section">
-          <h3>Device Information</h3>
+          <h3>Host information</h3>
           <div class="info-table">
             <div class="info-row">
               <span class="info-key">Hostname</span>
@@ -570,8 +570,8 @@ onMounted(fetchDeviceData)
 
 .signal-badge.excellent { background: rgba(61,182,123,0.15); color: #2b7f56; }
 .signal-badge.good { background: rgba(106,103,254,0.12); color: #4b4ab4; }
-.signal-badge.fair { background: rgba(235,188,67,0.2); color: #92400e; }
-.signal-badge.poor { background: rgba(214,108,123,0.15); color: #991b1b; }
+.signal-badge.fair { background: rgba(235,188,67,0.2); color: var(--fleet-status-warning-dark); }
+.signal-badge.poor { background: rgba(214,108,123,0.15); color: var(--fleet-status-error); }
 
 .signal-quality {
   font-size: 12px;

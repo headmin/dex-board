@@ -29,7 +29,7 @@
         :loading="loading.deviceWifi"
         xKey="hour"
         yKey="avg_rssi"
-        color="#3b82f6"
+        color="var(--fleet-vibrant-blue)"
       />
 
       <!-- Device running apps -->
@@ -83,13 +83,13 @@
         :loading="loading.wifiTimeseries"
         xKey="hour"
         yKey="avg_rssi"
-        color="#3b82f6"
+        color="var(--fleet-vibrant-blue)"
       />
     </section>
 
     <!-- Wi-Fi Devices Table (clickable) -->
     <section class="section">
-      <h2>All devices — Wi-Fi</h2>
+      <h2>All hosts — Wi-Fi</h2>
       <div class="table-wrap">
         <table class="data-table">
           <thead>
@@ -489,7 +489,7 @@ h3 {
 .device-drawer {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-left: 3px solid #3b82f6;
+  border-left: 3px solid var(--fleet-vibrant-blue);
   border-radius: var(--radius);
   padding: 20px 24px;
   margin-bottom: 32px;
@@ -590,10 +590,10 @@ h3 {
   font-weight: 600;
 }
 
-.quality-badge.excellent { background: #dcfce7; color: #166534; }
+.quality-badge.excellent { background: var(--fleet-status-success-light); color: var(--fleet-status-success); }
 .quality-badge.good { background: #ecfccb; color: #3f6212; }
 .quality-badge.fair { background: #fef9c3; color: #854d0e; }
-.quality-badge.weak, .quality-badge.poor { background: #fef2f2; color: #991b1b; }
+.quality-badge.weak, .quality-badge.poor { background: var(--fleet-status-error-light); color: var(--fleet-status-error); }
 .quality-badge.very_weak { background: #fecaca; color: #7f1d1d; }
 
 @media (max-width: 1024px) {

@@ -28,7 +28,7 @@
         <div v-if="showInfo" class="dist-info">
           <p>The composite score (0–100) is a weighted average of four categories computed hourly from device telemetry:</p>
           <div class="category-row">
-            <span class="cat-pill" style="background:#4a90d9">Performance 35%</span>
+            <span class="cat-pill" style="background:var(--rainbow-blue)">Performance 35%</span>
             <span class="cat-pill" style="background:#3db67b">Device Health 25%</span>
             <span class="cat-pill" style="background:#8b5cf6">Security 20%</span>
             <span class="cat-pill" style="background:#ec4899">Software 20%</span>
@@ -69,7 +69,7 @@ const grades = computed(() => {
 })
 
 function gradeColor(grade) {
-  const colors = { A: '#3db67b', B: '#4a90d9', C: '#ebbc43', D: '#e07b3a', F: '#d66c7b' }
+  const colors = { A: '#3db67b', B: 'var(--rainbow-blue)', C: '#ebbc43', D: '#e07b3a', F: '#d66c7b' }
   return colors[grade] || '#8b8fa2'
 }
 

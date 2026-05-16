@@ -194,7 +194,7 @@
       <div class="chart-container">
         <div class="device-table-header">
           <div class="device-table-title-group">
-            <h3>Device scores ({{ filteredDeviceList.length }})</h3>
+            <h3>Host scores ({{ filteredDeviceList.length }})</h3>
             <div v-if="totalGraded > 0" class="mini-distribution" :title="distributionTooltip">
               <div
                 v-for="g in ['A','B','C','D','F']"
@@ -870,7 +870,7 @@ async function toggleAppDrill(appName, mode) {
 
 function signalColor(score) {
   if (score >= 90) return '#3db67b'
-  if (score >= 75) return '#4a90d9'
+  if (score >= 75) return 'var(--rainbow-blue)'
   if (score >= 60) return '#ebbc43'
   if (score >= 40) return '#e07b3a'
   return '#d66c7b'
@@ -1316,7 +1316,7 @@ onMounted(() => {
 
 .drill-usage.daily {
   background: #e8f8f0;
-  color: #1a7a4c;
+  color: var(--fleet-status-success);
 }
 
 .drill-usage.weekly {
@@ -1336,7 +1336,7 @@ onMounted(() => {
 
 .drill-usage.never {
   background: #fee8ec;
-  color: #b01a3a;
+  color: var(--fleet-status-error);
 }
 
 .drill-days {
@@ -1448,7 +1448,7 @@ onMounted(() => {
 }
 
 .mini-dist-segment.grade-A { background: #3db67b; }
-.mini-dist-segment.grade-B { background: #4a90d9; }
+.mini-dist-segment.grade-B { background: var(--rainbow-blue); }
 .mini-dist-segment.grade-C { background: #ebbc43; }
 .mini-dist-segment.grade-D { background: #e07b3a; }
 .mini-dist-segment.grade-F { background: #d66c7b; }

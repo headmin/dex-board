@@ -31,7 +31,7 @@
           <PieChart title="Signal quality" :data="wifiDist" :loading="loading.wifi" nameKey="signal_quality" valueKey="cnt" />
         </section>
         <section class="section">
-          <TimeSeriesChart title="Fleet RSSI trend" :data="wifiTs" :loading="loading.wifi" xKey="hour" yKey="avg_rssi" color="#3b82f6" />
+          <TimeSeriesChart title="Fleet RSSI trend" :data="wifiTs" :loading="loading.wifi" xKey="hour" yKey="avg_rssi" color="var(--fleet-vibrant-blue)" />
         </section>
       </div>
 
@@ -69,7 +69,7 @@
     <div v-if="activeTab === 'hardware'">
       <section class="section">
         <div class="metrics-row four-col">
-          <MetricCard label="Devices" :value="hwDeviceCount" :loading="loading.hw" />
+          <MetricCard label="Hosts" :value="hwDeviceCount" :loading="loading.hw" />
           <MetricCard label="Unique models" :value="hwModelCount" :loading="loading.hw" />
           <MetricCard label="Avg RAM" :value="hwAvgRam" unit="GB" :loading="loading.hw" />
           <MetricCard label="Avg cores" :value="hwAvgCores" :loading="loading.hw" />
@@ -118,9 +118,9 @@
     <!-- ═══ Device Health Tab ══════════════════════ -->
     <div v-if="activeTab === 'health'">
       <section class="section">
-        <h2>Device health</h2>
+        <h2>Host health</h2>
         <div class="metrics-row four-col">
-          <MetricCard label="Devices" :value="healthSummary.total_devices" :loading="loading.health" />
+          <MetricCard label="Hosts" :value="healthSummary.total_devices" :loading="loading.health" />
           <MetricCard label="Severe swap" :value="healthSummary.severe_swap" :loading="loading.health" />
           <MetricCard label="Degraded battery" :value="healthSummary.degraded_battery" :loading="loading.health" />
           <MetricCard label="Avg battery" :value="healthSummary.avg_battery_pct" unit="%" :loading="loading.health" />
@@ -152,7 +152,7 @@
       <section class="section">
         <h2>OS health</h2>
         <div class="metrics-row four-col">
-          <MetricCard label="Devices" :value="osSummary.total_devices" :loading="loading.health" />
+          <MetricCard label="Hosts" :value="osSummary.total_devices" :loading="loading.health" />
           <MetricCard label="Healthy" :value="osSummary.healthy" :loading="loading.health" />
           <MetricCard label="Degraded" :value="osSummary.degraded" :loading="loading.health" />
           <MetricCard label="Avg uptime" :value="osSummary.avg_uptime_days" unit="days" :loading="loading.health" />
@@ -177,7 +177,7 @@
     <div v-if="activeTab === 'vpn'">
       <section class="section">
         <div class="metrics-row four-col">
-          <MetricCard label="Total devices" :value="vpnSummary.total_devices" :loading="loading.vpn" />
+          <MetricCard label="Total hosts" :value="vpnSummary.total_devices" :loading="loading.vpn" />
           <MetricCard label="VPN active" :value="vpnSummary.vpn_active" :loading="loading.vpn" />
           <MetricCard label="Direct" :value="vpnSummary.direct_connected" :loading="loading.vpn" />
           <MetricCard label="Disconnected" :value="vpnSummary.disconnected" :loading="loading.vpn" />
@@ -200,7 +200,7 @@
     <div v-if="activeTab === 'crashes'">
       <section class="section">
         <div class="metrics-row four-col">
-          <MetricCard label="Devices w/ crashes" :value="crashSummary.devices_with_crashes" :loading="loading.crashes" />
+          <MetricCard label="Hosts w/ crashes" :value="crashSummary.devices_with_crashes" :loading="loading.crashes" />
           <MetricCard label="Total crashes (7d)" :value="crashSummary.total_crashes_7d" :loading="loading.crashes" />
           <MetricCard label="Critical" :value="crashSummary.critical_devices" :loading="loading.crashes" />
           <MetricCard label="Elevated" :value="crashSummary.elevated_devices" :loading="loading.crashes" />
@@ -223,7 +223,7 @@
     <div v-if="activeTab === 'adoption'">
       <section class="section">
         <div class="metrics-row four-col">
-          <MetricCard label="Devices" :value="adoptionSummary.total_devices" :loading="loading.adoption" />
+          <MetricCard label="Hosts" :value="adoptionSummary.total_devices" :loading="loading.adoption" />
           <MetricCard label="Unique apps" :value="adoptionSummary.unique_apps" :loading="loading.adoption" />
           <MetricCard label="Active today" :value="adoptionSummary.active_today" :loading="loading.adoption" />
           <MetricCard label="Stale 90d+" :value="adoptionSummary.stale_90d_plus" :loading="loading.adoption" />
@@ -557,7 +557,7 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 .tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 2px solid var(--fleet-black-10); }
 .tab { font-family: var(--font-mono); font-size: var(--font-size-sm); font-weight: 500; padding: 10px 20px; border: none; background: none; color: var(--fleet-black-50); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 150ms, border-color 150ms; }
 .tab:hover { color: var(--fleet-black-75); }
-.tab.active { color: var(--fleet-black); font-weight: 600; border-bottom-color: #3b82f6; }
+.tab.active { color: var(--fleet-black); font-weight: 600; border-bottom-color: var(--fleet-vibrant-blue); }
 
 @media (max-width: 1024px) { .metrics-row.four-col { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) { .metrics-row, .metrics-row.four-col { grid-template-columns: 1fr; } .charts-row.two-col { grid-template-columns: 1fr; } .tabs { overflow-x: auto; } }

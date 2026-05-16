@@ -1,7 +1,7 @@
 <template>
   <div class="compare-container">
     <div class="compare-header">
-      <h2>Device Comparison</h2>
+      <h2>Host comparison</h2>
       <div class="compare-header-actions">
         <div class="mode-toggle">
           <button class="mode-btn" :class="{ active: mode === 'device' }" @click="mode = 'device'">vs Device</button>
@@ -704,8 +704,8 @@ function diffClass(diff) {
   text-align: right;
 }
 
-.diff-good { color: #1a7a4c; }
-.diff-bad { color: #b01a3a; }
+.diff-good { color: var(--fleet-status-success); }
+.diff-bad { color: var(--fleet-status-error); }
 .diff-neutral { color: var(--fleet-black-50); }
 
 /* ─── Software Diff ───────────────────────────── */
@@ -753,11 +753,11 @@ function diffClass(diff) {
   letter-spacing: 0.3px;
 }
 
-.usage-tag.daily { background: #e8f8f0; color: #1a7a4c; }
+.usage-tag.daily { background: #e8f8f0; color: var(--fleet-status-success); }
 .usage-tag.weekly { background: #e8f0fe; color: #2d5fba; }
 .usage-tag.monthly { background: #fef9e8; color: #9a7b1a; }
 .usage-tag.stale { background: #fef0e8; color: #b05c1a; }
-.usage-tag.never { background: #fee8ec; color: #b01a3a; }
+.usage-tag.never { background: #fee8ec; color: var(--fleet-status-error); }
 
 .not-installed {
   font-size: var(--font-size-xs);

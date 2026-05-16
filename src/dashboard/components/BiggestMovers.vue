@@ -186,11 +186,11 @@ h3 {
 }
 
 .delta-up {
-  color: #1a7a4c;
+  color: var(--fleet-status-success);
 }
 
 .delta-down {
-  color: #b01a3a;
+  color: var(--fleet-status-error);
 }
 
 .expand-arrow {

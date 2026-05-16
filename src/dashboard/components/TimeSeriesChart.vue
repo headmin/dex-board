@@ -36,7 +36,7 @@ const props = defineProps({
   zoomable: { type: Boolean, default: true },
   threshold: { type: Number, default: null },
   thresholdLabel: { type: String, default: 'High' },
-  color: { type: String, default: '#4a90d9' },
+  color: { type: String, default: 'var(--rainbow-blue)' },
   yMin: { type: Number, default: null },
   yMax: { type: Number, default: null }
 })

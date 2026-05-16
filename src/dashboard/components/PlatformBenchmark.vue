@@ -137,7 +137,7 @@ function clamp(v) {
 function barColor(v) {
   if (v < 0) return '#8b8fa2'
   if (v >= 90) return '#3db67b'
-  if (v >= 75) return '#4a90d9'
+  if (v >= 75) return 'var(--rainbow-blue)'
   if (v >= 60) return '#ebbc43'
   if (v >= 40) return '#e07b3a'
   return '#d66c7b'
@@ -183,11 +183,11 @@ function positionClass(row) {
   letter-spacing: 0.2px;
 }
 
-.lifecycle-top { background: #e8f8f0; color: #1a7a4c; }
+.lifecycle-top { background: #e8f8f0; color: var(--fleet-status-success); }
 .lifecycle-healthy { background: #e8f0fe; color: #2d5fba; }
 .lifecycle-attention { background: #fef9e8; color: #9a7b1a; }
 .lifecycle-under { background: #fef0e8; color: #b05c1a; }
-.lifecycle-eol { background: #fee8ec; color: #b01a3a; }
+.lifecycle-eol { background: #fee8ec; color: var(--fleet-status-error); }
 
 /* ─── Cohort Tabs ────────────────────────────── */
 .cohort-tabs {
@@ -300,12 +300,12 @@ function positionClass(row) {
 }
 
 .marker-p75::before {
-  background: #4a90d9;
+  background: var(--rainbow-blue);
   border-radius: 1px;
 }
 
 .marker-p90::before {
-  background: #1a7a4c;
+  background: var(--fleet-status-success);
   border-radius: 1px;
 }
 
@@ -321,8 +321,8 @@ function positionClass(row) {
 }
 
 .marker-avg .marker-label { color: var(--fleet-black-33); }
-.marker-p75 .marker-label { color: #4a90d9; }
-.marker-p90 .marker-label { color: #1a7a4c; }
+.marker-p75 .marker-label { color: var(--rainbow-blue); }
+.marker-p90 .marker-label { color: var(--fleet-status-success); }
 
 /* ─── Position Labels ────────────────────────── */
 .bench-position {
@@ -335,7 +335,7 @@ function positionClass(row) {
   white-space: nowrap;
 }
 
-.pos-top { background: #e8f8f0; color: #1a7a4c; }
+.pos-top { background: #e8f8f0; color: var(--fleet-status-success); }
 .pos-above { background: #e8f0fe; color: #2d5fba; }
 .pos-avg { background: var(--fleet-black-5); color: var(--fleet-black-75); }
 .pos-below { background: #fef0e8; color: #b05c1a; }
@@ -373,8 +373,8 @@ function positionClass(row) {
 }
 
 .legend-avg { background: var(--fleet-black-33); }
-.legend-p75 { background: #4a90d9; }
-.legend-p90 { background: #1a7a4c; }
+.legend-p75 { background: var(--rainbow-blue); }
+.legend-p90 { background: var(--fleet-status-success); }
 
 /* ─── States ─────────────────────────────────── */
 .benchmark-loading, .benchmark-empty {

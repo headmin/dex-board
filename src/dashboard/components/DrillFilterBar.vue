@@ -55,7 +55,7 @@ const { isFiltered, filterLabel, clearDrill } = useDrillFilter()
 }
 
 .clear-btn:hover {
-  background: #dbeafe;
+  background: var(--fleet-accent-blue-light);
 }
 
 .slide-enter-active,

@@ -331,7 +331,7 @@
                   <p>The <strong>DEX composite score</strong> (0–100) measures overall device health. It's a weighted average of four categories, each computed hourly from real device telemetry:</p>
                   <div class="si-categories">
                     <span class="si-cat"><span class="si-dot" style="background:#4a90d9"></span><strong>Performance</strong> 35% — memory %, disk %, top process load, uptime</span>
-                    <span class="si-cat"><span class="si-dot" style="background:#3db67b"></span><strong>Device health</strong> 25% — disk capacity, hardware age</span>
+                    <span class="si-cat"><span class="si-dot" style="background:#3db67b"></span><strong>Host health</strong> 25% — disk capacity, hardware age</span>
                     <span class="si-cat"><span class="si-dot" style="background:#8b5cf6"></span><strong>Security</strong> 20% — encryption, firewall, SIP, Gatekeeper</span>
                     <span class="si-cat"><span class="si-dot" style="background:#ec4899"></span><strong>Software</strong> 20% — app sprawl, browser extensions</span>
                   </div>
@@ -383,7 +383,7 @@
 
               <!-- Top movers (outliers only) -->
               <div v-if="topMovers.length" class="detail-section">
-                <h4>Devices with largest score changes</h4>
+                <h4>Hosts with largest score changes</h4>
                 <p class="impact-explainer">
                   These devices had the biggest composite score shift in the ±4h window around this deploy.
                   Click a hostname to inspect its health and score breakdown.
@@ -527,7 +527,7 @@
 
               <!-- Pinned devices -->
               <div class="detail-section">
-                <h4>Pinned devices</h4>
+                <h4>Pinned hosts</h4>
                 <div class="pinned-row">
                   <div v-for="tag in commit.tags" :key="tag.hostId" class="pinned-chip"
                     :class="{ active: selectedDeviceId === tag.hostId }"
@@ -543,7 +543,7 @@
                     <input
                       v-model="deviceSearchText"
                       class="pin-search-input"
-                      placeholder="Search device to pin..."
+                      placeholder="Search host to pin..."
                       @input="onDeviceSearch"
                     />
                     <div v-if="deviceSearchResults.length" class="pin-search-results">

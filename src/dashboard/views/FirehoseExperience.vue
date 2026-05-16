@@ -30,7 +30,7 @@
 
     <!-- ═══ 1. HARDWARE (Device health) ══════════════════════ -->
     <section class="section">
-      <h2>Device health</h2>
+      <h2>Host health</h2>
       <div class="metrics-row four-col">
         <div class="clickable-wrap" :class="{ active: drillCondition === 'severe_swap' }" @click="toggleDrill('severe_swap')" role="button" tabindex="0">
           <MetricCard label="Severe swap" :value="deviceHealth.severeSwap" :loading="loading.deviceHealth" />
@@ -194,7 +194,7 @@
     <section class="section">
       <h2>App adoption</h2>
       <div class="metrics-row four-col">
-        <MetricCard label="Devices" :value="adoption.totalDevices" :loading="loading.adoption" />
+        <MetricCard label="Hosts" :value="adoption.totalDevices" :loading="loading.adoption" />
         <MetricCard label="Unique apps" :value="adoption.uniqueApps" :loading="loading.adoption" />
         <MetricCard label="Active this week" :value="adoption.activeWeek" :loading="loading.adoption" />
         <MetricCard label="Stale 90d+" :value="adoption.stale90Plus" :loading="loading.adoption" />
@@ -302,7 +302,7 @@
         :loading="loading.wifiTs"
         xKey="hour"
         yKey="avg_rssi"
-        color="#3b82f6"
+        color="var(--fleet-vibrant-blue)"
       />
     </section>
 
@@ -760,8 +760,8 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
    without touching the base component. */
 .clickable-wrap { cursor: pointer; border-radius: var(--radius); transition: box-shadow 150ms ease, transform 150ms ease; outline: none; }
 .clickable-wrap:hover { box-shadow: 0 0 0 2px #c7d2fe; }
-.clickable-wrap:focus-visible { box-shadow: 0 0 0 2px #4a90d9; }
-.clickable-wrap.active { box-shadow: 0 0 0 2px #4a90d9; }
+.clickable-wrap:focus-visible { box-shadow: 0 0 0 2px var(--rainbow-blue); }
+.clickable-wrap.active { box-shadow: 0 0 0 2px var(--rainbow-blue); }
 .clickable-wrap > :first-child { border-color: transparent; }
 
 /* Drill-down panel — highlighted context using Fleet's vibrant-blue tint

@@ -37,7 +37,7 @@ const gradeClass = computed(() => {
 
 .grade-a {
   background: #e8f8f0;
-  color: #1a7a4c;
+  color: var(--fleet-status-success);
 }
 
 .grade-b {
@@ -57,7 +57,7 @@ const gradeClass = computed(() => {
 
 .grade-f {
   background: #fee8ec;
-  color: #b01a3a;
+  color: var(--fleet-status-error);
 }
 
 .grade-incomplete {

@@ -16,7 +16,7 @@
       <h2>Overview</h2>
       <div class="metrics-row four-col">
         <MetricCard label="Total events" :value="metrics.totalEvents" :loading="loading.metrics" />
-        <MetricCard label="Devices" :value="metrics.deviceCount" :loading="loading.metrics" />
+        <MetricCard label="Hosts" :value="metrics.deviceCount" :loading="loading.metrics" />
         <MetricCard label="Query types" :value="metrics.queryTypes" :loading="loading.metrics" />
         <MetricCard label="P95 memory %" :value="metrics.p95Memory" subtitle="Fleet-wide 95th percentile" :loading="loading.metrics" />
       </div>
@@ -363,7 +363,7 @@
 
       <!-- Devices Section -->
       <section class="section">
-        <h2>Devices</h2>
+        <h2>Hosts</h2>
         <p class="section-hint">Click a device to view details</p>
         <DataTable
           title=""
@@ -405,7 +405,7 @@
 
       <!-- Device Health Section -->
       <section class="section">
-        <h2>Device health</h2>
+        <h2>Host health</h2>
         <div class="charts-row">
           <MultiSeriesChart
             title="Memory & disk usage"
@@ -452,7 +452,7 @@
 
       <!-- Device Risk Matrix -->
       <section class="section">
-        <h2>Device risk matrix</h2>
+        <h2>Host risk matrix</h2>
         <p class="section-hint">Combined security posture + health data — sorted by risk</p>
         <DataTable
           title=""

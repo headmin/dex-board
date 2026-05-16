@@ -66,7 +66,7 @@ const activeData = computed(() => {
 })
 
 function gradeColor(grade) {
-  const colors = { A: '#3db67b', B: '#4a90d9', C: '#ebbc43', D: '#e07b3a', F: '#d66c7b' }
+  const colors = { A: '#3db67b', B: 'var(--rainbow-blue)', C: '#ebbc43', D: '#e07b3a', F: '#d66c7b' }
   return colors[grade?.toUpperCase()] || '#8b8fa2'
 }
 </script>

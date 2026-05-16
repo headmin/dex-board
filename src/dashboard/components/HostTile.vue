@@ -202,7 +202,7 @@ function relativeTime(ts) {
 }
 
 .host-tile:hover {
-  border-color: var(--fleet-vibrant-blue, #4a90d9);
+  border-color: var(--fleet-vibrant-blue, var(--rainbow-blue));
   box-shadow: 0 2px 8px rgba(106, 103, 254, 0.08);
 }
 
@@ -227,7 +227,7 @@ function relativeTime(ts) {
 
 /* Deterministic per-first-letter palette — saturated enough to read on white,
    muted enough not to shout. Matches Fleet's existing accent palette. */
-.platform-a { background: #4a90d9; }  /* blue */
+.platform-a { background: var(--rainbow-blue); }  /* blue */
 .platform-b { background: #3db67b; }  /* green */
 .platform-c { background: #ebbc43; color: #3a2e00; }  /* amber — dark text for contrast */
 .platform-d { background: #9b6bd9; }  /* purple */

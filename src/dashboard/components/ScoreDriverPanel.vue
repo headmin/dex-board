@@ -110,8 +110,8 @@ function formatDelta(n) {
 .driver-curr { font-weight: 600; }
 .driver-arrow { color: var(--fleet-black-50); }
 .driver-delta { margin-left: 6px; font-weight: 700; }
-.delta-up   { color: #1a7a4c; }
-.delta-down { color: #b01a3a; }
+.delta-up   { color: var(--fleet-status-success); }
+.delta-down { color: var(--fleet-status-error); }
 
 .signal-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
 .signal-table td { padding: 6px 8px; border-bottom: 1px solid var(--fleet-black-5); color: var(--fleet-black-75); }

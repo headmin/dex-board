@@ -9,7 +9,7 @@
         </div>
         <nav class="top-nav__links">
           <router-link to="/" class="top-nav__link" exact-active-class="top-nav__link--active">Dashboard</router-link>
-          <router-link to="/devices" class="top-nav__link" active-class="top-nav__link--active">Devices</router-link>
+          <router-link to="/devices" class="top-nav__link" active-class="top-nav__link--active">Hosts</router-link>
           <router-link to="/reports" class="top-nav__link" active-class="top-nav__link--active">Reports</router-link>
           <router-link to="/insights" class="top-nav__link" active-class="top-nav__link--active">Insights</router-link>
         </nav>

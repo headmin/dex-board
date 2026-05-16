@@ -11,7 +11,7 @@
     <section class="section">
       <h2>Fleet summary</h2>
       <div class="metrics-row five-col">
-        <MetricCard label="Devices" :value="summary.devices" :loading="loading.summary" />
+        <MetricCard label="Hosts" :value="summary.devices" :loading="loading.summary" />
         <MetricCard label="Avg memory %" :value="summary.avgMemory" :loading="loading.summary" />
         <MetricCard label="Avg disk %" :value="summary.avgDisk" :loading="loading.summary" />
         <MetricCard label="Security score" :value="summary.securityScore + '%'" subtitle="Encryption + Firewall + SIP + GK" :loading="loading.summary" />
@@ -21,7 +21,7 @@
 
     <!-- Device Health Cards -->
     <section class="section">
-      <h2>Device health</h2>
+      <h2>Host health</h2>
       <div v-if="loading.devices" class="loading-row">Loading devices...</div>
       <div v-else class="device-grid">
         <div v-for="device in devices" :key="device.host_identifier" class="device-card" @click="openDevice(device)">
@@ -435,8 +435,8 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 }
 
 .device-badge.healthy { background: rgba(61, 182, 123, 0.15); color: #2b7f56; }
-.device-badge.warning { background: rgba(235, 188, 67, 0.2); color: #92400e; }
-.device-badge.critical { background: rgba(214, 108, 123, 0.15); color: #991b1b; }
+.device-badge.warning { background: rgba(235, 188, 67, 0.2); color: var(--fleet-status-warning-dark); }
+.device-badge.critical { background: rgba(214, 108, 123, 0.15); color: var(--fleet-status-error); }
 
 .stat { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
 .stat-bar { flex: 1; height: 6px; background: #f4f4f6; border-radius: 3px; overflow: hidden; }
@@ -517,8 +517,8 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 
 .signal-badge.excellent { background: rgba(61, 182, 123, 0.15); color: #2b7f56; }
 .signal-badge.good { background: rgba(106, 103, 254, 0.12); color: #4b4ab4; }
-.signal-badge.fair { background: rgba(235, 188, 67, 0.2); color: #92400e; }
-.signal-badge.poor { background: rgba(214, 108, 123, 0.15); color: #991b1b; }
+.signal-badge.fair { background: rgba(235, 188, 67, 0.2); color: var(--fleet-status-warning-dark); }
+.signal-badge.poor { background: rgba(214, 108, 123, 0.15); color: var(--fleet-status-error); }
 
 .quality-label { font-size: 12px; color: #8b8fa2; text-transform: capitalize; min-width: 60px; }
 

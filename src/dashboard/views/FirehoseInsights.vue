@@ -11,7 +11,7 @@
     <section class="section">
       <h2>Fleet summary</h2>
       <div class="metrics-row four-col">
-        <MetricCard label="Devices" :value="summary.total_devices" :loading="loading" />
+        <MetricCard label="Hosts" :value="summary.total_devices" :loading="loading" />
         <MetricCard label="Avg memory pressure" :value="summary.avg_mem_pressure_pct" unit="%" :loading="loading" />
         <MetricCard label="High pressure (>50%)" :value="summary.high_pressure_devices" :loading="loading" />
         <MetricCard label="Critical (>70%)" :value="summary.critical_pressure_devices" :loading="loading" />
@@ -123,7 +123,7 @@
 
     <!-- Devices Under Pressure -->
     <section class="section">
-      <h2>Devices by memory pressure</h2>
+      <h2>Hosts by memory pressure</h2>
       <div class="table-wrap">
         <table class="data-table">
           <thead>
@@ -158,7 +158,7 @@
       <p class="section-desc">Memory cost of security and management agents across the fleet.</p>
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Agent</th><th>Avg MB</th><th>P95 MB</th><th>Peak MB</th><th>Devices</th><th>Total RAM</th></tr></thead>
+          <thead><tr><th>Agent</th><th>Avg MB</th><th>P95 MB</th><th>Peak MB</th><th>Hosts</th><th>Total RAM</th></tr></thead>
           <tbody>
             <tr v-for="a in agentData" :key="a.bundle_identifier">
               <td class="hostname">{{ a.app_name }}</td>
