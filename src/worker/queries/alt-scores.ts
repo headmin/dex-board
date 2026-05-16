@@ -292,6 +292,24 @@ export const firehoseScoreQueries: QueryConfig[] = [
     `,
   },
   {
+    name: 'firehose.scores.device_patch_avg',
+    domain: 'scores',
+    client: 'alt',
+    description: 'Average days-to-patch per software for one host (compare view)',
+    params: [
+      { name: 'hostIdentifier', type: 'string' as const, required: true },
+    ],
+    sql: `
+      SELECT
+        software_name,
+        round(avg(days_to_patch), 2) AS avg_lag
+      FROM dex_patch_events FINAL
+      WHERE host_identifier = {filterHostId:String}
+      GROUP BY software_name
+      ORDER BY avg_lag DESC
+    `,
+  },
+  {
     name: 'firehose.scores.device_latest',
     domain: 'scores',
     client: 'alt',

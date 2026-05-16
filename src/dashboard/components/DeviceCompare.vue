@@ -19,7 +19,7 @@
           <select v-model="selectedLeft" class="device-select" @change="onLeftChange">
             <option value="">Pick a host...</option>
             <option v-for="d in leftOptions" :key="d.host_identifier" :value="d.host_identifier">
-              {{ d.hostname }} — {{ d.hardware_model }}
+              {{ displayHost(d) }} — {{ d.hardware_model }}
             </option>
           </select>
           <svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none">
@@ -44,7 +44,7 @@
             <select v-model="selectedRight" class="device-select" @change="onRightChange">
               <option value="">Pick a host...</option>
               <option v-for="d in rightOptions" :key="d.host_identifier" :value="d.host_identifier">
-                {{ d.hostname }} — {{ d.hardware_model }}
+                {{ displayHost(d) }} — {{ d.hardware_model }}
               </option>
             </select>
             <svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none">
@@ -97,8 +97,8 @@
         <div class="compare-grid">
           <div class="compare-row header">
             <span class="compare-label"></span>
-            <span class="compare-col">{{ leftDevice?.hostname }}</span>
-            <span class="compare-col">{{ rightDevice?.hostname }}</span>
+            <span class="compare-col">{{ displayHost(leftDevice) }}</span>
+            <span class="compare-col">{{ displayHost(rightDevice) }}</span>
             <span class="compare-diff">Diff</span>
           </div>
           <div v-for="row in scoreRows" :key="row.key" class="compare-row" :class="{ highlight: Math.abs(row.diff) >= 10 }">
@@ -124,8 +124,8 @@
         <div class="sw-diff-list">
           <div class="sw-diff-header">
             <span class="sw-diff-app">App</span>
-            <span class="sw-diff-col">{{ leftDevice?.hostname }}</span>
-            <span class="sw-diff-col">{{ rightDevice?.hostname }}</span>
+            <span class="sw-diff-col">{{ displayHost(leftDevice) }}</span>
+            <span class="sw-diff-col">{{ displayHost(rightDevice) }}</span>
           </div>
           <div v-for="d in softwareDiffs" :key="d.app_name" class="sw-diff-row">
             <span class="sw-diff-app">{{ d.app_name }}</span>
@@ -155,8 +155,8 @@
         <div class="compare-grid">
           <div class="compare-row header">
             <span class="compare-label">Software</span>
-            <span class="compare-col">{{ leftDevice?.hostname }}</span>
-            <span class="compare-col">{{ rightDevice?.hostname }}</span>
+            <span class="compare-col">{{ displayHost(leftDevice) }}</span>
+            <span class="compare-col">{{ displayHost(rightDevice) }}</span>
             <span class="compare-diff">Diff</span>
           </div>
           <div v-for="p in patchComparison" :key="p.software_name" class="compare-row" :class="{ highlight: Math.abs(p.diff) >= 5 }">
@@ -184,6 +184,7 @@ import GradeBadge from './GradeBadge.vue'
 import PlatformBenchmark from './PlatformBenchmark.vue'
 import { usePlatformBenchmark } from '../composables/usePlatformBenchmark'
 import { useWorkersCouncil } from '../composables/useWorkersCouncil'
+import { displayHost } from '../composables/displayName'
 
 const props = defineProps({
   initialHostId: { type: String, default: '' },
@@ -302,15 +303,25 @@ watch(leftData, async (newData) => {
 
 async function loadDeviceData(hostId) {
   const safe = hostId.replace(/'/g, "''")
-  // Scores read the alt-side (live osquery firehose) — the older main-side
-  // scores.device_latest reads dex_device_scores_hourly which is stale (last
-  // populated 2026-04-06). firehose.scores.device_latest mirrors the same
-  // shape and adds os_name / hardware_model / computer_name.
-  const [scores, apps, patches] = await Promise.all([
+  // All three queries now hit the alt instance (live firehose data). The
+  // older main-side queries (scores.device_latest, software.device_apps,
+  // software.device_patch_avg) read dex_device_scores_hourly / dex_app_usage /
+  // dex_patch_events on MAIN, which are stale (last populated 2026-04-06).
+  // - firehose.scores.device_latest  → per-category scores + meta
+  // - firehose.adoption.per_device   → installed apps with usage_tier
+  //                                    (aliased to usage_category to keep
+  //                                    softwareDiffs computed unchanged)
+  // - firehose.scores.device_patch_avg → avg days-to-patch per software
+  //                                    from default.dex_patch_events on alt
+  const [scores, appsRaw, patches] = await Promise.all([
     query('firehose.scores.device_latest', { hostIdentifier: safe }),
-    query('software.device_apps', { hostIdentifier: safe }).catch(() => []),
-    query('software.device_patch_avg', { hostIdentifier: safe }).catch(() => [])
+    query('firehose.adoption.per_device',  { hostId: safe }).catch(() => []),
+    query('firehose.scores.device_patch_avg', { hostIdentifier: safe }).catch(() => [])
   ])
+  // adoption_gap calls it `usage_tier`; the existing softwareDiffs compares
+  // on `usage_category`. Map once at the boundary so downstream code stays
+  // untouched.
+  const apps = (appsRaw || []).map(a => ({ ...a, usage_category: a.usage_tier }))
   return { scores: scores[0] || null, apps, patches }
 }
 
