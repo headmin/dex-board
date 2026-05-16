@@ -56,15 +56,20 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
     name: 'firehose.adoption.stale_apps',
     domain: 'software',
     client: 'alt',
-    description: 'Most stale apps across fleet (longest since last opened)',
+    description: 'Most stale apps across fleet (longest since last opened); excludes Apple-shipped apps by default',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 50 },
+      // 'no' (default) drops com.apple.* bundles and /System/* paths — they're
+      // OS-shipped, can't be uninstalled, and dominate stale lists as noise.
+      // 'yes' includes them (useful for an honest fleet-wide stale audit).
+      { name: 'includeApple', type: 'enum' as const, values: ['no', 'yes'], required: false, default: 'no' },
     ],
     sql: `
       SELECT
         app_name,
         bundle_identifier,
         any(version) AS version,
+        any(path) AS app_path,
         round(avg(days_since_opened), 0) AS avg_days_stale,
         max(days_since_opened) AS max_days_stale,
         countDistinct(host_id) AS installed_on,
@@ -74,6 +79,13 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
         SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id
       )
         AND days_since_opened > 0
+        AND (
+          {includeApple:String} = 'yes'
+          OR (
+            NOT (bundle_identifier LIKE 'com.apple.%')
+            AND NOT startsWith(path, '/System/')
+          )
+        )
       GROUP BY app_name, bundle_identifier
       ORDER BY avg_days_stale DESC
       {{LIMIT}}
