@@ -292,6 +292,47 @@ export const firehoseScoreQueries: QueryConfig[] = [
     `,
   },
   {
+    name: 'firehose.scores.device_latest',
+    domain: 'scores',
+    client: 'alt',
+    description: 'Single-device latest scores + meta (alt-side replacement for scores.device_latest)',
+    params: [
+      ...FILTER_PARAMS,
+      { name: 'hostIdentifier', type: 'string' as const, required: true },
+    ],
+    sql: `
+      ${DEVICE_SCORES_CTE}
+      SELECT
+        s.host_id,
+        s.hostname,
+        s.cpu_class,
+        s.ram_tier,
+        s.device_health_score,
+        s.performance_score,
+        s.network_score,
+        s.security_score,
+        s.software_score,
+        s.composite_score,
+        s.composite_grade,
+        hi.hardware_model AS hardware_model,
+        hi.computer_name  AS computer_name,
+        oh.os_name        AS os_name
+      FROM scored s
+      LEFT JOIN (
+        SELECT host_id,
+          argMax(hardware_model, timestamp) AS hardware_model,
+          argMax(computer_name, timestamp)  AS computer_name
+        FROM hardware_inventory GROUP BY host_id
+      ) hi ON s.host_id = hi.host_id
+      LEFT JOIN (
+        SELECT host_id, argMax(os_name, timestamp) AS os_name
+        FROM os_health GROUP BY host_id
+      ) oh ON s.host_id = oh.host_id
+      WHERE s.host_id = {filterHostId:String}
+      LIMIT 1
+    `,
+  },
+  {
     name: 'firehose.scores.dimension_os',
     domain: 'scores',
     client: 'alt',

@@ -302,10 +302,14 @@ watch(leftData, async (newData) => {
 
 async function loadDeviceData(hostId) {
   const safe = hostId.replace(/'/g, "''")
+  // Scores read the alt-side (live osquery firehose) — the older main-side
+  // scores.device_latest reads dex_device_scores_hourly which is stale (last
+  // populated 2026-04-06). firehose.scores.device_latest mirrors the same
+  // shape and adds os_name / hardware_model / computer_name.
   const [scores, apps, patches] = await Promise.all([
-    query('scores.device_latest', { hostIdentifier: safe }),
-    query('software.device_apps', { hostIdentifier: safe }),
-    query('software.device_patch_avg', { hostIdentifier: safe })
+    query('firehose.scores.device_latest', { hostIdentifier: safe }),
+    query('software.device_apps', { hostIdentifier: safe }).catch(() => []),
+    query('software.device_patch_avg', { hostIdentifier: safe }).catch(() => [])
   ])
   return { scores: scores[0] || null, apps, patches }
 }

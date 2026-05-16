@@ -83,9 +83,13 @@ const chartOption = computed(() => {
       name: props.title,
       type: 'line',
       smooth: true,
+      // origin:'start' fills from the y-axis MIN up to the line (instead of
+      // from y=0). For negative-value series like RSSI, that means "more
+      // filled = closer to ideal" which matches the mental model.
       areaStyle: {
         opacity: 0.3,
-        color: props.color
+        color: props.color,
+        origin: 'start'
       },
       lineStyle: {
         width: 2,
