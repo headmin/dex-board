@@ -21,7 +21,11 @@
               :class="{ sortable: isSortable(col), 'sort-active': sortKey === col.key }"
               @click="isSortable(col) && toggleSort(col.key)"
             >
-              {{ col.label }}<span v-if="sortKey === col.key" class="sort-indicator">{{ sortAsc ? ' ▲' : ' ▼' }}</span>
+              {{ col.label }}<span
+                v-if="isSortable(col)"
+                class="sort-indicator"
+                :class="{ 'sort-indicator-active': sortKey === col.key }"
+              >{{ sortKey === col.key && !sortAsc ? '▼' : '▲' }}</span>
             </th>
           </tr>
         </thead>
@@ -192,11 +196,18 @@ const getStatusClass = (value) => {
 .table thead th.sortable:hover { background-color: var(--fleet-black-10); color: var(--fleet-black); }
 .table thead th.sort-active { color: var(--fleet-black); }
 .table thead th .sort-indicator {
+  display: inline-block;
+  width: 9px;            /* reserve space so layout doesn't shift on toggle */
+  margin-left: 4px;
   font-size: 9px;
-  color: var(--fleet-vibrant-blue);
   font-weight: 700;
-  margin-left: 2px;
+  color: var(--fleet-black-25);
+  text-align: center;
+  transition: color 100ms;
 }
+.table thead th .sort-indicator-active { color: var(--fleet-vibrant-blue); }
+.table thead th.sortable:hover .sort-indicator { color: var(--fleet-black-50); }
+.table thead th.sortable:hover .sort-indicator-active { color: var(--fleet-vibrant-blue); }
 
 .table tbody tr {
   border-bottom: 1px solid var(--fleet-black-5);
