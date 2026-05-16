@@ -245,13 +245,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { query } from '../services/api'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
 import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
 import DataTable from '../components/DataTable.vue'
+import { useFleetFilter } from '../composables/useFleetFilter'
+
+// Wire the top filter bar (search / OS / model / RAM) into every query
+// fired by /reports. Queries that don't accept FILTER_PARAMS will just
+// ignore the extra params; queries that do will scope to the filter.
+const { filterParams } = useFleetFilter()
+const fp = () => ({ ...filterParams.value })
 
 const error = ref(null)
 const activeTab = ref('wifi')
@@ -407,10 +414,10 @@ async function fetchTab(tab) {
     if (tab === 'wifi') {
       loading.value.wifi = true
       const [s, d, ts, dev] = await Promise.all([
-        query('firehose.wifi.summary'),
-        query('firehose.wifi.quality_distribution'),
-        query('firehose.wifi.timeseries'),
-        query('firehose.wifi.quality', { limit: 100 }),
+        query('firehose.wifi.summary', { ...fp() }),
+        query('firehose.wifi.quality_distribution', { ...fp() }),
+        query('firehose.wifi.timeseries', { ...fp() }),
+        query('firehose.wifi.quality', { limit: 100, ...fp() }),
       ])
       wifiSummary.value = s[0] || {}
       wifiDist.value = d
@@ -421,10 +428,10 @@ async function fetchTab(tab) {
     else if (tab === 'apps') {
       loading.value.apps = true
       const [s, top, peak, all] = await Promise.all([
-        query('firehose.apps.fleet_summary'),
-        query('firehose.apps.top', { limit: 10 }),
-        query('firehose.apps.memory_hogs', { limit: 10 }),
-        query('firehose.apps.top', { limit: 100 }),
+        query('firehose.apps.fleet_summary', { ...fp() }),
+        query('firehose.apps.top', { limit: 10, ...fp() }),
+        query('firehose.apps.memory_hogs', { limit: 10, ...fp() }),
+        query('firehose.apps.top', { limit: 100, ...fp() }),
       ])
       appSummary.value = s[0] || {}
       topApps.value = top
@@ -435,9 +442,9 @@ async function fetchTab(tab) {
     else if (tab === 'hardware') {
       loading.value.hw = true
       const [tiers, models, inv] = await Promise.all([
-        query('firehose.hardware.memory_tiers'),
-        query('firehose.hardware.model_distribution'),
-        query('firehose.hardware.inventory', { limit: 200 }),
+        query('firehose.hardware.memory_tiers', { ...fp() }),
+        query('firehose.hardware.model_distribution', { ...fp() }),
+        query('firehose.hardware.inventory', { limit: 200, ...fp() }),
       ])
       ramTiers.value = tiers
       hwInventory.value = inv
@@ -459,10 +466,10 @@ async function fetchTab(tab) {
     else if (tab === 'fleetd') {
       loading.value.fleetd = true
       const [s, up, ver, err] = await Promise.all([
-        query('firehose.fleetd.summary'),
-        query('firehose.fleetd.uptime'),
-        query('firehose.fleetd.versions'),
-        query('firehose.fleetd.errors', { limit: 20 }),
+        query('firehose.fleetd.summary', { ...fp() }),
+        query('firehose.fleetd.uptime', { ...fp() }),
+        query('firehose.fleetd.versions', { ...fp() }),
+        query('firehose.fleetd.errors', { limit: 20, ...fp() }),
       ])
       fleetdSummary.value = s[0] || {}
       uptimeDist.value = up
@@ -473,15 +480,15 @@ async function fetchTab(tab) {
     else if (tab === 'health') {
       loading.value.health = true
       const [dh, os, cpu, swap, batt, osCurr, upRisk, devList, osList] = await Promise.all([
-        query('firehose.health.device_summary'),
-        query('firehose.health.os_summary'),
-        query('firehose.health.cpu_distribution'),
-        query('firehose.health.swap_distribution'),
-        query('firehose.health.battery_overview'),
-        query('firehose.health.os_currency_distribution'),
-        query('firehose.health.uptime_distribution'),
-        query('firehose.health.device_list', { limit: 200 }),
-        query('firehose.health.os_list', { limit: 200 }),
+        query('firehose.health.device_summary', { ...fp() }),
+        query('firehose.health.os_summary', { ...fp() }),
+        query('firehose.health.cpu_distribution', { ...fp() }),
+        query('firehose.health.swap_distribution', { ...fp() }),
+        query('firehose.health.battery_overview', { ...fp() }),
+        query('firehose.health.os_currency_distribution', { ...fp() }),
+        query('firehose.health.uptime_distribution', { ...fp() }),
+        query('firehose.health.device_list', { limit: 200, ...fp() }),
+        query('firehose.health.os_list', { limit: 200, ...fp() }),
       ])
       healthSummary.value = dh[0] || {}
       osSummary.value = os[0] || {}
@@ -497,9 +504,9 @@ async function fetchTab(tab) {
     else if (tab === 'vpn') {
       loading.value.vpn = true
       const [s, conf, dev] = await Promise.all([
-        query('firehose.vpn.summary'),
-        query('firehose.vpn.confidence_distribution'),
-        query('firehose.vpn.list', { limit: 200 }),
+        query('firehose.vpn.summary', { ...fp() }),
+        query('firehose.vpn.confidence_distribution', { ...fp() }),
+        query('firehose.vpn.list', { limit: 200, ...fp() }),
       ])
       vpnSummary.value = s[0] || {}
       vpnConfDist.value = conf
@@ -509,9 +516,9 @@ async function fetchTab(tab) {
     else if (tab === 'crashes') {
       loading.value.crashes = true
       const [s, sev, top] = await Promise.all([
-        query('firehose.crashes.summary'),
-        query('firehose.crashes.severity_distribution'),
-        query('firehose.crashes.top_crashers', { limit: 25 }),
+        query('firehose.crashes.summary', { ...fp() }),
+        query('firehose.crashes.severity_distribution', { ...fp() }),
+        query('firehose.crashes.top_crashers', { limit: 25, ...fp() }),
       ])
       crashSummary.value = s[0] || {}
       crashSevDist.value = sev
@@ -521,9 +528,9 @@ async function fetchTab(tab) {
     else if (tab === 'adoption') {
       loading.value.adoption = true
       const [s, tiers, stale] = await Promise.all([
-        query('firehose.adoption.summary'),
-        query('firehose.adoption.tier_distribution'),
-        query('firehose.adoption.stale_apps', { limit: 50 }),
+        query('firehose.adoption.summary', { ...fp() }),
+        query('firehose.adoption.tier_distribution', { ...fp() }),
+        query('firehose.adoption.stale_apps', { limit: 50, ...fp() }),
       ])
       adoptionSummary.value = s[0] || {}
       adoptionTierDist.value = tiers
@@ -540,6 +547,15 @@ onMounted(() => {
   fetchTab('wifi')
   fetchedTabs.value.add('wifi')
 })
+
+// When the top filter changes, invalidate the per-tab cache and re-fetch
+// the currently-visible tab. Inactive tabs are marked stale; switchTab
+// re-fetches them on demand.
+watch(filterParams, () => {
+  const current = activeTab.value
+  fetchedTabs.value = new Set([current])
+  fetchTab(current)
+}, { deep: true })
 </script>
 
 <style scoped>

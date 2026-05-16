@@ -74,13 +74,26 @@ export function usePlatformBenchmark() {
     return 'Healthy'
   }
 
+  // Map os_name values (macOS / Windows / Linux) to fleetd_info.platform
+  // codes (darwin / windows / linux). FILTERED_HOSTS_CTE filters on the
+  // platform code, not the os_name — without this mapping the Same OS
+  // cohort tab queries macOS → silently matches nothing → empty cohort.
+  function osNameToPlatform(name) {
+    const v = String(name || '').toLowerCase()
+    if (v === 'macos' || v === 'mac os' || v === 'mac' || v === 'darwin') return 'darwin'
+    if (v === 'windows') return 'windows'
+    if (v === 'linux') return 'linux'
+    return v  // pass-through for already-correct codes
+  }
+
   async function fetchBenchmarks(_hostId, osName, hardwareModel, ramTier) {
     loading.value = true
     try {
       const filter = (extra) => ({ limit: 500, ...extra })
+      const platform = osNameToPlatform(osName)
       const [fleet, os, model, ram] = await Promise.all([
         query('firehose.scores.device_list', filter({})),
-        osName        ? query('firehose.scores.device_list', filter({ os: osName }))        : Promise.resolve([]),
+        platform      ? query('firehose.scores.device_list', filter({ os: platform }))      : Promise.resolve([]),
         hardwareModel ? query('firehose.scores.device_list', filter({ model: hardwareModel })) : Promise.resolve([]),
         ramTier       ? query('firehose.scores.device_list', filter({ ramTier }))            : Promise.resolve([]),
       ])
