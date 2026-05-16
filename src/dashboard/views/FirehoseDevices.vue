@@ -316,16 +316,22 @@ const deviceDrivers = ref(null)
 const driversFlash = ref(false)
 
 // Staleness — bucket the time since last check-in into Active / Stale / Inactive.
-// Sourced from firehose.devices.detail.hours_since_last_seen (max(hardware_inventory.timestamp)).
+// last_seen = max(timestamp) across every firehose table this host writes to,
+// not just hardware_inventory (which snapshots rarely and would mark an
+// actively-working host stale within a few days).
 const staleness = computed(() => {
-  const h = Number(detail.value?.hours_since_last_seen)
-  if (!isFinite(h)) return null
+  const m = Number(detail.value?.minutes_since_last_seen)
+  if (!isFinite(m)) return null
   const lastSeenStr = detail.value?.last_seen ? new Date(detail.value.last_seen).toLocaleString() : ''
-  const ago = h < 1 ? '<1h' : h < 24 ? `${Math.round(h)}h ago` : `${Math.round(h / 24)}d ago`
-  if (h < 24)       return { tier: 'active',   label: 'Active',           title: `Last seen ${lastSeenStr}` }
-  if (h < 24 * 7)   return { tier: 'stale',    label: `Stale · ${ago}`,   title: `Last seen ${lastSeenStr}` }
-  if (h < 24 * 30)  return { tier: 'inactive', label: `Inactive · ${ago}`, title: `Last seen ${lastSeenStr}` }
-  return                    { tier: 'offline',  label: `Offline · ${ago}`, title: `Last seen ${lastSeenStr}` }
+  const ago =
+    m < 1            ? 'just now' :
+    m < 60           ? `${Math.round(m)}m ago` :
+    m < 60 * 24      ? `${Math.round(m / 60)}h ago` :
+                       `${Math.round(m / 60 / 24)}d ago`
+  if (m < 60 * 24)        return { tier: 'active',   label: `Active · ${ago}`,   title: `Last seen ${lastSeenStr}` }
+  if (m < 60 * 24 * 7)    return { tier: 'stale',    label: `Stale · ${ago}`,    title: `Last seen ${lastSeenStr}` }
+  if (m < 60 * 24 * 30)   return { tier: 'inactive', label: `Inactive · ${ago}`, title: `Last seen ${lastSeenStr}` }
+  return                         { tier: 'offline',  label: `Offline · ${ago}`,  title: `Last seen ${lastSeenStr}` }
 })
 
 // Compare overlay — opens DeviceCompare seeded with the selected host on the left side.
@@ -584,11 +590,45 @@ h3 { font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black)
   border-radius: 999px;
   border: 1px solid;
 }
-.staleness-badge .stale-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.staleness-badge .stale-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  position: relative;
+  flex-shrink: 0;
+}
 .staleness-badge.stale-active   { color: var(--fleet-status-success); background: var(--fleet-status-success-light); border-color: var(--fleet-status-success-border); }
 .staleness-badge.stale-stale    { color: var(--fleet-status-warning-dark); background: var(--fleet-status-warning-light); border-color: var(--fleet-status-warning-border); }
 .staleness-badge.stale-inactive { color: var(--fleet-status-error); background: var(--fleet-status-error-light); border-color: var(--fleet-status-error-border); }
 .staleness-badge.stale-offline  { color: var(--fleet-black-50); background: var(--fleet-black-5); border-color: var(--fleet-black-10); }
+
+/* Heartbeat: only the Active tier pulses — a quiet halo expanding off the
+   dot every ~1.6s says "this host is alive right now". Stale / Inactive /
+   Offline stay static so the visual distinction reinforces the label. */
+.staleness-badge.stale-active .stale-dot::before,
+.staleness-badge.stale-active .stale-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.6;
+  animation: heartbeat 1.6s ease-out infinite;
+}
+.staleness-badge.stale-active .stale-dot::after {
+  animation-delay: 0.8s;
+}
+@keyframes heartbeat {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  80%  { transform: scale(2.6); opacity: 0; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .staleness-badge.stale-active .stale-dot::before,
+  .staleness-badge.stale-active .stale-dot::after {
+    animation: none;
+  }
+}
 .compare-btn {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);

@@ -133,8 +133,9 @@ export const firehoseDeviceQueries: QueryConfig[] = [
       SELECT
         h.hostname, h.computer_name, h.cpu_brand, h.cpu_logical_cores,
         h.hardware_model, h.hardware_serial, h.memory_gb,
-        h.last_seen,
-        dateDiff('hour', h.last_seen, now()) AS hours_since_last_seen,
+        toDateTime(lastseen.last_seen) AS last_seen,
+        dateDiff('minute', lastseen.last_seen, now()) AS minutes_since_last_seen,
+        dateDiff('hour', lastseen.last_seen, now()) AS hours_since_last_seen,
         w.rssi, w.noise, w.snr, w.signal_quality, w.transmit_rate,
         w.channel, w.channel_width, w.security_type,
         f.version, f.osquery_version, f.platform, f.uptime_seconds, f.last_error
@@ -145,10 +146,23 @@ export const firehoseDeviceQueries: QueryConfig[] = [
           argMax(cpu_logical_cores, timestamp) AS cpu_logical_cores,
           argMax(hardware_model, timestamp) AS hardware_model,
           argMax(hardware_serial, timestamp) AS hardware_serial,
-          argMax(memory_gb, timestamp) AS memory_gb,
-          toDateTime(max(timestamp)) AS last_seen
+          argMax(memory_gb, timestamp) AS memory_gb
         FROM hardware_inventory WHERE host_id = {filterHostId:String}
       ) h
+      CROSS JOIN (
+        -- last_seen = newest signal from any firehose table for this host.
+        -- hardware_inventory alone is too coarse — it snapshots rarely, so
+        -- an active host looks "stale" days early. Process / device / OS
+        -- telemetry churn faster and reflect live activity.
+        SELECT greatest(
+          coalesce((SELECT max(timestamp) FROM hardware_inventory WHERE host_id = {filterHostId:String}), toDateTime64('1970-01-01', 9)),
+          coalesce((SELECT max(timestamp) FROM device_health     WHERE host_id = {filterHostId:String}), toDateTime64('1970-01-01', 9)),
+          coalesce((SELECT max(timestamp) FROM process_health    WHERE host_id = {filterHostId:String}), toDateTime64('1970-01-01', 9)),
+          coalesce((SELECT max(timestamp) FROM os_health         WHERE host_id = {filterHostId:String}), toDateTime64('1970-01-01', 9)),
+          coalesce((SELECT max(timestamp) FROM running_apps      WHERE host_id = {filterHostId:String}), toDateTime64('1970-01-01', 9)),
+          coalesce((SELECT max(timestamp) FROM fleetd_info       WHERE host_id = {filterHostId:String}), toDateTime64('1970-01-01', 9))
+        ) AS last_seen
+      ) lastseen
       CROSS JOIN (
         SELECT argMax(rssi, timestamp) AS rssi,
           argMax(noise, timestamp) AS noise,
