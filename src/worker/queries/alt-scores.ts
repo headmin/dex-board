@@ -590,9 +590,11 @@ export const firehoseScoreQueries: QueryConfig[] = [
         FROM prior_device_scores
       )
       SELECT
-        curr.host_id,
-        curr.hostname,
-        hi.computer_name,
+        -- Alias explicitly so the JOINed hardware_inventory's own host_id
+        -- column doesn't shadow curr's value when JSON-serialized.
+        curr.host_id   AS host_id,
+        curr.hostname  AS hostname,
+        hi.computer_name AS computer_name,
         curr.composite_score AS curr_score,
         curr.composite_grade AS curr_grade,
         prev.composite_score AS prev_score,

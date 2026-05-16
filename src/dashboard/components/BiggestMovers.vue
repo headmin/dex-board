@@ -25,16 +25,6 @@
 
         <!-- Category breakdown drill-down -->
         <div v-if="expandedId === mover.host_identifier" class="mover-detail">
-          <!-- Inspect host CTA is rendered FIRST in the panel so it's visible
-               immediately on expand, regardless of whether the category
-               breakdown is still loading. -->
-          <div class="mover-detail-actions">
-            <router-link
-              :to="{ path: '/devices', query: { hostId: expandedId, focus: 'movers' } }"
-              class="inspect-cta"
-              @click.stop
-            >Inspect host detail →</router-link>
-          </div>
           <div v-if="detailLoading" class="detail-loading">Analyzing score changes...</div>
           <template v-else>
             <div class="detail-header">
