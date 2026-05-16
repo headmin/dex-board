@@ -241,49 +241,6 @@ export const scoreQueries: QueryConfig[] = [
     `,
   },
 
-  // ─── Platform cohort benchmarks ────────────────────────
-  {
-    name: 'scores.cohort',
-    domain: 'scores',
-    description: 'Cohort benchmark stats (fleet, by OS, model, or RAM)',
-    params: [
-      { name: 'cohortType', type: 'enum' as const, values: ['fleet', 'os', 'model', 'ram'], required: true },
-      { name: 'cohortValue', type: 'string' as const, required: false },
-    ],
-    sql: `
-      SELECT
-        count() AS device_count,
-        avg(composite_score) AS avg_composite,
-        quantile(0.10)(composite_score) AS p10_composite,
-        quantile(0.25)(composite_score) AS p25_composite,
-        quantile(0.75)(composite_score) AS p75_composite,
-        quantile(0.90)(composite_score) AS p90_composite,
-        avg(device_health_score) AS avg_health,
-        quantile(0.25)(device_health_score) AS p25_health,
-        quantile(0.75)(device_health_score) AS p75_health,
-        avg(performance_score) AS avg_performance,
-        quantile(0.25)(performance_score) AS p25_performance,
-        quantile(0.75)(performance_score) AS p75_performance,
-        avgIf(network_score, network_score > 0) AS avg_network,
-        quantileIf(0.25)(network_score, network_score > 0) AS p25_network,
-        quantileIf(0.75)(network_score, network_score > 0) AS p75_network,
-        avg(security_score) AS avg_security,
-        quantile(0.25)(security_score) AS p25_security,
-        quantile(0.75)(security_score) AS p75_security,
-        avg(software_score) AS avg_software,
-        quantile(0.25)(software_score) AS p25_software,
-        quantile(0.75)(software_score) AS p75_software
-      FROM (
-        SELECT *
-        FROM dex_device_scores_hourly
-        WHERE hour >= now() - INTERVAL 1 DAY
-        ORDER BY hour DESC
-        LIMIT 1 BY host_identifier
-      )
-      WHERE 1=1 {{FILTERS}}
-    `,
-  },
-
   // ─── GitOps timeline ───────────────────────────────────
   {
     name: 'scores.timeline_heatmap',

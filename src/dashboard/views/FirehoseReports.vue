@@ -36,7 +36,7 @@
       </div>
 
       <section class="section">
-        <DataTable title="All devices — Wi-Fi" :data="wifiDevices" :columns="wifiCols" :loading="loading.wifi" />
+        <DataTable title="All hosts — Wi-Fi" :data="wifiDevices" :columns="wifiCols" :loading="loading.wifi" />
       </section>
     </div>
 
@@ -111,11 +111,11 @@
       </div>
 
       <section class="section">
-        <DataTable title="Devices with errors" :data="fleetdErrors" :columns="fleetdCols" :loading="loading.fleetd" />
+        <DataTable title="Hosts with errors" :data="fleetdErrors" :columns="fleetdCols" :loading="loading.fleetd" />
       </section>
     </div>
 
-    <!-- ═══ Device Health Tab ══════════════════════ -->
+    <!-- ═══ Host Health Tab ══════════════════════ -->
     <div v-if="activeTab === 'health'">
       <section class="section">
         <h2>Host health</h2>
@@ -146,7 +146,7 @@
       </div>
 
       <section class="section">
-        <DataTable title="Device health inventory" :data="healthDevices" :columns="healthDeviceCols" :loading="loading.health" />
+        <DataTable title="Host health inventory" :data="healthDevices" :columns="healthDeviceCols" :loading="loading.health" />
       </section>
 
       <section class="section">
@@ -192,7 +192,7 @@
       </div>
 
       <section class="section">
-        <DataTable title="VPN status by device" :data="vpnDevices" :columns="vpnCols" :loading="loading.vpn" />
+        <DataTable title="VPN status by host" :data="vpnDevices" :columns="vpnCols" :loading="loading.vpn" />
       </section>
     </div>
 
@@ -263,7 +263,7 @@ const tabs = [
   { id: 'apps', label: 'Applications' },
   { id: 'hardware', label: 'Hardware' },
   { id: 'fleetd', label: 'Fleet agent' },
-  { id: 'health', label: 'Device health' },
+  { id: 'health', label: 'Host health' },
   { id: 'vpn', label: 'VPN' },
   { id: 'crashes', label: 'Crashes' },
   { id: 'adoption', label: 'Adoption' },
@@ -294,7 +294,7 @@ const appCols = [
   { key: 'avg_memory_mb', label: 'Avg MB' },
   { key: 'max_memory_mb', label: 'Peak MB' },
   { key: 'avg_threads', label: 'Threads' },
-  { key: 'device_count', label: 'Devices' },
+  { key: 'device_count', label: 'Hosts' },
   { key: 'sample_count', label: 'Samples' },
 ]
 
@@ -375,7 +375,7 @@ const crashCols = [
   { key: 'crashed_identifier', label: 'Identifier' },
   { key: 'app_name', label: 'App' },
   { key: 'total_crashes_7d', label: 'Crashes (7d)' },
-  { key: 'affected_devices', label: 'Devices' },
+  { key: 'affected_devices', label: 'Hosts' },
   { key: 'worst_severity', label: 'Severity' },
   { key: 'last_crash', label: 'Last crash' },
 ]

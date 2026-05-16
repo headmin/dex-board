@@ -27,7 +27,17 @@
     <!-- Cohort too small to benchmark — show honest empty state rather than degenerate bars -->
     <div v-else-if="activeCohortData && activeCohortData.device_count < 3" class="benchmark-empty">
       <strong>Not enough hosts in this cohort to benchmark.</strong>
-      <p>Need at least 3 hosts; this cohort has {{ activeCohortData.device_count }}. Try the <em>Fleet</em> tab or pick a less-specific cohort.</p>
+      <p>
+        Need at least 3 hosts; this cohort has {{ activeCohortData.device_count }}.
+        <template v-if="siblingCohortsWithData.length">
+          Try
+          <button
+            v-for="(s, i) in siblingCohortsWithData" :key="s.key"
+            class="cohort-suggest"
+            @click="$emit('update:activeCohort', s.key)"
+          >{{ s.label }} ({{ s.count }})</button><template v-if="i < siblingCohortsWithData.length - 1">, </template>.
+        </template>
+      </p>
     </div>
 
     <!-- Score Benchmark Rows -->
@@ -64,6 +74,21 @@
     <div v-else class="benchmark-empty">No benchmark data available.</div>
   </div>
 </template>
+<style scoped>
+.cohort-suggest {
+  display: inline;
+  padding: 2px 8px;
+  margin: 0 2px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--fleet-vibrant-blue);
+  background: var(--fleet-vibrant-blue-10);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.cohort-suggest:hover { border-color: var(--fleet-vibrant-blue); }
+</style>
 
 <script setup>
 import { computed } from 'vue'
@@ -103,6 +128,18 @@ const cohortTabs = computed(() => {
 const activeCohortData = computed(() => {
   if (!props.benchmarkData) return null
   return props.benchmarkData[props.activeCohort] || null
+})
+
+// When the active cohort is too small, suggest other cohorts that DO have
+// enough hosts to benchmark against. Skips the active one and any empty ones.
+const siblingCohortsWithData = computed(() => {
+  const bd = props.benchmarkData
+  if (!bd) return []
+  const labels = { fleet: 'Fleet', os: 'Same OS', model: 'Same Model', ram: 'Same RAM' }
+  return ['fleet', 'os', 'model', 'ram']
+    .filter(key => key !== props.activeCohort)
+    .map(key => ({ key, label: labels[key], count: bd[key]?.device_count || 0 }))
+    .filter(s => s.count >= 3)
 })
 
 const scoreDimensions = [

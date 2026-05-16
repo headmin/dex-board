@@ -16,14 +16,18 @@
       <table class="table" :class="{ 'table--clickable': clickable }">
         <thead>
           <tr>
-            <th v-for="col in columns" :key="col.key" :class="{ sortable: col.sortable }">
-              {{ col.label }}
+            <th
+              v-for="col in columns" :key="col.key"
+              :class="{ sortable: isSortable(col), 'sort-active': sortKey === col.key }"
+              @click="isSortable(col) && toggleSort(col.key)"
+            >
+              {{ col.label }}<span v-if="sortKey === col.key" class="sort-indicator">{{ sortAsc ? ' ▲' : ' ▼' }}</span>
             </th>
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="(row, index) in data"
+            v-for="(row, index) in sortedData"
             :key="index"
             @click="clickable && $emit('row-click', row)"
           >
@@ -41,6 +45,7 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue'
 import dayjs from 'dayjs'
 import SkeletonLoader from './SkeletonLoader.vue'
 
@@ -49,10 +54,52 @@ const props = defineProps({
   data: { type: Array, default: () => [] },
   columns: { type: Array, required: true },
   loading: { type: Boolean, default: false },
-  clickable: { type: Boolean, default: false }
+  clickable: { type: Boolean, default: false },
+  // Default sort: column key + direction. Either is optional.
+  defaultSortKey: { type: String, default: '' },
+  defaultSortAsc: { type: Boolean, default: true },
 })
 
 defineEmits(['row-click'])
+
+// Every column is sortable unless explicitly opted out with sortable: false.
+function isSortable(col) {
+  return col.sortable !== false
+}
+
+const sortKey = ref(props.defaultSortKey || '')
+const sortAsc = ref(props.defaultSortAsc)
+
+function toggleSort(key) {
+  if (sortKey.value === key) {
+    sortAsc.value = !sortAsc.value
+  } else {
+    sortKey.value = key
+    // Numeric and datetime columns start descending — outliers / freshest
+    // entries first, which is usually what you want for diagnostic tables.
+    const col = props.columns.find(c => c.key === key)
+    sortAsc.value = !(col && (col.type === 'number' || col.type === 'datetime'))
+  }
+}
+
+const sortedData = computed(() => {
+  if (!sortKey.value || !props.data.length) return props.data
+  const col = props.columns.find(c => c.key === sortKey.value)
+  const isNum = col && (col.type === 'number' || col.type === 'datetime')
+  const key = sortKey.value
+  const dir = sortAsc.value ? 1 : -1
+  return props.data.slice().sort((a, b) => {
+    const av = a[key]; const bv = b[key]
+    if (av == null && bv == null) return 0
+    if (av == null) return 1   // nulls sort to bottom regardless of direction
+    if (bv == null) return -1
+    if (isNum) {
+      const an = Number(av), bn = Number(bv)
+      if (isFinite(an) && isFinite(bn)) return (an - bn) * dir
+    }
+    return String(av).localeCompare(String(bv), undefined, { numeric: true }) * dir
+  })
+})
 
 const formatCell = (value, col) => {
   if (value === null || value === undefined) return '-'
@@ -139,6 +186,16 @@ const getStatusClass = (value) => {
   font-weight: 700;
   letter-spacing: var(--letter-spacing-wide);
   border-bottom: 1px solid var(--fleet-black-10);
+  user-select: none;
+}
+.table thead th.sortable { cursor: pointer; }
+.table thead th.sortable:hover { background-color: var(--fleet-black-10); color: var(--fleet-black); }
+.table thead th.sort-active { color: var(--fleet-black); }
+.table thead th .sort-indicator {
+  font-size: 9px;
+  color: var(--fleet-vibrant-blue);
+  font-weight: 700;
+  margin-left: 2px;
 }
 
 .table tbody tr {
