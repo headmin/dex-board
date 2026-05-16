@@ -19,6 +19,12 @@
 
     <!-- Host Detail Drawer -->
     <section v-if="selected" class="device-drawer">
+      <a
+        v-if="focusedHost"
+        class="back-link"
+        href="#"
+        @click.prevent="closeDevice"
+      >← All hosts</a>
       <div class="drawer-header">
         <div>
           <div class="drawer-title">
@@ -226,8 +232,9 @@
       </div>
     </section>
 
-    <!-- Device List Table -->
-    <section class="section">
+    <!-- All-hosts list. Hidden when arriving via deep-link with a hostId
+         set — that flow is "inspect one host," not "browse the fleet." -->
+    <section class="section" v-if="!focusedHost">
       <h2>All hosts ({{ filteredDevices.length }})</h2>
       <div class="table-wrap">
         <table class="data-table">
@@ -290,8 +297,15 @@ import DeviceCompare from '../components/DeviceCompare.vue'
 import { buildSignalDrivers } from '../composables/scoreFormulas'
 import { displayHost } from '../composables/displayName'
 import { useNow } from '../composables/useNow'
+import { useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
+
+// True when the page is being viewed in "inspect one host" mode (arrived
+// via deep-link with ?hostId=…). In that mode we suppress the all-hosts
+// list so the user sees just the host's drawer, top-to-bottom.
+const focusedHost = computed(() => !!(route.query.hostId && selected.value))
 
 const { searchText: globalSearch, selectedModel, selectedRAMTier } = useFleetFilter()
 
@@ -559,6 +573,10 @@ function closeDevice() {
   detail.value = {}
   deviceWifiTs.value = []
   deviceApps.value = []
+  // Clear the deep-link query so the all-hosts list re-shows naturally.
+  if (route.query.hostId || route.query.focus) {
+    router.replace({ path: '/devices' })
+  }
 }
 
 // ── Fetch ───────────────────────────────────────────
@@ -707,6 +725,17 @@ h3 { font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black)
 .drawer-sub { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); }
 .close-btn { background: none; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); font-size: 20px; cursor: pointer; color: var(--fleet-black-50); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
 .close-btn:hover { background: var(--fleet-off-white); color: var(--fleet-black); }
+
+.back-link {
+  display: inline-block;
+  margin-bottom: var(--pad-small);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--fleet-vibrant-blue);
+  text-decoration: none;
+}
+.back-link:hover { text-decoration: underline; }
 .error-box { background: var(--fleet-status-error-light); border: 1px solid #fecaca; border-radius: var(--radius); padding: 12px 16px; margin-top: 16px; }
 .error-box pre { font-size: var(--font-size-xs); white-space: pre-wrap; word-break: break-all; margin: 8px 0 0; color: var(--fleet-status-error); }
 
