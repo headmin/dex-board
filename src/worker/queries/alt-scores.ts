@@ -564,4 +564,126 @@ export const firehoseScoreQueries: QueryConfig[] = [
       {{LIMIT}}
     `,
   },
+  {
+    name: 'firehose.scores.device_signals_compare',
+    domain: 'scores',
+    client: 'alt',
+    description: 'Per-host raw signal values for current vs prior 7d — single row with curr_*/prev_* fields',
+    params: [
+      { name: 'hostId', type: 'string' as const, required: true },
+    ],
+    sql: `
+      WITH
+        cur_health AS (
+          SELECT
+            argMax(swap_pressure, timestamp)         AS swap_pressure,
+            argMax(compression_pressure, timestamp)  AS compression_pressure,
+            argMax(battery_health_score, timestamp)  AS battery_health_score,
+            argMax(cpu_class, timestamp)             AS cpu_class,
+            argMax(ram_tier, timestamp)              AS ram_tier
+          FROM device_health
+          WHERE host_id = {filterHostId:String}
+        ),
+        prv_health AS (
+          SELECT
+            argMax(swap_pressure, timestamp)         AS swap_pressure,
+            argMax(compression_pressure, timestamp)  AS compression_pressure,
+            argMax(battery_health_score, timestamp)  AS battery_health_score
+          FROM device_health
+          WHERE host_id = {filterHostId:String}
+            AND timestamp < now() - INTERVAL 7 DAY
+        ),
+        cur_os AS (
+          SELECT
+            argMax(os_currency, timestamp)    AS os_currency,
+            argMax(dex_os_health, timestamp)  AS dex_os_health,
+            argMax(uptime_risk, timestamp)    AS uptime_risk,
+            argMax(uptime_days, timestamp)    AS uptime_days
+          FROM os_health
+          WHERE host_id = {filterHostId:String}
+        ),
+        prv_os AS (
+          SELECT
+            argMax(os_currency, timestamp)    AS os_currency,
+            argMax(dex_os_health, timestamp)  AS dex_os_health,
+            argMax(uptime_risk, timestamp)    AS uptime_risk
+          FROM os_health
+          WHERE host_id = {filterHostId:String}
+            AND timestamp < now() - INTERVAL 7 DAY
+        ),
+        cur_proc AS (
+          SELECT max(rss_mb) AS max_rss_mb FROM process_health
+          WHERE host_id = {filterHostId:String}
+        ),
+        prv_proc AS (
+          SELECT max(rss_mb) AS max_rss_mb FROM process_health
+          WHERE host_id = {filterHostId:String} AND timestamp < now() - INTERVAL 7 DAY
+        ),
+        cur_crash AS (
+          SELECT sum(crash_count_7d) AS total_crashes FROM crash_summary
+          WHERE host_id = {filterHostId:String}
+            AND (host_id, timestamp) IN
+                (SELECT host_id, max(timestamp) FROM crash_summary
+                 WHERE host_id = {filterHostId:String} GROUP BY host_id)
+        ),
+        prv_crash AS (
+          SELECT sum(crash_count_7d) AS total_crashes FROM crash_summary
+          WHERE host_id = {filterHostId:String} AND timestamp < now() - INTERVAL 7 DAY
+            AND (host_id, timestamp) IN
+                (SELECT host_id, max(timestamp) FROM crash_summary
+                 WHERE host_id = {filterHostId:String} AND timestamp < now() - INTERVAL 7 DAY
+                 GROUP BY host_id)
+        ),
+        cur_adopt AS (
+          SELECT count() AS app_count,
+                 countIf(usage_tier IN ('active_today','active_week')) * 100.0 / count() AS active_pct
+          FROM adoption_gap
+          WHERE host_id = {filterHostId:String}
+            AND (host_id, timestamp) IN
+                (SELECT host_id, max(timestamp) FROM adoption_gap
+                 WHERE host_id = {filterHostId:String} GROUP BY host_id)
+        ),
+        prv_adopt AS (
+          SELECT count() AS app_count,
+                 countIf(usage_tier IN ('active_today','active_week')) * 100.0 / count() AS active_pct
+          FROM adoption_gap
+          WHERE host_id = {filterHostId:String} AND timestamp < now() - INTERVAL 7 DAY
+            AND (host_id, timestamp) IN
+                (SELECT host_id, max(timestamp) FROM adoption_gap
+                 WHERE host_id = {filterHostId:String} AND timestamp < now() - INTERVAL 7 DAY
+                 GROUP BY host_id)
+        )
+      SELECT
+        -- Performance signals
+        ch.swap_pressure         AS curr_swap_pressure,
+        ph.swap_pressure         AS prev_swap_pressure,
+        ch.compression_pressure  AS curr_compression,
+        ph.compression_pressure  AS prev_compression,
+        cp.max_rss_mb            AS curr_max_rss_mb,
+        pp.max_rss_mb            AS prev_max_rss_mb,
+        co.uptime_risk           AS curr_uptime_risk,
+        po.uptime_risk           AS prev_uptime_risk,
+        co.uptime_days           AS curr_uptime_days,
+        -- Device-health signals (cpu/ram are static — no prev needed)
+        ch.battery_health_score  AS curr_battery,
+        ph.battery_health_score  AS prev_battery,
+        ch.cpu_class             AS curr_cpu_class,
+        ch.ram_tier              AS curr_ram_tier,
+        -- Security signals
+        co.os_currency           AS curr_os_currency,
+        po.os_currency           AS prev_os_currency,
+        co.dex_os_health         AS curr_dex_os_health,
+        po.dex_os_health         AS prev_dex_os_health,
+        -- Software signals
+        cc.total_crashes         AS curr_crashes,
+        pc.total_crashes         AS prev_crashes,
+        ca.app_count             AS curr_app_count,
+        pa.app_count             AS prev_app_count,
+        ca.active_pct            AS curr_active_pct,
+        pa.active_pct            AS prev_active_pct
+      FROM cur_health ch, prv_health ph, cur_os co, prv_os po,
+           cur_proc cp,   prv_proc pp,   cur_crash cc, prv_crash pc,
+           cur_adopt ca,  prv_adopt pa
+    `,
+  },
 ]

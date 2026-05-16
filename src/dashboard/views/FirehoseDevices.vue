@@ -94,6 +94,26 @@
         />
       </section>
 
+      <!-- Score change drivers (last 7d) -->
+      <section
+        class="section drivers-section"
+        id="score-drivers"
+        :class="{ flash: driversFlash }"
+        v-if="deviceDrivers"
+      >
+        <h3>Score change drivers (last 7 days)</h3>
+        <p class="drivers-hint">
+          Per-category sub-score moves with the raw signal that drove each one.
+          The category with the largest weighted composite swing is the primary driver.
+        </p>
+        <ScoreDriverPanel
+          v-for="cat in deviceDrivers.categories"
+          :key="cat.key"
+          :category="cat"
+          :is-primary="cat.key === deviceDrivers.primaryDriver"
+        />
+      </section>
+
       <!-- Device running apps -->
       <section class="section" v-if="deviceApps.length">
         <h3>Running apps (latest snapshot) — {{ deviceApps.length }} processes</h3>
@@ -238,12 +258,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { query } from '../services/api'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
+import ScoreDriverPanel from '../components/ScoreDriverPanel.vue'
+import { buildSignalDrivers } from '../composables/scoreFormulas'
 
 const route = useRoute()
 
@@ -267,6 +289,8 @@ const deviceCrashes = ref([])
 const deviceProcesses = ref([])
 const deviceAdoption = ref([])
 const devicePatches = ref([])
+const deviceDrivers = ref(null)
+const driversFlash = ref(false)
 
 function formatPatchTime(ts) {
   if (!ts) return ''
@@ -382,6 +406,7 @@ async function selectDevice(device) {
   deviceProcesses.value = []
   deviceAdoption.value = []
   devicePatches.value = []
+  deviceDrivers.value = null
   window.scrollTo({ top: 0, behavior: 'smooth' })
 
   loading.value.detail = true
@@ -389,7 +414,7 @@ async function selectDevice(device) {
   loading.value.deviceApps = true
 
   try {
-    const [det, wTs, apps, health, os, vpn, crashes, procs, adoption, patches] = await Promise.all([
+    const [det, wTs, apps, health, os, vpn, crashes, procs, adoption, patches, signalsCompare] = await Promise.all([
       query('firehose.devices.detail', { hostId: device.host_id }).catch(() => []),
       query('firehose.wifi.device_timeseries', { hostId: device.host_id }).catch(() => []),
       query('firehose.apps.per_device', { hostId: device.host_id }).catch(() => []),
@@ -400,6 +425,7 @@ async function selectDevice(device) {
       query('firehose.processes.per_device', { hostId: device.host_id }).catch(() => []),
       query('firehose.adoption.per_device', { hostId: device.host_id }).catch(() => []),
       query('scores.device_top_patches', { hostIdentifier: device.host_id, limit: 10 }).catch(() => []),
+      query('firehose.scores.device_signals_compare', { hostId: device.host_id }).catch(() => []),
     ])
     if (det[0]) detail.value = { ...device, ...det[0] }
     deviceWifiTs.value = wTs
@@ -411,6 +437,17 @@ async function selectDevice(device) {
     deviceProcesses.value = procs
     deviceAdoption.value = adoption
     devicePatches.value = patches || []
+    deviceDrivers.value = buildSignalDrivers((signalsCompare || [])[0])
+
+    if (route.query.focus === 'movers') {
+      await nextTick()
+      const el = document.getElementById('score-drivers')
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        driversFlash.value = true
+        setTimeout(() => { driversFlash.value = false }, 2400)
+      }
+    }
   } catch (e) {
     error.value = `Device detail: ${e.message}`
   } finally {
@@ -504,6 +541,10 @@ h3 { font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black)
 .hostname { font-family: var(--font-mono); font-weight: 500; }
 .muted { color: var(--fleet-black-50); font-size: var(--font-size-xs); }
 .mono { font-family: var(--font-mono); }
+
+.drivers-section { transition: box-shadow 600ms ease-out; border-radius: var(--radius); }
+.drivers-section.flash { box-shadow: 0 0 0 3px rgba(106, 103, 254, 0.35); }
+.drivers-hint { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); margin: 0 0 12px; }
 .rssi-excellent { color: #16a34a; font-weight: 600; }
 .rssi-good { color: #65a30d; }
 .rssi-fair { color: #ca8a04; }

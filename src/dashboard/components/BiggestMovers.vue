@@ -45,6 +45,11 @@
               </span>
             </div>
             <div v-if="detailInsight" class="detail-insight">{{ detailInsight }}</div>
+            <router-link
+              v-if="expandedId"
+              :to="{ path: '/devices', query: { hostId: expandedId, focus: 'movers' } }"
+              class="inspect-cta"
+            >Inspect device →</router-link>
           </template>
         </div>
       </div>
@@ -297,5 +302,23 @@ h3 {
   padding: var(--pad-xlarge);
   color: var(--fleet-black-50);
   font-size: var(--font-size-sm);
+}
+
+.inspect-cta {
+  display: inline-block;
+  margin-top: var(--pad-small);
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: #6a67fe;
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius);
+  text-decoration: none;
+}
+.inspect-cta:hover {
+  border-color: #6a67fe;
+  background: rgba(106, 103, 254, 0.06);
 }
 </style>
