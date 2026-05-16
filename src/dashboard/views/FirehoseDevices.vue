@@ -289,6 +289,7 @@ import ScoreDriverPanel from '../components/ScoreDriverPanel.vue'
 import DeviceCompare from '../components/DeviceCompare.vue'
 import { buildSignalDrivers } from '../composables/scoreFormulas'
 import { displayHost } from '../composables/displayName'
+import { useNow } from '../composables/useNow'
 
 const route = useRoute()
 
@@ -319,10 +320,17 @@ const driversFlash = ref(false)
 // last_seen = max(timestamp) across every firehose table this host writes to,
 // not just hardware_inventory (which snapshots rarely and would mark an
 // actively-working host stale within a few days).
+//
+// Compute "minutes since" client-side from `last_seen` + a ticking `now` so
+// the label ages on its own (Active · 12m → 13m → 14m) without refetching.
+const { now } = useNow()
 const staleness = computed(() => {
-  const m = Number(detail.value?.minutes_since_last_seen)
-  if (!isFinite(m)) return null
-  const lastSeenStr = detail.value?.last_seen ? new Date(detail.value.last_seen).toLocaleString() : ''
+  const lastSeenIso = detail.value?.last_seen
+  if (!lastSeenIso) return null
+  const lastSeenMs = new Date(lastSeenIso).getTime()
+  if (!isFinite(lastSeenMs)) return null
+  const m = Math.max(0, (now.value - lastSeenMs) / 60000)
+  const lastSeenStr = new Date(lastSeenMs).toLocaleString()
   const ago =
     m < 1            ? 'just now' :
     m < 60           ? `${Math.round(m)}m ago` :
