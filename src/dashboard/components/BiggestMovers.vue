@@ -33,7 +33,7 @@
               :to="{ path: '/devices', query: { hostId: expandedId, focus: 'movers' } }"
               class="inspect-cta"
               @click.stop
-            >Inspect host on /devices →</router-link>
+            >Inspect host detail →</router-link>
           </div>
           <div v-if="detailLoading" class="detail-loading">Analyzing score changes...</div>
           <template v-else>
