@@ -17,18 +17,20 @@
           <h2>Structure</h2>
           <div class="tree-root">
             <div v-if="structure.global_config" class="tree-leaf" :class="{ highlight: isFileChanged('it-and-security/default.yml') }">
-              <span class="tree-icon">&#9881;</span>
+              <svg class="tree-file-icon" viewBox="0 0 16 16" fill="none"><path d="M3.5 1.5h6l3 3v10h-9v-13z" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 1.5v3h3" stroke="currentColor" stroke-width="1.5"/></svg>
               <span class="tree-label">default.yml</span>
             </div>
 
             <div v-if="structure.fleets?.length" class="tree-folder">
               <div class="tree-node" @click="toggleFolder('fleets')">
-                <span class="tree-chevron" :class="{ open: openFolders.fleets }">&#9654;</span>
+                <svg class="tree-chevron" :class="{ open: openFolders.fleets }" viewBox="0 0 16 16" fill="currentColor"><path d="M6 4l4 4-4 4"/></svg>
+                <svg class="tree-folder-icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h5l1 2h6v8H2V4z" stroke="currentColor" stroke-width="1.5"/></svg>
                 <span class="tree-label">fleets</span>
                 <span class="tree-count">{{ structure.fleets.length }}</span>
               </div>
               <div class="tree-children" v-show="openFolders.fleets">
                 <div v-for="f in structure.fleets" :key="f.name" class="tree-leaf" :class="{ highlight: isFileChanged(f.file) }">
+                  <svg class="tree-file-icon" viewBox="0 0 16 16" fill="none"><path d="M3.5 1.5h6l3 3v10h-9v-13z" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 1.5v3h3" stroke="currentColor" stroke-width="1.5"/></svg>
                   <span class="tree-label">{{ f.name }}.yml</span>
                 </div>
               </div>
@@ -36,19 +38,22 @@
 
             <div v-for="(resources, platform) in structure.platforms || {}" :key="platform" class="tree-folder">
               <div class="tree-node" @click="toggleFolder(platform)">
-                <span class="tree-chevron" :class="{ open: openFolders[platform] }">&#9654;</span>
-                <span class="tree-label">{{ platformIcon(platform) }} {{ platform }}</span>
+                <svg class="tree-chevron" :class="{ open: openFolders[platform] }" viewBox="0 0 16 16" fill="currentColor"><path d="M6 4l4 4-4 4"/></svg>
+                <span class="platform-icon">{{ platformIcon(platform) }}</span>
+                <span class="tree-label">{{ platform }}</span>
                 <span class="tree-count">{{ platformItemCount(resources) }}</span>
               </div>
               <div class="tree-children" v-show="openFolders[platform]">
                 <div v-for="(items, rtype) in resources" :key="rtype" class="tree-folder sub">
                   <div class="tree-node" @click.stop="toggleFolder(platform + '_' + rtype)">
-                    <span class="tree-chevron" :class="{ open: openFolders[platform + '_' + rtype] }">&#9654;</span>
+                    <svg class="tree-chevron" :class="{ open: openFolders[platform + '_' + rtype] }" viewBox="0 0 16 16" fill="currentColor"><path d="M6 4l4 4-4 4"/></svg>
+                    <svg class="tree-folder-icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h5l1 2h6v8H2V4z" stroke="currentColor" stroke-width="1.5"/></svg>
                     <span class="tree-label">{{ rtype.replace(/_/g, '-') }}</span>
                     <span class="tree-count">{{ items.length }}</span>
                   </div>
                   <div class="tree-children" v-show="openFolders[platform + '_' + rtype]">
                     <div v-for="item in items" :key="item.name" class="tree-leaf" :class="{ highlight: isFileChanged(item.file) }">
+                      <svg class="tree-file-icon" viewBox="0 0 16 16" fill="none"><path d="M3.5 1.5h6l3 3v10h-9v-13z" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 1.5v3h3" stroke="currentColor" stroke-width="1.5"/></svg>
                       <span class="tree-label">{{ item.name }}</span>
                     </div>
                   </div>
@@ -100,7 +105,10 @@
 
           <h2>Changed files</h2>
           <ul class="file-list" v-if="currentCommit">
-            <li v-for="f in currentCommit.files" :key="f">{{ f.replace('it-and-security/', '') }}</li>
+            <li v-for="f in currentCommit.files" :key="f">
+              <svg class="file-icon" viewBox="0 0 16 16" fill="none"><path d="M3.5 1.5h6l3 3v10h-9v-13z" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 1.5v3h3" stroke="currentColor" stroke-width="1.5"/></svg>
+              <span class="file-name">{{ f.replace('it-and-security/', '') }}</span>
+            </li>
           </ul>
         </div>
       </div>
@@ -305,73 +313,79 @@ onUnmounted(() => { if (playTimer) clearInterval(playTimer) })
 .loading-state { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--fleet-black-50); font-family: var(--font-mono); }
 .placeholder { color: var(--fleet-black-50); font-size: var(--font-size-sm); padding: 12px; }
 
-.cb-header { padding: 12px 20px; display: flex; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--fleet-black-10); background: var(--fleet-white); flex-shrink: 0; }
-.cb-header h1 { font-family: var(--font-mono); font-size: var(--font-size-md); font-weight: 600; }
-.cb-meta { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); }
+.cb-header { padding: 16px 20px; display: flex; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--fleet-black-10); background: var(--fleet-white); flex-shrink: 0; }
+.cb-header h1 { font-family: var(--font-body); font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-black); }
+.cb-meta { font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black-50); }
 
 .cb-main { display: grid; grid-template-columns: 280px 1fr 320px; flex: 1; overflow: hidden; }
 
 /* Tree */
 .tree-panel { border-right: 1px solid var(--fleet-black-10); overflow-y: auto; padding: 12px 0; background: var(--fleet-white); }
-.tree-panel h2 { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--fleet-black-50); padding: 0 16px 8px; font-weight: 700; }
-.tree-node { padding: 4px 16px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: var(--font-size-xs); transition: background 100ms; }
-.tree-node:hover { background: var(--fleet-off-white); }
-.tree-leaf { padding: 3px 16px 3px 32px; font-family: var(--font-mono); font-size: 11px; color: var(--fleet-black-75); transition: background 200ms; }
-.tree-leaf.highlight { background: #dcfce7; color: #166534; font-weight: 600; }
-.tree-folder.sub .tree-node { padding-left: 32px; }
-.tree-folder.sub .tree-leaf { padding-left: 48px; }
-.tree-chevron { font-size: 8px; color: var(--fleet-black-50); width: 12px; transition: transform 150ms; display: inline-block; }
+.tree-panel h2 { font-family: var(--font-body); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--fleet-black-50); padding: 0 16px 8px; font-weight: 600; }
+.tree-node { padding: 6px 16px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: var(--font-size-sm); transition: background var(--transition-fast); }
+.tree-node:hover { background: var(--fleet-black-3); }
+.tree-leaf { padding: 5px 16px 5px 28px; font-family: var(--font-mono); font-size: 12px; color: var(--fleet-black-75); transition: background var(--transition-fast); display: flex; align-items: center; gap: 6px; }
+.tree-leaf.highlight { background: var(--fleet-status-success-light); color: var(--fleet-status-success); font-weight: 600; }
+.tree-folder.sub .tree-node { padding-left: 28px; }
+.tree-folder.sub .tree-leaf { padding-left: 44px; }
+.tree-chevron { width: 14px; height: 14px; color: var(--fleet-black-33); transition: transform var(--transition-fast); flex-shrink: 0; }
 .tree-chevron.open { transform: rotate(90deg); }
-.tree-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono); }
-.tree-count { margin-left: auto; font-size: 10px; color: var(--fleet-black-50); background: var(--fleet-off-white); padding: 0 6px; border-radius: 8px; }
+.tree-folder-icon { width: 14px; height: 14px; color: var(--fleet-black-50); flex-shrink: 0; }
+.tree-file-icon { width: 14px; height: 14px; color: var(--fleet-black-33); flex-shrink: 0; }
+.tree-leaf.highlight .tree-file-icon { color: var(--fleet-status-success); }
+.platform-icon { font-size: 14px; line-height: 1; }
+.tree-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-body); font-size: 13px; }
+.tree-count { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--fleet-black-50); background: var(--fleet-black-5); padding: 1px 8px; border-radius: var(--radius-full); }
 
 /* Diagram */
-.diagram-panel { overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-.diagram-panel h2 { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--fleet-black-50); font-weight: 700; }
+.diagram-panel { overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--fleet-black-3); }
+.diagram-panel h2 { font-family: var(--font-body); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--fleet-black-50); font-weight: 600; }
 .diagram-zoom-controls { display: flex; gap: 4px; }
-.diagram-zoom-controls button { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius); width: 28px; height: 28px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--fleet-black-50); display: flex; align-items: center; justify-content: center; }
-.diagram-zoom-controls button:hover { border-color: #3b82f6; color: var(--fleet-black); }
-.diagram-container { flex: 1; overflow: hidden; background: var(--fleet-white); border-radius: var(--radius); border: 1px solid var(--fleet-black-10); padding: 16px; cursor: grab; user-select: none; }
+.diagram-zoom-controls button { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius); width: 32px; height: 32px; cursor: pointer; font-size: 16px; font-weight: 500; color: var(--fleet-black-50); display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+.diagram-zoom-controls button:hover { border-color: var(--fleet-core-vibrant-blue); color: var(--fleet-black); background: var(--fleet-white); }
+.diagram-container { flex: 1; overflow: hidden; background: var(--fleet-white); border-radius: var(--radius-medium); border: 1px solid var(--fleet-black-10); padding: 16px; cursor: grab; user-select: none; }
 .diagram-container.panning { cursor: grabbing; }
 .diagram-inner { transition: transform 100ms ease; display: inline-block; pointer-events: none; }
 .diagram-inner :deep(svg) { max-width: none; height: auto; }
 
 /* Detail */
-.detail-panel { border-left: 1px solid var(--fleet-black-10); overflow-y: auto; padding: 16px; background: var(--fleet-white); display: flex; flex-direction: column; gap: 12px; }
-.detail-panel h2 { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--fleet-black-50); font-weight: 700; margin-top: 8px; }
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.stat-card { background: var(--fleet-off-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius); padding: 10px; text-align: center; }
-.stat-value { font-family: var(--font-mono); font-size: var(--font-size-lg); font-weight: 700; color: #3b82f6; }
-.stat-label { font-size: 10px; color: var(--fleet-black-50); }
-.commit-card { background: var(--fleet-off-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius); padding: 12px; }
-.commit-msg { font-size: var(--font-size-sm); font-weight: 600; line-height: 1.4; margin-bottom: 8px; }
-.commit-meta-row { font-size: var(--font-size-xs); color: var(--fleet-black-50); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.commit-meta-row a { color: #3b82f6; text-decoration: none; }
-.commit-cats { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
-.cat-pill { font-family: var(--font-mono); font-size: 10px; padding: 2px 6px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: 6px; color: var(--fleet-black-50); }
-.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; }
-.badge-policy { background: #dbeafe; color: #1e40af; }
-.badge-security { background: #fecaca; color: #991b1b; }
-.badge-software { background: #fef3c7; color: #92400e; }
-.badge-script { background: #dcfce7; color: #166534; }
-.badge-config { background: var(--fleet-off-white); color: var(--fleet-black-50); }
-.badge-profile { background: #fed7aa; color: #9a3412; }
-.badge-report { background: #e0e7ff; color: #3730a3; }
+.detail-panel { border-left: 1px solid var(--fleet-black-10); overflow-y: auto; padding: 16px; background: var(--fleet-white); display: flex; flex-direction: column; gap: 16px; }
+.detail-panel h2 { font-family: var(--font-body); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--fleet-black-50); font-weight: 600; margin: 0; }
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat-card { background: var(--fleet-black-3); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-medium); padding: 12px 10px; text-align: center; }
+.stat-value { font-family: var(--font-mono); font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-core-vibrant-blue); }
+.stat-label { font-family: var(--font-body); font-size: 10px; color: var(--fleet-black-50); margin-top: 2px; }
+.commit-card { background: var(--fleet-black-3); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-medium); padding: 14px; }
+.commit-msg { font-family: var(--font-body); font-size: var(--font-size-sm); font-weight: 600; line-height: 1.5; margin-bottom: 10px; color: var(--fleet-black); }
+.commit-meta-row { font-family: var(--font-body); font-size: var(--font-size-xs); color: var(--fleet-black-50); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.commit-meta-row a { color: var(--fleet-core-vibrant-blue); text-decoration: none; font-family: var(--font-mono); }
+.commit-meta-row a:hover { text-decoration: underline; }
+.commit-cats { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.cat-pill { font-family: var(--font-body); font-size: 11px; padding: 3px 10px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-full); color: var(--fleet-black-75); }
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: var(--radius-full); font-family: var(--font-body); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+.badge-policy { background: var(--fleet-accent-blue-light); color: var(--fleet-accent-blue); }
+.badge-security { background: var(--fleet-status-error-light); color: var(--fleet-status-error); }
+.badge-software { background: var(--fleet-status-warning-light); color: var(--fleet-status-warning-dark); }
+.badge-script { background: var(--fleet-status-success-light); color: var(--fleet-status-success); }
+.badge-config { background: var(--fleet-black-5); color: var(--fleet-black-75); }
+.badge-profile { background: var(--fleet-ui-orange-light); color: var(--fleet-ui-orange-dark); }
+.badge-report { background: var(--fleet-accent-indigo-light); color: var(--fleet-accent-indigo); }
 .badge-other { background: var(--fleet-black-5); color: var(--fleet-black-50); }
-.file-list { list-style: none; font-family: var(--font-mono); font-size: 11px; }
-.file-list li { padding: 3px 8px; border-radius: 4px; word-break: break-all; color: var(--fleet-black-75); }
-.file-list li:hover { background: var(--fleet-off-white); }
-.file-list li::before { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; margin-right: 6px; background: #22c55e; vertical-align: middle; }
+.file-list { list-style: none; margin: 0; padding: 0; }
+.file-list li { padding: 6px 10px; border-radius: var(--radius); display: flex; align-items: flex-start; gap: 8px; transition: background var(--transition-fast); }
+.file-list li:hover { background: var(--fleet-black-3); }
+.file-list .file-icon { width: 14px; height: 14px; color: var(--fleet-status-success); flex-shrink: 0; margin-top: 1px; }
+.file-list .file-name { font-family: var(--font-mono); font-size: 12px; color: var(--fleet-black-75); word-break: break-all; line-height: 1.4; }
 
 /* Timeline bar */
-.timeline-bar { border-top: 1px solid var(--fleet-black-10); padding: 12px 20px; display: flex; align-items: center; gap: 12px; background: var(--fleet-white); flex-shrink: 0; }
-.tl-label { font-family: var(--font-mono); font-size: 10px; color: var(--fleet-black-50); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.timeline-bar { border-top: 1px solid var(--fleet-black-10); padding: 14px 20px; display: flex; align-items: center; gap: 14px; background: var(--fleet-white); flex-shrink: 0; }
+.tl-label { font-family: var(--font-body); font-size: 11px; color: var(--fleet-black-50); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 .tl-controls { display: flex; gap: 4px; }
-.tl-controls button { background: var(--fleet-off-white); border: 1px solid var(--fleet-black-10); color: var(--fleet-black); padding: 4px 10px; border-radius: var(--radius); cursor: pointer; font-size: 13px; }
-.tl-controls button:hover { border-color: #3b82f6; }
-.tl-controls button.active { background: #3b82f6; color: white; border-color: #3b82f6; }
-.tl-slider { flex: 1; accent-color: #3b82f6; cursor: pointer; }
-.tl-date { font-family: var(--font-mono); font-size: var(--font-size-xs); color: #3b82f6; min-width: 160px; text-align: right; }
+.tl-controls button { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); color: var(--fleet-black-75); padding: 6px 12px; border-radius: var(--radius); cursor: pointer; font-size: 14px; transition: all var(--transition-fast); }
+.tl-controls button:hover { border-color: var(--fleet-core-vibrant-blue); color: var(--fleet-black); }
+.tl-controls button.active { background: var(--fleet-core-vibrant-blue); color: var(--fleet-white); border-color: var(--fleet-core-vibrant-blue); }
+.tl-slider { flex: 1; accent-color: var(--fleet-core-vibrant-blue); cursor: pointer; height: 6px; }
+.tl-date { font-family: var(--font-mono); font-size: var(--font-size-sm); color: var(--fleet-core-vibrant-blue); min-width: 180px; text-align: right; font-weight: 500; }
 
 @media (max-width: 1024px) { .cb-main { grid-template-columns: 1fr; } .tree-panel, .detail-panel { max-height: 300px; } }
 </style>

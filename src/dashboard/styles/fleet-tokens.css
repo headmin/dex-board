@@ -1,50 +1,177 @@
 :root {
-  /* Fleet brand colors */
+  /* Fleet brand colors - 2025 official branding */
   --fleet-black: #192147;
   --fleet-green: #009a7d;
+  --fleet-green-over: #008a70;
+  --fleet-green-down: #007562;
   --fleet-white: #ffffff;
+  
+  /* Grayscale derived from fleet-black */
   --fleet-black-75: #515774;
+  --fleet-black-75-over: #484e68;
+  --fleet-black-75-down: #3c4157;
   --fleet-black-50: #8b8fa2;
   --fleet-black-33: #b3b6c1;
   --fleet-black-25: #c5c7d1;
   --fleet-black-10: #e2e4ea;
   --fleet-black-5: #f4f4f6;
   --fleet-black-5-down: #f0f1f4;
+  
+  /* Core accent colors */
   --fleet-blue: #3e4771;
   --fleet-vibrant-blue: #6a67fe;
+  --fleet-vibrant-blue-10: #f9fafc;
   --fleet-vibrant-red: #ff5c83;
+  --fleet-vibrant-red-over: #e93661;
+  --fleet-vibrant-red-down: #cb3559;
   --fleet-purple: #ae6ddf;
+  --fleet-dark-blue-grey: #506e92;
+  
+  /* UI colors */
   --fleet-off-white: #f9fafc;
+  --fleet-blue-10: #f9fafc;
+  --fleet-dark-blue-gray: #afbec1;
+  --fleet-blue-gray: #dbe3e5;
+  --fleet-gray: #e3e3e3;
+  --fleet-light-grey: #fafafa;
+  --fleet-shadow: #e9e9e9;
+  
+  /* Notifications & status */
+  --fleet-offline: #8b8fa2;
   --fleet-success: #3db67b;
+  --fleet-success-over: #36a26d;
+  --fleet-success-down: #2b7f56;
   --fleet-warning: #ebbc43;
   --fleet-error: #d66c7b;
+  --fleet-error-down: #a84757;
   --fleet-info: #6a67fe;
-  --fleet-tooltip-bg: #3e4771;
+  --fleet-yellow-banner: #fef7e0;
+  --fleet-yellow-banner-outline: #ece0bb;
+  
+  /* Rainbow accents */
+  --rainbow-orange: #faa669;
+  --rainbow-green: #63c740;
+  --rainbow-blue: #5cabdf;
+  
+  /* Semantic accent colors - used throughout UI */
+  --fleet-core-blue: #3e4771;
+  --fleet-core-vibrant-blue: #6a67fe;
+  --fleet-accent-green: var(--fleet-green);
+  --fleet-accent-green-light: rgba(0, 154, 125, 0.08);
+  
+  --fleet-accent-blue: #1e40af;
+  --fleet-accent-blue-light: #dbeafe;
+  --fleet-accent-purple: #6b21a8;
+  --fleet-accent-purple-light: #f3e8ff;
+  --fleet-accent-pink: #9d174d;
+  --fleet-accent-pink-light: #fce7f3;
+  --fleet-accent-indigo: #3730a3;
+  --fleet-accent-indigo-light: #e0e7ff;
+  
+  /* UI element colors */
+  --fleet-ui-orange: #ea580c;
+  --fleet-ui-orange-light: #fed7aa;
+  --fleet-ui-orange-dark: #9a3412;
+  
+  /* Status colors - semantic */
+  --fleet-status-success: #059669;
+  --fleet-status-success-light: #f0fdf4;
+  --fleet-status-success-border: #a7f3d0;
+  --fleet-status-warning: #d97706;
+  --fleet-status-warning-light: #fef3c7;
+  --fleet-status-warning-dark: #92400e;
+  --fleet-status-warning-border: #fde68a;
+  --fleet-status-error: #dc2626;
+  --fleet-status-error-light: #fee2e2;
+  --fleet-status-error-border: #fecaca;
+  --fleet-status-info: #6a67fe;
+  --fleet-status-info-light: #f0efff;
+  
+  /* Background tones */
+  --fleet-black-3: #fafbfc;
+  
+  /* Gradient */
+  --gradients-dark-gradient: linear-gradient(270deg, #201e43 0%, #353d62 100%);
+  
+  /* Focus state */
+  --fleet-focused-outline: var(--fleet-black);
+  --tooltip-bg: #3e4771;
 
   /* Sidebar */
-  --sidebar-width: 200px;
+  --sidebar-width: 220px;
   --sidebar-bg: var(--fleet-white);
   --sidebar-border: var(--fleet-black-10);
+  --sidebar-active-bg: rgba(0, 154, 125, 0.08);
 
-  /* Spacing */
+  /* Spacing - matching Fleet's padding scale */
+  --pad-xxsmall: 2px;
+  --pad-xsmall: 4px;
+  --pad-xs: 4px;
   --pad-small: 8px;
+  --pad-smedium: 12px;
+  --pad-icon: 14px;
   --pad-medium: 16px;
   --pad-large: 24px;
   --pad-xlarge: 32px;
+  --pad-page: 40px;
+  --pad-xxlarge: 48px;
+  --pad-xxl: 48px;
 
-  /* Border */
+  /* Border radii */
   --radius: 4px;
   --radius-medium: 6px;
   --radius-large: 8px;
-  --box-shadow: 0px 2px 4px rgba(25, 33, 71, 0.06);
+  --radius-xlarge: 12px;
+  --radius-xxlarge: 50px;
+  --radius-full: 9999px;
+  --border-color: var(--fleet-black-10);
+  --border-color-hover: var(--fleet-black-25);
+  
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(25, 33, 71, 0.04);
+  --shadow-sm: 0 1px 3px rgba(25, 33, 71, 0.06), 0 1px 2px rgba(25, 33, 71, 0.04);
+  --shadow-md: 0 4px 6px rgba(25, 33, 71, 0.06), 0 2px 4px rgba(25, 33, 71, 0.04);
+  --shadow-lg: 0 10px 15px rgba(25, 33, 71, 0.08), 0 4px 6px rgba(25, 33, 71, 0.04);
+  --box-shadow: var(--shadow-sm);
 
-  /* Font */
-  --font-body: "Inter", sans-serif;
-  --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-  --font-size-xs: 12px;
-  --font-size-sm: 14px;
+  /* Transitions */
+  --transition-fast: 120ms ease;
+  --transition-base: 150ms ease-in-out;
+  --transition-slow: 200ms ease;
+
+  /* Typography */
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+  
+  /* Font sizes - Fleet scale */
+  --font-size-xxsmall: 12px;
+  --font-size-xsmall: 14px;
+  --font-size-small: 16px;
+  --font-size-medium: 18px;
+  --font-size-large: 20px;
+  --font-size-xlarge: 24px;
+  --font-size-xxlarge: 32px;
+  
+  /* Font size aliases for convenience */
+  --font-size-xs: 11px;
+  --font-size-sm: 13px;
+  --font-size-base: 15px;
   --font-size-md: 16px;
-  --font-size-lg: 20px;
-  --font-size-xl: 24px;
-  --font-size-xxl: 32px;
+  --font-size-lg: 18px;
+  --font-size-xl: 22px;
+  
+  /* Font weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* Line heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+
+  /* Letter spacing */
+  --letter-spacing-tight: -0.01em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.5px;
 }

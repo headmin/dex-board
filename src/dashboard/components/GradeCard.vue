@@ -1,9 +1,15 @@
 <template>
   <div class="grade-card" :class="{ clickable: clickable }" @click="$emit('click')">
     <div class="card-header">
-      <div class="card-label">{{ label }}</div>
+      <span class="card-label">{{ label }}</span>
       <div v-if="delta !== null" class="delta" :class="deltaClass">
-        <span class="delta-arrow">{{ delta > 0 ? '+' : '' }}{{ delta.toFixed(1) }}</span>
+        <svg v-if="delta > 0" width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M5 8V2M5 2L2 5M5 2L8 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <svg v-else-if="delta < 0" width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M5 2V8M5 8L8 5M5 8L2 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>{{ Math.abs(delta).toFixed(1) }}</span>
       </div>
     </div>
     <SkeletonLoader v-if="loading" variant="metric" />
@@ -11,8 +17,9 @@
       <div class="card-body">
         <div class="grade-display" :class="gradeClass">{{ grade }}</div>
         <div class="score-info">
-          <div class="score-value">{{ score !== null ? score.toFixed(0) : '--' }}</div>
-          <div class="score-label">/ 100</div>
+          <span class="score-value">{{ score !== null ? score.toFixed(0) : '--' }}</span>
+          <span class="score-divider">/</span>
+          <span class="score-max">100</span>
         </div>
       </div>
       <div class="card-footer">
@@ -21,11 +28,17 @@
           :data="sparklineData"
           :color="gradeColor"
           width="100%"
-          height="28px"
+          height="32px"
         />
         <div v-if="subtitle" class="subtitle">{{ subtitle }}</div>
       </div>
-      <div v-if="incomplete" class="incomplete-badge">Incomplete</div>
+      <span v-if="incomplete" class="incomplete-badge">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M5 3v2M5 7v.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Incomplete
+      </span>
     </template>
   </div>
 </template>
@@ -61,12 +74,12 @@ const gradeClass = computed(() => {
 
 const gradeColor = computed(() => {
   const g = props.grade?.toUpperCase()
-  if (g === 'A') return '#009a7d'
-  if (g === 'B') return '#6a67fe'
-  if (g === 'C') return '#ebbc43'
-  if (g === 'D') return '#e07b3a'
-  if (g === 'F') return '#d66c7b'
-  return '#8b8fa2'
+  if (g === 'A') return 'var(--fleet-success)'
+  if (g === 'B') return 'var(--fleet-vibrant-blue)'
+  if (g === 'C') return 'var(--fleet-warning)'
+  if (g === 'D') return '#ea580c'
+  if (g === 'F') return 'var(--fleet-error)'
+  return 'var(--fleet-black-50)'
 })
 
 const deltaClass = computed(() => {
@@ -79,20 +92,24 @@ const deltaClass = computed(() => {
 <style scoped>
 .grade-card {
   background: var(--fleet-white);
-  border-radius: var(--radius);
+  border-radius: var(--radius-medium);
   border: 1px solid var(--fleet-black-10);
   padding: var(--pad-large);
   position: relative;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.grade-card:hover {
+  border-color: var(--fleet-black-25);
+  box-shadow: var(--shadow-sm);
 }
 
 .grade-card.clickable {
   cursor: pointer;
-  transition: border-color 150ms, box-shadow 150ms;
 }
 
 .grade-card.clickable:hover {
-  border-color: var(--fleet-black-25);
-  box-shadow: var(--box-shadow);
+  border-color: var(--fleet-green);
 }
 
 .card-header {
@@ -103,29 +120,31 @@ const deltaClass = computed(() => {
 }
 
 .card-label {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
   color: var(--fleet-black-50);
-  letter-spacing: 0.2px;
 }
 
 .delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: var(--radius);
 }
 
 .delta-up {
-  color: #065f46;
-  background: #ecfdf5;
+  color: var(--fleet-status-success);
+  background: var(--fleet-status-success-light);
 }
 
 .delta-down {
-  color: #9f1239;
-  background: #fff1f2;
+  color: #dc2626;
+  background: var(--fleet-error-light);
 }
 
 .delta-flat {
@@ -142,16 +161,16 @@ const deltaClass = computed(() => {
 
 .grade-display {
   font-family: var(--font-mono);
-  font-size: 48px;
+  font-size: 44px;
   font-weight: 700;
   line-height: 1;
   color: var(--fleet-black-33);
 }
 
-.grade-a { color: var(--fleet-green); }
+.grade-a { color: var(--fleet-success); }
 .grade-b { color: var(--fleet-vibrant-blue); }
 .grade-c { color: var(--fleet-warning); }
-.grade-d { color: #e07b3a; }
+.grade-d { color: #ea580c; }
 .grade-f { color: var(--fleet-error); }
 
 .score-info {
@@ -162,15 +181,22 @@ const deltaClass = computed(() => {
 
 .score-value {
   font-family: var(--font-mono);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   font-weight: 600;
   color: var(--fleet-black);
 }
 
-.score-label {
+.score-divider {
   font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   color: var(--fleet-black-33);
+  margin: 0 1px;
+}
+
+.score-max {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--fleet-black-50);
 }
 
 .card-footer {
@@ -178,21 +204,29 @@ const deltaClass = computed(() => {
 }
 
 .subtitle {
+  font-family: var(--font-body);
   font-size: var(--font-size-xs);
   color: var(--fleet-black-50);
-  margin-top: 4px;
+  margin-top: var(--pad-xs);
 }
 
 .incomplete-badge {
   position: absolute;
-  top: var(--pad-small);
-  right: var(--pad-small);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
+  top: var(--pad-medium);
+  right: var(--pad-medium);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
   color: var(--fleet-black-50);
   background: var(--fleet-black-5);
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: var(--radius);
+}
+
+.incomplete-badge svg {
+  stroke: var(--fleet-black-50);
 }
 </style>

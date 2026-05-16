@@ -3,85 +3,77 @@
     <div class="filter-content">
       <div class="search-group">
         <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M7.333 12.667A5.333 5.333 0 107.333 2a5.333 5.333 0 000 10.667zM14 14l-2.9-2.9" stroke="#8b8fa2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7 12A5 5 0 107 2a5 5 0 000 10zM14 14l-2.5-2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <input
           type="text"
-          class="search-input"
+          class="field__input"
           placeholder="Search hostname, serial, model..."
           v-model="localSearch"
         />
+        <button v-if="localSearch" class="search-clear" @click="localSearch = ''">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M10.5 3.5l-7 7M3.5 3.5l7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
       </div>
 
       <div class="filter-divider"></div>
 
-      <div class="filter-group">
-        <span class="filter-label">{{ isFirehose ? 'Platform' : 'OS' }}</span>
-        <div class="select-wrapper">
-          <select v-model="selectedOS" class="filter-select">
+      <div class="filters-group">
+        <div class="field field--inline">
+          <label class="field__label field__label--inline">{{ isFirehose ? 'Platform' : 'OS' }}</label>
+          <select v-model="selectedOS" class="field__input">
             <option value="">All</option>
             <option v-for="os in osOptions" :key="os" :value="os">{{ os }}</option>
           </select>
-          <svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none">
-            <path d="M1 1l4 4 4-4" stroke="#515774" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
         </div>
-      </div>
 
-      <div class="filter-group">
-        <span class="filter-label">Model</span>
-        <div class="select-wrapper">
-          <select v-model="selectedModel" class="filter-select">
+        <div class="field field--inline">
+          <label class="field__label field__label--inline">Model</label>
+          <select v-model="selectedModel" class="field__input">
             <option value="">All</option>
             <option v-for="m in modelOptions" :key="m" :value="m">{{ m }}</option>
           </select>
-          <svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none">
-            <path d="M1 1l4 4 4-4" stroke="#515774" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
         </div>
-      </div>
 
-      <div class="filter-group">
-        <span class="filter-label" title="Filters hosts with RAM at or below the selected tier">RAM ≤</span>
-        <div class="select-wrapper">
-          <select v-model="selectedRAMTier" class="filter-select">
+        <div class="field field--inline">
+          <label class="field__label field__label--inline" title="Filters hosts with RAM at or below the selected tier">RAM</label>
+          <select v-model="selectedRAMTier" class="field__input">
             <option value="">All</option>
             <option v-for="r in ramTierOptions" :key="r" :value="r">{{ formatRamOption(r) }}</option>
           </select>
-          <svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none">
-            <path d="M1 1l4 4 4-4" stroke="#515774" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
         </div>
-      </div>
 
-      <div v-if="!isFirehose" class="filter-group">
-        <span class="filter-label">Encryption</span>
-        <div class="select-wrapper">
-          <select v-model="selectedEncryption" class="filter-select">
+        <div v-if="!isFirehose" class="field field--inline">
+          <label class="field__label field__label--inline">Encryption</label>
+          <select v-model="selectedEncryption" class="field__input">
             <option value="">All</option>
             <option value="encrypted">Encrypted</option>
             <option value="not-encrypted">Not Encrypted</option>
           </select>
-          <svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none">
-            <path d="M1 1l4 4 4-4" stroke="#515774" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
         </div>
       </div>
 
-      <button v-if="isFleetFiltered" class="clear-btn" @click="clearFleetFilter">
-        Clear filters
-      </button>
-
-      <button class="wc-toggle" :class="{ active: wcMode }" @click="toggleWcMode" title="Workers Council Mode — hide individual app usage">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <button v-if="isFleetFiltered" class="button button--inverse button--small" @click="clearFleetFilter">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+          <path d="M10.5 3.5l-7 7M3.5 3.5l7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        WC Mode
+        Clear
       </button>
 
-      <div class="device-count">
-        <span class="count-value">{{ deviceCount.toLocaleString() }}</span>
-        <span class="count-label">devices</span>
+      <div class="filter-actions">
+        <button class="button button--inverse button--small wc-toggle" :class="{ active: wcMode }" @click="toggleWcMode" title="Workers Council Mode">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span>WC</span>
+        </button>
+
+        <div class="device-count">
+          <span class="count-value">{{ deviceCount.toLocaleString() }}</span>
+          <span class="count-label">devices</span>
+        </div>
       </div>
     </div>
   </div>
@@ -104,14 +96,11 @@ const {
 
 const { wcMode, toggleWcMode } = useWorkersCouncil()
 
-// Firehose is default for all routes except legacy admin views
 const isFirehose = computed(() => !route.path.startsWith('/overview') && !route.path.startsWith('/audit'))
 
 const localSearch = ref(searchText.value)
 let debounceTimer = null
 
-// RAM filter is "at most N GB" — show options as "≤ 24 GB".
-// The legacy "128GB+" option is effectively "no cap" under max semantics.
 function formatRamOption(tier) {
   if (tier === '128GB+') return 'Any (incl. 128 GB+)'
   return tier.replace('GB', ' GB')
@@ -134,7 +123,6 @@ watch([searchText, selectedOS, selectedModel, selectedEncryption, selectedRAMTie
   fetchDeviceCount()
 }, { immediate: true })
 
-// Switch filter mode when navigating between firehose and main
 watch(isFirehose, (val) => {
   setFirehoseMode(val)
 }, { immediate: true })
@@ -150,203 +138,243 @@ onMounted(() => {
 
 <style scoped>
 .fleet-filter-bar {
-  background: #fff;
-  border-bottom: 1px solid #e2e4ea;
-  padding: 8px 24px;
+  background: var(--fleet-white);
+  border-bottom: 1px solid var(--fleet-black-10);
+  padding: var(--pad-smedium) var(--pad-large);
 }
 
 .filter-content {
   display: flex;
   align-items: center;
-  gap: 12px;
-  max-width: 1280px;
-  margin: 0 auto;
-  flex-wrap: wrap;
+  gap: var(--pad-medium);
+  max-width: 1440px;
 }
 
 .search-group {
   display: flex;
   align-items: center;
   position: relative;
-  flex: 1;
-  min-width: 200px;
-  max-width: 320px;
+  flex: 0 1 280px;
+  min-width: 180px;
 }
 
 .search-icon {
   position: absolute;
   left: 12px;
   pointer-events: none;
+  color: var(--fleet-black-50);
 }
 
-.search-input {
+.search-group .field__input {
   width: 100%;
-  border: 1px solid #e2e4ea;
-  border-radius: 4px;
-  padding: 8px 16px 8px 32px;
-  height: 36px;
-  font-family: "Inter", sans-serif;
-  font-size: 14px;
-  color: #192147;
-  background: #fff;
-  outline: none;
-  transition: border-color 150ms ease-in-out;
+  padding-left: 36px;
+  padding-right: 36px;
 }
 
-.search-input::placeholder {
-  color: #8b8fa2;
+.search-clear {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--fleet-black-50);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
-.search-input:focus {
-  border-color: #192147;
+.search-clear:hover {
+  background: var(--fleet-black-5);
+  color: var(--fleet-black);
 }
 
 .filter-divider {
   width: 1px;
   height: 24px;
-  background: #e2e4ea;
+  background: var(--fleet-black-10);
 }
 
-.filter-group {
+.filters-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--pad-medium);
+  flex-wrap: wrap;
 }
 
-.filter-label {
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  color: #8b8fa2;
-  font-weight: 600;
+/* Fleet Input Styles */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-xsmall);
+}
+
+.field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--pad-small);
+}
+
+.field__label {
+  font-size: var(--font-size-xxsmall);
+  font-weight: 700;
+  color: var(--fleet-black-75);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
-.select-wrapper {
-  position: relative;
+.field__label--inline {
+  text-transform: none;
+  font-weight: 400;
+  color: var(--fleet-black);
+  font-size: var(--font-size-xsmall);
+}
+
+.field__input {
+  padding: var(--pad-small) var(--pad-smedium);
+  font-size: var(--font-size-xsmall);
+  font-family: inherit;
+  color: var(--fleet-black);
+  background-color: var(--fleet-white);
+  border: 1px solid var(--fleet-black-25);
+  border-radius: var(--radius);
+  height: 36px;
+  outline: none;
+  transition: border-color var(--transition-base);
+}
+
+.field__input:hover {
+  border-color: var(--fleet-black-50);
+}
+
+.field__input:focus {
+  border-color: var(--fleet-green);
+  box-shadow: 0 0 0 3px rgba(0, 154, 125, 0.15);
+}
+
+.field__input::placeholder {
+  color: var(--fleet-black-50);
+  font-style: italic;
+}
+
+select.field__input {
+  cursor: pointer;
+  padding-right: var(--pad-large);
+}
+
+/* Button Styles */
+.button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: var(--pad-small) var(--pad-medium);
+  height: 36px;
+  border: 0;
+  border-radius: var(--radius);
+  font-size: var(--font-size-xsmall);
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--fleet-white);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--transition-base), color var(--transition-base);
 }
 
-.filter-select {
-  border: 1px solid #e2e4ea;
-  border-radius: 4px;
-  padding: 6px 28px 6px 10px;
-  font-family: "Inter", sans-serif;
-  font-size: 14px;
-  color: #515774;
-  background: #fff;
-  cursor: pointer;
+.button:focus {
   outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-  min-width: 90px;
-  transition: border-color 150ms ease-in-out;
 }
 
-.filter-select:focus {
-  border-color: #192147;
+.button:focus-visible {
+  outline: 2px solid var(--fleet-black);
+  outline-offset: 2px;
 }
 
-.filter-select:hover {
-  border-color: #c5c7d1;
+.button--small {
+  padding: var(--pad-xsmall) var(--pad-small);
+  height: 28px;
+  font-size: var(--font-size-xxsmall);
 }
 
-.select-arrow {
-  position: absolute;
-  right: 10px;
-  pointer-events: none;
+.button--primary {
+  background-color: var(--fleet-green);
 }
 
-.clear-btn {
-  background: #fff;
-  border: 1px solid #e2e4ea;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-family: "Inter", sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  color: #515774;
-  cursor: pointer;
-  transition: all 150ms ease-in-out;
+.button--primary:hover {
+  background-color: var(--fleet-green-over);
 }
 
-.clear-btn:hover {
-  background: #f4f4f6;
-  border-color: #c5c7d1;
-  color: #192147;
+.button--inverse {
+  background-color: var(--fleet-white);
+  color: var(--fleet-black);
+  border: 1px solid var(--fleet-black-10);
 }
 
-.clear-btn:active {
-  background: #f0f1f4;
+.button--inverse:hover {
+  background-color: var(--fleet-black-5);
 }
 
-.wc-toggle {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: #fff;
-  border: 1px solid #e2e4ea;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: #515774;
-  cursor: pointer;
-  transition: all 150ms ease-in-out;
-  white-space: nowrap;
-}
-
-.wc-toggle:hover {
-  background: #f4f4f6;
-  border-color: #c5c7d1;
-}
-
+/* WC Toggle */
 .wc-toggle.active {
-  background: #065f46;
-  border-color: #065f46;
-  color: #fff;
-}
-
-.wc-toggle.active svg {
-  stroke: #fff;
+  background-color: var(--fleet-green);
+  border-color: var(--fleet-green);
+  color: var(--fleet-white);
 }
 
 .wc-toggle.active:hover {
-  background: #064e3b;
+  background-color: var(--fleet-green-over);
+}
+
+.wc-toggle.active svg {
+  stroke: var(--fleet-white);
+}
+
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--pad-small);
+  margin-left: auto;
 }
 
 .device-count {
   display: flex;
   align-items: baseline;
-  gap: 4px;
-  margin-left: auto;
-  padding: 4px 10px;
-  background: #f4f4f6;
-  border-radius: 4px;
+  gap: 6px;
+  padding: var(--pad-small) var(--pad-smedium);
+  background: var(--fleet-black-5);
+  border-radius: var(--radius);
 }
 
 .count-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #192147;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xsmall);
+  font-weight: 700;
+  color: var(--fleet-black);
 }
 
 .count-label {
-  font-size: 12px;
-  color: #8b8fa2;
+  font-size: var(--font-size-xxsmall);
+  color: var(--fleet-black-50);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .filter-content {
-    gap: 8px;
+    flex-wrap: wrap;
   }
   .search-group {
-    min-width: 100%;
+    flex: 1 1 100%;
+    max-width: none;
   }
   .filter-divider {
     display: none;
+  }
+  .filter-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
   }
 }
 </style>
