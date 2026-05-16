@@ -55,6 +55,15 @@
               </span>
             </div>
             <div v-if="detailInsight" class="detail-insight">{{ detailInsight }}</div>
+            <!-- Bottom CTA: after the user reads the breakdown + insight,
+                 give them an obvious "now take me to that host" exit. -->
+            <div class="mover-detail-footer">
+              <router-link
+                :to="{ path: '/devices', query: { hostId: expandedId, focus: 'movers' } }"
+                class="inspect-cta"
+                @click.stop
+              >Inspect host detail →</router-link>
+            </div>
           </template>
         </div>
       </div>
@@ -313,6 +322,12 @@ h3 {
 .mover-detail-actions {
   display: flex; justify-content: flex-end;
   margin-bottom: var(--pad-small);
+}
+.mover-detail-footer {
+  display: flex; justify-content: flex-end;
+  margin-top: var(--pad-small);
+  padding-top: var(--pad-small);
+  border-top: 1px solid var(--fleet-black-10);
 }
 .inspect-cta {
   display: inline-flex;
