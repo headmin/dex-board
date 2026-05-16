@@ -45,7 +45,7 @@
                 <rect x="4" y="3" width="12" height="14" rx="2"/>
                 <path d="M8 17h4"/>
               </svg>
-              Devices
+              Hosts
             </router-link>
             <router-link to="/insights" class="nav-item" active-class="active">
               <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
