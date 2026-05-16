@@ -1,5 +1,27 @@
 [
   {
+    "sha": "96b1ebde7b3dfd0278d71244297f2ef430614906",
+    "short_sha": "96b1ebde7b",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update icon for Fleet Desktop (#45508)",
+    "timestamp": "2026-05-14T12:47:21-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
+    "sha": "a05cac2df7e8ba8f7339cd182106e84d2e3e8e4d",
+    "short_sha": "a05cac2df7",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add custom icon to Touch ID script-only package (#44477)",
+    "timestamp": "2026-05-14T11:13:18-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
     "sha": "ef996f2830a0865aac47835b1e867002adb750c4",
     "short_sha": "ef996f2830",
     "author": "Allen Houchins",
@@ -6369,30 +6391,6 @@
       "it-and-security/lib/macos-check-if-apple-silicon.queries.yml",
       "it-and-security/lib/macos-intel.queries.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "a8bf2d95c1f1ceb3bcc2942c73efe846e7d30047",
-    "short_sha": "a8bf2d95c1",
-    "author": "JD",
-    "email": "spokanemac@users.noreply.github.com",
-    "message": "Add zoom to self-service for Workstations (#20701)",
-    "timestamp": "2024-07-25T12:50:04-06:00",
-    "files": [
-      "it-and-security/lib/macos-arm.queries.yml",
-      "it-and-security/lib/macos-intel.queries.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "0d56d8af5693f35a27c95a8c2d29982429c090b8",
-    "short_sha": "0d56d8af56",
-    "author": "Zach Wasserman",
-    "email": "zach@fleetdm.com",
-    "message": "Rename complaince-exclusions.yml to compliance-exclusions.yml (#20565)",
-    "timestamp": "2024-07-19T10:58:43-07:00",
-    "files": [
-      "it-and-security/teams/compliance-exclusions.yml"
     ]
   }
 ]

@@ -1,14 +1,14 @@
 {
-  "generated": "2026-05-14T12:33:20Z",
+  "generated": "2026-05-16T06:44:12Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "ef996f2830a0865aac47835b1e867002adb750c4",
-    "short_sha": "ef996f2830",
-    "message": "Remove quotes from policy resolution text (#45390)",
-    "timestamp": "2026-05-13T11:25:26-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/ef996f2830a0865aac47835b1e867002adb750c4"
+    "sha": "96b1ebde7b3dfd0278d71244297f2ef430614906",
+    "short_sha": "96b1ebde7b",
+    "message": "Update icon for Fleet Desktop (#45508)",
+    "timestamp": "2026-05-14T12:47:21-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/96b1ebde7b3dfd0278d71244297f2ef430614906"
   },
   "fleets": [
     {
