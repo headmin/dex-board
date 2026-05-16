@@ -41,7 +41,20 @@ const props = defineProps({
   yMax: { type: Number, default: null }
 })
 
+// ECharts paints to canvas and CANNOT resolve CSS custom properties — if
+// a caller passes 'var(--fleet-vibrant-blue)' it ends up unparsed and the
+// chart silently falls back to ECharts' default color. Resolve once here.
+function resolveColor(c) {
+  if (!c) return c
+  const m = String(c).match(/var\(\s*(--[\w-]+)\s*\)/)
+  if (!m) return c
+  if (typeof document === 'undefined') return c
+  const v = getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim()
+  return v || c
+}
+
 const chartOption = computed(() => {
+  const color = resolveColor(props.color)
   const option = {
     tooltip: {
       trigger: 'axis',
@@ -88,15 +101,15 @@ const chartOption = computed(() => {
       // filled = closer to ideal" which matches the mental model.
       areaStyle: {
         opacity: 0.3,
-        color: props.color,
+        color: color,
         origin: 'start'
       },
       lineStyle: {
         width: 2,
-        color: props.color
+        color: color
       },
       itemStyle: {
-        color: props.color
+        color: color
       },
       data: props.data.map(d => d[props.yKey]),
       markLine: props.threshold != null ? {
