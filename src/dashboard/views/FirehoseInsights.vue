@@ -220,7 +220,13 @@
           <thead><tr><th>Hostname</th><th>CPU</th><th>RAM</th><th>Pressure</th><th>Risk</th><th>Factors</th></tr></thead>
           <tbody>
             <tr v-for="d in riskyDevices" :key="d.host_id">
-              <td class="hostname">{{ d.hostname }}</td>
+              <td class="hostname">
+                <router-link
+                  :to="{ path: '/devices', query: { hostId: d.host_id, focus: 'movers' } }"
+                  class="host-link"
+                  :title="`Inspect ${d.hostname} →`"
+                >{{ d.hostname }}</router-link>
+              </td>
               <td>{{ d.cpu_brand }}</td>
               <td>{{ d.memory_gb }} GB</td>
               <td :class="pressureClass(d.avg_mem_pressure_pct)">{{ d.avg_mem_pressure_pct }}%</td>
@@ -469,6 +475,13 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 .clickable-row:hover { background: var(--fleet-off-white); }
 .clickable-row.selected { background: #eff6ff; }
 .hostname { font-family: var(--font-mono); font-weight: 500; }
+.host-link {
+  color: #6a67fe;
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+  transition: border-color 100ms;
+}
+.host-link:hover { border-bottom-color: #6a67fe; }
 .muted { color: var(--fleet-black-50); font-size: var(--font-size-xs); }
 
 /* Risk badges */
