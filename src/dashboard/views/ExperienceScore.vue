@@ -77,19 +77,25 @@
         </div>
 
         <div class="signal-list">
-          <div v-for="sig in signals" :key="sig.name" class="signal-row">
+          <div v-for="sig in signals" :key="sig.name" class="signal-row" :class="{ 'signal-row--inactive': sig.inactive }">
             <div class="signal-info">
-              <span class="signal-name">{{ sig.name }}</span>
+              <span class="signal-name">
+                {{ sig.name }}
+                <span v-if="sig.type" class="signal-type-pill" :class="`signal-type-pill--${sig.type}`">{{ sig.type === 'config' ? 'config' : 'time' }}</span>
+                <span v-if="sig.inactive" class="signal-status-pill">paused</span>
+              </span>
               <span class="signal-weight">{{ (sig.weight * 100).toFixed(0) }}% weight</span>
               <span v-if="sig.detail" class="signal-detail">{{ sig.detail }}</span>
             </div>
             <div class="signal-bar-track">
               <div
+                v-if="!sig.inactive"
                 class="signal-bar-fill"
                 :style="{ width: sig.score + '%', backgroundColor: signalColor(sig.score) }"
               ></div>
+              <div v-else class="signal-bar-empty">no data</div>
             </div>
-            <span class="signal-score">{{ sig.score.toFixed(0) }}</span>
+            <span class="signal-score">{{ sig.inactive ? '—' : sig.score.toFixed(0) }}</span>
           </div>
         </div>
 
@@ -693,19 +699,51 @@ async function fetchSignals(categoryKey) {
         { name: 'Network Confidence', weight: 0.10, score: vpnConnPct, detail: `${vpnConnPct}% connected — ${v.vpn_active || 0} VPN, ${v.direct_connected || 0} direct, ${v.disconnected || 0} disconnected` },
       ]
     } else if (categoryKey === 'security') {
-      const [osRows, fleetRows] = await Promise.all([
+      const [osRows, fleetRows, postureRows] = await Promise.all([
         query('firehose.health.os_summary'),
         query('firehose.scores.fleet_summary'),
+        query('firehose.security.posture_summary').catch(() => []),
       ])
       const os = osRows[0] || {}
       const fleet = fleetRows[0] || {}
+      const posture = postureRows[0] || {}
       const reporting = os.total_devices || 0
       const fleetTotal = fleet.device_count || 1
+      const postureHosts = Number(posture.posture_hosts || 0)
       const currentPct = reporting ? Math.round((os.os_current || 0) / reporting * 100) : 0
       const healthyPct = reporting ? Math.round((os.healthy || 0) / reporting * 100) : 0
+
+      // 6 signal slots always rendered for transparency — config-based ones
+      // (FileVault/Firewall/Gatekeeper/SIP) flip to `inactive` when the
+      // Fleet posture schedule is paused. Weights below match the SQL
+      // formula and sum to 100%.
+      const hasPosture = postureHosts > 0
+      const pct = (n) => Math.round((Number(n) || 0) / postureHosts * 100)
+      const inactiveDetail = `Requires Fleet "DEX - Device security posture" schedule — currently paused, so this signal is not counted in the live Security score.`
+
+      const sig = (name, type, weight, active, score, detail) => ({
+        name, type, weight, score: active ? score : 0,
+        detail: active ? detail : inactiveDetail,
+        inactive: !active,
+      })
+
       signalDefs = [
-        { name: 'OS Currency', weight: 0.50, score: currentPct, detail: `${os.os_current || 0}/${reporting} reporting devices on current OS (${fleetTotal - reporting} not reporting — scored as current)` },
-        { name: 'DEX OS Health', weight: 0.50, score: healthyPct, detail: `${os.healthy || 0}/${reporting} reporting devices rated healthy (${fleetTotal - reporting} not reporting — scored as acceptable)` },
+        sig('FileVault (disk encryption)', 'config', 0.25, hasPosture,
+            hasPosture ? pct(posture.disk_encrypted_count) : 0,
+            `${posture.disk_encrypted_count || 0}/${postureHosts} hosts encrypted`),
+        sig('Firewall', 'config', 0.20, hasPosture,
+            hasPosture ? pct(posture.firewall_enabled_count) : 0,
+            `${posture.firewall_enabled_count || 0}/${postureHosts} hosts with firewall on`),
+        sig('Gatekeeper', 'config', 0.15, hasPosture,
+            hasPosture ? pct(posture.gatekeeper_enabled_count) : 0,
+            `${posture.gatekeeper_enabled_count || 0}/${postureHosts} hosts with Gatekeeper active`),
+        sig('SIP (System Integrity Protection)', 'config', 0.10, hasPosture,
+            hasPosture ? pct(posture.sip_enabled_count) : 0,
+            `${posture.sip_enabled_count || 0}/${postureHosts} hosts with SIP enabled`),
+        sig('OS Currency', 'time', 0.15, true, currentPct,
+            `${os.os_current || 0}/${reporting} reporting hosts on current OS (${fleetTotal - reporting} not reporting — scored as current)`),
+        sig('DEX OS Health', 'time', 0.15, true, healthyPct,
+            `${os.healthy || 0}/${reporting} reporting hosts rated healthy (${fleetTotal - reporting} not reporting — scored as acceptable)`),
       ]
     } else if (categoryKey === 'software') {
       const [crashRows, adoptRows, tierRows] = await Promise.all([
@@ -1104,6 +1142,62 @@ onMounted(() => {
   color: var(--fleet-black);
   min-width: 32px;
   text-align: right;
+}
+
+.signal-row--inactive {
+  opacity: 0.55;
+}
+
+.signal-row--inactive .signal-score {
+  color: var(--fleet-black-33);
+}
+
+.signal-bar-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 11px;
+  color: var(--fleet-black-33);
+  font-style: italic;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.signal-type-pill {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 500;
+  border-radius: 3px;
+  letter-spacing: 0.3px;
+  vertical-align: middle;
+  text-transform: uppercase;
+}
+
+.signal-type-pill--config {
+  background: rgba(108, 92, 231, 0.12);
+  color: #6c5ce7;
+}
+
+.signal-type-pill--time {
+  background: rgba(0, 167, 124, 0.12);
+  color: #00875f;
+}
+
+.signal-status-pill {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 500;
+  border-radius: 3px;
+  background: rgba(217, 119, 6, 0.15);
+  color: #b45309;
+  letter-spacing: 0.3px;
+  vertical-align: middle;
+  text-transform: uppercase;
 }
 
 /* ─── Software detail panel ───────────────────── */

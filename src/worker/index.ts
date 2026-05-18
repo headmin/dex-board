@@ -27,6 +27,7 @@ import { firehoseVpnQueries } from './queries/core-vpn'
 import { firehoseCrashQueries } from './queries/core-crashes'
 import { firehoseAdoptionQueries } from './queries/core-adoption'
 import { firehoseScoreQueries } from './queries/core-scores'
+import { firehoseSecurityQueries } from './queries/core-security'
 
 registry.registerAll(healthQueries)
 registry.registerAll(deviceQueries)
@@ -48,6 +49,7 @@ registry.registerAll(firehoseVpnQueries)
 registry.registerAll(firehoseCrashQueries)
 registry.registerAll(firehoseAdoptionQueries)
 registry.registerAll(firehoseScoreQueries)
+registry.registerAll(firehoseSecurityQueries)
 
 // ─── Hono app ────────────────────────────────────────────
 const app = new Hono<{ Bindings: Env }>()
