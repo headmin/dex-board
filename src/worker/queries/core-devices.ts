@@ -4,13 +4,13 @@
  * Source: alt ClickHouse → wifi_signal, running_apps, hardware_inventory, fleetd_info
  */
 import type { QueryConfig } from '../types'
-import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
 export const firehoseDeviceQueries: QueryConfig[] = [
   {
     name: 'firehose.devices.list',
     domain: 'devices',
-    client: 'alt',
+    client: 'core',
     description: 'Combined device list with latest data from all firehose tables',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 500, default: 200 },
@@ -86,7 +86,7 @@ export const firehoseDeviceQueries: QueryConfig[] = [
   {
     name: 'firehose.devices.count',
     domain: 'devices',
-    client: 'alt',
+    client: 'core',
     description: 'Total unique device count across all firehose tables',
     params: [],
     sql: `
@@ -104,7 +104,7 @@ export const firehoseDeviceQueries: QueryConfig[] = [
   {
     name: 'firehose.devices.overview',
     domain: 'devices',
-    client: 'alt',
+    client: 'core',
     description: 'Fleet-wide overview metrics across all firehose tables',
     params: [...FILTER_PARAMS],
     sql: `
@@ -124,7 +124,7 @@ export const firehoseDeviceQueries: QueryConfig[] = [
   {
     name: 'firehose.devices.detail',
     domain: 'devices',
-    client: 'alt',
+    client: 'core',
     description: 'Single device composite detail from all firehose tables',
     params: [
       { name: 'hostId', type: 'string' as const, required: true },
@@ -187,7 +187,7 @@ export const firehoseDeviceQueries: QueryConfig[] = [
   {
     name: 'firehose.devices.filter_options',
     domain: 'devices',
-    client: 'alt',
+    client: 'core',
     description: 'Dropdown filter options from firehose hardware inventory',
     params: [],
     sql: `
@@ -209,7 +209,7 @@ export const firehoseDeviceQueries: QueryConfig[] = [
   {
     name: 'firehose.devices.filtered_count',
     domain: 'devices',
-    client: 'alt',
+    client: 'core',
     description: 'Filtered device count for firehose data',
     params: [
       { name: 'search', type: 'string' as const, required: false },

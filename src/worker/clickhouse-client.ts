@@ -26,16 +26,16 @@ function getClient(env: Env): ClickHouseClient {
   })
 }
 
-/** Get a ClickHouse client for the alt instance (osquery result logs). */
-function getAltClient(env: Env): ClickHouseClient {
-  if (!env.ALT_CLICKHOUSE_URL) {
-    throw new Error('ALT_CLICKHOUSE_URL is not configured')
+/** Get a ClickHouse client for the firehose ("core") instance. */
+function getCoreClient(env: Env): ClickHouseClient {
+  if (!env.FIREHOSE_CLICKHOUSE_URL) {
+    throw new Error('FIREHOSE_CLICKHOUSE_URL is not configured')
   }
   return createClient({
-    url: env.ALT_CLICKHOUSE_URL,
-    username: env.ALT_CLICKHOUSE_USER || 'default',
-    password: env.ALT_CLICKHOUSE_PASSWORD || '',
-    database: env.ALT_CLICKHOUSE_DATABASE || 'default',
+    url: env.FIREHOSE_CLICKHOUSE_URL,
+    username: env.FIREHOSE_CLICKHOUSE_USER || 'default',
+    password: env.FIREHOSE_CLICKHOUSE_PASSWORD || '',
+    database: env.FIREHOSE_CLICKHOUSE_DATABASE || 'default',
     clickhouse_settings: {
       output_format_json_quote_64bit_integers: 0,
       max_execution_time: 30,
@@ -71,14 +71,14 @@ export async function executeQuery(
 }
 
 /**
- * Execute a parameterized query against the alt ClickHouse instance.
+ * Execute a parameterized query against the firehose ("core") ClickHouse instance.
  */
-export async function executeAltQuery(
+export async function executeCoreQuery(
   sql: string,
   params: Record<string, unknown>,
   env: Env
 ): Promise<Record<string, unknown>[]> {
-  const ch = getAltClient(env)
+  const ch = getCoreClient(env)
   try {
     const result = await ch.query({
       query: sql,

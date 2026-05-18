@@ -5,14 +5,14 @@
  * (materialized from dex-queries.yml "device health" + "OS health")
  */
 import type { QueryConfig } from '../types'
-import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
 export const firehoseHealthQueries: QueryConfig[] = [
   // ── Device Health ──────────────────────────────────────
   {
     name: 'firehose.health.device_summary',
     domain: 'health',
-    client: 'alt',
+    client: 'core',
     description: 'Fleet-wide device health: CPU class, RAM tier, swap/battery distributions',
     params: [...FILTER_PARAMS],
     sql: `
@@ -44,7 +44,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
     // renders consistently.
     name: 'firehose.health.hosts_by_condition',
     domain: 'health',
-    client: 'alt',
+    client: 'core',
     description: 'Hosts matching a specific device-health/OS/VPN/crash condition (tile drill-down)',
     params: [
       { name: 'condition', type: 'enum' as const, required: true, values: [
@@ -134,7 +134,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
   {
     name: 'firehose.health.device_list',
     domain: 'health',
-    client: 'alt',
+    client: 'core',
     description: 'Per-device latest health snapshot',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 500, default: 100 },
@@ -165,7 +165,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
   {
     name: 'firehose.health.cpu_distribution',
     domain: 'health',
-    client: 'alt',
+    client: 'core',
     description: 'Device count by CPU class (Apple M1–M5, Intel)',
     params: [],
     sql: `
@@ -183,7 +183,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
   {
     name: 'firehose.health.swap_distribution',
     domain: 'health',
-    client: 'alt',
+    client: 'core',
     description: 'Device count by swap pressure level',
     params: [],
     sql: `
@@ -201,7 +201,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
   {
     name: 'firehose.health.compression_distribution',
     domain: 'health',
-    client: 'alt',
+    client: 'core',
     description: 'Device count by compression pressure level',
     params: [],
     sql: `
@@ -219,7 +219,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
   {
     name: 'firehose.health.battery_overview',
     domain: 'health',
-    client: 'alt',
+    client: 'core',
     description: 'Battery health distribution across fleet',
     params: [],
     sql: `
@@ -245,7 +245,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
   {
     name: 'firehose.health.os_summary',
     domain: 'health',
-    client: 'alt',
+    client: 'core',
     description: 'Fleet OS health: currency, uptime risk, DEX health score counts',
     params: [...FILTER_PARAMS],
     sql: `
@@ -269,7 +269,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
   {
     name: 'firehose.health.os_list',
     domain: 'health',
-    client: 'alt',
+    client: 'core',
     description: 'Per-device OS health details',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 500, default: 100 },
@@ -299,7 +299,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
   {
     name: 'firehose.health.os_currency_distribution',
     domain: 'health',
-    client: 'alt',
+    client: 'core',
     description: 'Device count by OS currency (current, n-1, n-2, legacy)',
     params: [],
     sql: `
@@ -317,7 +317,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
   {
     name: 'firehose.health.uptime_distribution',
     domain: 'health',
-    client: 'alt',
+    client: 'core',
     description: 'Device count by uptime risk tier',
     params: [],
     sql: `

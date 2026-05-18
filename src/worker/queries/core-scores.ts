@@ -16,7 +16,7 @@
  * means "assume OK" rather than "assume worst case".
  */
 import type { QueryConfig } from '../types'
-import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
 // ── Per-device score CTE ─────────────────────────────────
 // Reusable WITH clause that computes all 5 category scores per device.
@@ -31,13 +31,14 @@ device_scores AS (
     h.cpu_class AS cpu_class,
     h.ram_tier AS ram_tier,
 
-    -- Data coverage: how many secondary tables have data for this device (0-6)
-    (CASE WHEN o.host_id IS NOT NULL THEN 1 ELSE 0 END
-    + CASE WHEN p.host_id IS NOT NULL THEN 1 ELSE 0 END
-    + CASE WHEN w.host_id IS NOT NULL THEN 1 ELSE 0 END
-    + CASE WHEN v.host_id IS NOT NULL THEN 1 ELSE 0 END
-    + CASE WHEN c.host_id IS NOT NULL THEN 1 ELSE 0 END
-    + CASE WHEN a.host_id IS NOT NULL THEN 1 ELSE 0 END) AS data_sources,
+    -- Data coverage: how many secondary tables have data for this device (0-7)
+    (CASE WHEN o.host_id != '' THEN 1 ELSE 0 END
+    + CASE WHEN p.host_id != '' THEN 1 ELSE 0 END
+    + CASE WHEN w.host_id != '' THEN 1 ELSE 0 END
+    + CASE WHEN v.host_id != '' THEN 1 ELSE 0 END
+    + CASE WHEN c.host_id != '' THEN 1 ELSE 0 END
+    + CASE WHEN a.host_id != '' THEN 1 ELSE 0 END
+    + CASE WHEN sp.host_id != '' THEN 1 ELSE 0 END) AS data_sources,
 
     -- Device Health Score (0-100)
     round(
@@ -91,14 +92,32 @@ device_scores AS (
         WHEN 'tunnel_active' THEN 100 WHEN 'direct_connected' THEN 80 ELSE 20 END)
     ) AS network_score,
 
-    -- Security Score (0-100) — limited to OS signals from firehose
-    -- ifNull: no os_health data = assume current/acceptable (not penalize)
+    -- Security Score (0-100)
+    -- Full posture formula when security_posture has a row for this host
+    -- (FileVault + firewall + Gatekeeper + SIP + os_currency + dex_os_health).
+    -- Hosts without a posture row (Linux/Windows today, plus any macOS host
+    -- the pack hasn't reached yet) fall back to the OS-only formula so they
+    -- aren't penalised for unreported booleans.
     round(
-      0.50 * (CASE ifNull(o.os_currency, 'current')
-        WHEN 'current' THEN 100 WHEN 'n_minus_1' THEN 70
-        WHEN 'n_minus_2' THEN 40 WHEN 'legacy' THEN 20 ELSE 80 END)
-    + 0.50 * (CASE ifNull(o.dex_os_health, 'acceptable')
-        WHEN 'healthy' THEN 100 WHEN 'acceptable' THEN 70 WHEN 'degraded' THEN 30 ELSE 70 END)
+      CASE WHEN sp.host_id != '' THEN
+          0.25 * (CASE WHEN sp.disk_encrypted     = 1 THEN 100 ELSE 0 END)
+        + 0.20 * (CASE WHEN sp.firewall_enabled   = 1 THEN 100 ELSE 0 END)
+        + 0.15 * (CASE WHEN sp.gatekeeper_enabled = 1 THEN 100 ELSE 0 END)
+        + 0.10 * (CASE WHEN sp.sip_enabled        = 1 THEN 100 ELSE 0 END)
+        + 0.15 * (CASE ifNull(o.os_currency, 'current')
+            WHEN 'current' THEN 100 WHEN 'n_minus_1' THEN 70
+            WHEN 'n_minus_2' THEN 40 WHEN 'legacy' THEN 20 ELSE 80 END)
+        + 0.15 * (CASE ifNull(o.dex_os_health, 'acceptable')
+            WHEN 'healthy' THEN 100 WHEN 'acceptable' THEN 70
+            WHEN 'degraded' THEN 30 ELSE 70 END)
+      ELSE
+          0.50 * (CASE ifNull(o.os_currency, 'current')
+            WHEN 'current' THEN 100 WHEN 'n_minus_1' THEN 70
+            WHEN 'n_minus_2' THEN 40 WHEN 'legacy' THEN 20 ELSE 80 END)
+        + 0.50 * (CASE ifNull(o.dex_os_health, 'acceptable')
+            WHEN 'healthy' THEN 100 WHEN 'acceptable' THEN 70
+            WHEN 'degraded' THEN 30 ELSE 70 END)
+      END
     ) AS security_score,
 
     -- Software Score (0-100)
@@ -162,6 +181,14 @@ device_scores AS (
     WHERE (host_id, timestamp) IN (SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id)
     GROUP BY host_id
   ) a ON h.host_id = a.host_id
+  LEFT JOIN (
+    SELECT host_id,
+      argMax(disk_encrypted,     timestamp) AS disk_encrypted,
+      argMax(firewall_enabled,   timestamp) AS firewall_enabled,
+      argMax(gatekeeper_enabled, timestamp) AS gatekeeper_enabled,
+      argMax(sip_enabled,        timestamp) AS sip_enabled
+    FROM security_posture GROUP BY host_id
+  ) sp ON h.host_id = sp.host_id
 ),
 scored AS (
   SELECT *,
@@ -181,7 +208,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.fleet_summary',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Fleet composite score average and device count',
     params: [...FILTER_PARAMS],
     sql: `
@@ -195,7 +222,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.categories',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Per-category score averages',
     params: [...FILTER_PARAMS],
     sql: `
@@ -213,7 +240,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.grade_distribution',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Grade A/B/C/D/F device counts (composite)',
     params: [...FILTER_PARAMS],
     sql: `
@@ -227,7 +254,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.grade_distribution_category',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Grade A/B/C/D/F device counts for a specific category',
     params: [
       ...FILTER_PARAMS,
@@ -265,7 +292,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.device_list',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Per-device scores with all categories',
     params: [
       ...FILTER_PARAMS,
@@ -294,7 +321,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.device_patch_avg',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Average days-to-patch per software for one host (compare view)',
     params: [
       { name: 'hostIdentifier', type: 'string' as const, required: true },
@@ -312,7 +339,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.device_mttp',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Host-level mean time to patch — one aggregate row across all patch events for a host',
     params: [
       { name: 'hostIdentifier', type: 'string' as const, required: true },
@@ -330,8 +357,8 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.device_latest',
     domain: 'scores',
-    client: 'alt',
-    description: 'Single-device latest scores + meta (alt-side replacement for scores.device_latest)',
+    client: 'core',
+    description: 'Single-device latest scores + meta (firehose-side replacement for scores.device_latest)',
     params: [
       ...FILTER_PARAMS,
       { name: 'hostIdentifier', type: 'string' as const, required: true },
@@ -371,7 +398,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.dimension_os',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Average scores broken down by OS currency',
     params: [...FILTER_PARAMS],
     sql: `
@@ -397,7 +424,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.dimension_model',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Average scores broken down by hardware model',
     params: [...FILTER_PARAMS],
     sql: `
@@ -423,7 +450,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.dimension_ram',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Average scores broken down by RAM tier',
     params: [...FILTER_PARAMS],
     sql: `
@@ -445,7 +472,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.dimension_cpu',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Average scores broken down by CPU class',
     params: [...FILTER_PARAMS],
     sql: `
@@ -467,7 +494,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.dimension_swap',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Average scores broken down by swap pressure',
     params: [...FILTER_PARAMS],
     sql: `
@@ -493,7 +520,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.biggest_movers',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Devices with the largest score change vs 7 days ago',
     params: [
       ...FILTER_PARAMS,
@@ -651,7 +678,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.device_signals_compare',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Per-host raw signal values for current vs prior 7d — single row with curr_*/prev_* fields',
     params: [
       { name: 'hostId', type: 'string' as const, required: true },

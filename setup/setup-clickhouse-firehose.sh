@@ -1,31 +1,59 @@
 #!/usr/bin/env bash
 # ============================================================
-# Create materialized views on the alt ClickHouse instance.
-# Sources .alt-env for credentials, runs each SQL statement
-# individually via curl.
+# Create tables + materialized views on the firehose ClickHouse
+# instance. Reads FIREHOSE_CLICKHOUSE_* from .env (single source
+# of credentials, shared with the worker deploy step).
+#
+# Usage:
+#   bash setup/setup-clickhouse-firehose.sh                    # full bootstrap + backfill
+#   bash setup/setup-clickhouse-firehose.sh --skip-backfill    # skip the INSERTs (safe to re-run)
+#   bash setup/setup-clickhouse-firehose.sh --env-file .env.x  # custom env file
 # ============================================================
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
-# Load alt ClickHouse credentials
-ALT_ENV="$PROJECT_DIR/.alt-env"
-if [[ ! -f "$ALT_ENV" ]]; then
-  echo "ERROR: $ALT_ENV not found. Copy from .env.example and fill in alt ClickHouse credentials."
+# ── Defaults ─────────────────────────────────────────
+ENV_FILE="$PROJECT_DIR/.env"
+SKIP_BACKFILL=0
+
+# ── Parse args ───────────────────────────────────────
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --env-file)      ENV_FILE="$2"; shift 2 ;;
+    --skip-backfill) SKIP_BACKFILL=1; shift ;;
+    -h|--help)       sed -n '2,11p' "$0"; exit 0 ;;
+    *) echo "Unknown option: $1"; exit 1 ;;
+  esac
+done
+
+# ── Load credentials from .env ───────────────────────
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "ERROR: $ENV_FILE not found. Copy from .env.example and fill in FIREHOSE_CLICKHOUSE_* values."
   exit 1
 fi
-source "$ALT_ENV"
+set -a
+source "$ENV_FILE"
+set +a
 
-if [[ -z "${CLICKHOUSE_URL:-}" || -z "${CLICKHOUSE_PASSWORD:-}" ]]; then
-  echo "ERROR: CLICKHOUSE_URL and CLICKHOUSE_PASSWORD must be set in .alt-env"
+if [[ -z "${FIREHOSE_CLICKHOUSE_URL:-}" || -z "${FIREHOSE_CLICKHOUSE_PASSWORD:-}" ]]; then
+  echo "ERROR: FIREHOSE_CLICKHOUSE_URL and FIREHOSE_CLICKHOUSE_PASSWORD must be set in $ENV_FILE"
   exit 1
 fi
 
-# ClickPipe source table — override in .alt-env when the pipe is re-created
-CLICKPIPE_TABLE="${CLICKPIPE_TABLE:-s3-625dcbb6-7804-4672-8d83-c621b10a4679}"
+if [[ -z "${CLICKPIPE_TABLE:-}" ]]; then
+  echo "ERROR: CLICKPIPE_TABLE is not set in $ENV_FILE — this is the S3 ClickPipe destination"
+  echo "       table that the materialized views read from. See .env.example."
+  exit 1
+fi
 
-AUTH="${CLICKHOUSE_USER:-default}:${CLICKHOUSE_PASSWORD}"
+# Backing variables used by the SQL/curl helpers below.
+CLICKHOUSE_URL="$FIREHOSE_CLICKHOUSE_URL"
+CLICKHOUSE_USER="${FIREHOSE_CLICKHOUSE_USER:-default}"
+CLICKHOUSE_PASSWORD="$FIREHOSE_CLICKHOUSE_PASSWORD"
+
+AUTH="${CLICKHOUSE_USER}:${CLICKHOUSE_PASSWORD}"
 
 run_sql() {
   local label="$1"
@@ -46,12 +74,13 @@ count_table() {
   curl -s --user "$AUTH" --data-binary "SELECT count() FROM $table FORMAT TabSeparated" "$CLICKHOUSE_URL"
 }
 
-echo "=== Alt ClickHouse: Creating materialized views ==="
+echo "=== Firehose ClickHouse: Creating tables + materialized views ==="
 echo "    Source table: $CLICKPIPE_TABLE"
+echo "    Backfill: $([[ $SKIP_BACKFILL -eq 1 ]] && echo "SKIPPED" || echo "enabled")"
 echo ""
 
 # ── 1. Wi-Fi Signal Quality ──────────────────────────────
-echo "1/11 Wi-Fi Signal Quality"
+echo "1/12 Wi-Fi Signal Quality"
 run_sql "CREATE TABLE wifi_signal" "
 CREATE TABLE IF NOT EXISTS wifi_signal (
     host_id        String,
@@ -95,7 +124,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS wifi_signal_mv TO wifi_signal AS
 $WIFI_SIGNAL_SELECT
 "
 
-run_sql "BACKFILL wifi_signal" "
+(( SKIP_BACKFILL )) && echo "  skip BACKFILL wifi_signal (--skip-backfill)" || run_sql "BACKFILL wifi_signal" "
 INSERT INTO wifi_signal
 $WIFI_SIGNAL_SELECT
 "
@@ -103,7 +132,7 @@ echo "  → wifi_signal rows: $(count_table wifi_signal)"
 echo ""
 
 # ── 2. Running Apps ──────────────────────────────────────
-echo "2/11 Running Apps"
+echo "2/12 Running Apps"
 run_sql "CREATE TABLE running_apps" "
 CREATE TABLE IF NOT EXISTS running_apps (
     host_id           String,
@@ -141,7 +170,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS running_apps_mv TO running_apps AS
 $RUNNING_APPS_SELECT
 "
 
-run_sql "BACKFILL running_apps" "
+(( SKIP_BACKFILL )) && echo "  skip BACKFILL running_apps (--skip-backfill)" || run_sql "BACKFILL running_apps" "
 INSERT INTO running_apps
 $RUNNING_APPS_SELECT
 "
@@ -149,7 +178,7 @@ echo "  → running_apps rows: $(count_table running_apps)"
 echo ""
 
 # ── 3. Fleetd Info (from a separate query pack, not dex-queries.yml) ──
-echo "3/11 Fleetd Info"
+echo "3/12 Fleetd Info"
 run_sql "CREATE TABLE fleetd_info" "
 CREATE TABLE IF NOT EXISTS fleetd_info (
     host_id          String,
@@ -191,7 +220,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS fleetd_info_mv TO fleetd_info AS
 $FLEETD_INFO_SELECT
 "
 
-run_sql "BACKFILL fleetd_info" "
+(( SKIP_BACKFILL )) && echo "  skip BACKFILL fleetd_info (--skip-backfill)" || run_sql "BACKFILL fleetd_info" "
 INSERT INTO fleetd_info
 $FLEETD_INFO_SELECT
 "
@@ -199,7 +228,7 @@ echo "  → fleetd_info rows: $(count_table fleetd_info)"
 echo ""
 
 # ── 4. Hardware Inventory ────────────────────────────────
-echo "4/11 Hardware Inventory"
+echo "4/12 Hardware Inventory"
 run_sql "CREATE TABLE hardware_inventory" "
 CREATE TABLE IF NOT EXISTS hardware_inventory (
     host_id            String,
@@ -241,7 +270,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS hardware_inventory_mv TO hardware_invento
 $HARDWARE_INVENTORY_SELECT
 "
 
-run_sql "BACKFILL hardware_inventory" "
+(( SKIP_BACKFILL )) && echo "  skip BACKFILL hardware_inventory (--skip-backfill)" || run_sql "BACKFILL hardware_inventory" "
 INSERT INTO hardware_inventory
 $HARDWARE_INVENTORY_SELECT
 "
@@ -249,7 +278,7 @@ echo "  → hardware_inventory rows: $(count_table hardware_inventory)"
 echo ""
 
 # ── 5. Device Health (Hardware experience) ───────────────
-echo "5/11 Device Health"
+echo "5/12 Device Health"
 run_sql "CREATE TABLE device_health" "
 CREATE TABLE IF NOT EXISTS device_health (
     host_id                     String,
@@ -307,7 +336,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS device_health_mv TO device_health AS
 $DEVICE_HEALTH_SELECT
 "
 
-run_sql "BACKFILL device_health" "
+(( SKIP_BACKFILL )) && echo "  skip BACKFILL device_health (--skip-backfill)" || run_sql "BACKFILL device_health" "
 INSERT INTO device_health
 $DEVICE_HEALTH_SELECT
 "
@@ -315,7 +344,7 @@ echo "  → device_health rows: $(count_table device_health)"
 echo ""
 
 # ── 6. OS Health (System experience) ─────────────────────
-echo "6/11 OS Health"
+echo "6/12 OS Health"
 run_sql "CREATE TABLE os_health" "
 CREATE TABLE IF NOT EXISTS os_health (
     host_id         String,
@@ -357,7 +386,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS os_health_mv TO os_health AS
 $OS_HEALTH_SELECT
 "
 
-run_sql "BACKFILL os_health" "
+(( SKIP_BACKFILL )) && echo "  skip BACKFILL os_health (--skip-backfill)" || run_sql "BACKFILL os_health" "
 INSERT INTO os_health
 $OS_HEALTH_SELECT
 "
@@ -365,7 +394,7 @@ echo "  → os_health rows: $(count_table os_health)"
 echo ""
 
 # ── 7. Process Health (Application experience) ───────────
-echo "7/11 Process Health"
+echo "7/12 Process Health"
 run_sql "CREATE TABLE process_health" "
 CREATE TABLE IF NOT EXISTS process_health (
     host_id             String,
@@ -415,7 +444,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS process_health_mv TO process_health AS
 $PROCESS_HEALTH_SELECT
 "
 
-run_sql "BACKFILL process_health" "
+(( SKIP_BACKFILL )) && echo "  skip BACKFILL process_health (--skip-backfill)" || run_sql "BACKFILL process_health" "
 INSERT INTO process_health
 $PROCESS_HEALTH_SELECT
 "
@@ -423,7 +452,7 @@ echo "  → process_health rows: $(count_table process_health)"
 echo ""
 
 # ── 8. VPN Gate (Network experience) ─────────────────────
-echo "8/11 VPN Gate"
+echo "8/12 VPN Gate"
 run_sql "CREATE TABLE vpn_gate" "
 CREATE TABLE IF NOT EXISTS vpn_gate (
     host_id             String,
@@ -463,7 +492,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS vpn_gate_mv TO vpn_gate AS
 $VPN_GATE_SELECT
 "
 
-run_sql "BACKFILL vpn_gate" "
+(( SKIP_BACKFILL )) && echo "  skip BACKFILL vpn_gate (--skip-backfill)" || run_sql "BACKFILL vpn_gate" "
 INSERT INTO vpn_gate
 $VPN_GATE_SELECT
 "
@@ -471,7 +500,7 @@ echo "  → vpn_gate rows: $(count_table vpn_gate)"
 echo ""
 
 # ── 9. Crash Summary (Application experience) ────────────
-echo "9/11 Crash Summary"
+echo "9/12 Crash Summary"
 run_sql "CREATE TABLE crash_summary" "
 CREATE TABLE IF NOT EXISTS crash_summary (
     host_id              String,
@@ -511,7 +540,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS crash_summary_mv TO crash_summary AS
 $CRASH_SUMMARY_SELECT
 "
 
-run_sql "BACKFILL crash_summary" "
+(( SKIP_BACKFILL )) && echo "  skip BACKFILL crash_summary (--skip-backfill)" || run_sql "BACKFILL crash_summary" "
 INSERT INTO crash_summary
 $CRASH_SUMMARY_SELECT
 "
@@ -519,7 +548,7 @@ echo "  → crash_summary rows: $(count_table crash_summary)"
 echo ""
 
 # ── 10. Crash Detail (Application experience) ────────────
-echo "10/11 Crash Detail"
+echo "10/12 Crash Detail"
 run_sql "CREATE TABLE crash_detail" "
 CREATE TABLE IF NOT EXISTS crash_detail (
     host_id               String,
@@ -561,7 +590,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS crash_detail_mv TO crash_detail AS
 $CRASH_DETAIL_SELECT
 "
 
-run_sql "BACKFILL crash_detail" "
+(( SKIP_BACKFILL )) && echo "  skip BACKFILL crash_detail (--skip-backfill)" || run_sql "BACKFILL crash_detail" "
 INSERT INTO crash_detail
 $CRASH_DETAIL_SELECT
 "
@@ -569,7 +598,7 @@ echo "  → crash_detail rows: $(count_table crash_detail)"
 echo ""
 
 # ── 11. Adoption Gap (Application experience) ────────────
-echo "11/11 Adoption Gap"
+echo "11/12 Adoption Gap"
 run_sql "CREATE TABLE adoption_gap" "
 CREATE TABLE IF NOT EXISTS adoption_gap (
     host_id             String,
@@ -607,11 +636,69 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS adoption_gap_mv TO adoption_gap AS
 $ADOPTION_GAP_SELECT
 "
 
-run_sql "BACKFILL adoption_gap" "
+(( SKIP_BACKFILL )) && echo "  skip BACKFILL adoption_gap (--skip-backfill)" || run_sql "BACKFILL adoption_gap" "
 INSERT INTO adoption_gap
 $ADOPTION_GAP_SELECT
 "
 echo "  → adoption_gap rows: $(count_table adoption_gap)"
+echo ""
+
+# ── 12. Security Posture (FileVault / firewall / SIP / Gatekeeper) ───
+# macOS-only today (the dex_security_posture_macos query in the GitOps
+# pack is platform: darwin). Linux/Windows hosts won't produce rows;
+# alt-scores.ts falls back to OS-only signals for them.
+echo "12/12 Security Posture"
+run_sql "CREATE TABLE security_posture" "
+CREATE TABLE IF NOT EXISTS security_posture (
+    host_id              String,
+    hostname             String,
+    timestamp            DateTime64(9),
+    os_version           String,
+    os_build             String,
+    os_platform          LowCardinality(String),
+    disk_encrypted       UInt8,
+    encryption_type      LowCardinality(String),
+    secure_boot_enabled  UInt8,
+    firewall_enabled     UInt8,
+    firewall_stealth     UInt8,
+    sip_enabled          UInt8,
+    gatekeeper_enabled   UInt8
+) ENGINE = MergeTree() ORDER BY (host_id, timestamp)
+"
+
+# Note on the WHERE clause: the Fleet schedule label is what lands in the
+# 'name' column of the ClickPipe source. If you've labelled the schedule
+# differently (e.g. 'Security experience - posture'), broaden this ILIKE.
+SECURITY_POSTURE_SELECT="
+SELECT
+    hostIdentifier AS host_id,
+    decorations.hostname AS hostname,
+    calendarTime AS timestamp,
+    JSONExtractString(item, 'os_version') AS os_version,
+    JSONExtractString(item, 'os_build') AS os_build,
+    JSONExtractString(item, 'os_platform') AS os_platform,
+    toUInt8OrZero(JSONExtractString(item, 'disk_encrypted')) AS disk_encrypted,
+    JSONExtractString(item, 'encryption_type') AS encryption_type,
+    toUInt8OrZero(JSONExtractString(item, 'secure_boot_enabled')) AS secure_boot_enabled,
+    toUInt8OrZero(JSONExtractString(item, 'firewall_enabled')) AS firewall_enabled,
+    toUInt8OrZero(JSONExtractString(item, 'firewall_stealth_mode')) AS firewall_stealth,
+    toUInt8OrZero(JSONExtractString(item, 'sip_enabled')) AS sip_enabled,
+    toUInt8OrZero(JSONExtractString(item, 'gatekeeper_enabled')) AS gatekeeper_enabled
+FROM \`$CLICKPIPE_TABLE\`
+ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
+WHERE name ILIKE '%security%posture%' OR name ILIKE '%security posture%'
+"
+
+run_sql "CREATE MV security_posture_mv" "
+CREATE MATERIALIZED VIEW IF NOT EXISTS security_posture_mv TO security_posture AS
+$SECURITY_POSTURE_SELECT
+"
+
+(( SKIP_BACKFILL )) && echo "  skip BACKFILL security_posture (--skip-backfill)" || run_sql "BACKFILL security_posture" "
+INSERT INTO security_posture
+$SECURITY_POSTURE_SELECT
+"
+echo "  → security_posture rows: $(count_table security_posture)"
 echo ""
 
 # ── Summary ──────────────────────────────────────────────
@@ -629,5 +716,6 @@ echo "  vpn_gate            $(count_table vpn_gate) rows"
 echo "  crash_summary       $(count_table crash_summary) rows"
 echo "  crash_detail        $(count_table crash_detail) rows"
 echo "  adoption_gap        $(count_table adoption_gap) rows"
+echo "  security_posture    $(count_table security_posture) rows"
 echo ""
 echo "Materialized views active — new S3 ClickPipe inserts will auto-transform."

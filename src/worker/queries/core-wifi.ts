@@ -9,7 +9,7 @@ export const firehoseWifiQueries: QueryConfig[] = [
   {
     name: 'firehose.wifi.summary',
     domain: 'network',
-    client: 'alt',
+    client: 'core',
     description: 'Fleet-wide Wi-Fi signal stats from firehose data source',
     params: [],
     sql: `
@@ -26,7 +26,7 @@ export const firehoseWifiQueries: QueryConfig[] = [
   {
     name: 'firehose.wifi.quality',
     domain: 'network',
-    client: 'alt',
+    client: 'core',
     description: 'Per-device latest Wi-Fi signal quality',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 50 },
@@ -53,7 +53,7 @@ export const firehoseWifiQueries: QueryConfig[] = [
   {
     name: 'firehose.wifi.quality_distribution',
     domain: 'network',
-    client: 'alt',
+    client: 'core',
     description: 'Distribution of signal quality ratings',
     params: [],
     sql: `
@@ -76,7 +76,7 @@ export const firehoseWifiQueries: QueryConfig[] = [
   {
     name: 'firehose.wifi.timeseries',
     domain: 'network',
-    client: 'alt',
+    client: 'core',
     description: 'Fleet-wide Wi-Fi signal strength over time (hourly avg)',
     params: [],
     sql: `
@@ -94,7 +94,7 @@ export const firehoseWifiQueries: QueryConfig[] = [
   {
     name: 'firehose.wifi.device_timeseries',
     domain: 'network',
-    client: 'alt',
+    client: 'core',
     description: 'Single device Wi-Fi signal over time',
     params: [
       { name: 'hostId', type: 'string' as const, required: true },

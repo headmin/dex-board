@@ -10,7 +10,7 @@
 import type { QueryConfig, Env } from './types'
 import { validateParams, ValidationError } from './param-validator'
 import { buildFilters, injectFilters } from './filter-builder'
-import { executeQuery, executeAltQuery } from './clickhouse-client'
+import { executeQuery, executeCoreQuery } from './clickhouse-client'
 
 export class QueryRegistry {
   private queries = new Map<string, QueryConfig>()
@@ -95,8 +95,8 @@ export class QueryRegistry {
       }
     }
 
-    // 6. Execute (route to alt ClickHouse if configured)
-    const exec = config.client === 'alt' ? executeAltQuery : executeQuery
+    // 6. Execute (route to firehose ("core") ClickHouse if configured)
+    const exec = config.client === 'core' ? executeCoreQuery : executeQuery
     const data = await exec(sql, allParams, env)
     const duration_ms = Date.now() - start
 

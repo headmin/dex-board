@@ -9,7 +9,7 @@ export const firehoseAppsQueries: QueryConfig[] = [
   {
     name: 'firehose.apps.top',
     domain: 'processes',
-    client: 'alt',
+    client: 'core',
     description: 'Top apps by average memory usage across fleet',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 100, default: 20 },
@@ -33,7 +33,7 @@ export const firehoseAppsQueries: QueryConfig[] = [
   {
     name: 'firehose.apps.per_device',
     domain: 'processes',
-    client: 'alt',
+    client: 'core',
     description: 'Latest running apps for a specific device',
     params: [
       { name: 'hostId', type: 'string' as const, required: true },
@@ -56,7 +56,7 @@ export const firehoseAppsQueries: QueryConfig[] = [
   {
     name: 'firehose.apps.memory_hogs',
     domain: 'processes',
-    client: 'alt',
+    client: 'core',
     description: 'Heaviest apps by peak memory across all devices',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 50, default: 10 },
@@ -79,7 +79,7 @@ export const firehoseAppsQueries: QueryConfig[] = [
   {
     name: 'firehose.apps.fleet_summary',
     domain: 'processes',
-    client: 'alt',
+    client: 'core',
     description: 'Fleet-wide app summary stats',
     params: [],
     sql: `

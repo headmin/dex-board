@@ -5,13 +5,13 @@
  * (materialized from dex-queries.yml "crash summary" + "crash detail")
  */
 import type { QueryConfig } from '../types'
-import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
 export const firehoseCrashQueries: QueryConfig[] = [
   {
     name: 'firehose.crashes.summary',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'Fleet crash overview: total crashes, severity distribution, top crashers',
     params: [...FILTER_PARAMS],
     sql: `
@@ -32,7 +32,7 @@ export const firehoseCrashQueries: QueryConfig[] = [
   {
     name: 'firehose.crashes.top_crashers',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'Top crashing app identifiers across fleet',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 50, default: 25 },
@@ -57,7 +57,7 @@ export const firehoseCrashQueries: QueryConfig[] = [
   {
     name: 'firehose.crashes.detail',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'Crash detail events for a specific identifier',
     params: [
       { name: 'identifier', type: 'string' as const, required: true },
@@ -82,7 +82,7 @@ export const firehoseCrashQueries: QueryConfig[] = [
   {
     name: 'firehose.crashes.per_device',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'Crash summary for a specific device',
     params: [
       { name: 'hostId', type: 'string' as const, required: true },
@@ -106,7 +106,7 @@ export const firehoseCrashQueries: QueryConfig[] = [
   {
     name: 'firehose.crashes.severity_distribution',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'Crash severity distribution across fleet',
     params: [],
     sql: `

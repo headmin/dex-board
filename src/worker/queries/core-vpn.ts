@@ -5,13 +5,13 @@
  * (materialized from dex-queries.yml "VPN gate" — network confidence signal)
  */
 import type { QueryConfig } from '../types'
-import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
 export const firehoseVpnQueries: QueryConfig[] = [
   {
     name: 'firehose.vpn.summary',
     domain: 'network',
-    client: 'alt',
+    client: 'core',
     description: 'Fleet VPN/network confidence overview',
     params: [...FILTER_PARAMS],
     sql: `
@@ -32,7 +32,7 @@ export const firehoseVpnQueries: QueryConfig[] = [
   {
     name: 'firehose.vpn.list',
     domain: 'network',
-    client: 'alt',
+    client: 'core',
     description: 'Per-device VPN/network status',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 500, default: 200 },
@@ -59,7 +59,7 @@ export const firehoseVpnQueries: QueryConfig[] = [
   {
     name: 'firehose.vpn.confidence_distribution',
     domain: 'network',
-    client: 'alt',
+    client: 'core',
     description: 'Device count by network confidence level',
     params: [],
     sql: `

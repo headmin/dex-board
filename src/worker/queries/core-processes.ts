@@ -10,7 +10,7 @@ export const firehoseProcessQueries: QueryConfig[] = [
   {
     name: 'firehose.processes.top_fleet',
     domain: 'processes',
-    client: 'alt',
+    client: 'core',
     description: 'Top processes by average RSS across the fleet',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 100, default: 25 },
@@ -34,7 +34,7 @@ export const firehoseProcessQueries: QueryConfig[] = [
   {
     name: 'firehose.processes.by_class',
     domain: 'processes',
-    client: 'alt',
+    client: 'core',
     description: 'Aggregate memory by process class (user_app, mgmt_agent, system, other)',
     params: [],
     sql: `
@@ -54,7 +54,7 @@ export const firehoseProcessQueries: QueryConfig[] = [
   {
     name: 'firehose.processes.pressure_distribution',
     domain: 'processes',
-    client: 'alt',
+    client: 'core',
     description: 'Process count by memory pressure tier',
     params: [],
     sql: `
@@ -71,7 +71,7 @@ export const firehoseProcessQueries: QueryConfig[] = [
   {
     name: 'firehose.processes.per_device',
     domain: 'processes',
-    client: 'alt',
+    client: 'core',
     description: 'Latest process health snapshot for a specific device',
     params: [
       { name: 'hostId', type: 'string' as const, required: true },
@@ -99,7 +99,7 @@ export const firehoseProcessQueries: QueryConfig[] = [
   {
     name: 'firehose.processes.mgmt_agents',
     domain: 'processes',
-    client: 'alt',
+    client: 'core',
     description: 'Management/security agent processes across fleet (CrowdStrike, Jamf, etc.)',
     params: [],
     sql: `

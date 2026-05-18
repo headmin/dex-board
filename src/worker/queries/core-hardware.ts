@@ -9,7 +9,7 @@ export const firehoseHardwareQueries: QueryConfig[] = [
   {
     name: 'firehose.hardware.inventory',
     domain: 'devices',
-    client: 'alt',
+    client: 'core',
     description: 'Latest hardware info per device',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 100 },
@@ -35,7 +35,7 @@ export const firehoseHardwareQueries: QueryConfig[] = [
   {
     name: 'firehose.hardware.model_distribution',
     domain: 'devices',
-    client: 'alt',
+    client: 'core',
     description: 'Hardware model distribution across fleet',
     params: [],
     sql: `
@@ -51,7 +51,7 @@ export const firehoseHardwareQueries: QueryConfig[] = [
   {
     name: 'firehose.hardware.memory_tiers',
     domain: 'devices',
-    client: 'alt',
+    client: 'core',
     description: 'Device count by RAM tier',
     params: [],
     sql: `

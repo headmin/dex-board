@@ -46,7 +46,6 @@ Copyright &copy; 2026 Henry Stamerjohann, on behalf of Fleet Device Management. 
 # Read more: https://zensical.org/docs/setup/navigation/
 nav = [
   { "Home" = "index.md" },
-  { "Setup" = "setup.md" },
   { "Query registry" = "queries.md" },
   { "Authentication" = "auth.md" },
 ]

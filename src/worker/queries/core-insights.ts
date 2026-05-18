@@ -10,7 +10,7 @@ export const firehoseInsightQueries: QueryConfig[] = [
   {
     name: 'firehose.insights.summary',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Fleet-wide DEX summary: device count, avg pressure, high-pressure count, agent overhead',
     params: [],
     sql: `
@@ -36,7 +36,7 @@ export const firehoseInsightQueries: QueryConfig[] = [
   {
     name: 'firehose.insights.memory_pressure',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Per-device memory pressure with hardware context',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 100 },
@@ -74,7 +74,7 @@ export const firehoseInsightQueries: QueryConfig[] = [
   {
     name: 'firehose.insights.pressure_by_arch',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Memory pressure comparison: Intel vs Apple Silicon',
     params: [],
     sql: `
@@ -110,7 +110,7 @@ export const firehoseInsightQueries: QueryConfig[] = [
   {
     name: 'firehose.insights.pressure_by_ram_tier',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Memory pressure by RAM tier',
     params: [],
     sql: `
@@ -142,7 +142,7 @@ export const firehoseInsightQueries: QueryConfig[] = [
   {
     name: 'firehose.insights.pressure_by_cpu',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Memory pressure by CPU generation',
     params: [],
     sql: `
@@ -172,7 +172,7 @@ export const firehoseInsightQueries: QueryConfig[] = [
   {
     name: 'firehose.insights.agent_overhead',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Management and security agent memory overhead',
     params: [],
     sql: `
@@ -206,7 +206,7 @@ export const firehoseInsightQueries: QueryConfig[] = [
   {
     name: 'firehose.insights.top_user_apps',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Top user-facing apps by fleet memory cost (excludes system processes)',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 50, default: 20 },
@@ -233,7 +233,7 @@ export const firehoseInsightQueries: QueryConfig[] = [
   {
     name: 'firehose.insights.risk_devices',
     domain: 'scores',
-    client: 'alt',
+    client: 'core',
     description: 'Composite DEX risk score: Intel + low RAM + high pressure',
     params: [],
     sql: `

@@ -14,10 +14,14 @@ not_found_handling = "single-page-application"
 [observability]
 enabled = true
 
+# Worker name above can be overridden at deploy time via `wrangler deploy --name $WORKER_NAME`
+# (setup/deploy.sh reads WORKER_NAME from .env). Change for forks/second deployments.
+#
 # All config is set as secrets via setup/deploy.sh (reads from .env or 1Password):
 #   CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN
-#   CLICKHOUSE_URL, CLICKHOUSE_USER, CLICKHOUSE_PASSWORD, CLICKHOUSE_DATABASE
-#   ALT_CLICKHOUSE_URL, ALT_CLICKHOUSE_USER, ALT_CLICKHOUSE_PASSWORD, ALT_CLICKHOUSE_DATABASE
+#   CLICKHOUSE_URL, CLICKHOUSE_USER, CLICKHOUSE_PASSWORD, CLICKHOUSE_DATABASE   (Fleet-logs CH)
+#   FIREHOSE_CLICKHOUSE_URL, FIREHOSE_CLICKHOUSE_USER, FIREHOSE_CLICKHOUSE_PASSWORD,
+#   FIREHOSE_CLICKHOUSE_DATABASE                                                (Firehose CH)
 #   BASIC_AUTH_USER, BASIC_AUTH_PASS
 #   CF_ACCESS_TEAM_DOMAIN, CF_ACCESS_AUD
-#   FLEET_URL                                 (Fleet deep-link base, no trailing /)
+#   FLEET_URL                                                                   (Fleet deep-link base, no trailing /)

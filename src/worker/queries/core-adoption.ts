@@ -5,13 +5,13 @@
  * (materialized from dex-queries.yml "adoption gap" — app recency check)
  */
 import type { QueryConfig } from '../types'
-import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
 export const firehoseAdoptionQueries: QueryConfig[] = [
   {
     name: 'firehose.adoption.summary',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'Fleet app adoption overview: usage tier counts',
     params: [...FILTER_PARAMS],
     sql: `
@@ -35,7 +35,7 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
   {
     name: 'firehose.adoption.tier_distribution',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'App count by usage tier',
     params: [],
     sql: `
@@ -55,7 +55,7 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
   {
     name: 'firehose.adoption.stale_apps',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'Most stale apps across fleet (longest since last opened); excludes OS-shipped utilities and nested helper bundles by default',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 50 },
@@ -102,7 +102,7 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
   {
     name: 'firehose.adoption.per_device',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'App adoption status for a specific device',
     params: [
       { name: 'hostId', type: 'string' as const, required: true },
@@ -125,7 +125,7 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
   {
     name: 'firehose.adoption.by_app',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'Usage across fleet for a specific app',
     params: [
       { name: 'bundleId', type: 'string' as const, required: true },

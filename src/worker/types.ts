@@ -16,8 +16,8 @@ export interface QueryConfig {
   name: string
   /** Domain grouping: health, security, processes, devices, audit, software, network, scores */
   domain: string
-  /** Which ClickHouse instance to query: 'default' or 'alt' */
-  client?: 'default' | 'alt'
+  /** Which ClickHouse instance to query: 'default' (Fleet logs) or 'core' (firehose) */
+  client?: 'default' | 'core'
   /** Parameterized SQL with {name:Type} ClickHouse placeholders and {{FILTERS}} macro */
   sql: string
   /** Parameter definitions for validation */
@@ -65,14 +65,16 @@ export interface QueryError {
 
 /** Cloudflare Worker environment bindings */
 export interface Env {
+  // ─── Fleet-logs ClickHouse (powers the / Dashboard, security, processes) ───
   CLICKHOUSE_URL: string
   CLICKHOUSE_USER: string
   CLICKHOUSE_PASSWORD: string
   CLICKHOUSE_DATABASE: string
-  ALT_CLICKHOUSE_URL?: string
-  ALT_CLICKHOUSE_USER?: string
-  ALT_CLICKHOUSE_PASSWORD?: string
-  ALT_CLICKHOUSE_DATABASE?: string
+  // ─── Firehose ClickHouse (powers /devices, /insights, /reports, scoring) ───
+  FIREHOSE_CLICKHOUSE_URL?: string
+  FIREHOSE_CLICKHOUSE_USER?: string
+  FIREHOSE_CLICKHOUSE_PASSWORD?: string
+  FIREHOSE_CLICKHOUSE_DATABASE?: string
   ASSETS: Fetcher
   CF_ACCESS_TEAM_DOMAIN?: string
   CF_ACCESS_AUD?: string

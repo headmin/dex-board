@@ -4,13 +4,13 @@
  * Source: alt ClickHouse → fleetd_info (materialized from osquery result logs)
  */
 import type { QueryConfig } from '../types'
-import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './alt-filters'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
 export const firehoseFleetdQueries: QueryConfig[] = [
   {
     name: 'firehose.fleetd.versions',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'Fleet agent version distribution',
     params: [],
     sql: `
@@ -26,7 +26,7 @@ export const firehoseFleetdQueries: QueryConfig[] = [
   {
     name: 'firehose.fleetd.errors',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'Devices with recent fleetd errors',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 100, default: 20 },
@@ -52,7 +52,7 @@ export const firehoseFleetdQueries: QueryConfig[] = [
   {
     name: 'firehose.fleetd.summary',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'Fleet-wide fleetd summary',
     params: [...FILTER_PARAMS],
     sql: `
@@ -77,7 +77,7 @@ export const firehoseFleetdQueries: QueryConfig[] = [
   {
     name: 'firehose.fleetd.uptime',
     domain: 'software',
-    client: 'alt',
+    client: 'core',
     description: 'Device uptime distribution',
     params: [],
     sql: `

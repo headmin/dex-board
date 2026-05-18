@@ -30,27 +30,14 @@ graph LR
 ## Quick start
 
 ```bash
-# Clone
 git clone https://github.com/headmin/dex-board.git
 cd dex-board
-
-# Install
 npm install
-
-# Create .env from template and fill in values
-cp .env.example .env
-
-# Apply ClickHouse schema
-bash setup/setup-clickhouse.sh
-
-# Bootstrap Fleet query packs
-bash setup/bootstrap.sh --skip-clickhouse
-
-# Deploy to Cloudflare (pushes secrets + builds + deploys)
-bash setup/deploy.sh
+cp .env.example .env       # fill in values — see SETUP.md
+bash setup/setup.sh        # one-shot: schema (both CH instances) + secrets + worker deploy
 ```
 
-See the [Setup guide](setup.md) for full details, including 1Password integration.
+Full from-scratch guide (two ClickHouse instances, Fleet packs, branches by audience, troubleshooting): **[SETUP.md](https://github.com/headmin/dex-board/blob/main/SETUP.md)** in the repo root.
 
 ## Features
 

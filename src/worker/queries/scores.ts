@@ -285,7 +285,7 @@ export const scoreQueries: QueryConfig[] = [
   {
     name: 'scores.timeline_patches',
     domain: 'scores',
-    client: 'alt' as const,
+    client: 'core' as const,
     description: 'Patch events in a time window for timeline (optionally filtered by software/day for drill-down)',
     params: [
       { name: 'startDate', type: 'string' as const, required: true },
@@ -316,7 +316,7 @@ export const scoreQueries: QueryConfig[] = [
   {
     name: 'scores.timeline_patches_summary',
     domain: 'scores',
-    client: 'alt' as const,
+    client: 'core' as const,
     description: 'Per-day, per-software aggregate of patch events for the bucketed timeline',
     params: [
       { name: 'startDate', type: 'string' as const, required: true },
@@ -464,7 +464,7 @@ export const scoreQueries: QueryConfig[] = [
   {
     name: 'scores.fma_release_devices',
     domain: 'scores',
-    client: 'alt' as const,
+    client: 'core' as const,
     description: 'Devices that applied a specific FMA app release (exact version_to match)',
     params: [
       { name: 'softwarePattern', type: 'string' as const, required: true },
@@ -497,7 +497,7 @@ export const scoreQueries: QueryConfig[] = [
   {
     name: 'scores.release_rollout',
     domain: 'scores',
-    client: 'alt' as const,
+    client: 'core' as const,
     description: 'Patch waves that hit hosts in the window after a GitOps release commit',
     params: [
       { name: 'softwarePattern', type: 'string' as const, required: true },
@@ -655,7 +655,7 @@ export const scoreQueries: QueryConfig[] = [
   {
     name: 'scores.device_top_patches',
     domain: 'scores',
-    client: 'alt' as const,
+    client: 'core' as const,
     description: 'Top-N recent patch transitions for one host (sorted by event_time desc)',
     params: [
       { name: 'hostIdentifier', type: 'string' as const, required: true },

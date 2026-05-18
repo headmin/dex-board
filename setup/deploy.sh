@@ -62,10 +62,15 @@ load_from_op() {
 
   CLOUDFLARE_ACCOUNT_ID="$(op read "op://$item/CLOUDFLARE_ACCOUNT_ID" 2>/dev/null || echo "")"
   CLOUDFLARE_API_TOKEN="$(op read "op://$item/CLOUDFLARE_API_TOKEN" 2>/dev/null || echo "")"
+  WORKER_NAME="$(op read "op://$item/WORKER_NAME" 2>/dev/null || echo "")"
   CLICKHOUSE_URL="$(op read "op://$item/CLICKHOUSE_URL" 2>/dev/null || echo "")"
   CLICKHOUSE_USER="$(op read "op://$item/CLICKHOUSE_USER" 2>/dev/null || echo "default")"
   CLICKHOUSE_PASSWORD="$(op read "op://$item/CLICKHOUSE_PASSWORD" 2>/dev/null || echo "")"
   CLICKHOUSE_DATABASE="$(op read "op://$item/CLICKHOUSE_DATABASE" 2>/dev/null || echo "fleet_logs")"
+  FIREHOSE_CLICKHOUSE_URL="$(op read "op://$item/FIREHOSE_CLICKHOUSE_URL" 2>/dev/null || echo "")"
+  FIREHOSE_CLICKHOUSE_USER="$(op read "op://$item/FIREHOSE_CLICKHOUSE_USER" 2>/dev/null || echo "default")"
+  FIREHOSE_CLICKHOUSE_PASSWORD="$(op read "op://$item/FIREHOSE_CLICKHOUSE_PASSWORD" 2>/dev/null || echo "")"
+  FIREHOSE_CLICKHOUSE_DATABASE="$(op read "op://$item/FIREHOSE_CLICKHOUSE_DATABASE" 2>/dev/null || echo "default")"
   BASIC_AUTH_USER="$(op read "op://$item/BASIC_AUTH_USER" 2>/dev/null || echo "")"
   BASIC_AUTH_PASS="$(op read "op://$item/BASIC_AUTH_PASS" 2>/dev/null || echo "")"
   CF_ACCESS_TEAM_DOMAIN="$(op read "op://$item/CF_ACCESS_TEAM_DOMAIN" 2>/dev/null || echo "")"
@@ -92,7 +97,7 @@ put_secret() {
   local name="$1" value="$2"
   if [[ -n "$value" ]]; then
     echo "  Setting $name..."
-    printf '%s' "$value" | npx wrangler secret put "$name" --name dex-board 2>&1
+    printf '%s' "$value" | npx wrangler secret put "$name" --name "${WORKER_NAME:-dex-board}" 2>&1
   fi
 }
 
@@ -136,8 +141,10 @@ fi
 
 # ── Deploy first (clears old [vars] bindings) ────────
 if [[ $SECRETS_ONLY -eq 0 ]]; then
-  echo "Building and deploying..."
-  npm run deploy
+  WORKER_NAME="${WORKER_NAME:-dex-board}"
+  echo "Building and deploying to worker: $WORKER_NAME"
+  npm run build
+  npx wrangler deploy --name "$WORKER_NAME"
   echo ""
 fi
 
@@ -150,10 +157,10 @@ if [[ $DEPLOY_ONLY -eq 0 ]]; then
   put_secret "CLICKHOUSE_DATABASE" "$CLICKHOUSE_DATABASE"
   put_secret "BASIC_AUTH_USER" "$BASIC_AUTH_USER"
   put_secret "BASIC_AUTH_PASS" "$BASIC_AUTH_PASS"
-  put_secret "ALT_CLICKHOUSE_URL" "$ALT_CLICKHOUSE_URL"
-  put_secret "ALT_CLICKHOUSE_USER" "$ALT_CLICKHOUSE_USER"
-  put_secret "ALT_CLICKHOUSE_PASSWORD" "$ALT_CLICKHOUSE_PASSWORD"
-  put_secret "ALT_CLICKHOUSE_DATABASE" "$ALT_CLICKHOUSE_DATABASE"
+  put_secret "FIREHOSE_CLICKHOUSE_URL" "$FIREHOSE_CLICKHOUSE_URL"
+  put_secret "FIREHOSE_CLICKHOUSE_USER" "$FIREHOSE_CLICKHOUSE_USER"
+  put_secret "FIREHOSE_CLICKHOUSE_PASSWORD" "$FIREHOSE_CLICKHOUSE_PASSWORD"
+  put_secret "FIREHOSE_CLICKHOUSE_DATABASE" "$FIREHOSE_CLICKHOUSE_DATABASE"
   put_secret "CF_ACCESS_TEAM_DOMAIN" "$CF_ACCESS_TEAM_DOMAIN"
   put_secret "CF_ACCESS_AUD" "$CF_ACCESS_AUD"
   put_secret "FLEET_URL" "$FLEET_URL"
