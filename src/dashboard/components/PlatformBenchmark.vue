@@ -58,6 +58,17 @@
               <span class="marker-label">p90</span>
             </div>
           </div>
+          <!-- Cohort numerics under the bar — was previously implicit
+               from marker positions only. Now you can read the actual
+               values, not eyeball them. -->
+          <div class="bench-stats">
+            <span class="bench-stat"><span class="bench-stat-key">avg</span> {{ Math.round(row.avg) }}</span>
+            <span class="bench-stat"><span class="bench-stat-key">p75</span> {{ Math.round(row.p75) }}</span>
+            <span class="bench-stat"><span class="bench-stat-key">p90</span> {{ Math.round(row.p90) }}</span>
+            <span class="bench-stat bench-stat-diff" :class="diffClass(row)" v-if="row.deviceScore >= 0">
+              <span class="bench-stat-key">vs avg</span> {{ deltaLabel(row) }}
+            </span>
+          </div>
         </div>
         <span class="bench-position" :class="positionClass(row)">{{ positionLabel(row) }}</span>
         <span class="bench-value">{{ formatScore(row.deviceScore) }}</span>
@@ -206,6 +217,19 @@ function positionClass(row) {
   if (row.deviceScore >= row.avg) return 'pos-avg'
   return 'pos-below'
 }
+
+function deltaLabel(row) {
+  const d = row.deviceScore - row.avg
+  const sign = d > 0 ? '+' : ''
+  return `${sign}${d.toFixed(1)}`
+}
+
+function diffClass(row) {
+  const d = row.deviceScore - row.avg
+  if (d >= 5) return 'diff-good'
+  if (d <= -5) return 'diff-bad'
+  return 'diff-neutral'
+}
 </script>
 
 <style scoped>
@@ -282,13 +306,22 @@ function positionClass(row) {
 .benchmark-rows {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 18px;
 }
 
 .benchmark-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
+}
+
+.bench-label,
+.bench-position,
+.bench-value {
+  /* Align with the bar (which is positioned at the top of the wrapper, before
+     the cohort-stats line) — without this, the row's vertical centering
+     pushes them halfway down the now-taller bar+stats block. */
+  padding-top: 2px;
 }
 
 .bench-label {
@@ -418,6 +451,35 @@ function positionClass(row) {
 .legend-avg { background: var(--fleet-black-33); }
 .legend-p75 { background: var(--rainbow-blue); }
 .legend-p90 { background: var(--fleet-status-success); }
+
+/* ─── Cohort numeric stats under each bar ───── */
+.bench-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  font-size: 11px;
+  color: var(--fleet-black-75);
+  font-family: var(--font-mono, var(--font-body));
+}
+
+.bench-stat-key {
+  font-weight: 600;
+  color: var(--fleet-black-50);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-right: 4px;
+  font-family: var(--font-body);
+}
+
+.bench-stat-diff {
+  margin-left: auto;
+  font-weight: 700;
+}
+
+.bench-stat-diff.diff-good  { color: var(--fleet-status-success); }
+.bench-stat-diff.diff-bad   { color: var(--fleet-status-error); }
+.bench-stat-diff.diff-neutral { color: var(--fleet-black-50); }
 
 /* ─── States ─────────────────────────────────── */
 .benchmark-loading, .benchmark-empty {

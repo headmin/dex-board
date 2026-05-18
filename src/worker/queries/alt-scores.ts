@@ -310,6 +310,24 @@ export const firehoseScoreQueries: QueryConfig[] = [
     `,
   },
   {
+    name: 'firehose.scores.device_mttp',
+    domain: 'scores',
+    client: 'alt',
+    description: 'Host-level mean time to patch — one aggregate row across all patch events for a host',
+    params: [
+      { name: 'hostIdentifier', type: 'string' as const, required: true },
+    ],
+    sql: `
+      SELECT
+        round(avg(days_to_patch), 1) AS avg_lag,
+        count()                      AS n_patches,
+        min(days_to_patch)           AS min_lag,
+        max(days_to_patch)           AS max_lag
+      FROM dex_patch_events FINAL
+      WHERE host_identifier = {filterHostId:String}
+    `,
+  },
+  {
     name: 'firehose.scores.device_latest',
     domain: 'scores',
     client: 'alt',

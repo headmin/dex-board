@@ -70,7 +70,7 @@
 
       <!-- Device summary cards -->
       <div class="metrics-row six-col">
-        <MetricCard label="RSSI" :value="detail.rssi" unit="dBm" :loading="loading.detail" />
+        <MetricCard label="MTTP" :value="mttpValue" :subtitle="mttpSubtitle" :loading="loading.detail" />
         <MetricCard label="SNR" :value="detail.snr" unit="dB" :loading="loading.detail" />
         <MetricCard label="Quality" :value="detail.signal_quality" :loading="loading.detail" />
         <MetricCard label="Tx Rate" :value="detail.transmit_rate" unit="Mbps" :loading="loading.detail" />
@@ -329,6 +329,7 @@ const deviceCrashes = ref([])
 const deviceProcesses = ref([])
 const deviceAdoption = ref([])
 const devicePatches = ref([])
+const deviceMttp = ref(null)
 const deviceDrivers = ref(null)
 const driversFlash = ref(false)
 
@@ -448,6 +449,19 @@ const devicePressure = computed(() => {
   return { ram_gb: ram, used_gb: Math.round(used * 10) / 10, free_gb: Math.round((ram - used) * 10) / 10, pct }
 })
 
+const mttpValue = computed(() => {
+  const m = deviceMttp.value
+  if (!m || !Number(m.n_patches)) return '—'
+  return `${Number(m.avg_lag).toFixed(1)}d`
+})
+
+const mttpSubtitle = computed(() => {
+  const m = deviceMttp.value
+  if (!m || !Number(m.n_patches)) return 'no patches recorded'
+  const n = Number(m.n_patches)
+  return `${n} patch${n === 1 ? '' : 'es'} · ${Number(m.min_lag)}–${Number(m.max_lag)}d`
+})
+
 // ── Helpers ─────────────────────────────────────────
 function rssiClass(rssi) {
   if (!rssi) return ''
@@ -517,6 +531,7 @@ async function selectDevice(device) {
   deviceProcesses.value = []
   deviceAdoption.value = []
   devicePatches.value = []
+  deviceMttp.value = null
   deviceDrivers.value = null
   window.scrollTo({ top: 0, behavior: 'smooth' })
 
@@ -525,7 +540,7 @@ async function selectDevice(device) {
   loading.value.deviceApps = true
 
   try {
-    const [det, wTs, apps, health, os, vpn, crashes, procs, adoption, patches, signalsCompare] = await Promise.all([
+    const [det, wTs, apps, health, os, vpn, crashes, procs, adoption, patches, signalsCompare, mttp] = await Promise.all([
       query('firehose.devices.detail', { hostId: device.host_id }).catch(() => []),
       query('firehose.wifi.device_timeseries', { hostId: device.host_id }).catch(() => []),
       query('firehose.apps.per_device', { hostId: device.host_id }).catch(() => []),
@@ -537,6 +552,7 @@ async function selectDevice(device) {
       query('firehose.adoption.per_device', { hostId: device.host_id }).catch(() => []),
       query('scores.device_top_patches', { hostIdentifier: device.host_id, limit: 10 }).catch(() => []),
       query('firehose.scores.device_signals_compare', { hostId: device.host_id }).catch(() => []),
+      query('firehose.scores.device_mttp', { hostIdentifier: device.host_id }).catch(() => []),
     ])
     if (det[0]) detail.value = { ...device, ...det[0] }
     deviceWifiTs.value = wTs
@@ -548,6 +564,7 @@ async function selectDevice(device) {
     deviceProcesses.value = procs
     deviceAdoption.value = adoption
     devicePatches.value = patches || []
+    deviceMttp.value = (mttp || [])[0] || null
     deviceDrivers.value = buildSignalDrivers((signalsCompare || [])[0])
 
     if (route.query.focus === 'movers') {

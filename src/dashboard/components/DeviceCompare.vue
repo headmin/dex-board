@@ -78,14 +78,40 @@
 
     <!-- Platform Benchmark mode -->
     <template v-if="mode === 'platform' && leftData">
-      <PlatformBenchmark
-        :deviceScores="leftData"
-        :benchmarkData="benchmarkData"
-        :lifecycleLabel="lifecycleLabel"
-        :loading="benchmarkLoading"
-        :activeCohort="activeCohort"
-        @update:activeCohort="activeCohort = $event"
-      />
+      <div class="compare-platform-wrap">
+        <!-- Host stat strip — meta + MTTP so the platform view has the
+             same context as vs Host has on patch velocity. -->
+        <div class="platform-stat-strip">
+          <div class="platform-stat">
+            <span class="platform-stat-label">Host MTTP</span>
+            <span class="platform-stat-value">
+              <template v-if="leftMttp && Number(leftMttp.n_patches)">{{ Number(leftMttp.avg_lag).toFixed(1) }}<span class="platform-stat-unit">d</span></template>
+              <template v-else>—</template>
+            </span>
+            <span class="platform-stat-sub" v-if="leftMttp && Number(leftMttp.n_patches)">
+              {{ leftMttp.n_patches }} patch{{ Number(leftMttp.n_patches) === 1 ? '' : 'es' }} · {{ leftMttp.min_lag }}–{{ leftMttp.max_lag }}d range
+            </span>
+            <span class="platform-stat-sub muted" v-else>no patches recorded</span>
+          </div>
+          <div class="platform-stat">
+            <span class="platform-stat-label">Composite</span>
+            <span class="platform-stat-value">
+              {{ leftData?.composite_score != null ? Math.round(leftData.composite_score) : '—' }}
+              <GradeBadge :grade="leftData?.composite_grade || '—'" />
+            </span>
+            <span class="platform-stat-sub muted">out of 100</span>
+          </div>
+        </div>
+
+        <PlatformBenchmark
+          :deviceScores="leftData"
+          :benchmarkData="benchmarkData"
+          :lifecycleLabel="lifecycleLabel"
+          :loading="benchmarkLoading"
+          :activeCohort="activeCohort"
+          @update:activeCohort="activeCohort = $event"
+        />
+      </div>
     </template>
 
     <!-- Device Comparison — only shown when both devices loaded -->
@@ -149,23 +175,75 @@
         </div>
       </div>
 
-      <!-- Patch Velocity Comparison -->
-      <div v-if="patchComparison.length" class="compare-section">
-        <h3>Patch Velocity (avg days to patch)</h3>
-        <div class="compare-grid">
-          <div class="compare-row header">
-            <span class="compare-label">Software</span>
-            <span class="compare-col">{{ displayHost(leftDevice) }}</span>
-            <span class="compare-col">{{ displayHost(rightDevice) }}</span>
-            <span class="compare-diff">Diff</span>
+      <!-- Mean Time To Patch (MTTP) Comparison -->
+      <div v-if="mttpSummary.leftAvg !== null || mttpSummary.rightAvg !== null || patchComparison.length" class="compare-section mttp-section">
+        <h3>
+          Mean time to patch
+          <span class="mttp-hint">Lower is better — days between fleet-first sighting and per-host apply</span>
+        </h3>
+
+        <!-- Headline: side-by-side big numbers + diff -->
+        <div class="mttp-headline">
+          <div class="mttp-side" :class="{ winner: mttpSummary.leftAvg !== null && mttpSummary.rightAvg !== null && mttpSummary.leftAvg < mttpSummary.rightAvg }">
+            <div class="mttp-side-label">{{ displayHost(leftDevice) }}</div>
+            <div class="mttp-big">
+              <span v-if="mttpSummary.leftAvg !== null">{{ mttpSummary.leftAvg.toFixed(1) }}<span class="mttp-unit">d</span></span>
+              <span v-else class="mttp-empty">—</span>
+            </div>
+            <div class="mttp-substats" v-if="mttpSummary.leftN">
+              <span class="mttp-stat"><span class="mttp-stat-num">{{ mttpSummary.leftN }}</span> patch{{ mttpSummary.leftN === 1 ? '' : 'es' }}</span>
+              <span class="mttp-stat-sep">·</span>
+              <span class="mttp-stat">range <span class="mttp-stat-num">{{ mttpSummary.leftMin }}–{{ mttpSummary.leftMax }}d</span></span>
+            </div>
+            <div v-else class="mttp-substats muted">no patches recorded</div>
           </div>
-          <div v-for="p in patchComparison" :key="p.software_name" class="compare-row" :class="{ highlight: Math.abs(p.diff) >= 5 }">
-            <span class="compare-label">{{ p.software_name }}</span>
-            <span class="compare-col">{{ p.leftDays !== null ? p.leftDays.toFixed(0) + 'd' : '—' }}</span>
-            <span class="compare-col">{{ p.rightDays !== null ? p.rightDays.toFixed(0) + 'd' : '—' }}</span>
-            <span class="compare-diff" :class="diffClass(-p.diff)">
-              {{ p.diff !== null ? (p.diff > 0 ? '+' : '') + p.diff.toFixed(0) + 'd' : '—' }}
-            </span>
+
+          <div class="mttp-vs">
+            <div class="mttp-diff-pill" :class="diffClass(-(mttpSummary.diff ?? 0))" v-if="mttpSummary.diff !== null">
+              <span class="mttp-diff-arrow">{{ mttpSummary.diff > 0 ? '↑' : mttpSummary.diff < 0 ? '↓' : '=' }}</span>
+              {{ Math.abs(mttpSummary.diff).toFixed(1) }}d
+            </div>
+            <div class="mttp-diff-pill diff-neutral" v-else>—</div>
+            <div class="mttp-diff-caption">vs Host A</div>
+          </div>
+
+          <div class="mttp-side" :class="{ winner: mttpSummary.leftAvg !== null && mttpSummary.rightAvg !== null && mttpSummary.rightAvg < mttpSummary.leftAvg }">
+            <div class="mttp-side-label">{{ displayHost(rightDevice) }}</div>
+            <div class="mttp-big">
+              <span v-if="mttpSummary.rightAvg !== null">{{ mttpSummary.rightAvg.toFixed(1) }}<span class="mttp-unit">d</span></span>
+              <span v-else class="mttp-empty">—</span>
+            </div>
+            <div class="mttp-substats" v-if="mttpSummary.rightN">
+              <span class="mttp-stat"><span class="mttp-stat-num">{{ mttpSummary.rightN }}</span> patch{{ mttpSummary.rightN === 1 ? '' : 'es' }}</span>
+              <span class="mttp-stat-sep">·</span>
+              <span class="mttp-stat">range <span class="mttp-stat-num">{{ mttpSummary.rightMin }}–{{ mttpSummary.rightMax }}d</span></span>
+            </div>
+            <div v-else class="mttp-substats muted">no patches recorded</div>
+          </div>
+        </div>
+
+        <!-- Per-app detail (collapsible) -->
+        <div v-if="patchComparison.length" class="mttp-details">
+          <button class="mttp-details-toggle" @click="showPatchDetails = !showPatchDetails">
+            <span class="mttp-details-icon">{{ showPatchDetails ? '▾' : '▸' }}</span>
+            {{ showPatchDetails ? 'Hide' : 'Show' }} per-app breakdown
+            <span class="mttp-details-count">{{ patchComparison.length }} app{{ patchComparison.length === 1 ? '' : 's' }}</span>
+          </button>
+          <div v-if="showPatchDetails" class="compare-grid mttp-grid">
+            <div class="compare-row header">
+              <span class="compare-label">Software</span>
+              <span class="compare-col">{{ displayHost(leftDevice) }}</span>
+              <span class="compare-col">{{ displayHost(rightDevice) }}</span>
+              <span class="compare-diff">Diff</span>
+            </div>
+            <div v-for="p in patchComparison" :key="p.software_name" class="compare-row" :class="{ highlight: Math.abs(p.diff) >= 5 }">
+              <span class="compare-label">{{ p.software_name }}</span>
+              <span class="compare-col">{{ p.leftDays !== null ? p.leftDays.toFixed(0) + 'd' : '—' }}</span>
+              <span class="compare-col">{{ p.rightDays !== null ? p.rightDays.toFixed(0) + 'd' : '—' }}</span>
+              <span class="compare-diff" :class="diffClass(-p.diff)">
+                {{ p.diff !== null ? (p.diff > 0 ? '+' : '') + p.diff.toFixed(0) + 'd' : '—' }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -208,6 +286,9 @@ const leftApps = ref([])
 const rightApps = ref([])
 const leftPatches = ref([])
 const rightPatches = ref([])
+const leftMttp = ref(null)
+const rightMttp = ref(null)
+const showPatchDetails = ref(false)
 
 const leftDevice = computed(() => props.devices.find(d => d.host_identifier === selectedLeft.value) || null)
 const rightDevice = computed(() => props.devices.find(d => d.host_identifier === selectedRight.value) || null)
@@ -236,16 +317,19 @@ function swapDevices() {
   const tmpData = leftData.value
   const tmpApps = leftApps.value
   const tmpPatches = leftPatches.value
+  const tmpMttp = leftMttp.value
 
   selectedLeft.value = selectedRight.value
   leftData.value = rightData.value
   leftApps.value = rightApps.value
   leftPatches.value = rightPatches.value
+  leftMttp.value = rightMttp.value
 
   selectedRight.value = tmpId
   rightData.value = tmpData
   rightApps.value = tmpApps
   rightPatches.value = tmpPatches
+  rightMttp.value = tmpMttp
 }
 
 async function loadSide(side, hostId) {
@@ -256,6 +340,7 @@ async function loadSide(side, hostId) {
       leftData.value = data.scores
       leftApps.value = data.apps
       leftPatches.value = data.patches
+      leftMttp.value = data.mttp
       // Capture device meta for platform benchmark cohort queries
       if (data.scores) {
         leftDeviceMeta.value = {
@@ -268,6 +353,7 @@ async function loadSide(side, hostId) {
       rightData.value = data.scores
       rightApps.value = data.apps
       rightPatches.value = data.patches
+      rightMttp.value = data.mttp
     }
   } catch (e) {
     console.error(`Load ${side} failed:`, e)
@@ -313,16 +399,17 @@ async function loadDeviceData(hostId) {
   //                                    softwareDiffs computed unchanged)
   // - firehose.scores.device_patch_avg → avg days-to-patch per software
   //                                    from default.dex_patch_events on alt
-  const [scores, appsRaw, patches] = await Promise.all([
+  const [scores, appsRaw, patches, mttp] = await Promise.all([
     query('firehose.scores.device_latest', { hostIdentifier: safe }),
     query('firehose.adoption.per_device',  { hostId: safe }).catch(() => []),
-    query('firehose.scores.device_patch_avg', { hostIdentifier: safe }).catch(() => [])
+    query('firehose.scores.device_patch_avg', { hostIdentifier: safe }).catch(() => []),
+    query('firehose.scores.device_mttp',      { hostIdentifier: safe }).catch(() => [])
   ])
   // adoption_gap calls it `usage_tier`; the existing softwareDiffs compares
   // on `usage_category`. Map once at the boundary so downstream code stays
   // untouched.
   const apps = (appsRaw || []).map(a => ({ ...a, usage_category: a.usage_tier }))
-  return { scores: scores[0] || null, apps, patches }
+  return { scores: scores[0] || null, apps, patches, mttp: (mttp || [])[0] || null }
 }
 
 // ─── Computed comparison data ─────────────────────────
@@ -371,6 +458,23 @@ const softwareDiffs = computed(() => {
     return bGap - aGap
   })
   return diffs.slice(0, 15)
+})
+
+const mttpSummary = computed(() => {
+  const l = leftMttp.value
+  const r = rightMttp.value
+  const leftAvg  = l && Number(l.n_patches) ? Number(l.avg_lag) : null
+  const rightAvg = r && Number(r.n_patches) ? Number(r.avg_lag) : null
+  const diff = (leftAvg !== null && rightAvg !== null) ? rightAvg - leftAvg : null
+  return {
+    leftAvg, rightAvg, diff,
+    leftN:    l ? Number(l.n_patches) : 0,
+    rightN:   r ? Number(r.n_patches) : 0,
+    leftMin:  l ? Number(l.min_lag) : null,
+    leftMax:  l ? Number(l.max_lag) : null,
+    rightMin: r ? Number(r.min_lag) : null,
+    rightMax: r ? Number(r.max_lag) : null,
+  }
 })
 
 const patchComparison = computed(() => {
@@ -524,6 +628,9 @@ function diffClass(diff) {
   display: flex;
   align-items: stretch;
   gap: 0;
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .selector-card {
@@ -665,19 +772,26 @@ function diffClass(diff) {
 .compare-grid {
   display: flex;
   flex-direction: column;
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .compare-row {
   display: grid;
-  grid-template-columns: 130px 1fr 1fr 80px;
-  gap: 12px;
+  grid-template-columns: minmax(160px, 1fr) 160px 160px 110px;
+  gap: 28px;
   align-items: center;
-  padding: 8px 4px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--fleet-black-5);
   border-radius: var(--radius);
 }
 
 .compare-row:last-child { border-bottom: none; }
+
+.compare-row:nth-of-type(even):not(.header):not(.highlight) {
+  background: rgba(0, 0, 0, 0.015);
+}
 
 .compare-row.header {
   border-bottom: 1px solid var(--fleet-black-10);
@@ -693,10 +807,12 @@ function diffClass(diff) {
   letter-spacing: 0.3px;
 }
 
+.compare-row.header .compare-col {
+  justify-content: flex-end;
+}
+
 .compare-row.highlight {
-  background: rgba(106, 103, 254, 0.04);
-  margin: 0 -4px;
-  padding: 8px 8px;
+  background: rgba(106, 103, 254, 0.05);
 }
 
 .compare-label {
@@ -710,13 +826,18 @@ function diffClass(diff) {
   color: var(--fleet-black-75);
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono, var(--font-body));
 }
 
 .compare-diff {
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 700;
   text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono, var(--font-body));
 }
 
 .diff-good { color: var(--fleet-status-success); }
@@ -727,13 +848,17 @@ function diffClass(diff) {
 .sw-diff-list {
   display: flex;
   flex-direction: column;
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .sw-diff-header, .sw-diff-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: minmax(200px, 1fr) 160px 160px;
+  gap: 28px;
   align-items: center;
+  padding: 10px 16px;
 }
 
 .sw-diff-header {
@@ -750,12 +875,17 @@ function diffClass(diff) {
   letter-spacing: 0.3px;
 }
 
+.sw-diff-header .sw-diff-col { text-align: right; }
+
 .sw-diff-row {
-  padding: 6px 0;
   border-bottom: 1px solid var(--fleet-black-5);
 }
 
 .sw-diff-row:last-child { border-bottom: none; }
+
+.sw-diff-row:nth-of-type(even) { background: rgba(0, 0, 0, 0.015); }
+
+.sw-diff-col { text-align: right; }
 
 .sw-diff-app { font-size: var(--font-size-sm); color: var(--fleet-black); }
 
@@ -801,10 +931,238 @@ function diffClass(diff) {
   flex-shrink: 0;
 }
 
+/* ─── Platform Benchmark wrap ─────────────────── */
+.compare-platform-wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-large);
+}
+
+.platform-stat-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.platform-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-medium);
+  padding: var(--pad-medium) var(--pad-large);
+  box-shadow: var(--box-shadow);
+}
+
+.platform-stat-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--fleet-black-50);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.platform-stat-value {
+  font-family: var(--font-mono, var(--font-body));
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--fleet-black);
+  line-height: 1.1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.platform-stat-unit {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--fleet-black-50);
+  margin-left: 2px;
+}
+
+.platform-stat-sub {
+  font-size: var(--font-size-xs);
+  color: var(--fleet-black-75);
+  font-family: var(--font-mono, var(--font-body));
+}
+
+.platform-stat-sub.muted { color: var(--fleet-black-33); font-style: italic; font-family: var(--font-body); }
+
+/* ─── MTTP Section ────────────────────────────── */
+.mttp-section h3 {
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.mttp-hint {
+  font-size: var(--font-size-xs);
+  font-weight: 400;
+  color: var(--fleet-black-50);
+}
+
+.mttp-headline {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: stretch;
+  padding: var(--pad-medium) 0;
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+
+.mttp-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--pad-medium);
+  border: 2px solid var(--fleet-black-10);
+  border-radius: var(--radius-medium);
+  background: var(--fleet-white);
+  transition: border-color 180ms ease-in-out, background 180ms ease-in-out;
+}
+
+.mttp-side.winner {
+  border-color: var(--fleet-status-success);
+  background: rgba(34, 197, 94, 0.04);
+}
+
+.mttp-side-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--fleet-black-50);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 8px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mttp-big {
+  font-family: var(--font-mono, var(--font-body));
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--fleet-black);
+  line-height: 1;
+}
+
+.mttp-unit {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--fleet-black-50);
+  margin-left: 2px;
+}
+
+.mttp-empty {
+  color: var(--fleet-black-25);
+  font-weight: 500;
+}
+
+.mttp-substats {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+  font-size: var(--font-size-xs);
+  color: var(--fleet-black-50);
+}
+
+.mttp-substats.muted { font-style: italic; color: var(--fleet-black-33); }
+.mttp-stat-num { font-weight: 600; color: var(--fleet-black-75); font-family: var(--font-mono, var(--font-body)); }
+.mttp-stat-sep { color: var(--fleet-black-25); }
+
+.mttp-vs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 110px;
+}
+
+.mttp-diff-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-family: var(--font-mono, var(--font-body));
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  border: 1px solid currentColor;
+}
+
+.mttp-diff-pill.diff-good { background: rgba(34, 197, 94, 0.1); }
+.mttp-diff-pill.diff-bad  { background: rgba(220, 38, 38, 0.1); }
+.mttp-diff-pill.diff-neutral { background: var(--fleet-black-5); color: var(--fleet-black-50); }
+.mttp-diff-arrow { font-size: 14px; line-height: 1; }
+
+.mttp-diff-caption {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--fleet-black-50);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.mttp-details {
+  border-top: 1px solid var(--fleet-black-10);
+  padding-top: var(--pad-medium);
+  margin-top: var(--pad-small);
+  max-width: 920px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+.mttp-details-toggle {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--fleet-vibrant-blue);
+  cursor: pointer;
+  transition: color 120ms;
+}
+
+.mttp-details-toggle:hover { filter: brightness(0.85); }
+
+.mttp-details-icon {
+  font-size: 12px;
+  color: var(--fleet-black-50);
+  min-width: 10px;
+}
+
+.mttp-details-count {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--fleet-black-50);
+  margin-left: 4px;
+}
+
+.mttp-grid { margin-top: var(--pad-small); }
+
 @media (max-width: 768px) {
   .compare-selectors { flex-direction: column; }
   .selector-vs { padding: 8px 0; }
   .swap-btn { transform: rotate(90deg); }
   .compare-row { grid-template-columns: 90px 1fr 1fr 60px; }
+  .mttp-headline { grid-template-columns: 1fr; }
+  .mttp-vs { flex-direction: row; padding: 8px 0; min-width: 0; }
 }
 </style>
