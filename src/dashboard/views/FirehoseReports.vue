@@ -255,6 +255,15 @@ import DataTable from '../components/DataTable.vue'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { displayHost } from '../composables/displayName'
 
+// DataTable renders row[col.key], so the raw .local-suffixed hostname leaks
+// into every "Hostname" column in this view. Mapping rows once at assignment
+// time lets displayHost pick computer_name (when present) or strip .local
+// (when only hostname is available), without changing every column config.
+function withDisplayHost(rows) {
+  if (!Array.isArray(rows)) return rows
+  return rows.map(r => ({ ...r, hostname: displayHost(r) }))
+}
+
 // Wire the top filter bar (search / OS / model / RAM) into every query
 // fired by /reports. Queries that don't accept FILTER_PARAMS will just
 // ignore the extra params; queries that do will scope to the filter.
@@ -423,7 +432,7 @@ async function fetchTab(tab) {
       wifiSummary.value = s[0] || {}
       wifiDist.value = d
       wifiTs.value = ts
-      wifiDevices.value = dev
+      wifiDevices.value = withDisplayHost(dev)
       loading.value.wifi = false
     }
     else if (tab === 'apps') {
@@ -448,7 +457,7 @@ async function fetchTab(tab) {
         query('firehose.hardware.inventory', { limit: 200, ...fp() }),
       ])
       ramTiers.value = tiers
-      hwInventory.value = inv
+      hwInventory.value = withDisplayHost(inv)
       hwDeviceCount.value = inv.length
       hwAvgRam.value = inv.length ? Math.round(inv.reduce((s, d) => s + (Number(d.memory_gb) || 0), 0) / inv.length) : 0
       hwAvgCores.value = inv.length ? Math.round(inv.reduce((s, d) => s + (Number(d.cpu_logical_cores) || 0), 0) / inv.length) : 0
@@ -475,7 +484,7 @@ async function fetchTab(tab) {
       fleetdSummary.value = s[0] || {}
       uptimeDist.value = up
       versionDist.value = ver
-      fleetdErrors.value = err
+      fleetdErrors.value = withDisplayHost(err)
       loading.value.fleetd = false
     }
     else if (tab === 'health') {
@@ -498,8 +507,8 @@ async function fetchTab(tab) {
       batteryDist.value = batt
       osCurrencyDist.value = osCurr
       uptimeRiskDist.value = upRisk
-      healthDevices.value = devList
-      osDevices.value = osList
+      healthDevices.value = withDisplayHost(devList)
+      osDevices.value = withDisplayHost(osList)
       loading.value.health = false
     }
     else if (tab === 'vpn') {
@@ -511,7 +520,7 @@ async function fetchTab(tab) {
       ])
       vpnSummary.value = s[0] || {}
       vpnConfDist.value = conf
-      vpnDevices.value = dev
+      vpnDevices.value = withDisplayHost(dev)
       loading.value.vpn = false
     }
     else if (tab === 'crashes') {
