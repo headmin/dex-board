@@ -20,3 +20,4 @@ enabled = true
 #   ALT_CLICKHOUSE_URL, ALT_CLICKHOUSE_USER, ALT_CLICKHOUSE_PASSWORD, ALT_CLICKHOUSE_DATABASE
 #   BASIC_AUTH_USER, BASIC_AUTH_PASS
 #   CF_ACCESS_TEAM_DOMAIN, CF_ACCESS_AUD
+#   FLEET_URL                                 (Fleet deep-link base, no trailing /)

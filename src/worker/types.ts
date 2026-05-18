@@ -78,4 +78,10 @@ export interface Env {
   CF_ACCESS_AUD?: string
   BASIC_AUTH_USER?: string
   BASIC_AUTH_PASS?: string
+  /**
+   * Base URL for the Fleet instance this dashboard deep-links into.
+   * Exposed via GET /api/config to the dashboard. No trailing slash.
+   * Set as a Cloudflare secret: `wrangler secret put FLEET_URL`.
+   */
+  FLEET_URL?: string
 }

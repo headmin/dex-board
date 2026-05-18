@@ -194,13 +194,19 @@ import VChart from 'vue-echarts'
 import { query } from '../services/api'
 import dayjs from 'dayjs'
 import { displayHost } from '../composables/displayName'
+import { useAppConfig } from '../composables/useAppConfig'
 
 use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent])
 
 const props = defineProps({
   device: { type: Object, required: true },
-  fleetServerUrl: { type: String, default: 'http://localhost:8080' }
+  // Optional override. Normally comes from the worker FLEET_URL secret
+  // via useAppConfig; pass this prop only for ad-hoc instance switching.
+  fleetServerUrl: { type: String, default: '' }
 })
+
+const { config: appConfig } = useAppConfig()
+const fleetBase = computed(() => props.fleetServerUrl || appConfig.value.fleetUrl)
 
 defineEmits(['close', 'compare'])
 
@@ -215,8 +221,8 @@ const loadingHistory = ref(false)
 const fleetUrl = computed(() => {
   const hostname = props.device.hostname || props.device.computer_name
   return hostname
-    ? `${props.fleetServerUrl}/hosts?query=${encodeURIComponent(hostname)}`
-    : `${props.fleetServerUrl}/hosts`
+    ? `${fleetBase.value}/hosts?query=${encodeURIComponent(hostname)}`
+    : `${fleetBase.value}/hosts`
 })
 
 const signalClass = computed(() => {

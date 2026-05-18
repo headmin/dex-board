@@ -51,18 +51,22 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { displayHost } from '../composables/displayName'
+import { useAppConfig } from '../composables/useAppConfig'
 
 const props = defineProps({
   host: { type: Object, required: true },
   // Which condition triggered this tile — used to highlight the relevant metric
   condition: { type: String, default: '' },
-  // Fleet UI base URL. Defaults to Fleet dogfood; caller may override per-tile
-  // or via a wrapping provider to point at prod / internal Fleet instances.
-  fleetServerUrl: { type: String, default: 'https://dogfood.fleetdm.com' },
+  // Optional per-tile override. Normally the Fleet base URL comes from the
+  // worker config (FLEET_URL secret) via useAppConfig; pass this prop only
+  // to point a specific tile at a different Fleet instance.
+  fleetServerUrl: { type: String, default: '' },
 })
 
 const router = useRouter()
 const { searchText } = useFleetFilter()
+const { config } = useAppConfig()
+const fleetBase = computed(() => props.fleetServerUrl || config.value.fleetUrl)
 
 // "DEX host details" routes to /devices with ?hostId=<uuid>. The Devices view
 // reads that param on mount and auto-selects the matching row, expanding the
@@ -88,7 +92,7 @@ const openInFleetUrl = computed(() => {
     order_key: 'display_name',
     order_direction: 'asc',
   })
-  return `${props.fleetServerUrl}/hosts/manage/labels/${FLEET_ALL_HOSTS_LABEL_ID}?${params.toString()}`
+  return `${fleetBase.value}/hosts/manage/labels/${FLEET_ALL_HOSTS_LABEL_ID}?${params.toString()}`
 })
 
 // First letter of hostname drives both avatar letter and a deterministic color

@@ -70,6 +70,7 @@ load_from_op() {
   BASIC_AUTH_PASS="$(op read "op://$item/BASIC_AUTH_PASS" 2>/dev/null || echo "")"
   CF_ACCESS_TEAM_DOMAIN="$(op read "op://$item/CF_ACCESS_TEAM_DOMAIN" 2>/dev/null || echo "")"
   CF_ACCESS_AUD="$(op read "op://$item/CF_ACCESS_AUD" 2>/dev/null || echo "")"
+  FLEET_URL="$(op read "op://$item/FLEET_URL" 2>/dev/null || echo "")"
 }
 
 # ── Load from .env file ─────────────────────────────
@@ -155,6 +156,7 @@ if [[ $DEPLOY_ONLY -eq 0 ]]; then
   put_secret "ALT_CLICKHOUSE_DATABASE" "$ALT_CLICKHOUSE_DATABASE"
   put_secret "CF_ACCESS_TEAM_DOMAIN" "$CF_ACCESS_TEAM_DOMAIN"
   put_secret "CF_ACCESS_AUD" "$CF_ACCESS_AUD"
+  put_secret "FLEET_URL" "$FLEET_URL"
   echo ""
   echo "Secrets pushed."
 fi

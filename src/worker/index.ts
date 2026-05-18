@@ -72,6 +72,16 @@ app.use('/api/*', async (c, next) => {
   console.log(`${c.req.method} ${c.req.path} ${c.res.status} ${ms}ms`)
 })
 
+// ─── GET /api/config — runtime config for the dashboard ─
+// Returns the public, non-sensitive bits of the worker env that the SPA
+// needs at boot (Fleet deep-link base URL, etc.). The dashboard fetches
+// this once on first read; falls back to dogfood.fleetdm.com if unset.
+app.get('/api/config', (c) => {
+  return c.json({
+    fleetUrl: (c.env.FLEET_URL || 'https://dogfood.fleetdm.com').replace(/\/$/, ''),
+  })
+})
+
 // ─── GET /health — connectivity check ───────────────────
 app.get('/health', async (c) => {
   try {
