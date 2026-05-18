@@ -457,7 +457,14 @@ async function fetchTab(tab) {
         query('firehose.hardware.inventory', { limit: 200, ...fp() }),
       ])
       ramTiers.value = tiers
-      hwInventory.value = withDisplayHost(inv)
+      // Hardware inventory has both a Hostname AND a Name column (the latter
+      // already shows computer_name). withDisplayHost would copy computer_name
+      // into the hostname slot and duplicate the column — so here we only
+      // strip the .local suffix and leave the row's hostname otherwise intact.
+      hwInventory.value = (inv || []).map(r => ({
+        ...r,
+        hostname: r.hostname ? displayHost(String(r.hostname)) : r.hostname,
+      }))
       hwDeviceCount.value = inv.length
       hwAvgRam.value = inv.length ? Math.round(inv.reduce((s, d) => s + (Number(d.memory_gb) || 0), 0) / inv.length) : 0
       hwAvgCores.value = inv.length ? Math.round(inv.reduce((s, d) => s + (Number(d.cpu_logical_cores) || 0), 0) / inv.length) : 0
