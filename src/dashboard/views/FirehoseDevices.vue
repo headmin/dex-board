@@ -36,6 +36,18 @@
           <span class="drawer-sub">{{ detail.hardware_model }} &middot; {{ detail.cpu_brand }} &middot; {{ detail.memory_gb }} GB RAM</span>
         </div>
         <div class="drawer-actions">
+          <a
+            class="open-fleet-btn"
+            :href="openInFleetUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            :title="`Open ${displayHost(detail) || displayHost(selected)} in Fleet (new tab)`"
+          >
+            Open in Fleet
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M6 3h7v7M13 3L6 10M10 2H3v11h11v-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
           <button class="compare-btn" @click="openCompare(selected.host_id)" title="Compare this host with another">
             Compare with…
           </button>
@@ -296,6 +308,7 @@ import ScoreDriverPanel from '../components/ScoreDriverPanel.vue'
 import DeviceCompare from '../components/DeviceCompare.vue'
 import { buildSignalDrivers } from '../composables/scoreFormulas'
 import { displayHost } from '../composables/displayName'
+import { useAppConfig } from '../composables/useAppConfig'
 import { useNow } from '../composables/useNow'
 import { useRouter } from 'vue-router'
 
@@ -308,6 +321,26 @@ const router = useRouter()
 const focusedHost = computed(() => !!(route.query.hostId && selected.value))
 
 const { searchText: globalSearch, selectedModel, selectedRAMTier } = useFleetFilter()
+const { config: appConfig } = useAppConfig()
+
+// Open the current host in the configured Fleet instance. Fleet's hosts
+// page accepts a `query=` substring search across hostname/serial/UUID, so
+// we prefer hardware_serial (globally unique, short) → host_id → hostname
+// for highest-precision lookup, matching the convention used by HostTile.
+const FLEET_ALL_HOSTS_LABEL_ID = 7
+const openInFleetUrl = computed(() => {
+  const base = appConfig.value.fleetUrl
+  const d = detail.value || {}
+  const s = selected.value || {}
+  const q = d.hardware_serial || s.hardware_serial || s.host_id || d.hostname || s.hostname || ''
+  const params = new URLSearchParams({
+    query: q,
+    page: '0',
+    order_key: 'display_name',
+    order_direction: 'asc',
+  })
+  return `${base}/hosts/manage/labels/${FLEET_ALL_HOSTS_LABEL_ID}?${params.toString()}`
+})
 
 const error = ref(null)
 const loading = ref({ list: false, detail: false, deviceWifi: false, deviceApps: false })
@@ -721,6 +754,29 @@ h3 { font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black)
   border-color: var(--fleet-vibrant-blue);
   background: var(--fleet-vibrant-blue-10);
 }
+
+/* Mirrors .compare-btn so the two drawer-action buttons read as a pair. */
+.open-fleet-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 6px 12px;
+  color: var(--fleet-vibrant-blue);
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 100ms;
+}
+.open-fleet-btn:hover {
+  border-color: var(--fleet-vibrant-blue);
+  background: var(--fleet-vibrant-blue-10);
+}
+.open-fleet-btn svg { stroke: currentColor; }
 
 .compare-overlay {
   position: fixed; inset: 0;
