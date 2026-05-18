@@ -325,7 +325,6 @@ const modelDist = ref([])
 const hwInventory = ref([])
 const hwCols = [
   { key: 'hostname', label: 'Hostname' },
-  { key: 'computer_name', label: 'Name' },
   { key: 'cpu_brand', label: 'CPU' },
   { key: 'cpu_logical_cores', label: 'Cores' },
   { key: 'hardware_model', label: 'Model' },
@@ -457,14 +456,7 @@ async function fetchTab(tab) {
         query('firehose.hardware.inventory', { limit: 200, ...fp() }),
       ])
       ramTiers.value = tiers
-      // Hardware inventory has both a Hostname AND a Name column (the latter
-      // already shows computer_name). withDisplayHost would copy computer_name
-      // into the hostname slot and duplicate the column — so here we only
-      // strip the .local suffix and leave the row's hostname otherwise intact.
-      hwInventory.value = (inv || []).map(r => ({
-        ...r,
-        hostname: r.hostname ? displayHost(String(r.hostname)) : r.hostname,
-      }))
+      hwInventory.value = withDisplayHost(inv)
       hwDeviceCount.value = inv.length
       hwAvgRam.value = inv.length ? Math.round(inv.reduce((s, d) => s + (Number(d.memory_gb) || 0), 0) / inv.length) : 0
       hwAvgCores.value = inv.length ? Math.round(inv.reduce((s, d) => s + (Number(d.cpu_logical_cores) || 0), 0) / inv.length) : 0
