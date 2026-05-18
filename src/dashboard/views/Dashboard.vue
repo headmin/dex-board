@@ -540,6 +540,7 @@ import { query } from '../services/api'
 import { useTimeRange } from '../composables/useTimeRange'
 import { useDrillFilter } from '../composables/useDrillFilter'
 import { useFleetFilter } from '../composables/useFleetFilter'
+import { displayHost } from '../composables/displayName'
 import TimeRangeFilter from '../components/TimeRangeFilter.vue'
 import DrillFilterBar from '../components/DrillFilterBar.vue'
 import MetricCard from '../components/MetricCard.vue'
@@ -798,7 +799,7 @@ function enterCompareFromDetail(hostId) {
   // Enter drill-down with compare mode
   const device = devices.value.find(d => d.host_identifier === hostId)
   if (device) {
-    setDrill(device.hostname, hostId, null)
+    setDrill(displayHost(device), hostId, null)
     fetchDeviceDrillDown(hostId)
   }
   compareMode.value = true
@@ -1122,20 +1123,22 @@ async function fetchHeatmapUnhealthiest() {
   const hoursSet = [], hostsSet = [], deviceMap = {}
   for (const row of data) {
     if (!hoursSet.includes(row.hour_label)) hoursSet.push(row.hour_label)
-    if (!hostsSet.includes(row.hostname)) {
-      hostsSet.push(row.hostname)
-      deviceMap[row.hostname] = { host_identifier: row.host_identifier, hourMap: {} }
+    const label = displayHost(row)
+    if (!hostsSet.includes(label)) {
+      hostsSet.push(label)
+      deviceMap[label] = { host_identifier: row.host_identifier, hourMap: {} }
     }
   }
   hoursSet.sort()
 
   const heatData = []
   for (const row of data) {
+    const label = displayHost(row)
     const xIdx = hoursSet.indexOf(row.hour_label)
-    const yIdx = hostsSet.indexOf(row.hostname)
+    const yIdx = hostsSet.indexOf(label)
     if (xIdx >= 0 && yIdx >= 0) {
       heatData.push([xIdx, yIdx, row.health_score])
-      if (deviceMap[row.hostname]) deviceMap[row.hostname].hourMap[row.hour_label] = row.hour
+      if (deviceMap[label]) deviceMap[label].hourMap[row.hour_label] = row.hour
     }
   }
 

@@ -3,7 +3,7 @@
     <div class="device-detail-panel">
       <header class="panel-header">
         <div class="header-info">
-          <h2>{{ device.hostname || device.computer_name || 'Unknown host' }}</h2>
+          <h2>{{ displayHost(device) }}</h2>
           <div class="header-meta">
             <span class="meta-badge">{{ device.hardware_model || 'Unknown model' }}</span>
             <span class="meta-badge">{{ device.os_name }} {{ device.os_version }}</span>
@@ -193,6 +193,7 @@ import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/compon
 import VChart from 'vue-echarts'
 import { query } from '../services/api'
 import dayjs from 'dayjs'
+import { displayHost } from '../composables/displayName'
 
 use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent])
 

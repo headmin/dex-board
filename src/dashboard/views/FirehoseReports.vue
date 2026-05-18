@@ -253,6 +253,7 @@ import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
 import DataTable from '../components/DataTable.vue'
 import { useFleetFilter } from '../composables/useFleetFilter'
+import { displayHost } from '../composables/displayName'
 
 // Wire the top filter bar (search / OS / model / RAM) into every query
 // fired by /reports. Queries that don't accept FILTER_PARAMS will just
@@ -435,7 +436,7 @@ async function fetchTab(tab) {
       ])
       appSummary.value = s[0] || {}
       topApps.value = top
-      peakApps.value = peak.map(h => ({ ...h, label: `${h.app_name} (${h.hostname || ''})` }))
+      peakApps.value = peak.map(h => ({ ...h, label: `${h.app_name} (${displayHost(h)})` }))
       allApps.value = all
       loading.value.apps = false
     }

@@ -142,7 +142,7 @@
                       <div v-if="drillLoading" class="drill-loading">Loading devices...</div>
                       <div v-else class="drill-device-list">
                         <div v-for="d in drillDevices" :key="d.host_identifier" class="drill-device-row">
-                          <span class="drill-hostname">{{ d.hostname }}</span>
+                          <span class="drill-hostname">{{ displayHost(d) }}</span>
                           <span class="drill-version">v{{ d.app_version }}</span>
                           <span class="drill-usage" :class="d.usage_category">{{ d.usage_category }}</span>
                           <span class="drill-days">{{ d.days_since_opened }}d since opened</span>
@@ -237,7 +237,7 @@
             </thead>
             <tbody>
               <tr v-for="d in filteredDeviceList" :key="d.host_id">
-                <td class="device-hostname">{{ d.hostname || d.host_id.slice(0, 12) }}</td>
+                <td class="device-hostname">{{ displayHost(d) }}</td>
                 <td class="device-score-cell">{{ d.composite_score }}</td>
                 <td><GradeBadge :grade="d.composite_grade" /></td>
                 <td class="device-score-cell" :style="{ color: signalColor(d.device_health_score) }">{{ d.device_health_score }}</td>
@@ -275,6 +275,7 @@ import { useWorkersCouncil } from '../composables/useWorkersCouncil'
 import BiggestMovers from '../components/BiggestMovers.vue'
 import DimensionBreakdown from '../components/DimensionBreakdown.vue'
 import MttpTable from '../components/MttpTable.vue'
+import { displayHost } from '../composables/displayName'
 
 const { filterParams, setOSFilter, setModelFilter, setRAMFilter } = useFleetFilter()
 const { wcMode } = useWorkersCouncil()

@@ -409,6 +409,7 @@ import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
 import HostTile from '../components/HostTile.vue'
 import MttpTable from '../components/MttpTable.vue'
+import { displayHost } from '../composables/displayName'
 
 // Shared filter bar — propagates to every firehose query that respects
 // FILTER_PARAMS. Wrap this in a computed so queries re-fetch when the user
@@ -583,7 +584,7 @@ async function fetchAll() {
     wifi.value = { avgRssi: ws.avg_rssi || 0, avgSnr: ws.avg_snr || 0, avgTxRate: ws.avg_transmit_rate || 0 }
     wifiDistribution.value = wDist
     worstWifi.value = wDevices.slice(0, 10).map(d => ({
-      hostname: d.hostname || d.host_id?.slice(0, 12),
+      hostname: displayHost(d),
       abs_rssi: Math.abs(Number(d.rssi)),
     }))
     wifiTimeseries.value = wTs
@@ -591,7 +592,7 @@ async function fetchAll() {
     const as = appSummary[0] || {}
     apps.value = { uniqueApps: as.unique_apps || 0, avgMemory: as.avg_app_memory_mb || 0, p95Memory: as.p95_memory_mb || 0 }
     topApps.value = appTop
-    memoryHogs.value = hogs.map(h => ({ ...h, label: `${h.app_name} (${h.hostname || ''})` }))
+    memoryHogs.value = hogs.map(h => ({ ...h, label: `${h.app_name} (${displayHost(h)})` }))
 
     ramTiers.value = ram
 

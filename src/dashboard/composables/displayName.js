@@ -6,10 +6,13 @@
  *   2. hostname stripped of trailing ".local" — the kebab-case fallback.
  *   3. host_id / host_identifier — last resort.
  *
- * Accepts any object with a subset of those keys; returns a string.
+ * Accepts a row object, a bare hostname string, or null/undefined.
+ * Always returns a string (never undefined).
  */
 export function displayHost(h) {
   if (!h) return '?'
+  // String form: someone already passed just a hostname.
+  if (typeof h === 'string') return h.replace(/\.local$/i, '') || '?'
   const cn = h.computer_name && String(h.computer_name).trim()
   if (cn) return cn
   const hn = h.hostname && String(h.hostname).trim()

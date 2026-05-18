@@ -26,7 +26,7 @@
       <div v-else class="device-grid">
         <div v-for="device in devices" :key="device.host_identifier" class="device-card" @click="openDevice(device)">
           <div class="device-header">
-            <span class="device-name">{{ device.hostname || device.computer_name || 'Unknown' }}</span>
+            <span class="device-name">{{ displayHost(device) }}</span>
             <span class="device-badge" :class="healthClass(device)">{{ healthLabel(device) }}</span>
           </div>
           <div class="device-model">{{ device.hardware_model }} &middot; {{ device.os_name }} {{ device.os_version }}</div>
@@ -75,7 +75,7 @@
         <div v-else-if="networkDevices.length === 0" class="empty-state">No WiFi data yet</div>
         <div v-else class="network-list">
           <div v-for="n in networkDevices" :key="n.host_identifier" class="network-row">
-            <span class="network-host">{{ n.hostname }}</span>
+            <span class="network-host">{{ displayHost(n) }}</span>
             <span class="network-ssid">{{ n.ssid }}</span>
             <span class="signal-badge" :class="n.quality">{{ n.rssi }} dBm</span>
             <span class="quality-label">{{ n.quality }}</span>
@@ -179,6 +179,7 @@ import BarChart from '../components/BarChart.vue'
 import HeatmapChart from '../components/HeatmapChart.vue'
 import ContributionGrid from '../components/ContributionGrid.vue'
 import DeviceDetail from '../components/DeviceDetail.vue'
+import { displayHost } from '../composables/displayName'
 import DeviceCompare from '../components/DeviceCompare.vue'
 
 const { timeRangeHours } = useTimeRange()

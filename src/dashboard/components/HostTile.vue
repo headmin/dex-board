@@ -5,7 +5,7 @@
         {{ avatarLetter }}
       </div>
       <div class="tile-title">
-        <div class="tile-name" :title="host.hostname">{{ host.hostname || host.host_id?.slice(0, 12) }}</div>
+        <div class="tile-name" :title="displayHost(host)">{{ displayHost(host) }}</div>
         <div class="tile-sub">{{ host.cpu_class || host.cpu_brand || '—' }}</div>
       </div>
     </div>
@@ -50,6 +50,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFleetFilter } from '../composables/useFleetFilter'
+import { displayHost } from '../composables/displayName'
 
 const props = defineProps({
   host: { type: Object, required: true },
@@ -68,7 +69,7 @@ const { searchText } = useFleetFilter()
 // detail drawer. We also seed searchText so the device list below is filtered
 // to the same host, keeping the view visually coherent.
 function openInDex() {
-  searchText.value = props.host.hostname || props.host.host_id || ''
+  searchText.value = displayHost(props.host) || props.host.host_id || ''
   router.push({ path: '/devices', query: { hostId: props.host.host_id } })
 }
 
@@ -93,7 +94,7 @@ const openInFleetUrl = computed(() => {
 // First letter of hostname drives both avatar letter and a deterministic color
 // from a small palette, so each host is visually distinguishable at a glance.
 const avatarLetter = computed(() =>
-  (props.host.hostname || props.host.host_id || '?').charAt(0).toUpperCase()
+  (displayHost(props.host) || '?').charAt(0).toUpperCase()
 )
 
 const avatarColor = computed(() => {

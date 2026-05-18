@@ -10,7 +10,7 @@
     <!-- ── Device Detail Drawer ──────────────────── -->
     <section v-if="selectedDevice" class="device-drawer">
       <div class="drawer-header">
-        <h2>{{ selectedDevice.hostname || selectedDevice.host_id }}</h2>
+        <h2>{{ displayHost(selectedDevice) }}</h2>
         <button class="close-btn" @click="closeDevice">&times;</button>
       </div>
 
@@ -24,7 +24,7 @@
       <!-- Device Wi-Fi timeseries -->
       <TimeSeriesChart
         v-if="deviceWifiTs.length"
-        :title="`RSSI over time — ${selectedDevice.hostname}`"
+        :title="`RSSI over time — ${displayHost(selectedDevice)}`"
         :data="deviceWifiTs"
         :loading="loading.deviceWifi"
         xKey="hour"
@@ -111,7 +111,7 @@
               :class="{ selected: selectedDevice?.host_id === d.host_id }"
               @click="selectDevice(d)"
             >
-              <td class="hostname">{{ d.hostname || d.host_id.slice(0, 12) }}</td>
+              <td class="hostname">{{ displayHost(d) }}</td>
               <td :class="rssiClass(d.rssi)">{{ d.rssi }} dBm</td>
               <td>{{ d.snr }} dB</td>
               <td><span class="quality-badge" :class="d.signal_quality">{{ d.signal_quality }}</span></td>
@@ -173,7 +173,7 @@
                   class="clickable-row"
                   @click="selectDeviceById(h.host_id, h.hostname)"
                 >
-                  <td class="hostname">{{ h.hostname || h.computer_name }}</td>
+                  <td class="hostname">{{ displayHost(h) }}</td>
                   <td>{{ h.cpu_brand }}</td>
                   <td>{{ h.memory_gb }} GB</td>
                   <td>{{ h.hardware_model }}</td>
@@ -205,6 +205,7 @@ import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
 import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
+import { displayHost } from '../composables/displayName'
 import DataTable from '../components/DataTable.vue'
 
 const error = ref(null)

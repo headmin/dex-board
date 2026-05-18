@@ -95,7 +95,7 @@
     <section v-if="selectedDevice" class="device-drawer" ref="drawerRef">
       <div class="drawer-header">
         <div>
-          <h2>{{ selectedDevice.hostname }}</h2>
+          <h2>{{ displayHost(selectedDevice) }}</h2>
           <span class="drawer-sub">{{ selectedDevice.cpu_brand }} · {{ selectedDevice.hardware_model }} · {{ selectedDevice.memory_gb }} GB RAM · {{ selectedDevice.avg_mem_pressure_pct }}% pressure</span>
         </div>
         <button class="close-btn" @click="selectedDevice = null; deviceApps = []">&times;</button>
@@ -139,7 +139,7 @@
           </thead>
           <tbody>
             <tr v-for="d in sortedPressureDevices" :key="d.host_id" class="clickable-row" :class="{ selected: selectedDevice?.host_id === d.host_id }" @click="selectDevice(d)">
-              <td class="hostname">{{ d.hostname }}</td>
+              <td class="hostname">{{ displayHost(d) }}</td>
               <td>{{ d.cpu_brand }}</td>
               <td>{{ d.hardware_model }}</td>
               <td>{{ d.memory_gb }} GB</td>

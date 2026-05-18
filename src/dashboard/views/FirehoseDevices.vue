@@ -112,7 +112,7 @@
       <!-- Device Wi-Fi timeseries -->
       <section class="section" v-if="deviceWifiTs.length">
         <TimeSeriesChart
-          :title="`RSSI — ${detail.hostname || selected.hostname}`"
+          :title="`RSSI — ${displayHost(detail) || displayHost(selected)}`"
           :data="deviceWifiTs"
           :loading="loading.deviceWifi"
           xKey="hour"
@@ -258,7 +258,7 @@
               :class="{ selected: selected?.host_id === d.host_id }"
               @click="selectDevice(d)"
             >
-              <td class="hostname">{{ d.hostname || d.computer_name || d.host_id.slice(0, 12) }}</td>
+              <td class="hostname">{{ displayHost(d) }}</td>
               <td>{{ d.hardware_model }}</td>
               <td>{{ d.cpu_brand }}</td>
               <td>{{ d.memory_gb }} GB</td>
