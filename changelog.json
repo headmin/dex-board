@@ -1,5 +1,16 @@
 [
   {
+    "sha": "75295ae163a98048c9f4d381ac2475f395e130ec",
+    "short_sha": "75295ae163",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update npm supply chain compromised packages list (#45817)",
+    "timestamp": "2026-05-19T11:16:53-05:00",
+    "files": [
+      "it-and-security/lib/all/policies/npm-supply-chain-compromised-packages.yml"
+    ]
+  },
+  {
     "sha": "96b1ebde7b3dfd0278d71244297f2ef430614906",
     "short_sha": "96b1ebde7b",
     "author": "Allen Houchins",
@@ -6377,19 +6388,6 @@
       "it-and-security/teams/servers-canary.yml",
       "it-and-security/teams/servers.yml",
       "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "311a24c546d59b74faaabcf9fd57832d30503fe7",
-    "short_sha": "311a24c546",
-    "author": "JD",
-    "email": "spokanemac@users.noreply.github.com",
-    "message": "Zoom software self service to use Apple Silicon (#20767)",
-    "timestamp": "2024-07-26T08:57:46-06:00",
-    "files": [
-      "it-and-security/lib/macos-check-if-apple-silicon.queries.yml",
-      "it-and-security/lib/macos-intel.queries.yml",
       "it-and-security/teams/workstations.yml"
     ]
   }
