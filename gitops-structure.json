@@ -1,14 +1,14 @@
 {
-  "generated": "2026-05-21T18:35:25Z",
+  "generated": "2026-05-22T00:28:14Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "75295ae163a98048c9f4d381ac2475f395e130ec",
-    "short_sha": "75295ae163",
-    "message": "Update npm supply chain compromised packages list (#45817)",
-    "timestamp": "2026-05-19T11:16:53-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/75295ae163a98048c9f4d381ac2475f395e130ec"
+    "sha": "537cb3e933d2f26f07f8e437700e47f19bd2703b",
+    "short_sha": "537cb3e933",
+    "message": "Adding sec posture query, expand dex queries to testing & qa team (#46021)",
+    "timestamp": "2026-05-21T14:06:22-07:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/537cb3e933d2f26f07f8e437700e47f19bd2703b"
   },
   "fleets": [
     {
