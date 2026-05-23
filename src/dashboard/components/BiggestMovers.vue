@@ -19,6 +19,12 @@
             <span class="delta" :class="mover.delta > 0 ? 'delta-up' : 'delta-down'">
               {{ mover.delta > 0 ? '+' : '' }}{{ mover.delta.toFixed(0) }}pt
             </span>
+            <router-link
+              :to="{ path: '/devices', query: { hostId: mover.host_identifier, focus: 'movers' } }"
+              class="mover-inspect-link"
+              :title="`Open ${displayHost(mover)} in host details`"
+              @click.stop
+            >→</router-link>
             <span class="expand-arrow">{{ expandedId === mover.host_identifier ? '▾' : '▸' }}</span>
           </div>
         </div>
@@ -203,6 +209,28 @@ h3 {
   color: var(--fleet-black-33);
   min-width: 16px;
   text-align: center;
+}
+
+.mover-inspect-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  color: var(--fleet-black-50);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.mover-inspect-link:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: var(--fleet-vibrant-blue);
+  color: var(--fleet-vibrant-blue);
+  transform: translateX(1px);
 }
 
 /* ─── Detail drill-down ───────────────────────── */

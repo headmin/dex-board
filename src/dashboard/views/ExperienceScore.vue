@@ -267,8 +267,14 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="d in filteredDeviceList" :key="d.host_id">
-                <td class="device-hostname">{{ displayHost(d) }}</td>
+              <tr v-for="d in filteredDeviceList" :key="d.host_id"
+                  class="device-row-clickable"
+                  :title="`Open ${displayHost(d)} in host details`"
+                  @click="inspectHost(d.host_id)">
+                <td class="device-hostname">
+                  {{ displayHost(d) }}
+                  <span class="device-row-cta">→</span>
+                </td>
                 <td class="device-score-cell">{{ d.composite_score }}</td>
                 <td><GradeBadge :grade="d.composite_grade" /></td>
                 <td class="device-score-cell" :style="{ color: signalColor(d.device_health_score) }">{{ d.device_health_score }}</td>
@@ -301,6 +307,13 @@ import { useTimeRange } from '../composables/useTimeRange'
 import TimeRangeFilter from '../components/TimeRangeFilter.vue'
 import GradeCard from '../components/GradeCard.vue'
 import SparklineChart from '../components/SparklineChart.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+function inspectHost(hostId) {
+  if (!hostId) return
+  router.push({ path: '/devices', query: { hostId } })
+}
 import GradeBadge from '../components/GradeBadge.vue'
 import SkeletonLoader from '../components/SkeletonLoader.vue'
 import { useWorkersCouncil } from '../composables/useWorkersCouncil'
@@ -1739,6 +1752,32 @@ onMounted(() => {
 
 .device-table tbody tr:hover {
   background: var(--fleet-black-5);
+}
+
+.device-row-clickable {
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.device-row-clickable:hover {
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.device-row-clickable:hover .device-hostname {
+  color: var(--fleet-vibrant-blue);
+}
+
+.device-row-cta {
+  display: inline-block;
+  margin-left: 6px;
+  font-weight: 600;
+  color: var(--fleet-black-25);
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.device-row-clickable:hover .device-row-cta {
+  color: var(--fleet-vibrant-blue);
+  transform: translateX(2px);
 }
 
 .device-hostname {
