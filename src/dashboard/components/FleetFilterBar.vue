@@ -46,9 +46,9 @@
         </div>
 
         <div v-if="isFirehose && teamOptions.length" class="field field--inline">
-          <label class="field__label field__label--inline" title="Filter to hosts in a specific Fleet team (extracted from osquery event name)">Team</label>
+          <label class="field__label field__label--inline" title="Filter to hosts in a specific Fleet (extracted from osquery event name; data layer ships as 'team-XXX')">Fleet</label>
           <select v-model="selectedTeam" class="field__input">
-            <option value="">All teams</option>
+            <option value="">All fleets</option>
             <option v-for="t in teamOptions" :key="t" :value="t">{{ t }}</option>
           </select>
         </div>
