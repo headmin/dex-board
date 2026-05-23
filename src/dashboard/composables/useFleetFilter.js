@@ -7,11 +7,13 @@ const selectedOS = ref('')
 const selectedModel = ref('')
 const selectedEncryption = ref('')
 const selectedRAMTier = ref('')
+const selectedTeam = ref('')
 const heatmapMode = ref('unhealthiest')
 
 // Dropdown options
 const osOptions = ref([])
 const modelOptions = ref([])
+const teamOptions = ref([])
 const ramTierOptions = ['8GB', '16GB', '18GB', '24GB', '32GB', '36GB', '48GB', '64GB', '128GB+']
 const deviceCount = ref(0)
 const optionsLoaded = ref(false)
@@ -23,7 +25,7 @@ const firehoseOptionsLoaded = ref(false)
 export function useFleetFilter() {
 
   const isFleetFiltered = computed(() => {
-    return !!(searchText.value.trim() || selectedOS.value || selectedModel.value || selectedEncryption.value || selectedRAMTier.value)
+    return !!(searchText.value.trim() || selectedOS.value || selectedModel.value || selectedEncryption.value || selectedRAMTier.value || selectedTeam.value)
   })
 
   // Param object for API calls — replaces all SQL fragment computeds
@@ -34,6 +36,7 @@ export function useFleetFilter() {
     if (selectedModel.value) params.model = selectedModel.value
     if (selectedEncryption.value) params.encryption = selectedEncryption.value
     if (selectedRAMTier.value) params.ramTier = selectedRAMTier.value
+    if (selectedTeam.value) params.team = selectedTeam.value
     return params
   })
 
@@ -44,6 +47,7 @@ export function useFleetFilter() {
     if (selectedModel.value) parts.push(selectedModel.value)
     if (selectedEncryption.value) parts.push(selectedEncryption.value)
     if (selectedRAMTier.value) parts.push(selectedRAMTier.value)
+    if (selectedTeam.value) parts.push(selectedTeam.value)
     return parts.join(' + ')
   })
 
@@ -67,6 +71,7 @@ export function useFleetFilter() {
       const rows = await query('firehose.devices.filter_options')
       modelOptions.value = rows.filter(r => r.type === 'model').map(r => r.value)
       osOptions.value = rows.filter(r => r.type === 'platform').map(r => r.value)
+      teamOptions.value = rows.filter(r => r.type === 'team').map(r => r.value)
       firehoseOptionsLoaded.value = true
     } catch (e) {
       console.error('Failed to load firehose filter options:', e)
@@ -107,11 +112,13 @@ export function useFleetFilter() {
     selectedModel.value = ''
     selectedEncryption.value = ''
     selectedRAMTier.value = ''
+    selectedTeam.value = ''
   }
 
   function setOSFilter(os) { selectedOS.value = os }
   function setModelFilter(model) { selectedModel.value = model }
   function setRAMFilter(ram) { selectedRAMTier.value = ram }
+  function setTeamFilter(team) { selectedTeam.value = team }
 
   return {
     // State
@@ -120,12 +127,14 @@ export function useFleetFilter() {
     selectedModel,
     selectedEncryption,
     selectedRAMTier,
+    selectedTeam,
     heatmapMode,
     firehoseMode,
 
     // Dropdown data
     osOptions,
     modelOptions,
+    teamOptions,
     ramTierOptions,
     deviceCount,
 
@@ -142,6 +151,7 @@ export function useFleetFilter() {
     setFirehoseMode,
     setOSFilter,
     setModelFilter,
-    setRAMFilter
+    setRAMFilter,
+    setTeamFilter
   }
 }

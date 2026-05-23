@@ -45,6 +45,14 @@
           </select>
         </div>
 
+        <div v-if="isFirehose && teamOptions.length" class="field field--inline">
+          <label class="field__label field__label--inline" title="Filter to hosts in a specific Fleet team (extracted from osquery event name)">Team</label>
+          <select v-model="selectedTeam" class="field__input">
+            <option value="">All teams</option>
+            <option v-for="t in teamOptions" :key="t" :value="t">{{ t }}</option>
+          </select>
+        </div>
+
         <div v-if="!isFirehose" class="field field--inline">
           <label class="field__label field__label--inline">Encryption</label>
           <select v-model="selectedEncryption" class="field__input">
@@ -88,8 +96,8 @@ import { useWorkersCouncil } from '../composables/useWorkersCouncil'
 const route = useRoute()
 
 const {
-  searchText, selectedOS, selectedModel, selectedEncryption, selectedRAMTier,
-  osOptions, modelOptions, ramTierOptions, deviceCount, firehoseMode,
+  searchText, selectedOS, selectedModel, selectedEncryption, selectedRAMTier, selectedTeam,
+  osOptions, modelOptions, teamOptions, ramTierOptions, deviceCount, firehoseMode,
   isFleetFiltered, clearFleetFilter,
   loadFilterOptions, fetchDeviceCount, setFirehoseMode
 } = useFleetFilter()

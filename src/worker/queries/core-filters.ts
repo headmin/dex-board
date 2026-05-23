@@ -21,6 +21,7 @@ export const FILTER_PARAMS = [
   { name: 'model', type: 'string' as const, required: false },
   { name: 'ramTier', type: 'string' as const, required: false },
   { name: 'os', type: 'string' as const, required: false },
+  { name: 'team', type: 'string' as const, required: false },
 ]
 
 /**
@@ -46,6 +47,12 @@ filtered_hosts AS (
     SELECT host_id, argMax(platform, timestamp) AS platform
     FROM fleetd_info GROUP BY host_id
   ) fi ON hi.host_id = fi.host_id
+  LEFT JOIN (
+    -- Most recent team per host. host_teams holds one row per (host, team)
+    -- pair with last_seen; argMax picks the latest team if a host moved.
+    SELECT host_id, argMax(team_id, last_seen) AS team_id
+    FROM host_teams GROUP BY host_id
+  ) ht ON hi.host_id = ht.host_id
   WHERE 1=1
     AND if({filterSearch:String} != '',
       hi.hostname LIKE concat('%', {filterSearch:String}, '%')
@@ -54,6 +61,7 @@ filtered_hosts AS (
       true)
     AND if({filterModel:String} != '', hi.hardware_model = {filterModel:String}, true)
     AND if({filterOs:String} != '', fi.platform = {filterOs:String}, true)
+    AND if({filterTeam:String} != '', ht.team_id = {filterTeam:String}, true)
     -- RAM filter is "at most N GB" (inclusive) — selecting 24GB returns
     -- hosts with <= 24GB (i.e. 8, 16, 18, 24). "128GB+" effectively matches all.
     AND if({filterRamTier:String} != '', hi.memory_gb <= multiIf(

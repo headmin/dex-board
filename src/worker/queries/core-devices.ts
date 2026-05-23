@@ -204,6 +204,14 @@ export const firehoseDeviceQueries: QueryConfig[] = [
       GROUP BY platform
       HAVING platform != ''
       ORDER BY count() DESC
+
+      UNION ALL
+
+      SELECT 'team' AS type, team_id AS value
+      FROM host_teams
+      WHERE team_id != ''
+      GROUP BY team_id
+      ORDER BY count() DESC
     `,
   },
   {

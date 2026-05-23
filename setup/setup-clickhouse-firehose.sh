@@ -704,6 +704,45 @@ $SECURITY_POSTURE_SELECT
 echo "  → security_posture rows: $(count_table security_posture)"
 echo ""
 
+# ── 13. Host Teams (derived from event 'name' column) ─────
+# Each Fleet osquery event name is prefixed with the pack path:
+#   pack/team-275/DEX - System experience - OS health
+# We extract `team-XXX` from that prefix to give us a per-host team mapping.
+# ReplacingMergeTree dedupes per (host_id, team_id), last_seen wins — so if a
+# host moves between teams over time, both rows are kept, and queries that
+# need "latest team" do `argMax(team_id, last_seen) GROUP BY host_id`.
+echo "13/13 Host Teams"
+run_sql "CREATE TABLE host_teams" "
+CREATE TABLE IF NOT EXISTS host_teams (
+    host_id     String,
+    team_id     LowCardinality(String),
+    first_seen  DateTime64(9),
+    last_seen   DateTime64(9)
+) ENGINE = ReplacingMergeTree(last_seen) ORDER BY (host_id, team_id)
+"
+
+HOST_TEAMS_SELECT="
+SELECT
+    hostIdentifier AS host_id,
+    extract(name, 'pack/(team-[0-9]+)/') AS team_id,
+    calendarTime AS first_seen,
+    calendarTime AS last_seen
+FROM \`$CLICKPIPE_TABLE\`
+WHERE name LIKE 'pack/team-%/%'
+"
+
+run_sql "CREATE MV host_teams_mv" "
+CREATE MATERIALIZED VIEW IF NOT EXISTS host_teams_mv TO host_teams AS
+$HOST_TEAMS_SELECT
+"
+
+(( SKIP_BACKFILL )) && echo "  skip BACKFILL host_teams (--skip-backfill)" || run_sql "BACKFILL host_teams" "
+INSERT INTO host_teams
+$HOST_TEAMS_SELECT
+"
+echo "  → host_teams rows: $(count_table host_teams)"
+echo ""
+
 # ── Summary ──────────────────────────────────────────────
 echo "=== Done! ==="
 echo ""
@@ -720,5 +759,6 @@ echo "  crash_summary       $(count_table crash_summary) rows"
 echo "  crash_detail        $(count_table crash_detail) rows"
 echo "  adoption_gap        $(count_table adoption_gap) rows"
 echo "  security_posture    $(count_table security_posture) rows"
+echo "  host_teams          $(count_table host_teams) rows"
 echo ""
 echo "Materialized views active — new S3 ClickPipe inserts will auto-transform."

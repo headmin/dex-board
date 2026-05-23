@@ -106,6 +106,7 @@ export function buildFilters(params: Record<string, string | number>): FilterRes
   if (!queryParams.filterModel) queryParams.filterModel = params.model || ''
   if (!queryParams.filterRamTier) queryParams.filterRamTier = params.ramTier || ''
   if (!queryParams.filterOs) queryParams.filterOs = params.os || ''
+  if (!queryParams.filterTeam) queryParams.filterTeam = params.team || ''
 
   // Limit — parameterized
   if (params.limit) {
