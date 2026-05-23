@@ -1,5 +1,28 @@
 [
   {
+    "sha": "537cb3e933d2f26f07f8e437700e47f19bd2703b",
+    "short_sha": "537cb3e933",
+    "author": "Harrison Ravazzolo",
+    "email": "38767391+harrisonravazzolo@users.noreply.github.com",
+    "message": "Adding sec posture query, expand dex queries to testing & qa team (#46021)",
+    "timestamp": "2026-05-21T14:06:22-07:00",
+    "files": [
+      "it-and-security/fleets/testing-and-qa.yml",
+      "it-and-security/lib/all/reports/dex-queries.yml"
+    ]
+  },
+  {
+    "sha": "75295ae163a98048c9f4d381ac2475f395e130ec",
+    "short_sha": "75295ae163",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update npm supply chain compromised packages list (#45817)",
+    "timestamp": "2026-05-19T11:16:53-05:00",
+    "files": [
+      "it-and-security/lib/all/policies/npm-supply-chain-compromised-packages.yml"
+    ]
+  },
+  {
     "sha": "96b1ebde7b3dfd0278d71244297f2ef430614906",
     "short_sha": "96b1ebde7b",
     "author": "Allen Houchins",
@@ -6358,38 +6381,6 @@
       "it-and-security/teams/company-owned-ipads.yml",
       "it-and-security/teams/company-owned-iphones.yml",
       "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "b2cfc4082e174f0399a99c68c6b3a35fbd3b22d3",
-    "short_sha": "b2cfc4082e",
-    "author": "Victor Lyuboslavsky",
-    "email": "victor.lyuboslavsky@gmail.com",
-    "message": "Added required \"software\" for GitOps YAML (#21271)",
-    "timestamp": "2024-08-13T16:03:29+02:00",
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/teams/company-owned-ipads.yml",
-      "it-and-security/teams/company-owned-iphones.yml",
-      "it-and-security/teams/compliance-exclusions.yml",
-      "it-and-security/teams/explore-data.yml",
-      "it-and-security/teams/servers-canary.yml",
-      "it-and-security/teams/servers.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "311a24c546d59b74faaabcf9fd57832d30503fe7",
-    "short_sha": "311a24c546",
-    "author": "JD",
-    "email": "spokanemac@users.noreply.github.com",
-    "message": "Zoom software self service to use Apple Silicon (#20767)",
-    "timestamp": "2024-07-26T08:57:46-06:00",
-    "files": [
-      "it-and-security/lib/macos-check-if-apple-silicon.queries.yml",
-      "it-and-security/lib/macos-intel.queries.yml",
       "it-and-security/teams/workstations.yml"
     ]
   }
