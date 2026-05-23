@@ -90,17 +90,35 @@
         <MetricCard label="Uptime" :value="formatUptime(detail.uptime_seconds)" :loading="loading.detail" />
       </div>
 
-      <!-- Health, OS & VPN badges -->
+      <!-- Health, OS & VPN badges — colored dot + label : value -->
       <div v-if="deviceHealth.cpu_class || deviceOS.os_version || deviceVPN.network_confidence" class="detail-badges">
-        <span v-if="deviceHealth.cpu_class" class="badge">{{ deviceHealth.cpu_class }}</span>
-        <span v-if="deviceHealth.ram_tier" class="badge">{{ deviceHealth.ram_tier }}</span>
-        <span v-if="deviceHealth.swap_pressure" class="badge" :class="'swap-' + deviceHealth.swap_pressure">swap: {{ deviceHealth.swap_pressure }}</span>
-        <span v-if="deviceHealth.battery_health_score" class="badge" :class="'batt-' + deviceHealth.battery_health_score">battery: {{ deviceHealth.battery_health_score }} ({{ deviceHealth.battery_percent }}%)</span>
-        <span v-if="deviceOS.os_version" class="badge">macOS {{ deviceOS.os_version }}</span>
-        <span v-if="deviceOS.os_currency" class="badge" :class="'os-' + deviceOS.os_currency">{{ deviceOS.os_currency }}</span>
-        <span v-if="deviceOS.uptime_risk" class="badge" :class="'uptime-' + deviceOS.uptime_risk">uptime: {{ deviceOS.uptime_days }}d ({{ deviceOS.uptime_risk }})</span>
-        <span v-if="deviceOS.dex_os_health" class="badge" :class="'dex-' + deviceOS.dex_os_health">OS: {{ deviceOS.dex_os_health }}</span>
-        <span v-if="deviceVPN.network_confidence" class="badge" :class="'vpn-' + deviceVPN.network_confidence">{{ deviceVPN.network_confidence }}</span>
+        <span v-if="deviceHealth.cpu_class" class="badge">
+          <span class="badge-key">CPU</span><span class="badge-val">{{ deviceHealth.cpu_class }}</span>
+        </span>
+        <span v-if="deviceHealth.ram_tier" class="badge">
+          <span class="badge-key">RAM</span><span class="badge-val">{{ deviceHealth.ram_tier }}</span>
+        </span>
+        <span v-if="deviceHealth.swap_pressure" class="badge" :class="'swap-' + deviceHealth.swap_pressure">
+          <span class="badge-key">Swap</span><span class="badge-val">{{ deviceHealth.swap_pressure }}</span>
+        </span>
+        <span v-if="deviceHealth.battery_health_score" class="badge" :class="'batt-' + deviceHealth.battery_health_score">
+          <span class="badge-key">Battery</span><span class="badge-val">{{ deviceHealth.battery_health_score }} ({{ deviceHealth.battery_percent }}%)</span>
+        </span>
+        <span v-if="deviceOS.os_version" class="badge">
+          <span class="badge-key">macOS</span><span class="badge-val">{{ deviceOS.os_version }}</span>
+        </span>
+        <span v-if="deviceOS.os_currency" class="badge" :class="'os-' + deviceOS.os_currency">
+          <span class="badge-key">OS currency</span><span class="badge-val">{{ deviceOS.os_currency }}</span>
+        </span>
+        <span v-if="deviceOS.uptime_risk" class="badge" :class="'uptime-' + deviceOS.uptime_risk">
+          <span class="badge-key">Uptime</span><span class="badge-val">{{ deviceOS.uptime_days }}d ({{ deviceOS.uptime_risk }})</span>
+        </span>
+        <span v-if="deviceOS.dex_os_health" class="badge" :class="'dex-' + deviceOS.dex_os_health">
+          <span class="badge-key">OS health</span><span class="badge-val">{{ deviceOS.dex_os_health }}</span>
+        </span>
+        <span v-if="deviceVPN.network_confidence" class="badge" :class="'vpn-' + deviceVPN.network_confidence">
+          <span class="badge-key">Network</span><span class="badge-val">{{ deviceVPN.network_confidence }}</span>
+        </span>
       </div>
 
       <!-- Crashes -->
@@ -914,7 +932,10 @@ h3 { font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black)
 
 /* Detail badges */
 .detail-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
-.badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 500; background: var(--fleet-off-white); color: var(--fleet-black-75); border: 1px solid var(--fleet-black-10); }
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 12px; font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 500; background: var(--fleet-off-white); color: var(--fleet-black-75); border: 1px solid var(--fleet-black-10); line-height: 1.5; }
+.badge::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.55; flex-shrink: 0; }
+.badge-key { color: var(--fleet-black-50); font-weight: 500; text-transform: lowercase; }
+.badge-val { color: inherit; font-weight: 600; }
 .swap-severe { background: var(--fleet-status-error-light); color: var(--fleet-status-error); border-color: #fecaca; }
 .swap-elevated { background: #fffbeb; color: var(--fleet-status-warning-dark); border-color: #fde68a; }
 .swap-light { background: #f0fdf4; color: var(--fleet-status-success); border-color: #bbf7d0; }

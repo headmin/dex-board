@@ -159,7 +159,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM device_health GROUP BY host_id
       )
-        AND if({hostId:String} != '', host_id = {hostId:String}, true)
+        AND if({filterHostId:String} != '', host_id = {filterHostId:String}, true)
       ORDER BY hostname
       {{LIMIT}}
     `,
@@ -295,7 +295,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM os_health GROUP BY host_id
       )
-        AND if({hostId:String} != '', host_id = {hostId:String}, true)
+        AND if({filterHostId:String} != '', host_id = {filterHostId:String}, true)
       ORDER BY hostname
       {{LIMIT}}
     `,
