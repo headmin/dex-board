@@ -55,37 +55,35 @@
     <!-- ─── Per-Fleet breakdown ────────────────────────────── -->
     <!-- Always rendered (reserved layout) when any team exists, to avoid
          the filter-bar selection causing the rest of the page to jump. -->
-    <section v-show="teamRows.length || teamUnscorableCount" class="team-breakdown">
+    <section v-show="teamRows.length" class="team-breakdown">
       <div class="team-breakdown-header">
         <h3>Per-fleet breakdown</h3>
         <span class="team-breakdown-note">composite score grouped by Fleet (team-XXX) — small cohorts are noisy, watch the host count</span>
       </div>
       <div class="team-breakdown-grid">
-        <div v-for="t in teamRows" :key="t.team_id" class="team-card">
+        <div v-for="t in teamRows" :key="t.team_id" class="team-card" :class="{ 'team-card--missing': t.unscorable }">
           <div class="team-card-head">
             <span class="team-card-id">{{ t.team_id }}</span>
-            <span class="team-card-hosts">{{ t.hosts }} host{{ t.hosts === 1 ? '' : 's' }}</span>
+            <span class="team-card-hosts">{{ t.unscorable ? 'no scorable hosts' : `${t.hosts} host${t.hosts === 1 ? '' : 's'}` }}</span>
           </div>
-          <div class="team-card-grade-row">
-            <span class="team-card-grade" :class="'grade-' + (scoreToGrade(t.avg_composite) || '').toLowerCase()">{{ scoreToGrade(t.avg_composite) }}</span>
-            <span class="team-card-score">{{ t.avg_composite != null ? t.avg_composite.toFixed(0) : '—' }}<span class="team-card-score-max">/100</span></span>
-          </div>
-          <div class="team-card-cats">
-            <span class="team-cat" :title="`Device Health: ${t.avg_device_health}`"><span class="team-cat-key">DH</span><span class="team-cat-val">{{ t.avg_device_health != null ? t.avg_device_health.toFixed(0) : '—' }}</span></span>
-            <span class="team-cat" :title="`Performance: ${t.avg_performance}`"><span class="team-cat-key">Perf</span><span class="team-cat-val">{{ t.avg_performance != null ? t.avg_performance.toFixed(0) : '—' }}</span></span>
-            <span class="team-cat" :title="`Security: ${t.avg_security}`"><span class="team-cat-key">Sec</span><span class="team-cat-val">{{ t.avg_security != null ? t.avg_security.toFixed(0) : '—' }}</span></span>
-            <span class="team-cat" :title="`Software: ${t.avg_software}`"><span class="team-cat-key">SW</span><span class="team-cat-val">{{ t.avg_software != null ? t.avg_software.toFixed(0) : '—' }}</span></span>
-          </div>
-        </div>
-        <div v-if="teamUnscorableCount" class="team-card team-card--missing">
-          <div class="team-card-head">
-            <span class="team-card-id">Fleets w/o scorable hosts</span>
-            <span class="team-card-hosts">{{ teamUnscorableCount }} fleet{{ teamUnscorableCount === 1 ? '' : 's' }}</span>
-          </div>
-          <div class="team-card-missing">
-            Hosts are visible in <code>host_teams</code> but don't currently run the
-            Hardware-experience + Device-health schedules required to score.
-          </div>
+          <template v-if="!t.unscorable">
+            <div class="team-card-grade-row">
+              <span class="team-card-grade" :class="'grade-' + (scoreToGrade(t.avg_composite) || '').toLowerCase()">{{ scoreToGrade(t.avg_composite) }}</span>
+              <span class="team-card-score">{{ t.avg_composite != null ? t.avg_composite.toFixed(0) : '—' }}<span class="team-card-score-max">/100</span></span>
+            </div>
+            <div class="team-card-cats">
+              <span class="team-cat" :title="`Device Health: ${t.avg_device_health}`"><span class="team-cat-key">DH</span><span class="team-cat-val">{{ t.avg_device_health != null ? t.avg_device_health.toFixed(0) : '—' }}</span></span>
+              <span class="team-cat" :title="`Performance: ${t.avg_performance}`"><span class="team-cat-key">Perf</span><span class="team-cat-val">{{ t.avg_performance != null ? t.avg_performance.toFixed(0) : '—' }}</span></span>
+              <span class="team-cat" :title="`Security: ${t.avg_security}`"><span class="team-cat-key">Sec</span><span class="team-cat-val">{{ t.avg_security != null ? t.avg_security.toFixed(0) : '—' }}</span></span>
+              <span class="team-cat" :title="`Software: ${t.avg_software}`"><span class="team-cat-key">SW</span><span class="team-cat-val">{{ t.avg_software != null ? t.avg_software.toFixed(0) : '—' }}</span></span>
+            </div>
+          </template>
+          <template v-else>
+            <div class="team-card-missing">
+              Hosts visible in <code>host_teams</code> but don't currently run the
+              Hardware-experience + Device-health schedules required to score.
+            </div>
+          </template>
         </div>
       </div>
     </section>
