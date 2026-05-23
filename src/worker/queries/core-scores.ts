@@ -18,6 +18,24 @@
 import type { QueryConfig } from '../types'
 import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
+// Score queries take FILTER_PARAMS + asOfDaysAgo. The asOf param turns the
+// composite into a snapshot of the fleet's state N days back (default 0 = now).
+// Used by the Δ-vs-7d-ago tile and the 30-day trend sparkline.
+const AS_OF_PARAM = {
+  name: 'asOfDaysAgo',
+  type: 'number' as const,
+  required: false,
+  min: 0,
+  max: 365,
+  default: 0,
+}
+const SCORE_PARAMS = [...FILTER_PARAMS, AS_OF_PARAM]
+
+// Inline this WHERE clause into every per-table subquery in DEVICE_SCORES_CTE
+// so argMax(field, timestamp) returns "the value as of N days ago" instead of
+// "the value right now."
+const AS_OF_WHERE = `timestamp <= now() - toIntervalDay({asOfDaysAgo:UInt32})`
+
 // ── Per-device score CTE ─────────────────────────────────
 // Reusable WITH clause that computes all 5 category scores per device.
 // Now prefixes filtered_hosts so the scoring set respects the fleet filter bar.
@@ -142,6 +160,7 @@ device_scores AS (
       argMax(compression_pressure, timestamp) AS compression_pressure
     FROM device_health
     WHERE host_id IN (SELECT host_id FROM filtered_hosts)
+      AND ${AS_OF_WHERE}
     GROUP BY host_id
   ) h
   LEFT JOIN (
@@ -149,28 +168,32 @@ device_scores AS (
       argMax(os_currency, timestamp) AS os_currency,
       argMax(uptime_risk, timestamp) AS uptime_risk,
       argMax(dex_os_health, timestamp) AS dex_os_health
-    FROM os_health GROUP BY host_id
+    FROM os_health WHERE ${AS_OF_WHERE} GROUP BY host_id
   ) o ON h.host_id = o.host_id
   LEFT JOIN (
     SELECT host_id, max(rss_mb) AS max_rss_mb
-    FROM process_health GROUP BY host_id
+    FROM process_health WHERE ${AS_OF_WHERE} GROUP BY host_id
   ) p ON h.host_id = p.host_id
   LEFT JOIN (
     SELECT host_id,
       argMax(rssi, timestamp) AS rssi,
       argMax(snr, timestamp) AS snr,
       argMax(transmit_rate, timestamp) AS transmit_rate
-    FROM wifi_signal GROUP BY host_id
+    FROM wifi_signal WHERE ${AS_OF_WHERE} GROUP BY host_id
   ) w ON h.host_id = w.host_id
   LEFT JOIN (
     SELECT host_id,
       argMax(network_confidence, timestamp) AS network_confidence
-    FROM vpn_gate GROUP BY host_id
+    FROM vpn_gate WHERE ${AS_OF_WHERE} GROUP BY host_id
   ) v ON h.host_id = v.host_id
   LEFT JOIN (
     SELECT host_id, sum(crash_count_7d) AS total_crashes
     FROM crash_summary
-    WHERE (host_id, timestamp) IN (SELECT host_id, max(timestamp) FROM crash_summary GROUP BY host_id)
+    WHERE ${AS_OF_WHERE}
+      AND (host_id, timestamp) IN (
+        SELECT host_id, max(timestamp) FROM crash_summary
+        WHERE ${AS_OF_WHERE} GROUP BY host_id
+      )
     GROUP BY host_id
   ) c ON h.host_id = c.host_id
   LEFT JOIN (
@@ -178,7 +201,11 @@ device_scores AS (
       count() AS app_count,
       countIf(usage_tier IN ('active_today', 'active_week')) * 100.0 / count() AS active_pct
     FROM adoption_gap
-    WHERE (host_id, timestamp) IN (SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id)
+    WHERE ${AS_OF_WHERE}
+      AND (host_id, timestamp) IN (
+        SELECT host_id, max(timestamp) FROM adoption_gap
+        WHERE ${AS_OF_WHERE} GROUP BY host_id
+      )
     GROUP BY host_id
   ) a ON h.host_id = a.host_id
   LEFT JOIN (
@@ -187,7 +214,7 @@ device_scores AS (
       argMax(firewall_enabled,   timestamp) AS firewall_enabled,
       argMax(gatekeeper_enabled, timestamp) AS gatekeeper_enabled,
       argMax(sip_enabled,        timestamp) AS sip_enabled
-    FROM security_posture GROUP BY host_id
+    FROM security_posture WHERE ${AS_OF_WHERE} GROUP BY host_id
   ) sp ON h.host_id = sp.host_id
 ),
 scored AS (
@@ -210,7 +237,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Fleet composite score average and device count',
-    params: [...FILTER_PARAMS],
+    params: [...SCORE_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -224,7 +251,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Per-category score averages',
-    params: [...FILTER_PARAMS],
+    params: [...SCORE_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -242,7 +269,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Grade A/B/C/D/F device counts (composite)',
-    params: [...FILTER_PARAMS],
+    params: [...SCORE_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT composite_grade AS grade, count() AS cnt
@@ -257,7 +284,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     client: 'core',
     description: 'Grade A/B/C/D/F device counts for a specific category',
     params: [
-      ...FILTER_PARAMS,
+      ...SCORE_PARAMS,
       { name: 'category', type: 'enum' as const, required: true, values: ['device_health', 'performance', 'network', 'security', 'software', 'composite'] },
     ],
     sql: `
@@ -295,7 +322,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     client: 'core',
     description: 'Per-device scores with all categories',
     params: [
-      ...FILTER_PARAMS,
+      ...SCORE_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 500, default: 200 },
     ],
     sql: `
@@ -360,7 +387,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     client: 'core',
     description: 'Single-device latest scores + meta (firehose-side replacement for scores.device_latest)',
     params: [
-      ...FILTER_PARAMS,
+      ...SCORE_PARAMS,
       { name: 'hostIdentifier', type: 'string' as const, required: true },
     ],
     sql: `
@@ -400,7 +427,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Average scores broken down by OS currency',
-    params: [...FILTER_PARAMS],
+    params: [...SCORE_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -426,7 +453,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Average scores broken down by hardware model',
-    params: [...FILTER_PARAMS],
+    params: [...SCORE_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -452,7 +479,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Average scores broken down by RAM tier',
-    params: [...FILTER_PARAMS],
+    params: [...SCORE_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -474,7 +501,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Average scores broken down by CPU class',
-    params: [...FILTER_PARAMS],
+    params: [...SCORE_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -496,7 +523,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Average scores broken down by swap pressure',
-    params: [...FILTER_PARAMS],
+    params: [...SCORE_PARAMS],
     sql: `
       ${DEVICE_SCORES_CTE}
       SELECT
@@ -523,7 +550,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     client: 'core',
     description: 'Devices with the largest score change vs 7 days ago',
     params: [
-      ...FILTER_PARAMS,
+      ...SCORE_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 50, default: 10 },
     ],
     sql: `

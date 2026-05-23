@@ -7,9 +7,14 @@
         <span class="header-subtitle">Fleet-wide digital employee experience</span>
       </div>
       <div class="header-right">
-        <TimeRangeFilter />
+        <div class="time-range-group">
+          <TimeRangeFilter />
+          <span class="time-range-hint" title="Composite & category grades reflect the latest snapshot of each host. The time range here filters drill-downs (Signal Breakdown, Biggest Movers, distributions) only.">
+            ⓘ filters drill-downs
+          </span>
+        </div>
         <div class="comparison-label">
-          vs. prior {{ comparisonLabel }}
+          composite Δ vs 7 days ago · 30-day trend
         </div>
       </div>
     </section>
@@ -393,23 +398,43 @@ function scoreToGrade(score) {
   return 'F'
 }
 
-// ─── Fetch Fleet Score ────────────────────────────────────────
+// ─── Fetch Fleet Score (now + 7d ago for Δ tile + 30d sparkline) ──
 async function fetchFleetScore() {
   loading.value.fleet = true
   try {
-    const [summaryRows] = await Promise.all([
-      query('firehose.scores.fleet_summary', queryParams.value),
+    // Current + 7-days-ago in parallel, plus 30 daily samples for the sparkline.
+    // Each call hits the same fleet_summary endpoint with a different asOfDaysAgo
+    // value — the worker SQL filters timestamp <= now() - toIntervalDay(N).
+    const trendDays = 30
+    const trendRequests = Array.from({ length: trendDays }, (_, i) =>
+      query('firehose.scores.fleet_summary', { ...queryParams.value, asOfDaysAgo: i })
+    )
+    const sevenDayRequest = query('firehose.scores.fleet_summary', { ...queryParams.value, asOfDaysAgo: 7 })
+
+    const [trendRows, sevenDayRows] = await Promise.all([
+      Promise.all(trendRequests),
+      sevenDayRequest,
     ])
 
-    const score = summaryRows[0]?.avg_score ?? null
-    const count = summaryRows[0]?.device_count ?? 0
+    const score = trendRows[0]?.[0]?.avg_score ?? null
+    const count = trendRows[0]?.[0]?.device_count ?? 0
+    const sevenDayScore = sevenDayRows[0]?.avg_score ?? null
+    const delta = (score != null && sevenDayScore != null)
+      ? Math.round((score - sevenDayScore) * 10) / 10
+      : null
+
+    // Sparkline: newest → oldest from trendRequests, so reverse to oldest → newest.
+    const sparkline = trendRows
+      .map((rows, i) => ({ daysAgo: i, score: rows?.[0]?.avg_score ?? null }))
+      .reverse()
+      .map(p => p.score)
 
     fleet.value = {
       grade: scoreToGrade(score),
       score,
-      delta: null,  // No comparison period in firehose yet
-      sparkline: [],
-      deviceCount: count
+      delta,
+      sparkline,
+      deviceCount: count,
     }
   } catch (e) {
     console.error('Fleet score fetch failed:', e)
@@ -984,6 +1009,19 @@ onMounted(() => {
   font-size: var(--font-size-xs);
   color: var(--fleet-black-50);
   font-style: italic;
+}
+
+.time-range-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-range-hint {
+  font-size: 11px;
+  color: var(--fleet-black-50);
+  font-style: italic;
+  cursor: help;
 }
 
 /* ─── Hero: fleet-wide composite ──────────────── */
