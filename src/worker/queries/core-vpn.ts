@@ -33,9 +33,10 @@ export const firehoseVpnQueries: QueryConfig[] = [
     name: 'firehose.vpn.list',
     domain: 'network',
     client: 'core',
-    description: 'Per-device VPN/network status',
+    description: 'Per-device VPN/network status. Pass hostId to fetch one host.',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 500, default: 200 },
+      { name: 'hostId', type: 'string' as const, required: false },
     ],
     sql: `
       SELECT
@@ -52,6 +53,7 @@ export const firehoseVpnQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM vpn_gate GROUP BY host_id
       )
+        AND if({hostId:String} != '', host_id = {hostId:String}, true)
       ORDER BY hostname
       {{LIMIT}}
     `,

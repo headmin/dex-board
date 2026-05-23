@@ -238,8 +238,12 @@
         </div>
       </section>
 
-      <div v-if="detail.last_error" class="error-box">
-        <strong>Last fleetd error:</strong>
+      <div v-if="detail.last_error" class="error-box" :class="{ 'error-box--stale': fleetdErrorIsStale }">
+        <div class="error-box-head">
+          <strong>Last fleetd error</strong>
+          <span v-if="fleetdErrorRelative" class="error-box-time">{{ fleetdErrorRelative }}</span>
+          <span v-if="fleetdErrorIsStale" class="error-box-stale-tag">stale — not a current incident</span>
+        </div>
         <pre>{{ detail.last_error }}</pre>
       </div>
     </section>
@@ -308,6 +312,7 @@ import ScoreDriverPanel from '../components/ScoreDriverPanel.vue'
 import DeviceCompare from '../components/DeviceCompare.vue'
 import { buildSignalDrivers } from '../composables/scoreFormulas'
 import { displayHost } from '../composables/displayName'
+import dayjs from 'dayjs'
 import { useAppConfig } from '../composables/useAppConfig'
 import { useNow } from '../composables/useNow'
 import { useRouter } from 'vue-router'
@@ -350,6 +355,30 @@ const sortCol = ref('hostname')
 const sortAsc = ref(true)
 const appSortCol = ref('memory_mb')
 const appSortAsc = ref(false)  // memory desc by default — biggest hogs at the top
+
+// Fleetd's last_error field starts with an ISO timestamp ("2026-02-17T21:02:22Z: …").
+// Parse that out so we can show how old the error is and grey out anything older
+// than 30 days (likely a long-resolved transient, not a current incident).
+const fleetdErrorParsedAt = computed(() => {
+  const raw = detail.value?.last_error
+  if (!raw) return null
+  const m = raw.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)/)
+  return m ? dayjs(m[1]) : null
+})
+const fleetdErrorRelative = computed(() => {
+  const t = fleetdErrorParsedAt.value
+  if (!t || !t.isValid()) return ''
+  const days = dayjs().diff(t, 'day')
+  if (days >= 30) return t.format('YYYY-MM-DD') + ` · ${days} days ago`
+  if (days >= 1)  return `${days} day${days === 1 ? '' : 's'} ago`
+  const hours = dayjs().diff(t, 'hour')
+  if (hours >= 1) return `${hours}h ago`
+  return 'just now'
+})
+const fleetdErrorIsStale = computed(() => {
+  const t = fleetdErrorParsedAt.value
+  return !!(t && t.isValid() && dayjs().diff(t, 'day') >= 30)
+})
 
 const selected = ref(null)
 const detail = ref({})
@@ -577,9 +606,9 @@ async function selectDevice(device) {
       query('firehose.devices.detail', { hostId: device.host_id }).catch(() => []),
       query('firehose.wifi.device_timeseries', { hostId: device.host_id }).catch(() => []),
       query('firehose.apps.per_device', { hostId: device.host_id }).catch(() => []),
-      query('firehose.health.device_list', { limit: 1 }).then(r => r.filter(d => d.host_id === device.host_id)).catch(() => []),
-      query('firehose.health.os_list', { limit: 1 }).then(r => r.filter(d => d.host_id === device.host_id)).catch(() => []),
-      query('firehose.vpn.list', { limit: 500 }).then(r => r.filter(d => d.host_id === device.host_id)).catch(() => []),
+      query('firehose.health.device_list', { hostId: device.host_id, limit: 1 }).catch(() => []),
+      query('firehose.health.os_list', { hostId: device.host_id, limit: 1 }).catch(() => []),
+      query('firehose.vpn.list', { hostId: device.host_id, limit: 1 }).catch(() => []),
       query('firehose.crashes.per_device', { hostId: device.host_id }).catch(() => []),
       query('firehose.processes.per_device', { hostId: device.host_id }).catch(() => []),
       query('firehose.adoption.per_device', { hostId: device.host_id }).catch(() => []),
@@ -811,6 +840,12 @@ h3 { font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black)
 .back-link:hover { text-decoration: underline; }
 .error-box { background: var(--fleet-status-error-light); border: 1px solid #fecaca; border-radius: var(--radius); padding: 12px 16px; margin-top: 16px; }
 .error-box pre { font-size: var(--font-size-xs); white-space: pre-wrap; word-break: break-all; margin: 8px 0 0; color: var(--fleet-status-error); }
+.error-box-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.error-box-time { font-family: var(--font-mono); font-size: 11px; color: var(--fleet-black-50); }
+.error-box-stale-tag { display: inline-block; padding: 1px 6px; font-size: 10px; font-weight: 500; letter-spacing: 0.3px; text-transform: uppercase; border-radius: 3px; background: rgba(245, 158, 11, 0.15); color: #b45309; }
+.error-box--stale { background: var(--fleet-black-5); border-color: var(--fleet-black-10); }
+.error-box--stale pre { color: var(--fleet-black-50); }
+.error-box--stale strong { color: var(--fleet-black-50); }
 
 /* ── Tables ──────────────────────────────── */
 .table-wrap { overflow-x: auto; }

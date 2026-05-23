@@ -135,9 +135,10 @@ export const firehoseHealthQueries: QueryConfig[] = [
     name: 'firehose.health.device_list',
     domain: 'health',
     client: 'core',
-    description: 'Per-device latest health snapshot',
+    description: 'Per-device latest health snapshot. Pass hostId to fetch one host.',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 500, default: 100 },
+      { name: 'hostId', type: 'string' as const, required: false },
     ],
     sql: `
       SELECT
@@ -158,6 +159,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM device_health GROUP BY host_id
       )
+        AND if({hostId:String} != '', host_id = {hostId:String}, true)
       ORDER BY hostname
       {{LIMIT}}
     `,
@@ -270,9 +272,10 @@ export const firehoseHealthQueries: QueryConfig[] = [
     name: 'firehose.health.os_list',
     domain: 'health',
     client: 'core',
-    description: 'Per-device OS health details',
+    description: 'Per-device OS health details. Pass hostId to fetch one host.',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 500, default: 100 },
+      { name: 'hostId', type: 'string' as const, required: false },
     ],
     sql: `
       SELECT
@@ -292,6 +295,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM os_health GROUP BY host_id
       )
+        AND if({hostId:String} != '', host_id = {hostId:String}, true)
       ORDER BY hostname
       {{LIMIT}}
     `,
