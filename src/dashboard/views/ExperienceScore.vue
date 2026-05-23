@@ -407,9 +407,11 @@ const loading = ref({
 const fleet = ref({ grade: '—', score: null, delta: null, sparkline: [], deviceCount: 0 })
 
 // ─── Per-fleet (team) breakdown ───────────────────────────
-const teamRows = ref([])      // [{ team_id, hosts, avg_composite, avg_device_health, ... }]
-const teamUnscorableCount = ref(0)
-const { teamOptions } = useFleetFilter()
+// teamRows is the UNION of:
+//   • scored teams (real composite + categories from firehose.scores.by_team)
+//   • known-but-unscored teams (named placeholder card from filter_options)
+// so every fleet visible in the team list gets its own card with status.
+const teamRows = ref([])
 
 async function fetchTeamBreakdown() {
   try {
@@ -417,24 +419,35 @@ async function fetchTeamBreakdown() {
       query('firehose.scores.by_team', queryParams.value).catch(() => []),
       query('firehose.devices.filter_options').catch(() => []),
     ])
-    const filtered = (scored || []).map(r => ({
-      team_id: r.team_id,
-      hosts: Number(r.hosts || 0),
-      avg_composite: r.avg_composite != null ? Number(r.avg_composite) : null,
-      avg_device_health: r.avg_device_health != null ? Number(r.avg_device_health) : null,
-      avg_performance: r.avg_performance != null ? Number(r.avg_performance) : null,
-      avg_security: r.avg_security != null ? Number(r.avg_security) : null,
-      avg_software: r.avg_software != null ? Number(r.avg_software) : null,
-    }))
-    teamRows.value = filtered
-    // Count fleets that exist in the team list but have no scorable hosts
-    const scoredTeams = new Set(filtered.map(r => r.team_id))
+    const scoredMap = new Map(
+      (scored || []).map(r => [r.team_id, {
+        team_id: r.team_id,
+        hosts: Number(r.hosts || 0),
+        avg_composite: r.avg_composite != null ? Number(r.avg_composite) : null,
+        avg_device_health: r.avg_device_health != null ? Number(r.avg_device_health) : null,
+        avg_performance: r.avg_performance != null ? Number(r.avg_performance) : null,
+        avg_security: r.avg_security != null ? Number(r.avg_security) : null,
+        avg_software: r.avg_software != null ? Number(r.avg_software) : null,
+        unscorable: false,
+      }])
+    )
     const knownTeams = (allTeams || []).filter(r => r.type === 'team').map(r => r.value)
-    teamUnscorableCount.value = knownTeams.filter(t => !scoredTeams.has(t)).length
+    const merged = []
+    // First: every known team — scored or not — in the order from filter_options
+    for (const t of knownTeams) {
+      if (scoredMap.has(t)) {
+        merged.push(scoredMap.get(t))
+        scoredMap.delete(t)
+      } else {
+        merged.push({ team_id: t, hosts: 0, avg_composite: null, unscorable: true })
+      }
+    }
+    // Then: any "unassigned" or otherwise-scored teams not in filter_options (defensive)
+    for (const row of scoredMap.values()) merged.push(row)
+    teamRows.value = merged
   } catch (e) {
     console.error('Team breakdown fetch failed:', e)
     teamRows.value = []
-    teamUnscorableCount.value = 0
   }
 }
 const categories = ref([
