@@ -121,8 +121,12 @@
           <button @click="togglePlay" :class="{ active: playing }">{{ playing ? '\u23F8' : '\u25B6' }}</button>
           <button @click="nextCommit">&rarr;</button>
         </div>
-        <input type="range" v-model.number="sliderIndex" :min="0" :max="commits.length - 1" class="tl-slider" />
+        <input type="range" v-model.number="sliderIndex" :min="0" :max="Math.max(0, filteredCommits.length - 1)" :disabled="filteredCommits.length === 0" class="tl-slider" />
         <span class="tl-date">{{ currentDateStr }}</span>
+        <input v-model="search" type="search" class="tl-search" placeholder="Search messages, authors, files, scope..." />
+        <span v-if="search" class="tl-search-counter">
+          {{ filteredCommits.length }} / {{ commits.length }}
+        </span>
       </div>
     </template>
   </div>
@@ -138,6 +142,26 @@ const error = ref(null)
 const commits = ref([])
 const structure = ref({})
 const sliderIndex = ref(0)
+const search = ref('')
+
+// Case-insensitive substring match across message, author, scope, change_type,
+// short_sha, and file paths. Empty search returns the unfiltered list.
+const filteredCommits = computed(() => {
+  if (!search.value) return commits.value
+  const s = search.value.toLowerCase()
+  return commits.value.filter(c =>
+    (c.message     || '').toLowerCase().includes(s) ||
+    (c.author      || '').toLowerCase().includes(s) ||
+    (c.scope       || '').toLowerCase().includes(s) ||
+    (c.change_type || '').toLowerCase().includes(s) ||
+    (c.short_sha   || '').toLowerCase().includes(s) ||
+    (c.files       || []).some(f => f.toLowerCase().includes(s)) ||
+    Object.keys(c.categories || {}).some(k => k.toLowerCase().includes(s))
+  )
+})
+
+// Reset slider to start of filtered set whenever the filter changes.
+watch(search, () => { sliderIndex.value = 0 })
 const openFolders = ref({})
 const diagramSvg = ref('')
 const diagramRef = ref(null)
@@ -150,7 +174,7 @@ let panStart = { x: 0, y: 0, px: 0, py: 0 }
 let playTimer = null
 let mermaidInstance = null
 
-const currentCommit = computed(() => commits.value[sliderIndex.value])
+const currentCommit = computed(() => filteredCommits.value[sliderIndex.value])
 
 const currentDateStr = computed(() => {
   const c = currentCommit.value
@@ -218,14 +242,14 @@ function onPointerMove(e) { if (!isPanning.value) return; panX.value = panStart.
 function onPointerUp() { isPanning.value = false }
 
 function prevCommit() { sliderIndex.value = Math.max(0, sliderIndex.value - 1) }
-function nextCommit() { sliderIndex.value = Math.min(commits.value.length - 1, sliderIndex.value + 1) }
+function nextCommit() { sliderIndex.value = Math.min(filteredCommits.value.length - 1, sliderIndex.value + 1) }
 
 function togglePlay() {
   if (playing.value) { clearInterval(playTimer); playTimer = null; playing.value = false }
   else {
     playing.value = true
     playTimer = setInterval(() => {
-      if (sliderIndex.value >= commits.value.length - 1) sliderIndex.value = 0
+      if (sliderIndex.value >= filteredCommits.value.length - 1) sliderIndex.value = 0
       else sliderIndex.value++
     }, 1500)
   }
@@ -386,6 +410,9 @@ onUnmounted(() => { if (playTimer) clearInterval(playTimer) })
 .tl-controls button.active { background: var(--fleet-core-vibrant-blue); color: var(--fleet-white); border-color: var(--fleet-core-vibrant-blue); }
 .tl-slider { flex: 1; accent-color: var(--fleet-core-vibrant-blue); cursor: pointer; height: 6px; }
 .tl-date { font-family: var(--font-mono); font-size: var(--font-size-sm); color: var(--fleet-core-vibrant-blue); min-width: 180px; text-align: right; font-weight: 500; }
+.tl-search { font-family: var(--font-body); font-size: 13px; padding: 6px 10px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); background: var(--fleet-white); color: var(--fleet-black); min-width: 280px; outline: none; transition: border-color var(--transition-fast); }
+.tl-search:focus { border-color: var(--fleet-core-vibrant-blue); }
+.tl-search-counter { font-family: var(--font-mono); font-size: 11px; color: var(--fleet-black-50); }
 
 @media (max-width: 1024px) { .cb-main { grid-template-columns: 1fr; } .tree-panel, .detail-panel { max-height: 300px; } }
 </style>
