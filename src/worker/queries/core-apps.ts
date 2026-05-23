@@ -77,6 +77,42 @@ export const firehoseAppsQueries: QueryConfig[] = [
     `,
   },
   {
+    name: 'firehose.apps.daemon_inventory',
+    domain: 'apps',
+    client: 'core',
+    description:
+      'Fleet-wide presence of background apps and daemons that the adoption_gap pack misses ' +
+      '(system services, helpers, security agents, etc.). Excludes Apple-shipped bundles.',
+    params: [
+      { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 60 },
+      { name: 'minHosts', type: 'number' as const, required: false, min: 1, max: 1000, default: 2 },
+    ],
+    sql: `
+      WITH adoption_bundles AS (
+        SELECT DISTINCT bundle_identifier
+        FROM adoption_gap
+        WHERE timestamp > now() - INTERVAL 14 DAY
+          AND bundle_identifier != ''
+      )
+      SELECT
+        app_name,
+        bundle_identifier,
+        any(path) AS path,
+        countDistinct(host_id) AS hosts_running,
+        max(toDate(timestamp)) AS last_seen,
+        min(toDate(timestamp)) AS first_seen
+      FROM running_apps
+      WHERE timestamp > now() - INTERVAL 2 DAY
+        AND bundle_identifier != ''
+        AND bundle_identifier NOT LIKE 'com.apple.%'
+        AND bundle_identifier NOT IN (SELECT bundle_identifier FROM adoption_bundles)
+      GROUP BY app_name, bundle_identifier
+      HAVING hosts_running >= {minHosts:UInt32}
+      ORDER BY hosts_running DESC, app_name
+      {{LIMIT}}
+    `,
+  },
+  {
     name: 'firehose.apps.fleet_summary',
     domain: 'processes',
     client: 'core',

@@ -89,7 +89,7 @@
 
     <!-- Filter bar -->
     <section class="filter-bar">
-      <input v-model="search" class="search-input" placeholder="Search commits, authors, files..." />
+      <input v-model="search" class="search-input" placeholder="Search commits, authors, files, releases, patched apps..." />
       <select v-model="authorFilter" class="filter-select">
         <option value="">All authors</option>
         <option v-for="a in authors" :key="a" :value="a">{{ a }}</option>
@@ -101,6 +101,41 @@
         <option value="profiles">Profiles</option>
         <option value="queries">Queries</option>
       </select>
+      <button
+        class="copy-md-btn"
+        :class="{ 'copy-md-btn--copied': copied }"
+        :disabled="!hasExportableEntries"
+        :title="hasExportableEntries ? 'Copy the currently visible timeline as Markdown' : 'Nothing to copy'"
+        @click="copyMarkdownExport"
+      >
+        <span v-if="copied">✓ Copied</span>
+        <span v-else>📋 Copy as MD</span>
+      </button>
+    </section>
+
+    <!-- Background apps & daemons (running across fleet but not in adoption_gap) -->
+    <section v-if="daemons.length" class="section daemons-section">
+      <div class="daemons-header">
+        <h2>Background apps &amp; daemons</h2>
+        <span class="daemons-meta">
+          System services, helpers, security agents — running on the fleet but not tracked by app-adoption ·
+          showing {{ filteredDaemons.length }} of {{ daemons.length }}
+          <span v-if="search" class="daemons-search-hint">(filter: "{{ search }}")</span>
+        </span>
+      </div>
+      <div v-if="!filteredDaemons.length" class="daemons-empty">
+        No background apps match "{{ search }}". Clear the search to see all daemons.
+      </div>
+      <div v-else class="daemons-grid">
+        <div v-for="d in filteredDaemons" :key="d.bundle_identifier" class="daemon-card">
+          <div class="daemon-head">
+            <span class="daemon-name">{{ d.app_name }}</span>
+            <span class="daemon-hosts"><strong>{{ d.hosts_running }}</strong> host{{ d.hosts_running === 1 ? '' : 's' }}</span>
+          </div>
+          <div class="daemon-bundle mono">{{ d.bundle_identifier }}</div>
+          <div class="daemon-path mono" :title="d.path">{{ d.path }}</div>
+        </div>
+      </div>
     </section>
 
     <!-- Timeline -->
@@ -290,6 +325,7 @@ import BarChart from '../components/BarChart.vue'
 import PieChart from '../components/PieChart.vue'
 import { useFmaReleases } from '../composables/useFmaReleases'
 import { useTimelineEvents } from '../composables/useTimelineEvents'
+import { query } from '../services/api'
 import dayjs from 'dayjs'
 
 const CHANGELOG_URL = 'https://raw.githubusercontent.com/headmin/fleet-gitops-changelog/refs/heads/main/changelog.json'
@@ -451,6 +487,22 @@ async function toggleBucket(day, sw) {
   }
 }
 
+// Search applies to all event types (commits already handled by filteredCommits).
+// Case-insensitive substring across the natural identity field of each kind:
+//   • releases   → rel.app
+//   • patches    → bucket.software_name
+const filteredReleases = computed(() => {
+  if (!search.value) return fmaReleases.value
+  const s = search.value.toLowerCase()
+  return fmaReleases.value.filter(r => (r.app || '').toLowerCase().includes(s))
+})
+
+const filteredPatchBuckets = computed(() => {
+  if (!search.value) return patchBuckets.value
+  const s = search.value.toLowerCase()
+  return patchBuckets.value.filter(b => (b.software_name || '').toLowerCase().includes(s))
+})
+
 // Merged daily structure: each day carries commits, releases, and patch buckets.
 const groupedEntries = computed(() => {
   const days = {}
@@ -462,11 +514,12 @@ const groupedEntries = computed(() => {
     const d = c.timestamp.split('T')[0]
     ensure(d).commits.push(c)
   }
-  const releasesByDayMap = fmaReleasesByDay()
-  for (const [d, list] of Object.entries(releasesByDayMap)) {
-    ensure(d).releases.push(...list)
+  // Group filtered releases by day instead of using the unfiltered map
+  for (const r of filteredReleases.value) {
+    const d = (r.timestamp || '').slice(0, 10)
+    if (d) ensure(d).releases.push(r)
   }
-  for (const b of patchBuckets.value) {
+  for (const b of filteredPatchBuckets.value) {
     const d = (b.day || '').toString().slice(0, 10)
     if (!d) continue
     const day = ensure(d)
@@ -482,8 +535,8 @@ const groupedEntries = computed(() => {
 
 const eventTypeCounts = computed(() => ({
   commits:  filteredCommits.value.length,
-  releases: fmaReleases.value.length,
-  patches:  patchBuckets.value.length,
+  releases: filteredReleases.value.length,
+  patches:  filteredPatchBuckets.value.length,
 }))
 
 const authorStats = computed(() => {
@@ -548,8 +601,23 @@ const osCounts = computed(() => {
 const onlyWithData = ref(true)
 
 const fmaTopReleases = computed(() => {
-  if (osFilter.value === 'all') return fmaReleases.value.slice(0, fmaLimit.value)
-  return fmaReleases.value.filter(r => platformBucket(r.platform) === osFilter.value).slice(0, fmaLimit.value)
+  let list = fmaReleases.value
+  // Layer 1: OS chip filter
+  if (osFilter.value !== 'all') {
+    list = list.filter(r => platformBucket(r.platform) === osFilter.value)
+  }
+  // Layer 2: text search (same `search` ref the timeline below uses) — keeps
+  // the top App-releases grid in lockstep with the timeline filter.
+  if (search.value) {
+    const s = search.value.toLowerCase()
+    list = list.filter(r =>
+      (r.app || '').toLowerCase().includes(s) ||
+      (r.platform || '').toLowerCase().includes(s) ||
+      (r.version_to || '').toLowerCase().includes(s) ||
+      (r.version_from || '').toLowerCase().includes(s)
+    )
+  }
+  return list.slice(0, fmaLimit.value)
 })
 
 const visibleFmaReleases = computed(() => {
@@ -676,9 +744,148 @@ function applyHash() {
   }, 80)
 }
 
+// ─── Background apps & daemons inventory ───────────────────
+// Source: running_apps minus what adoption_gap covers. Surfaces system
+// daemons (Santa, Fleet Desktop, browser helpers, security agents) that
+// the user-facing app-adoption pack misses because they have no
+// last_opened_time. No version data — running_apps doesn't carry it.
+const daemons = ref([])
+
+async function loadDaemons() {
+  try {
+    const rows = await query('firehose.apps.daemon_inventory', { limit: 60, minHosts: 2 })
+    daemons.value = rows || []
+  } catch {
+    daemons.value = []
+  }
+}
+
+const filteredDaemons = computed(() => {
+  if (!search.value) return daemons.value
+  const s = search.value.toLowerCase()
+  return daemons.value.filter(d =>
+    (d.app_name || '').toLowerCase().includes(s) ||
+    (d.bundle_identifier || '').toLowerCase().includes(s) ||
+    (d.path || '').toLowerCase().includes(s)
+  )
+})
+
+// ─── Copy current view as Markdown ─────────────────────────
+const copied = ref(false)
+let copiedTimer = null
+
+const hasExportableEntries = computed(() => {
+  for (const day of groupedEntries.value) {
+    if (eventTypeFilter.value.releases && day.releases.length) return true
+    if (eventTypeFilter.value.commits  && day.commits.length)  return true
+    if (eventTypeFilter.value.patches  && day.patchBuckets.length) return true
+  }
+  return false
+})
+
+// Linkify #NNNN issue refs in commit messages → fleetdm/fleet issues.
+// Scoped to commit messages only (release/patch names rarely carry refs and
+// the false-positive risk against version-like tokens is non-zero).
+const FLEET_ISSUE_RE = /#(\d{2,6})\b/g
+const linkifyIssueRefs = (text) =>
+  (text || '').replace(FLEET_ISSUE_RE, '[#$1](https://github.com/fleetdm/fleet/issues/$1)')
+
+function buildMarkdownExport() {
+  const lines = ['# DEX Board — Timeline export', '']
+  // ── Header: filter description + counts + export timestamp
+  const types = Object.entries(eventTypeFilter.value)
+    .filter(([, on]) => on).map(([k]) => k).join('+') || 'none'
+  const filterParts = []
+  if (search.value) filterParts.push(`search="${search.value}"`)
+  if (authorFilter.value) filterParts.push(`author="${authorFilter.value}"`)
+  if (fileTypeFilter.value) filterParts.push(`fileType="${fileTypeFilter.value}"`)
+  filterParts.push(`types=${types}`)
+  filterParts.push(`min hosts/wave=${minHosts.value}`)
+  lines.push(`**Filter:** ${filterParts.join(' · ')}`)
+  const counts = eventTypeCounts.value
+  const totalPatchHosts = groupedEntries.value.reduce((s, d) => s + (d.totalPatchedHosts || 0), 0)
+  lines.push(`**Days shown:** ${groupedEntries.value.length} · **Counts:** ${counts.commits} commits · ${counts.releases} releases · ${counts.patches} apps patched (${totalPatchHosts} hosts)`)
+  lines.push(`**Exported:** ${dayjs().format('YYYY-MM-DD HH:mm')}`)
+  lines.push('', '---', '')
+
+  for (const day of groupedEntries.value) {
+    const dayHasContent =
+      (eventTypeFilter.value.releases && day.releases.length) ||
+      (eventTypeFilter.value.commits  && day.commits.length)  ||
+      (eventTypeFilter.value.patches  && day.patchBuckets.length)
+    if (!dayHasContent) continue
+
+    lines.push(`## ${day.date}`, '')
+
+    if (eventTypeFilter.value.releases && day.releases.length) {
+      lines.push('### Releases')
+      for (const r of day.releases) {
+        const from = r.version_from || '*new*'
+        const dl = r.download_url ? ` · [download](${r.download_url})` : ''
+        lines.push(`- **${r.app}** ${from} → ${r.version_to} *(${r.platform})*${dl}`)
+      }
+      lines.push('')
+    }
+
+    if (eventTypeFilter.value.commits && day.commits.length) {
+      lines.push('### Commits')
+      for (const c of day.commits) {
+        const msg = linkifyIssueRefs(c.message)
+        lines.push(`- \`${c.short_sha}\` — ${msg}`)
+        lines.push(`  *by ${c.author} · [view commit](https://github.com/fleetdm/fleet/commit/${c.sha})*`)
+      }
+      lines.push('')
+    }
+
+    if (eventTypeFilter.value.patches && day.patchBuckets.length) {
+      lines.push('### Endpoint patches')
+      for (const b of day.patchBuckets) {
+        const from = b.earliest_from || '*new*'
+        lines.push(`- **${b.software_name}** ${from} → ${b.latest_to} — ${b.hosts} hosts · ${b.transitions} transitions · MTTP ${b.avg_lag}d`)
+      }
+      lines.push('')
+    }
+
+    lines.push('---', '')
+  }
+
+  return lines.join('\n')
+}
+
+async function copyMarkdownExport() {
+  if (!hasExportableEntries.value) return
+  const md = buildMarkdownExport()
+  let ok = false
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(md)
+      ok = true
+    }
+  } catch {}
+  if (!ok) {
+    // Fallback: hidden textarea + execCommand for older browsers / non-HTTPS
+    const ta = document.createElement('textarea')
+    ta.value = md
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    try { ok = document.execCommand('copy') } catch {}
+    document.body.removeChild(ta)
+  }
+  if (ok) {
+    copied.value = true
+    if (copiedTimer) clearTimeout(copiedTimer)
+    copiedTimer = setTimeout(() => { copied.value = false }, 1500)
+  } else {
+    alert("Couldn't copy to clipboard. Select-all-and-copy the Markdown manually.")
+  }
+}
+
 onMounted(async () => {
   fetchChangelog()
   loadPatchBuckets()
+  loadDaemons()
   await fetchFmaReleases()
   // fmaReleases now populated → eager-load counts for the top slice
   eagerLoadFmaCounts()
@@ -705,6 +912,25 @@ h1 { font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-black)
 .search-input { font-family: var(--font-mono); font-size: var(--font-size-sm); padding: 8px 14px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); flex: 1; min-width: 200px; background: var(--fleet-white); }
 .search-input:focus { outline: none; border-color: var(--fleet-vibrant-blue); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
 .filter-select { font-family: var(--font-mono); font-size: var(--font-size-sm); padding: 8px 12px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); background: var(--fleet-white); color: var(--fleet-black); }
+.copy-md-btn { margin-left: auto; font-family: var(--font-body); font-size: 13px; font-weight: 500; padding: 8px 14px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); background: var(--fleet-white); color: var(--fleet-black); cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; }
+.copy-md-btn:hover:not(:disabled) { border-color: var(--fleet-vibrant-blue); color: var(--fleet-vibrant-blue); }
+.copy-md-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.copy-md-btn--copied { background: #ecfdf5; border-color: #10b981; color: #065f46; }
+.copy-md-btn--copied:hover { border-color: #10b981; color: #065f46; }
+.daemons-section { margin-top: 24px; }
+.daemons-header { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+.daemons-header h2 { margin: 0; font-size: var(--font-size-lg); }
+.daemons-meta { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
+.daemons-search-hint { color: var(--fleet-vibrant-blue); margin-left: 6px; }
+.daemons-empty { padding: 24px; text-align: center; color: var(--fleet-black-50); background: var(--fleet-black-5); border-radius: var(--radius); }
+.daemons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.daemon-card { padding: 10px 12px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); background: var(--fleet-white); transition: border-color var(--transition-fast); }
+.daemon-card:hover { border-color: var(--fleet-vibrant-blue); }
+.daemon-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.daemon-name { font-weight: 600; color: var(--fleet-black); font-size: var(--font-size-sm); }
+.daemon-hosts { font-family: var(--font-mono); font-size: var(--font-size-sm); color: var(--fleet-vibrant-blue); white-space: nowrap; }
+.daemon-bundle { font-size: 11px; color: var(--fleet-black-50); margin-top: 4px; word-break: break-all; }
+.daemon-path { font-size: 10px; color: var(--fleet-black-33); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .timeline { position: relative; padding-left: 24px; }
 .timeline::before { content: ''; position: absolute; left: 7px; top: 0; bottom: 0; width: 2px; background: var(--fleet-black-10); }
 .timeline-day { margin-bottom: 24px; }
