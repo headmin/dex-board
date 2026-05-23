@@ -19,13 +19,27 @@ const props = defineProps({
   color: { type: String, default: '#6a67fe' },
   width: { type: String, default: '120px' },
   height: { type: String, default: '32px' },
-  showTooltip: { type: Boolean, default: false }
+  showTooltip: { type: Boolean, default: false },
+  // When true, yAxis auto-scales to the data range (with padding) instead of
+  // pinning to 0–100. Use for trend charts where you want movement to be visible
+  // even when values cluster in a narrow band.
+  autoScale: { type: Boolean, default: false }
+})
+
+const yRange = computed(() => {
+  if (!props.autoScale) return { min: 0, max: 100 }
+  const nums = props.data.filter(v => typeof v === 'number')
+  if (!nums.length) return { min: 0, max: 100 }
+  const lo = Math.min(...nums)
+  const hi = Math.max(...nums)
+  const pad = Math.max(2, Math.round((hi - lo) * 0.2))
+  return { min: Math.max(0, lo - pad), max: Math.min(100, hi + pad) }
 })
 
 const chartOption = computed(() => ({
   grid: { left: 0, right: 0, top: 2, bottom: 2 },
   xAxis: { type: 'category', show: false, data: props.data.map((_, i) => i) },
-  yAxis: { type: 'value', show: false, min: 0, max: 100 },
+  yAxis: { type: 'value', show: false, ...yRange.value },
   tooltip: props.showTooltip ? {
     trigger: 'axis',
     backgroundColor: '#3e4771',

@@ -32,6 +32,26 @@
       />
     </section>
 
+    <!-- ─── 30-day fleet composite trend ───────────────────── -->
+    <section v-if="fleetTrendVisible" class="trend-section">
+      <div class="trend-header">
+        <span class="trend-title">30-day composite trend</span>
+        <span class="trend-range">{{ trendRangeText }}</span>
+      </div>
+      <SparklineChart
+        :data="fleet.sparkline"
+        :color="trendColor"
+        width="100%"
+        height="120px"
+        :showTooltip="true"
+        :autoScale="true"
+      />
+      <div class="trend-axis">
+        <span>30d ago</span>
+        <span>today</span>
+      </div>
+    </section>
+
     <!-- ─── Category Grade Cards ───────────────────────────── -->
     <section class="category-cards">
       <GradeCard
@@ -280,6 +300,7 @@ import { useFleetFilter } from '../composables/useFleetFilter'
 import { useTimeRange } from '../composables/useTimeRange'
 import TimeRangeFilter from '../components/TimeRangeFilter.vue'
 import GradeCard from '../components/GradeCard.vue'
+import SparklineChart from '../components/SparklineChart.vue'
 import GradeBadge from '../components/GradeBadge.vue'
 import SkeletonLoader from '../components/SkeletonLoader.vue'
 import { useWorkersCouncil } from '../composables/useWorkersCouncil'
@@ -301,6 +322,25 @@ const queryParams = computed(() => ({
 const comparisonLabel = computed(() => {
   const labels = { '1h': 'hour', '6h': '6 hours', '1d': 'day', '7d': 'week', '30d': '30 days' }
   return labels[selectedRange.value] || 'period'
+})
+
+// ─── 30-day composite trend helpers ──────────────────────
+const fleetTrendVisible = computed(() => {
+  return fleet.value.sparkline && fleet.value.sparkline.filter(v => typeof v === 'number').length >= 2
+})
+const trendRangeText = computed(() => {
+  const nums = (fleet.value.sparkline || []).filter(v => typeof v === 'number')
+  if (!nums.length) return ''
+  return `${Math.min(...nums).toFixed(0)} → ${Math.max(...nums).toFixed(0)}`
+})
+const trendColor = computed(() => {
+  const g = (fleet.value.grade || '').toUpperCase()
+  if (g === 'A') return '#10b981'
+  if (g === 'B') return '#3b82f6'
+  if (g === 'C') return '#f59e0b'
+  if (g === 'D') return '#ea580c'
+  if (g === 'F') return '#ef4444'
+  return '#6a67fe'
 })
 
 // ─── State ────────────────────────────────────────────────────
@@ -402,32 +442,34 @@ function scoreToGrade(score) {
 async function fetchFleetScore() {
   loading.value.fleet = true
   try {
-    // Current + 7-days-ago in parallel, plus 30 daily samples for the sparkline.
-    // Each call hits the same fleet_summary endpoint with a different asOfDaysAgo
-    // value — the worker SQL filters timestamp <= now() - toIntervalDay(N).
+    // 30 daily samples (asOfDaysAgo 0..29). Each call wrapped in .catch so a
+    // single failure doesn't blank the whole sparkline — the bad day just
+    // shows as null (ECharts skips it).
     const trendDays = 30
     const trendRequests = Array.from({ length: trendDays }, (_, i) =>
       query('firehose.scores.fleet_summary', { ...queryParams.value, asOfDaysAgo: i })
+        .catch(() => [])
     )
-    const sevenDayRequest = query('firehose.scores.fleet_summary', { ...queryParams.value, asOfDaysAgo: 7 })
+    const trendRows = await Promise.all(trendRequests)
 
-    const [trendRows, sevenDayRows] = await Promise.all([
-      Promise.all(trendRequests),
-      sevenDayRequest,
-    ])
-
-    const score = trendRows[0]?.[0]?.avg_score ?? null
-    const count = trendRows[0]?.[0]?.device_count ?? 0
-    const sevenDayScore = sevenDayRows[0]?.avg_score ?? null
+    const todayRow = trendRows[0]?.[0]
+    const sevenDayRow = trendRows[7]?.[0]
+    const score = todayRow?.avg_score ?? null
+    const count = todayRow?.device_count ?? 0
+    const sevenDayScore = sevenDayRow?.avg_score ?? null
     const delta = (score != null && sevenDayScore != null)
       ? Math.round((score - sevenDayScore) * 10) / 10
       : null
 
     // Sparkline: newest → oldest from trendRequests, so reverse to oldest → newest.
     const sparkline = trendRows
-      .map((rows, i) => ({ daysAgo: i, score: rows?.[0]?.avg_score ?? null }))
+      .map(rows => {
+        const s = rows?.[0]?.avg_score
+        return (typeof s === 'number') ? s : null
+      })
       .reverse()
-      .map(p => p.score)
+
+    console.log(`[ExperienceScore] sparkline: ${sparkline.filter(v => v != null).length}/${trendDays} days populated, range ${Math.min(...sparkline.filter(v => v != null))}–${Math.max(...sparkline.filter(v => v != null))}`)
 
     fleet.value = {
       grade: scoreToGrade(score),
@@ -1027,6 +1069,40 @@ onMounted(() => {
 /* ─── Hero: fleet-wide composite ──────────────── */
 .hero-section {
   max-width: 400px;
+}
+
+/* ─── 30-day composite trend ──────────────────── */
+.trend-section {
+  margin-top: var(--pad-medium);
+  padding: var(--pad-medium) var(--pad-large);
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-medium);
+  max-width: 800px;
+}
+.trend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.trend-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--fleet-black);
+}
+.trend-range {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fleet-black-50);
+}
+.trend-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fleet-black-33);
 }
 
 /* ─── Category cards: 5 across ────────────────── */
