@@ -247,6 +247,32 @@ export const firehoseScoreQueries: QueryConfig[] = [
     `,
   },
   {
+    name: 'firehose.scores.by_team',
+    domain: 'scores',
+    client: 'core',
+    description: 'Composite + per-category averages grouped by Fleet team. The JOIN to host_teams happens at SELECT-level (not inside FILTERED_HOSTS_CTE) so the IN-set planner pattern still works.',
+    params: [...SCORE_PARAMS],
+    sql: `
+      ${DEVICE_SCORES_CTE}
+      SELECT
+        ifNull(nullIf(tl.team_id, ''), 'unassigned') AS team_id,
+        count() AS hosts,
+        round(avg(composite_score), 1) AS avg_composite,
+        round(avg(device_health_score), 1) AS avg_device_health,
+        round(avg(performance_score), 1) AS avg_performance,
+        round(avg(security_score), 1) AS avg_security,
+        round(avg(software_score), 1) AS avg_software,
+        round(avg(network_score), 1) AS avg_network
+      FROM scored
+      LEFT JOIN (
+        SELECT host_id, argMax(team_id, last_seen) AS team_id
+        FROM host_teams GROUP BY host_id
+      ) tl ON scored.host_id = tl.host_id
+      GROUP BY team_id
+      ORDER BY hosts DESC
+    `,
+  },
+  {
     name: 'firehose.scores.categories',
     domain: 'scores',
     client: 'core',

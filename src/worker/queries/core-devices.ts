@@ -210,6 +210,7 @@ export const firehoseDeviceQueries: QueryConfig[] = [
       SELECT 'team' AS type, team_id AS value
       FROM host_teams
       WHERE team_id != ''
+        AND last_seen > now() - INTERVAL 30 DAY
       GROUP BY team_id
       ORDER BY count() DESC
     `,
