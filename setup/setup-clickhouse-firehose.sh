@@ -674,16 +674,19 @@ SELECT
     hostIdentifier AS host_id,
     decorations.hostname AS hostname,
     calendarTime AS timestamp,
-    JSONExtractString(item, 'os_version') AS os_version,
-    JSONExtractString(item, 'os_build') AS os_build,
-    JSONExtractString(item, 'os_platform') AS os_platform,
-    toUInt8OrZero(JSONExtractString(item, 'disk_encrypted')) AS disk_encrypted,
-    JSONExtractString(item, 'encryption_type') AS encryption_type,
-    toUInt8OrZero(JSONExtractString(item, 'secure_boot_enabled')) AS secure_boot_enabled,
-    toUInt8OrZero(JSONExtractString(item, 'firewall_enabled')) AS firewall_enabled,
-    toUInt8OrZero(JSONExtractString(item, 'firewall_stealth_mode')) AS firewall_stealth,
-    toUInt8OrZero(JSONExtractString(item, 'sip_enabled')) AS sip_enabled,
-    toUInt8OrZero(JSONExtractString(item, 'gatekeeper_enabled')) AS gatekeeper_enabled
+    '' AS os_version,
+    '' AS os_build,
+    '' AS os_platform,
+    -- Fleet osquery query emits column names: filevault / firewall / gatekeeper / sip
+    -- (see 'DEX - System experience - security posture' pack). Map to canonical
+    -- table columns the worker reads from.
+    toUInt8OrZero(JSONExtractString(item, 'filevault')) AS disk_encrypted,
+    '' AS encryption_type,
+    0  AS secure_boot_enabled,
+    toUInt8OrZero(JSONExtractString(item, 'firewall')) AS firewall_enabled,
+    0  AS firewall_stealth,
+    toUInt8OrZero(JSONExtractString(item, 'sip')) AS sip_enabled,
+    toUInt8OrZero(JSONExtractString(item, 'gatekeeper')) AS gatekeeper_enabled
 FROM \`$CLICKPIPE_TABLE\`
 ARRAY JOIN JSONExtractArrayRaw(snapshot) AS item
 WHERE name ILIKE '%security%posture%' OR name ILIKE '%security posture%'
