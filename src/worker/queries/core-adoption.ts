@@ -146,4 +146,68 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
       ORDER BY days_since_opened DESC
     `,
   },
+  {
+    name: 'firehose.adoption.license_waste',
+    domain: 'software',
+    client: 'core',
+    description: 'Apps installed but unused (stale_90d+/never opened) — license/seat waste',
+    params: [
+      ...FILTER_PARAMS,
+      { name: 'minInstalls', type: 'number' as const, required: false, min: 1, max: 1000, default: 3 },
+      { name: 'limit', type: 'number' as const, required: false, min: 1, max: 100, default: 25 },
+    ],
+    sql: `
+      WITH ${FILTERED_HOSTS_CTE},
+      latest AS (
+        SELECT *
+        FROM adoption_gap
+        WHERE host_id IN (SELECT host_id FROM filtered_hosts)
+          -- Exclude free Apple built-ins: no license cost, not IT-deployed, so
+          -- they're not "license waste" — just noise in a cost-focused view.
+          AND bundle_identifier NOT LIKE 'com.apple.%'
+          AND (host_id, timestamp) IN (
+            SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id
+          )
+      )
+      SELECT
+        app_name,
+        any(category)                                                                       AS category,
+        countDistinct(host_id)                                                              AS installs,
+        countDistinctIf(host_id, usage_tier IN ('stale_90d', 'stale_90d_plus', 'never_opened')) AS unused_hosts,
+        round(100.0 * countDistinctIf(host_id, usage_tier IN ('stale_90d', 'stale_90d_plus', 'never_opened'))
+              / countDistinct(host_id), 0)                                                  AS pct_unused
+      FROM latest
+      GROUP BY app_name
+      HAVING installs >= {minInstalls:UInt32}
+      ORDER BY unused_hosts DESC, installs DESC
+      {{LIMIT}}
+    `,
+  },
+  {
+    name: 'firehose.adoption.waste_summary',
+    domain: 'software',
+    client: 'core',
+    description: 'Fleet-wide license-waste totals: unused install-seats and apps affected',
+    params: [...FILTER_PARAMS],
+    sql: `
+      WITH ${FILTERED_HOSTS_CTE},
+      latest AS (
+        SELECT *
+        FROM adoption_gap
+        WHERE host_id IN (SELECT host_id FROM filtered_hosts)
+          -- Exclude free Apple built-ins: no license cost, not IT-deployed, so
+          -- they're not "license waste" — just noise in a cost-focused view.
+          AND bundle_identifier NOT LIKE 'com.apple.%'
+          AND (host_id, timestamp) IN (
+            SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id
+          )
+      )
+      SELECT
+        count()                                                                AS total_seats,
+        countIf(usage_tier IN ('stale_90d', 'stale_90d_plus', 'never_opened')) AS unused_seats,
+        countDistinctIf(app_name, usage_tier IN ('stale_90d', 'stale_90d_plus', 'never_opened')) AS apps_with_waste,
+        round(100.0 * countIf(usage_tier IN ('stale_90d', 'stale_90d_plus', 'never_opened')) / count(), 0) AS pct_unused
+      FROM latest
+    `,
+  },
 ]

@@ -8,6 +8,32 @@ import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
 export const firehoseFleetdQueries: QueryConfig[] = [
   {
+    name: 'firehose.fleetd.checkin_status',
+    domain: 'fleetd',
+    client: 'core',
+    description: 'Telemetry reporting freshness: hosts by last-report recency + data lag (anchored to device_health, the table proven to be flowing)',
+    params: [...FILTER_PARAMS],
+    sql: `
+      WITH ${FILTERED_HOSTS_CTE},
+      last_seen AS (
+        SELECT host_id, max(timestamp) AS ts
+        FROM device_health
+        WHERE host_id IN (SELECT host_id FROM filtered_hosts)
+        GROUP BY host_id
+      )
+      SELECT
+        count()                                              AS total_hosts,
+        countIf(ts >= now() - INTERVAL 1 HOUR)               AS within_1h,
+        countIf(ts >= now() - INTERVAL 24 HOUR)              AS within_24h,
+        countIf(ts >= now() - INTERVAL 7 DAY)                AS within_7d,
+        countIf(ts <  now() - INTERVAL 7 DAY)                AS stale_7d,
+        toString(max(ts))                                    AS newest_report,
+        toString(min(ts))                                    AS oldest_report,
+        round(dateDiff('minute', max(ts), now()) / 60.0, 1)  AS freshest_lag_hours
+      FROM last_seen
+    `,
+  },
+  {
     name: 'firehose.fleetd.versions',
     domain: 'software',
     client: 'core',

@@ -28,6 +28,7 @@ import { firehoseCrashQueries } from './queries/core-crashes'
 import { firehoseAdoptionQueries } from './queries/core-adoption'
 import { firehoseScoreQueries } from './queries/core-scores'
 import { firehoseSecurityQueries } from './queries/core-security'
+import { firehoseLifecycleQueries } from './queries/core-lifecycle'
 
 registry.registerAll(healthQueries)
 registry.registerAll(deviceQueries)
@@ -50,6 +51,7 @@ registry.registerAll(firehoseCrashQueries)
 registry.registerAll(firehoseAdoptionQueries)
 registry.registerAll(firehoseScoreQueries)
 registry.registerAll(firehoseSecurityQueries)
+registry.registerAll(firehoseLifecycleQueries)
 
 // ─── Hono app ────────────────────────────────────────────
 const app = new Hono<{ Bindings: Env }>()
