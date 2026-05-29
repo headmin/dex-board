@@ -86,4 +86,13 @@ export interface Env {
    * Set as a Cloudflare secret: `wrangler secret put FLEET_URL`.
    */
   FLEET_URL?: string
+  /**
+   * Committed patch-SLA target, in days — the org's "we patch within N days"
+   * commitment that the board cares about. Exposed via GET /api/config and
+   * rendered as the threshold line on the MTTP table. Integer string; falls
+   * back to 14 if unset. Set: `wrangler secret put PATCH_SLA_DAYS`.
+   * NOTE: this is the source-of-truth policy number, not a derived metric —
+   * it should mirror the patch commitment in your governance doc.
+   */
+  PATCH_SLA_DAYS?: string
 }

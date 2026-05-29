@@ -14,8 +14,11 @@ import { ref } from 'vue'
  * (no flash of broken deep-links).
  */
 const FALLBACK_FLEET_URL = 'https://dogfood.fleetdm.com'
+// Committed patch-SLA target in days. Mirrors the worker default so the MTTP
+// threshold line renders sensibly before /api/config lands (or if unset).
+const FALLBACK_PATCH_SLA_DAYS = 14
 
-const config = ref({ fleetUrl: FALLBACK_FLEET_URL })
+const config = ref({ fleetUrl: FALLBACK_FLEET_URL, patchSlaDays: FALLBACK_PATCH_SLA_DAYS })
 let inflight = null
 let loaded = false
 
@@ -27,6 +30,10 @@ async function load() {
     .then((data) => {
       if (data?.fleetUrl) {
         config.value = { ...config.value, fleetUrl: String(data.fleetUrl).replace(/\/$/, '') }
+      }
+      const sla = Number(data?.patchSlaDays)
+      if (Number.isFinite(sla) && sla > 0) {
+        config.value = { ...config.value, patchSlaDays: sla }
       }
       loaded = true
       return config.value

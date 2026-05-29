@@ -256,7 +256,7 @@
           {{ topPatchMovers.length }} apps · sorted by hosts patched
         </span>
       </div>
-      <MttpTable :rows="topPatchMovers" />
+      <MttpTable :rows="topPatchMovers" :sla-days="config.patchSlaDays" />
     </section>
 
     <!-- ═══ 4. NETWORK (Wi-Fi + VPN) ═════════════════════════ -->
@@ -410,6 +410,9 @@ import BarChart from '../components/BarChart.vue'
 import HostTile from '../components/HostTile.vue'
 import MttpTable from '../components/MttpTable.vue'
 import { displayHost } from '../composables/displayName'
+import { useAppConfig } from '../composables/useAppConfig'
+
+const { config } = useAppConfig()
 
 // Shared filter bar — propagates to every firehose query that respects
 // FILTER_PARAMS. Wrap this in a computed so queries re-fetch when the user
