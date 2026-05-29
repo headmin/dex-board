@@ -79,8 +79,10 @@ app.use('/api/*', async (c, next) => {
 // needs at boot (Fleet deep-link base URL, etc.). The dashboard fetches
 // this once on first read; falls back to dogfood.fleetdm.com if unset.
 app.get('/api/config', (c) => {
+  const slaDays = parseInt(c.env.PATCH_SLA_DAYS || '', 10)
   return c.json({
     fleetUrl: (c.env.FLEET_URL || 'https://dogfood.fleetdm.com').replace(/\/$/, ''),
+    patchSlaDays: Number.isFinite(slaDays) && slaDays > 0 ? slaDays : 14,
   })
 })
 

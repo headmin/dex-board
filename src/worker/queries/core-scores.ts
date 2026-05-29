@@ -29,17 +29,54 @@ const AS_OF_PARAM = {
   max: 365,
   default: 0,
 }
-const SCORE_PARAMS = [...FILTER_PARAMS, AS_OF_PARAM]
+// Finer-grained companion to asOfDaysAgo: shifts the snapshot back by N hours.
+// Lets the top tiles read "the fleet's state at the start of the selected
+// window" (1h / 6h / 24h / 168h / 720h) for a now-vs-window delta. Combines
+// additively with asOfDaysAgo; both default to 0 = now.
+const AS_OF_HOURS_PARAM = {
+  name: 'asOfHoursAgo',
+  type: 'number' as const,
+  required: false,
+  min: 0,
+  max: 8760,
+  default: 0,
+}
+const SCORE_PARAMS = [...FILTER_PARAMS, AS_OF_PARAM, AS_OF_HOURS_PARAM]
+
+// Drill-down queries (distributions, dimensions, biggest movers, device list)
+// additionally take a timeRange (in hours) that scopes the result to hosts seen
+// within the window — "of hosts active in the last N hours, here's the
+// breakdown." Snapshot cards (composite, categories, per-fleet) ignore this and
+// always reflect each host's latest snapshot. Values match useTimeRange's hour
+// map: 1 / 6 / 24 / 168 / 720.
+const TIME_RANGE_PARAM = {
+  name: 'timeRange',
+  type: 'number' as const,
+  required: false,
+  min: 1,
+  max: 8760,
+  default: 720,
+}
+const WINDOWED_SCORE_PARAMS = [...SCORE_PARAMS, TIME_RANGE_PARAM]
 
 // Inline this WHERE clause into every per-table subquery in DEVICE_SCORES_CTE
 // so argMax(field, timestamp) returns "the value as of N days ago" instead of
 // "the value right now."
-const AS_OF_WHERE = `timestamp <= now() - toIntervalDay({asOfDaysAgo:UInt32})`
+const AS_OF_WHERE = `timestamp <= now() - toIntervalDay({asOfDaysAgo:UInt32}) - toIntervalHour({asOfHoursAgo:UInt32})`
+
+// Optional lower bound applied (windowed CTE only) to the device_health host
+// set — this is what defines "active in the last N hours". Left-joined signal
+// tables keep their latest-available value so scores stay stable; only the
+// population scoped to the window changes.
+const WINDOW_WHERE = `AND timestamp >= now() - toIntervalHour({timeRange:UInt32})`
 
 // ── Per-device score CTE ─────────────────────────────────
 // Reusable WITH clause that computes all 5 category scores per device.
 // Now prefixes filtered_hosts so the scoring set respects the fleet filter bar.
-const DEVICE_SCORES_CTE = `
+// `hostWindow` is an optional extra AND-clause for the device_health host set:
+// '' → snapshot (all hosts, latest), WINDOW_WHERE → only hosts seen in the
+// selected time window.
+const buildScoresCTE = (hostWindow = '') => `
 WITH
 ${FILTERED_HOSTS_CTE},
 device_scores AS (
@@ -161,6 +198,7 @@ device_scores AS (
     FROM device_health
     WHERE host_id IN (SELECT host_id FROM filtered_hosts)
       AND ${AS_OF_WHERE}
+      ${hostWindow}
     GROUP BY host_id
   ) h
   LEFT JOIN (
@@ -231,6 +269,13 @@ scored AS (
 )
 `
 
+// Snapshot variant — all hosts, each at its latest snapshot (used by the
+// composite hero, category cards, exposure tile, per-fleet breakdown).
+const DEVICE_SCORES_CTE = buildScoresCTE('')
+// Windowed variant — only hosts seen in the selected time range (used by the
+// drill-downs: distributions, dimensions, biggest movers, device list).
+const DEVICE_SCORES_CTE_WINDOWED = buildScoresCTE(WINDOW_WHERE)
+
 export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.fleet_summary',
@@ -295,9 +340,9 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Grade A/B/C/D/F device counts (composite)',
-    params: [...SCORE_PARAMS],
+    params: [...WINDOWED_SCORE_PARAMS],
     sql: `
-      ${DEVICE_SCORES_CTE}
+      ${DEVICE_SCORES_CTE_WINDOWED}
       SELECT composite_grade AS grade, count() AS cnt
       FROM scored
       GROUP BY composite_grade
@@ -310,11 +355,11 @@ export const firehoseScoreQueries: QueryConfig[] = [
     client: 'core',
     description: 'Grade A/B/C/D/F device counts for a specific category',
     params: [
-      ...SCORE_PARAMS,
+      ...WINDOWED_SCORE_PARAMS,
       { name: 'category', type: 'enum' as const, required: true, values: ['device_health', 'performance', 'network', 'security', 'software', 'composite'] },
     ],
     sql: `
-      ${DEVICE_SCORES_CTE}
+      ${DEVICE_SCORES_CTE_WINDOWED}
       SELECT grade, count() AS cnt
       FROM (
         SELECT
@@ -348,11 +393,11 @@ export const firehoseScoreQueries: QueryConfig[] = [
     client: 'core',
     description: 'Per-device scores with all categories',
     params: [
-      ...SCORE_PARAMS,
+      ...WINDOWED_SCORE_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 500, default: 200 },
     ],
     sql: `
-      ${DEVICE_SCORES_CTE}
+      ${DEVICE_SCORES_CTE_WINDOWED}
       SELECT
         host_id,
         hostname,
@@ -453,9 +498,9 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Average scores broken down by OS currency',
-    params: [...SCORE_PARAMS],
+    params: [...WINDOWED_SCORE_PARAMS],
     sql: `
-      ${DEVICE_SCORES_CTE}
+      ${DEVICE_SCORES_CTE_WINDOWED}
       SELECT
         ifNull(o.os_currency, 'not reporting') AS dimension,
         round(avg(s.composite_score), 1) AS avg_score,
@@ -479,9 +524,9 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Average scores broken down by hardware model',
-    params: [...SCORE_PARAMS],
+    params: [...WINDOWED_SCORE_PARAMS],
     sql: `
-      ${DEVICE_SCORES_CTE}
+      ${DEVICE_SCORES_CTE_WINDOWED}
       SELECT
         ifNull(m.hardware_model, 'unknown') AS dimension,
         round(avg(s.composite_score), 1) AS avg_score,
@@ -505,9 +550,9 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Average scores broken down by RAM tier',
-    params: [...SCORE_PARAMS],
+    params: [...WINDOWED_SCORE_PARAMS],
     sql: `
-      ${DEVICE_SCORES_CTE}
+      ${DEVICE_SCORES_CTE_WINDOWED}
       SELECT
         s.ram_tier AS dimension,
         round(avg(s.composite_score), 1) AS avg_score,
@@ -527,9 +572,9 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Average scores broken down by CPU class',
-    params: [...SCORE_PARAMS],
+    params: [...WINDOWED_SCORE_PARAMS],
     sql: `
-      ${DEVICE_SCORES_CTE}
+      ${DEVICE_SCORES_CTE_WINDOWED}
       SELECT
         s.cpu_class AS dimension,
         round(avg(s.composite_score), 1) AS avg_score,
@@ -549,9 +594,9 @@ export const firehoseScoreQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Average scores broken down by swap pressure',
-    params: [...SCORE_PARAMS],
+    params: [...WINDOWED_SCORE_PARAMS],
     sql: `
-      ${DEVICE_SCORES_CTE}
+      ${DEVICE_SCORES_CTE_WINDOWED}
       SELECT
         h.swap AS dimension,
         round(avg(s.composite_score), 1) AS avg_score,
@@ -576,11 +621,11 @@ export const firehoseScoreQueries: QueryConfig[] = [
     client: 'core',
     description: 'Devices with the largest score change vs 7 days ago',
     params: [
-      ...SCORE_PARAMS,
+      ...WINDOWED_SCORE_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 50, default: 10 },
     ],
     sql: `
-      ${DEVICE_SCORES_CTE},
+      ${DEVICE_SCORES_CTE_WINDOWED},
       -- Prior period: scores from data before 7 days ago
       prior_device_scores AS (
         SELECT

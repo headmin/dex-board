@@ -9,12 +9,12 @@
       <div class="header-right">
         <div class="time-range-group">
           <TimeRangeFilter />
-          <span class="time-range-hint" title="Composite & category grades reflect the latest snapshot of each host. The time range here filters drill-downs (Signal Breakdown, Biggest Movers, distributions) only.">
-            ⓘ filters drill-downs
+          <span class="time-range-hint" title="The time range only changes the charts further down — grade distribution, the breakdowns, biggest movers and the device list — which show hosts that checked in during the selected window. The scores at the top (composite, the category cards and the 90-day exposure tile) always show each host's most recent reading, so they don't change when you switch the range.">
+            ⓘ affects the charts below, not the top scores
           </span>
         </div>
         <div class="comparison-label">
-          composite Δ vs 7 days ago · 30-day trend
+          tiles show Δ vs {{ tileDeltaLabel }} · 30-day trend
         </div>
       </div>
     </section>
@@ -25,11 +25,30 @@
         label="Fleet experience score"
         :grade="fleet.grade"
         :score="fleet.score"
-        :delta="fleet.delta"
+        :delta="tileDeltas.composite"
         :sparklineData="fleet.sparkline"
         :loading="loading.fleet"
         :subtitle="fleet.deviceCount ? `${fleet.deviceCount} devices` : ''"
       />
+    </section>
+
+    <!-- ─── 90-day endpoint security-exposure delta (board callout) ── -->
+    <section class="exposure-section" :class="`exposure-section--${exposureView.dir}`">
+      <div class="exposure-main">
+        <span class="exposure-eyebrow">Endpoint exposure vs 90 days ago</span>
+        <span v-if="loading.exposure" class="exposure-headline">Loading…</span>
+        <span v-else class="exposure-headline">{{ exposureView.headline }}</span>
+        <span class="exposure-detail">{{ exposureView.detail }}</span>
+      </div>
+      <div v-if="exposureView.available" class="exposure-delta" :class="`exposure-delta--${exposureView.dir}`">
+        <span class="exposure-delta-arrow">{{ exposureView.dir === 'worse' ? '▼' : exposureView.dir === 'better' ? '▲' : '▬' }}</span>
+        <span class="exposure-delta-val">{{ exposureView.delta > 0 ? '+' : '' }}{{ exposureView.delta }}</span>
+        <span class="exposure-delta-unit">pts</span>
+      </div>
+      <p class="exposure-caption">
+        "Exposure" here is endpoint security posture only (FileVault, firewall, Gatekeeper,
+        SIP, OS currency) — not application, network, or cloud attack surface.
+      </p>
     </section>
 
     <!-- ─── 30-day fleet composite trend ───────────────────── -->
@@ -96,7 +115,7 @@
         :label="cat.label"
         :grade="cat.grade"
         :score="cat.score"
-        :delta="cat.delta"
+        :delta="tileDeltas[cat.key]"
         :sparklineData="cat.sparkline"
         :loading="loading.categories"
         :clickable="true"
@@ -230,7 +249,7 @@
             <div v-if="softwarePatchMovers.length" class="detail-section">
               <h4>Top patch movers (7d)</h4>
               <p class="section-hint">Mean time to patch per app · sorted by hosts patched</p>
-              <MttpTable :rows="softwarePatchMovers" />
+              <MttpTable :rows="softwarePatchMovers" :sla-days="config.patchSlaDays" />
             </div>
           </div>
         </template>
@@ -357,20 +376,37 @@ import BiggestMovers from '../components/BiggestMovers.vue'
 import DimensionBreakdown from '../components/DimensionBreakdown.vue'
 import MttpTable from '../components/MttpTable.vue'
 import { displayHost } from '../composables/displayName'
+import { useAppConfig } from '../composables/useAppConfig'
 
+const { config } = useAppConfig()
 const { filterParams, setOSFilter, setModelFilter, setRAMFilter } = useFleetFilter()
 const { wcMode } = useWorkersCouncil()
 const { timeRangeHours, selectedRange } = useTimeRange()
 
 // ─── Query params (replaces all SQL fragment computeds) ───────
+// Drill-downs (grade distribution, dimensions, biggest movers, device list)
+// are scoped to hosts active in the selected window, so they carry timeRange.
 const queryParams = computed(() => ({
   timeRange: timeRangeHours.value,
   ...filterParams.value
 }))
+// Snapshot cards (composite, categories, exposure, per-fleet) reflect each
+// host's latest snapshot and ignore the time range — filter-only params so a
+// range switch never reloads them.
+const snapshotParams = computed(() => ({ ...filterParams.value }))
 
 const comparisonLabel = computed(() => {
   const labels = { '1h': 'hour', '6h': '6 hours', '1d': 'day', '7d': 'week', '30d': '30 days' }
   return labels[selectedRange.value] || 'period'
+})
+
+// Now-vs-window deltas for the top tiles: each tile's "now" score minus its
+// score at the start of the selected window. Keyed by category key + composite.
+// Recomputed on range change; the tiles' main scores never move.
+const tileDeltas = ref({ composite: null, device_health: null, performance: null, network: null, security: null, software: null })
+const tileDeltaLabel = computed(() => {
+  const labels = { '1h': '1h ago', '6h': '6h ago', '1d': '1d ago', '7d': '7d ago', '30d': '30d ago' }
+  return labels[selectedRange.value] || 'window start'
 })
 
 // ─── 30-day composite trend helpers ──────────────────────
@@ -399,10 +435,40 @@ const loading = ref({
   distribution: false,
   movers: false,
   dimensions: false,
-  deviceList: false
+  deviceList: false,
+  exposure: false
 })
 
 const fleet = ref({ grade: '—', score: null, delta: null, sparkline: [], deviceCount: 0 })
+
+// ─── 90-day endpoint security-exposure delta (board Q: "more exposed than
+// 90 days ago?"). Reuses the asOfDaysAgo time-travel param on
+// firehose.scores.categories to diff the security sub-score now vs 90d ago.
+// Scope is endpoint security posture only — NOT app/network/cloud attack
+// surface (boundary is printed on the tile).
+const securityExposure = ref({ now: null, ago90: null, delta: null })
+
+// Board-legible reading of the 90-day security delta. Higher security score =
+// less exposed, so a negative delta means MORE exposed than a quarter ago.
+const exposureView = computed(() => {
+  const { now, ago90, delta } = securityExposure.value
+  if (delta == null) {
+    return { available: false, headline: '—', detail: ago90 == null ? 'No security-posture history 90 days back yet.' : 'Insufficient data.', dir: 'flat' }
+  }
+  const dir = delta < 0 ? 'worse' : delta > 0 ? 'better' : 'flat'
+  const headline = dir === 'worse'
+    ? `More exposed: security posture down ${Math.abs(delta)} pts vs 90 days ago`
+    : dir === 'better'
+      ? `Less exposed: security posture up ${delta} pts vs 90 days ago`
+      : 'Unchanged: security posture flat vs 90 days ago'
+  return {
+    available: true,
+    headline,
+    detail: `Endpoint security score ${now} now vs ${ago90} ninety days ago.`,
+    dir,
+    delta,
+  }
+})
 
 // ─── Per-fleet (team) breakdown ───────────────────────────
 // teamRows is the UNION of:
@@ -414,7 +480,7 @@ const teamRows = ref([])
 async function fetchTeamBreakdown() {
   try {
     const [scored, allTeams] = await Promise.all([
-      query('firehose.scores.by_team', queryParams.value).catch(() => []),
+      query('firehose.scores.by_team', snapshotParams.value).catch(() => []),
       query('firehose.devices.filter_options').catch(() => []),
     ])
     const scoredMap = new Map(
@@ -541,19 +607,16 @@ async function fetchFleetScore() {
     // shows as null (ECharts skips it).
     const trendDays = 30
     const trendRequests = Array.from({ length: trendDays }, (_, i) =>
-      query('firehose.scores.fleet_summary', { ...queryParams.value, asOfDaysAgo: i })
+      query('firehose.scores.fleet_summary', { ...snapshotParams.value, asOfDaysAgo: i })
         .catch(() => [])
     )
     const trendRows = await Promise.all(trendRequests)
 
     const todayRow = trendRows[0]?.[0]
-    const sevenDayRow = trendRows[7]?.[0]
     const score = todayRow?.avg_score ?? null
     const count = todayRow?.device_count ?? 0
-    const sevenDayScore = sevenDayRow?.avg_score ?? null
-    const delta = (score != null && sevenDayScore != null)
-      ? Math.round((score - sevenDayScore) * 10) / 10
-      : null
+    // The now-vs-window Δ badge is owned by fetchTileDeltas (range-aware); the
+    // hero just shows the current score + 30-day sparkline.
 
     // Sparkline: newest → oldest from trendRequests, so reverse to oldest → newest.
     const sparkline = trendRows
@@ -568,7 +631,7 @@ async function fetchFleetScore() {
     fleet.value = {
       grade: scoreToGrade(score),
       score,
-      delta,
+      delta: null,
       sparkline,
       deviceCount: count,
     }
@@ -583,7 +646,7 @@ async function fetchCategoryScores() {
   loading.value.categories = true
   try {
     const [rows] = await Promise.all([
-      query('firehose.scores.categories', queryParams.value),
+      query('firehose.scores.categories', snapshotParams.value),
     ])
 
     categories.value = categories.value.map(cat => {
@@ -600,6 +663,55 @@ async function fetchCategoryScores() {
     console.error('Category scores fetch failed:', e)
   }
   loading.value.categories = false
+}
+
+// ─── Fetch 90-day security-exposure delta ─────────────────────
+// Two snapshots of the security sub-score (now and 90 days ago) via the
+// asOfDaysAgo time-travel param. A drop = more exposed than a quarter ago.
+async function fetchSecurityExposure() {
+  loading.value.exposure = true
+  try {
+    const [nowRows, agoRows] = await Promise.all([
+      query('firehose.scores.categories', { ...snapshotParams.value, asOfDaysAgo: 0 }).catch(() => []),
+      query('firehose.scores.categories', { ...snapshotParams.value, asOfDaysAgo: 90 }).catch(() => []),
+    ])
+    const now = nowRows[0]?.avg_security ?? null
+    const ago90 = agoRows[0]?.avg_security ?? null
+    const delta = (now != null && ago90 != null)
+      ? Math.round((now - ago90) * 10) / 10
+      : null
+    securityExposure.value = { now, ago90, delta }
+  } catch (e) {
+    console.error('Security exposure fetch failed:', e)
+    securityExposure.value = { now: null, ago90: null, delta: null }
+  }
+  loading.value.exposure = false
+}
+
+// ─── Fetch now-vs-window tile deltas ──────────────────────────
+// One categories row carries avg_composite + all 5 category averages, so two
+// calls (now, and asOfHoursAgo = the selected window) yield every tile's delta
+// from a consistent snapshot pair. Main scores are owned by the snapshot
+// fetches; this only writes the delta badges.
+const DELTA_KEYS = ['composite', 'device_health', 'performance', 'network', 'security', 'software']
+async function fetchTileDeltas() {
+  try {
+    const [nowRows, beforeRows] = await Promise.all([
+      query('firehose.scores.categories', { ...snapshotParams.value, asOfHoursAgo: 0 }).catch(() => []),
+      query('firehose.scores.categories', { ...snapshotParams.value, asOfHoursAgo: timeRangeHours.value }).catch(() => []),
+    ])
+    const now = nowRows[0] || {}
+    const before = beforeRows[0] || {}
+    const deltas = {}
+    for (const key of DELTA_KEYS) {
+      const n = now[`avg_${key}`]
+      const b = before[`avg_${key}`]
+      deltas[key] = (n != null && b != null) ? Math.round((n - b) * 10) / 10 : null
+    }
+    tileDeltas.value = deltas
+  } catch (e) {
+    console.error('Tile delta fetch failed:', e)
+  }
 }
 
 // ─── Fetch Grade Distribution ─────────────────────────────────
@@ -1081,17 +1193,33 @@ function signalColor(score) {
 function fetchAll() {
   fetchFleetScore()
   fetchCategoryScores()
-  fetchDistribution()
-  fetchMovers()
-  fetchDimensions()
-  fetchDeviceList()
+  fetchSecurityExposure()
+  fetchTileDeltas()
+  fetchDrillDowns()
   fetchTeamBreakdown()
 }
 
-// React to filter and time range changes
-watch([filterParams, selectedRange], () => {
+// Time-range-scoped views only: refetch these (and nothing else) when the user
+// switches the range, so the snapshot cards above don't flicker.
+function fetchDrillDowns() {
+  fetchDistribution(expandedCategory.value)
+  fetchMovers()
+  fetchDimensions()
+  fetchDeviceList()
+}
+
+// Filter changes affect every cohort → refetch everything.
+watch(filterParams, () => {
   fetchAll()
 }, { deep: true })
+
+// Time-range changes only scope the drill-downs → refetch just those. The
+// composite/category/exposure cards reflect each host's latest snapshot and
+// don't depend on the range, so they stay put (no reload, no flicker).
+watch(selectedRange, () => {
+  fetchTileDeltas()
+  fetchDrillDowns()
+})
 
 onMounted(() => {
   fetchAll()
@@ -1106,6 +1234,53 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--pad-large);
+}
+
+/* ─── 90-day endpoint security-exposure callout ─── */
+.exposure-section {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "main delta" "caption caption";
+  align-items: center;
+  gap: 4px 20px;
+  padding: 16px 20px;
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-left: 4px solid var(--fleet-black-25);
+  border-radius: var(--radius);
+}
+.exposure-section--worse { border-left-color: #b3261e; }
+.exposure-section--better { border-left-color: #1a7a4c; }
+.exposure-main { grid-area: main; display: flex; flex-direction: column; gap: 2px; }
+.exposure-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--fleet-black-50);
+}
+.exposure-headline { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black); }
+.exposure-detail { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
+.exposure-delta {
+  grid-area: delta;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.exposure-delta--worse { color: #b3261e; }
+.exposure-delta--better { color: #1a7a4c; }
+.exposure-delta--flat { color: var(--fleet-black-50); }
+.exposure-delta-arrow { font-size: var(--font-size-md); }
+.exposure-delta-val { font-size: var(--font-size-xl, 28px); }
+.exposure-delta-unit { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
+.exposure-caption {
+  grid-area: caption;
+  margin: 4px 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--fleet-black-50);
+  line-height: 1.4;
 }
 
 /* ─── Page header ─────────────────────────────── */
