@@ -9,6 +9,9 @@ import FirehoseInsights from './views/FirehoseInsights.vue'
 import Firehose from './views/Firehose.vue'
 import DexOverview from './views/DexOverview.vue'
 import AuditLogs from './views/AuditLogs.vue'
+import Lifecycle from './views/Lifecycle.vue'
+import SoftwareWaste from './views/SoftwareWaste.vue'
+import Connectivity from './views/Connectivity.vue'
 
 const routes = [
   { path: '/', name: 'Experience', component: ExperienceScore },
@@ -18,6 +21,9 @@ const routes = [
   { path: '/reports', name: 'Reports', component: FirehoseReports },
   { path: '/timeline', name: 'Timeline', component: FirehoseTimeline },
   { path: '/changeboard', name: 'Changeboard', component: FirehoseChangeboard },
+  { path: '/connectivity', name: 'Connectivity', component: Connectivity },
+  { path: '/lifecycle', name: 'Lifecycle', component: Lifecycle },
+  { path: '/software-waste', name: 'Software waste', component: SoftwareWaste },
   { path: '/overview', name: 'Overview', component: DexOverview },
   { path: '/audit', name: 'Audit', component: AuditLogs },
   { path: '/raw', name: 'Raw', component: Firehose },

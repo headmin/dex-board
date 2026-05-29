@@ -78,6 +78,31 @@
               </svg>
               Changeboard
             </router-link>
+            <router-link to="/connectivity" class="nav-item" active-class="active">
+              <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M10 14v.01"/>
+                <path d="M6.5 11a5 5 0 017 0M3.5 8a9 9 0 0113 0"/>
+              </svg>
+              Connectivity
+            </router-link>
+          </div>
+
+          <div class="nav-section">
+            <span class="nav-section-label">Cost &amp; lifecycle</span>
+            <router-link to="/lifecycle" class="nav-item" active-class="active">
+              <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M10 3a7 7 0 107 7"/>
+                <path d="M10 3v4M17 10h-4"/>
+              </svg>
+              Lifecycle
+            </router-link>
+            <router-link to="/software-waste" class="nav-item" active-class="active">
+              <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M5 6h10l-1 11H6L5 6z"/>
+                <path d="M8 6V4h4v2"/>
+              </svg>
+              Software waste
+            </router-link>
           </div>
 
           <div class="nav-section">

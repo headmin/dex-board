@@ -28,6 +28,18 @@
       </header>
 
       <div class="panel-content">
+        <!-- Support snapshot — pre-connect briefing -->
+        <section v-if="supportSnapshot.length" class="detail-section support-snapshot">
+          <h3>Support snapshot</h3>
+          <p class="support-hint">At-a-glance before you connect — worst signals first. For remote control or scripts, open the host in Fleet.</p>
+          <div class="snapshot-chips">
+            <span v-for="c in supportSnapshot" :key="c.label" class="snap-chip" :class="`sev-${c.sev}`">
+              <span class="snap-label">{{ c.label }}</span>
+              <span class="snap-val">{{ c.val }}</span>
+            </span>
+          </div>
+        </section>
+
         <!-- Health Status -->
         <section class="detail-section">
           <h3>Health Status</h3>
@@ -234,6 +246,24 @@ const signalClass = computed(() => {
 })
 
 const signalQuality = computed(() => signalClass.value)
+
+// Pre-connect support briefing — the support-relevant state at a glance,
+// derived from data already fetched (no extra queries). Sorted worst-first.
+const supportSnapshot = computed(() => {
+  const chips = []
+  const s = security.value, h = health.value, n = network.value
+  if (s) {
+    chips.push({ label: 'FileVault', val: s.disk_encrypted === '1' ? 'On' : 'OFF', sev: s.disk_encrypted === '1' ? 'ok' : 'high' })
+    chips.push({ label: 'Firewall', val: s.firewall_enabled === '1' ? 'On' : 'OFF', sev: s.firewall_enabled === '1' ? 'ok' : 'high' })
+  }
+  if (h) {
+    if (h.memory_percent != null) chips.push({ label: 'Memory', val: h.memory_percent + '%', sev: h.memory_percent >= 90 ? 'high' : h.memory_percent >= 75 ? 'mid' : 'ok' })
+    if (h.disk_percent != null) chips.push({ label: 'Disk', val: h.disk_percent + '%', sev: h.disk_percent >= 90 ? 'high' : h.disk_percent >= 80 ? 'mid' : 'ok' })
+  }
+  if (n && n.wifi_rssi) chips.push({ label: 'Wi-Fi', val: `${signalQuality.value} (${n.wifi_rssi}dBm)`, sev: signalQuality.value === 'poor' ? 'high' : signalQuality.value === 'fair' ? 'mid' : 'ok' })
+  const rank = { high: 0, mid: 1, ok: 2 }
+  return chips.slice().sort((a, b) => rank[a.sev] - rank[b.sev])
+})
 
 const historyChartOption = computed(() => ({
   tooltip: { trigger: 'axis' },
@@ -450,6 +480,16 @@ onMounted(fetchDeviceData)
 .detail-section {
   margin-bottom: var(--pad-large);
 }
+
+/* Support snapshot — pre-connect briefing strip */
+.support-snapshot { background: #f7f8fb; border: 1px solid #e2e4ea; border-radius: 8px; padding: 14px 16px; }
+.support-hint { font-size: 12px; color: #8b8fa2; margin: -4px 0 10px; line-height: 1.4; }
+.snapshot-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.snap-chip { display: inline-flex; align-items: baseline; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 6px; border: 1px solid transparent; }
+.snap-label { opacity: 0.7; font-weight: 500; }
+.snap-chip.sev-ok { background: #e8f8f0; color: #1a7a4c; }
+.snap-chip.sev-mid { background: #fef9e8; color: #9a7b1a; }
+.snap-chip.sev-high { background: #fdecec; color: #b3261e; }
 
 .detail-section h3 {
   font-size: 12px;

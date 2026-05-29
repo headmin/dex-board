@@ -9,7 +9,7 @@
       <div class="header-right">
         <div class="time-range-group">
           <TimeRangeFilter />
-          <span class="time-range-hint" title="The time range only changes the charts further down — grade distribution, the breakdowns, biggest movers and the device list — which show hosts that checked in during the selected window. The scores at the top (composite, the category cards and the 90-day exposure tile) always show each host's most recent reading, so they don't change when you switch the range.">
+          <span class="time-range-hint" title="The time range only changes the charts further down — grade distribution, the breakdowns, biggest movers and the device list — which show hosts that checked in during the selected window. The scores at the top (composite, the category cards and the exposure tile) always show each host's most recent reading, so they don't change when you switch the range.">
             ⓘ affects the charts below, not the top scores
           </span>
         </div>
@@ -32,13 +32,34 @@
       />
     </section>
 
-    <!-- ─── 90-day endpoint security-exposure delta (board callout) ── -->
+    <!-- ─── Endpoint security-exposure delta (board callout, selectable window) ── -->
     <section class="exposure-section" :class="`exposure-section--${exposureView.dir}`">
       <div class="exposure-main">
-        <span class="exposure-eyebrow">Endpoint exposure vs 90 days ago</span>
+        <div class="exposure-eyebrow-row">
+          <span class="exposure-eyebrow">Endpoint exposure vs {{ exposureDays }} days ago</span>
+          <div class="exposure-window-picker" role="group" aria-label="Comparison window">
+            <button
+              v-for="w in EXPOSURE_WINDOWS"
+              :key="w"
+              type="button"
+              class="exposure-window-btn"
+              :class="{ active: exposureDays === w }"
+              @click="exposureDays = w"
+            >{{ w }}d</button>
+          </div>
+        </div>
         <span v-if="loading.exposure" class="exposure-headline">Loading…</span>
         <span v-else class="exposure-headline">{{ exposureView.headline }}</span>
         <span class="exposure-detail">{{ exposureView.detail }}</span>
+        <div v-if="exposureSignals.length" class="exposure-signals">
+          <span v-for="s in exposureSignals" :key="s.key" class="exposure-signal">
+            <span class="exposure-signal-label">{{ s.label }}</span>
+            <span class="exposure-signal-now">{{ s.now }}%</span>
+            <span v-if="s.delta !== null && s.delta !== 0"
+                  class="exposure-signal-delta"
+                  :class="s.delta < 0 ? 'sig-worse' : 'sig-better'">{{ s.delta > 0 ? '+' : '' }}{{ s.delta }}</span>
+          </span>
+        </div>
       </div>
       <div v-if="exposureView.available" class="exposure-delta" :class="`exposure-delta--${exposureView.dir}`">
         <span class="exposure-delta-arrow">{{ exposureView.dir === 'worse' ? '▼' : exposureView.dir === 'better' ? '▲' : '▬' }}</span>
@@ -247,7 +268,14 @@
             </div>
 
             <div v-if="softwarePatchMovers.length" class="detail-section">
-              <h4>Top patch movers (7d)</h4>
+              <div class="patch-movers-head">
+                <h4>Top patch movers (7d)</h4>
+                <span v-if="patchTrendView" class="patch-trend" :class="`patch-trend--${patchTrendView.dir}`">
+                  fleet MTTP {{ patchTrendView.current }}d
+                  <span class="patch-trend-arrow">{{ patchTrendView.dir === 'faster' ? '▼' : patchTrendView.dir === 'slower' ? '▲' : '▬' }}</span>
+                  {{ patchTrendView.txt }} vs prior 7d
+                </span>
+              </div>
               <p class="section-hint">Mean time to patch per app · sorted by hosts patched</p>
               <MttpTable :rows="softwarePatchMovers" :sla-days="config.patchSlaDays" />
             </div>
@@ -441,30 +469,35 @@ const loading = ref({
 
 const fleet = ref({ grade: '—', score: null, delta: null, sparkline: [], deviceCount: 0 })
 
-// ─── 90-day endpoint security-exposure delta (board Q: "more exposed than
-// 90 days ago?"). Reuses the asOfDaysAgo time-travel param on
-// firehose.scores.categories to diff the security sub-score now vs 90d ago.
+// ─── Endpoint security-exposure delta (board Q: "more exposed than N days
+// ago?"). Reuses the asOfDaysAgo time-travel param on firehose.scores.categories
+// to diff the security sub-score now vs N days ago, where N is user-selectable.
 // Scope is endpoint security posture only — NOT app/network/cloud attack
 // surface (boundary is printed on the tile).
-const securityExposure = ref({ now: null, ago90: null, delta: null })
+const EXPOSURE_WINDOWS = [14, 30, 45, 60, 90]
+const exposureDays = ref(90)
+const securityExposure = ref({ now: null, before: null, delta: null })
+// Per-control adoption %s + their delta over the window — shows WHICH control moved.
+const exposureSignals = ref([])
 
-// Board-legible reading of the 90-day security delta. Higher security score =
-// less exposed, so a negative delta means MORE exposed than a quarter ago.
+// Board-legible reading of the security delta. Higher security score = less
+// exposed, so a negative delta means MORE exposed than the window start.
 const exposureView = computed(() => {
-  const { now, ago90, delta } = securityExposure.value
+  const { now, before, delta } = securityExposure.value
+  const n = exposureDays.value
   if (delta == null) {
-    return { available: false, headline: '—', detail: ago90 == null ? 'No security-posture history 90 days back yet.' : 'Insufficient data.', dir: 'flat' }
+    return { available: false, headline: '—', detail: before == null ? `No security-posture history ${n} days back yet.` : 'Insufficient data.', dir: 'flat' }
   }
   const dir = delta < 0 ? 'worse' : delta > 0 ? 'better' : 'flat'
   const headline = dir === 'worse'
-    ? `More exposed: security posture down ${Math.abs(delta)} pts vs 90 days ago`
+    ? `More exposed: security posture down ${Math.abs(delta)} pts vs ${n} days ago`
     : dir === 'better'
-      ? `Less exposed: security posture up ${delta} pts vs 90 days ago`
-      : 'Unchanged: security posture flat vs 90 days ago'
+      ? `Less exposed: security posture up ${delta} pts vs ${n} days ago`
+      : `Unchanged: security posture flat vs ${n} days ago`
   return {
     available: true,
     headline,
-    detail: `Endpoint security score ${now} now vs ${ago90} ninety days ago.`,
+    detail: `Endpoint security score ${now} now vs ${before} ${n} days ago.`,
     dir,
     delta,
   }
@@ -534,6 +567,15 @@ const patchTimeline = ref([])
 const mostUsedApps = ref([])
 const leastUsedApps = ref([])
 const softwarePatchMovers = ref([])
+// Fleet MTTP this 7d vs prior 7d — "are we faster?"
+const patchTrend = ref({ current: null, prior: null, delta: null })
+const patchTrendView = computed(() => {
+  const { current, prior, delta } = patchTrend.value
+  if (current == null || delta == null) return null
+  const dir = delta < 0 ? 'faster' : delta > 0 ? 'slower' : 'flat'
+  const txt = dir === 'faster' ? `${Math.abs(delta)}d faster` : dir === 'slower' ? `${delta}d slower` : 'unchanged'
+  return { current, prior, dir, txt }
+})
 
 // App drill-down state
 const drillApp = ref(null)
@@ -665,25 +707,40 @@ async function fetchCategoryScores() {
   loading.value.categories = false
 }
 
-// ─── Fetch 90-day security-exposure delta ─────────────────────
-// Two snapshots of the security sub-score (now and 90 days ago) via the
-// asOfDaysAgo time-travel param. A drop = more exposed than a quarter ago.
+// ─── Fetch security-exposure delta (selectable window) ────────
+// Two snapshots of the security sub-score (now and exposureDays ago) via the
+// asOfDaysAgo time-travel param. A drop = more exposed than the window start.
 async function fetchSecurityExposure() {
   loading.value.exposure = true
   try {
-    const [nowRows, agoRows] = await Promise.all([
+    const [nowRows, agoRows, nowPosture, agoPosture] = await Promise.all([
       query('firehose.scores.categories', { ...snapshotParams.value, asOfDaysAgo: 0 }).catch(() => []),
-      query('firehose.scores.categories', { ...snapshotParams.value, asOfDaysAgo: 90 }).catch(() => []),
+      query('firehose.scores.categories', { ...snapshotParams.value, asOfDaysAgo: exposureDays.value }).catch(() => []),
+      query('firehose.security.posture_breakdown', { ...snapshotParams.value, asOfDaysAgo: 0 }).catch(() => []),
+      query('firehose.security.posture_breakdown', { ...snapshotParams.value, asOfDaysAgo: exposureDays.value }).catch(() => []),
     ])
     const now = nowRows[0]?.avg_security ?? null
-    const ago90 = agoRows[0]?.avg_security ?? null
-    const delta = (now != null && ago90 != null)
-      ? Math.round((now - ago90) * 10) / 10
+    const before = agoRows[0]?.avg_security ?? null
+    const delta = (now != null && before != null)
+      ? Math.round((now - before) * 10) / 10
       : null
-    securityExposure.value = { now, ago90, delta }
+    securityExposure.value = { now, before, delta }
+
+    // Per-control breakdown: which signal moved (encryption/firewall/Gatekeeper/SIP)?
+    const pn = nowPosture[0] || {}
+    const pb = agoPosture[0] || {}
+    const sig = (key, label) => {
+      const n = pn[key] ?? null
+      const b = pb[key] ?? null
+      return { key, label, now: n, delta: (n != null && b != null) ? Math.round((n - b) * 10) / 10 : null }
+    }
+    exposureSignals.value = (pn.posture_hosts > 0)
+      ? [sig('pct_encrypted', 'FileVault'), sig('pct_firewall', 'Firewall'), sig('pct_gatekeeper', 'Gatekeeper'), sig('pct_sip', 'SIP')]
+      : []
   } catch (e) {
     console.error('Security exposure fetch failed:', e)
-    securityExposure.value = { now: null, ago90: null, delta: null }
+    securityExposure.value = { now: null, before: null, delta: null }
+    exposureSignals.value = []
   }
   loading.value.exposure = false
 }
@@ -1064,16 +1121,33 @@ async function fetchSoftwareDetail() {
   try {
     const end = new Date()
     const start = new Date(end.getTime() - 7 * 24 * 3600 * 1000)
+    const prevStart = new Date(start.getTime() - 7 * 24 * 3600 * 1000)
     const fmt = (d) => d.toISOString().slice(0, 19).replace('T', ' ')
 
-    const [adoptRows, tierRows, osRows, crashTopRows, staleRows, patchSummaryRows] = await Promise.all([
+    const [adoptRows, tierRows, osRows, crashTopRows, staleRows, patchSummaryRows, patchPrevRows] = await Promise.all([
       query('firehose.adoption.summary'),
       query('firehose.adoption.tier_distribution'),
       query('firehose.health.os_summary'),
       query('firehose.crashes.top_crashers', { limit: 8 }),
       query('firehose.adoption.stale_apps', { limit: 8 }),
       query('scores.timeline_patches_summary', { startDate: fmt(start), endDate: fmt(end), minHosts: 1 }).catch(() => []),
+      query('scores.timeline_patches_summary', { startDate: fmt(prevStart), endDate: fmt(start), minHosts: 1 }).catch(() => []),
     ])
+
+    // "Are we faster?" — host-weighted fleet MTTP, this 7d vs the prior 7d.
+    // Lower MTTP = faster, so a negative delta is an improvement.
+    const wtdMttp = (rows) => {
+      let h = 0, wl = 0
+      for (const r of (rows || [])) { const hosts = Number(r.hosts || 0); h += hosts; wl += hosts * Number(r.avg_lag || 0) }
+      return h > 0 ? +(wl / h).toFixed(2) : null
+    }
+    const curMttp = wtdMttp(patchSummaryRows)
+    const prevMttp = wtdMttp(patchPrevRows)
+    patchTrend.value = {
+      current: curMttp,
+      prior: prevMttp,
+      delta: (curMttp != null && prevMttp != null) ? +(curMttp - prevMttp).toFixed(2) : null,
+    }
 
     // Collapse per-day rows into per-software for the table
     const bySw = new Map()
@@ -1221,6 +1295,11 @@ watch(selectedRange, () => {
   fetchDrillDowns()
 })
 
+// Exposure comparison window changed → re-diff security posture vs that point.
+watch(exposureDays, () => {
+  fetchSecurityExposure()
+})
+
 onMounted(() => {
   fetchAll()
 })
@@ -1252,6 +1331,13 @@ onMounted(() => {
 .exposure-section--worse { border-left-color: #b3261e; }
 .exposure-section--better { border-left-color: #1a7a4c; }
 .exposure-main { grid-area: main; display: flex; flex-direction: column; gap: 2px; }
+.exposure-eyebrow-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
 .exposure-eyebrow {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
@@ -1259,8 +1345,41 @@ onMounted(() => {
   letter-spacing: 0.5px;
   color: var(--fleet-black-50);
 }
+.exposure-window-picker {
+  display: inline-flex;
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-sm, 4px);
+  overflow: hidden;
+}
+.exposure-window-btn {
+  appearance: none;
+  border: none;
+  background: var(--fleet-white);
+  color: var(--fleet-black-50);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 2px 8px;
+  cursor: pointer;
+  border-left: 1px solid var(--fleet-black-10);
+}
+.exposure-window-btn:first-child { border-left: none; }
+.exposure-window-btn:hover { background: var(--fleet-off-white); color: var(--fleet-black-75); }
+.exposure-window-btn.active { background: #6a67fe; color: var(--fleet-white); }
 .exposure-headline { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black); }
 .exposure-detail { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
+.exposure-signals { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.exposure-signal {
+  display: inline-flex; align-items: baseline; gap: 5px;
+  font-family: var(--font-mono); font-size: var(--font-size-xs);
+  background: var(--fleet-off-white); border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-sm, 4px); padding: 2px 7px;
+}
+.exposure-signal-label { color: var(--fleet-black-50); }
+.exposure-signal-now { font-weight: 700; color: var(--fleet-black-75); }
+.exposure-signal-delta { font-weight: 700; }
+.exposure-signal-delta.sig-worse { color: #b3261e; }
+.exposure-signal-delta.sig-better { color: #1a7a4c; }
 .exposure-delta {
   grid-area: delta;
   display: flex;
@@ -2199,6 +2318,16 @@ onMounted(() => {
   stroke: #065f46;
   flex-shrink: 0;
 }
+
+.patch-movers-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.patch-trend {
+  font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 600;
+  padding: 2px 8px; border-radius: var(--radius-sm, 4px); background: var(--fleet-off-white);
+}
+.patch-trend-arrow { font-weight: 700; }
+.patch-trend--faster { color: #1a7a4c; }
+.patch-trend--slower { color: #b3261e; }
+.patch-trend--flat { color: var(--fleet-black-50); }
 
 /* small caption used by the software breakdown above the MttpTable */
 .section-hint { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); margin: 0 0 12px; }
