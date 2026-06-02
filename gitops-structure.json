@@ -1,14 +1,14 @@
 {
-  "generated": "2026-06-02T00:34:27Z",
+  "generated": "2026-06-02T07:33:08Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "537cb3e933d2f26f07f8e437700e47f19bd2703b",
-    "short_sha": "537cb3e933",
-    "message": "Adding sec posture query, expand dex queries to testing & qa team (#46021)",
-    "timestamp": "2026-05-21T14:06:22-07:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/537cb3e933d2f26f07f8e437700e47f19bd2703b"
+    "sha": "dd93e8f8065ae02d6e7b9fd2cf65788ac1e47d03",
+    "short_sha": "dd93e8f806",
+    "message": "Add DEX queries for Windows (#46607)",
+    "timestamp": "2026-06-01T18:56:16-07:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/dd93e8f8065ae02d6e7b9fd2cf65788ac1e47d03"
   },
   "fleets": [
     {

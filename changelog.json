@@ -1,5 +1,16 @@
 [
   {
+    "sha": "dd93e8f8065ae02d6e7b9fd2cf65788ac1e47d03",
+    "short_sha": "dd93e8f806",
+    "author": "Harrison Ravazzolo",
+    "email": "38767391+harrisonravazzolo@users.noreply.github.com",
+    "message": "Add DEX queries for Windows (#46607)",
+    "timestamp": "2026-06-01T18:56:16-07:00",
+    "files": [
+      "it-and-security/lib/all/reports/dex-queries.yml"
+    ]
+  },
+  {
     "sha": "537cb3e933d2f26f07f8e437700e47f19bd2703b",
     "short_sha": "537cb3e933",
     "author": "Harrison Ravazzolo",
@@ -6368,20 +6379,6 @@
     "timestamp": "2024-08-15T10:12:04-03:00",
     "files": [
       "it-and-security/teams/compliance-exclusions.yml"
-    ]
-  },
-  {
-    "sha": "c25b22be883c26422e46aac8182e6cc355b023b2",
-    "short_sha": "c25b22be88",
-    "author": "JD",
-    "email": "spokanemac@users.noreply.github.com",
-    "message": "Enforce Sonoma 14.6 and iOS/iPadOS 17.6 (#21314)",
-    "timestamp": "2024-08-14T13:11:48-06:00",
-    "files": [
-      "it-and-security/teams/company-owned-ipads.yml",
-      "it-and-security/teams/company-owned-iphones.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]
