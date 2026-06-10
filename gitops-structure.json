@@ -1,14 +1,14 @@
 {
-  "generated": "2026-06-10T13:07:25Z",
+  "generated": "2026-06-10T18:49:21Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "dd93e8f8065ae02d6e7b9fd2cf65788ac1e47d03",
-    "short_sha": "dd93e8f806",
-    "message": "Add DEX queries for Windows (#46607)",
-    "timestamp": "2026-06-01T18:56:16-07:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/dd93e8f8065ae02d6e7b9fd2cf65788ac1e47d03"
+    "sha": "7979b684b34477959dd5dad522f30a5fa2eb1459",
+    "short_sha": "7979b684b3",
+    "message": "Update battery-health-check.yml (#47307)",
+    "timestamp": "2026-06-10T09:36:28-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/7979b684b34477959dd5dad522f30a5fa2eb1459"
   },
   "fleets": [
     {

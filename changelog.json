@@ -1,5 +1,16 @@
 [
   {
+    "sha": "7979b684b34477959dd5dad522f30a5fa2eb1459",
+    "short_sha": "7979b684b3",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update battery-health-check.yml (#47307)",
+    "timestamp": "2026-06-10T09:36:28-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/battery-health-check.yml"
+    ]
+  },
+  {
     "sha": "dd93e8f8065ae02d6e7b9fd2cf65788ac1e47d03",
     "short_sha": "dd93e8f806",
     "author": "Harrison Ravazzolo",
@@ -6368,17 +6379,6 @@
       "it-and-security/lib/configuration-profiles/windows-password.xml",
       "it-and-security/lib/configuration-profiles/windows-screen-lock.xml",
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "5554d053053fb995a6e96ec259fbc4ec9538dd47",
-    "short_sha": "5554d05305",
-    "author": "Lucas Manuel Rodriguez",
-    "email": "lucas@fleetdm.com",
-    "message": "Use `edge` channels in \"Compliance exclusions\" team (#21335)",
-    "timestamp": "2024-08-15T10:12:04-03:00",
-    "files": [
-      "it-and-security/teams/compliance-exclusions.yml"
     ]
   }
 ]
