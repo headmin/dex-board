@@ -1,5 +1,17 @@
 [
   {
+    "sha": "5f14fb0d906991d4a220eb9aec985ad4005d191a",
+    "short_sha": "5f14fb0d90",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Enable macOS EndpointSecurity and FDE profile (#47448)",
+    "timestamp": "2026-06-11T21:04:22-05:00",
+    "files": [
+      "it-and-security/fleets/testing-and-qa.yml",
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
     "sha": "7979b684b34477959dd5dad522f30a5fa2eb1459",
     "short_sha": "7979b684b3",
     "author": "Allen Houchins",
@@ -6365,20 +6377,6 @@
     "timestamp": "2024-09-05T12:18:15-04:00",
     "files": [
       "it-and-security/lib/configuration-profiles/passcode-settings-ddm.json"
-    ]
-  },
-  {
-    "sha": "ade1d06fd6a7aa49112155a7b2859d28dd04115a",
-    "short_sha": "ade1d06fd6",
-    "author": "Roberto Dip",
-    "email": "dip.jesusr@gmail.com",
-    "message": "add windows configuration profiles to workstations canary (#21336)",
-    "timestamp": "2024-08-15T14:02:05-03:00",
-    "files": [
-      "it-and-security/lib/configuration-profiles/windows-firewall.xml",
-      "it-and-security/lib/configuration-profiles/windows-password.xml",
-      "it-and-security/lib/configuration-profiles/windows-screen-lock.xml",
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]
