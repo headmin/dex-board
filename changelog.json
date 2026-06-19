@@ -1,5 +1,19 @@
 [
   {
+    "sha": "96ca0fd96751b0a8defe31ab346ddcca42fff2d4",
+    "short_sha": "96ca0fd967",
+    "author": "Noah Talerman",
+    "email": "47070608+noahtalerman@users.noreply.github.com",
+    "message": "Fix unenroll Windows instructions (#47725)",
+    "timestamp": "2026-06-19T13:15:00-04:00",
+    "files": [
+      "it-and-security/fleets/testing-and-qa.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/windows/scripts/turn-off-mdm.ps1",
+      "it-and-security/lib/windows/scripts/uninstall-fleetd-windows.ps1"
+    ]
+  },
+  {
     "sha": "5f14fb0d906991d4a220eb9aec985ad4005d191a",
     "short_sha": "5f14fb0d90",
     "author": "Allen Houchins",
@@ -6366,17 +6380,6 @@
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "239c69b747de067d8dbb113fd8885d17924bccd6",
-    "short_sha": "239c69b747",
-    "author": "Shea Craig",
-    "email": "sheagcraig@users.noreply.github.com",
-    "message": "Fix type error (#21667)",
-    "timestamp": "2024-09-05T12:18:15-04:00",
-    "files": [
-      "it-and-security/lib/configuration-profiles/passcode-settings-ddm.json"
     ]
   }
 ]
