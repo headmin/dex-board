@@ -1,14 +1,14 @@
 {
-  "generated": "2026-06-22T00:33:08Z",
+  "generated": "2026-06-22T07:52:32Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "96ca0fd96751b0a8defe31ab346ddcca42fff2d4",
-    "short_sha": "96ca0fd967",
-    "message": "Fix unenroll Windows instructions (#47725)",
-    "timestamp": "2026-06-19T13:15:00-04:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/96ca0fd96751b0a8defe31ab346ddcca42fff2d4"
+    "sha": "2d110da3e056f740c5ea1b35d3a9371e93959645",
+    "short_sha": "2d110da3e0",
+    "message": "Revert \"Unblock workstations GitOps by temporarily removing software categories\" (#47988)",
+    "timestamp": "2026-06-21T23:03:16-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/2d110da3e056f740c5ea1b35d3a9371e93959645"
   },
   "fleets": [
     {
@@ -129,6 +129,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/keynote-14-installed.yml"
         },
         {
+          "name": "linux-excluded-from-external-storage-restrictions",
+          "file": "it-and-security/lib/all/labels/linux-excluded-from-external-storage-restrictions.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/linux-excluded-from-external-storage-restrictions.yml"
+        },
+        {
           "name": "macos-compatibility-extension-installed",
           "file": "it-and-security/lib/all/labels/macos-compatibility-extension-installed.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macos-compatibility-extension-installed.yml"
@@ -137,6 +142,11 @@
           "name": "macos-screen-lock-exclusions",
           "file": "it-and-security/lib/all/labels/macos-screen-lock-exclusions.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macos-screen-lock-exclusions.yml"
+        },
+        {
+          "name": "macs-excluded-from-external-storage-restrictions",
+          "file": "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml"
         },
         {
           "name": "macs-with-1password-installed",
@@ -182,6 +192,11 @@
           "name": "virtual-machines",
           "file": "it-and-security/lib/all/labels/virtual-machines.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/virtual-machines.yml"
+        },
+        {
+          "name": "windows-excluded-from-external-storage-restrictions",
+          "file": "it-and-security/lib/all/labels/windows-excluded-from-external-storage-restrictions.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/windows-excluded-from-external-storage-restrictions.yml"
         },
         {
           "name": "windows-screen-lock-exclusions",
@@ -336,6 +351,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/policies/disk-space-check.yml"
         },
         {
+          "name": "removable-storage-read-only",
+          "file": "it-and-security/lib/linux/policies/removable-storage-read-only.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/policies/removable-storage-read-only.yml"
+        },
+        {
           "name": "sshd-permitrootlogin-restricted",
           "file": "it-and-security/lib/linux/policies/sshd-permitrootlogin-restricted.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/policies/sshd-permitrootlogin-restricted.yml"
@@ -363,6 +383,11 @@
           "name": "install-fleet-desktop-required-extension",
           "file": "it-and-security/lib/linux/scripts/install-fleet-desktop-required-extension.sh",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/install-fleet-desktop-required-extension.sh"
+        },
+        {
+          "name": "install-readonly-removable-storage",
+          "file": "it-and-security/lib/linux/scripts/install-readonly-removable-storage.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/install-readonly-removable-storage.sh"
         },
         {
           "name": "uninstall-fleetd-linux",
@@ -574,6 +599,11 @@
         }
       ],
       "declaration_profiles": [
+        {
+          "name": "Disk management settings",
+          "file": "it-and-security/lib/macos/declaration-profiles/Disk management settings.json",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/declaration-profiles/Disk management settings.json"
+        },
         {
           "name": "Passcode settings",
           "file": "it-and-security/lib/macos/declaration-profiles/Passcode settings.json",
@@ -831,6 +861,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/configuration-profiles/Password settings.xml"
         },
         {
+          "name": "Removable storage read-only",
+          "file": "it-and-security/lib/windows/configuration-profiles/Removable storage read-only.xml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/configuration-profiles/Removable storage read-only.xml"
+        },
+        {
           "name": "Screen lock timeout",
           "file": "it-and-security/lib/windows/configuration-profiles/Screen lock timeout.xml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/configuration-profiles/Screen lock timeout.xml"
@@ -988,16 +1023,16 @@
     "fleets": 6,
     "agent_options": 2,
     "icons": 6,
-    "labels": 21,
-    "policies": 41,
+    "labels": 24,
+    "policies": 42,
     "reports": 21,
-    "scripts": 16,
-    "configuration_profiles": 42,
-    "declaration_profiles": 6,
+    "scripts": 17,
+    "configuration_profiles": 43,
+    "declaration_profiles": 7,
     "software": 14,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 179
+    "total_files": 186
   }
 }
