@@ -1,14 +1,14 @@
 {
-  "generated": "2026-06-22T13:50:13Z",
+  "generated": "2026-06-22T19:04:21Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "2d110da3e056f740c5ea1b35d3a9371e93959645",
-    "short_sha": "2d110da3e0",
-    "message": "Revert \"Unblock workstations GitOps by temporarily removing software categories\" (#47988)",
-    "timestamp": "2026-06-21T23:03:16-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/2d110da3e056f740c5ea1b35d3a9371e93959645"
+    "sha": "59f33dcfcfe21333527fd35a5ea9e2fac20c6d7d",
+    "short_sha": "59f33dcfcf",
+    "message": "Update Macs excluded from external storage restrictions (#48039)",
+    "timestamp": "2026-06-22T13:23:58-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/59f33dcfcfe21333527fd35a5ea9e2fac20c6d7d"
   },
   "fleets": [
     {

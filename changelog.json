@@ -1,5 +1,38 @@
 [
   {
+    "sha": "59f33dcfcfe21333527fd35a5ea9e2fac20c6d7d",
+    "short_sha": "59f33dcfcf",
+    "author": "Andrey Kizimenko",
+    "email": "87822796+AndreyKizimenko@users.noreply.github.com",
+    "message": "Update Macs excluded from external storage restrictions (#48039)",
+    "timestamp": "2026-06-22T13:23:58-05:00",
+    "files": [
+      "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml"
+    ]
+  },
+  {
+    "sha": "b89e4eceb5b380eecf7fd6dc2144c5054de1303f",
+    "short_sha": "b89e4eceb5",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Revert \"Clear categories in workstations.yml\" (#48025)",
+    "timestamp": "2026-06-22T11:04:03-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
+    "sha": "3e55f0d8a9ca23b86805c50228210c58894281ef",
+    "short_sha": "3e55f0d8a9",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Clear categories in workstations.yml (#48022)",
+    "timestamp": "2026-06-22T10:58:57-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
     "sha": "2d110da3e056f740c5ea1b35d3a9371e93959645",
     "short_sha": "2d110da3e0",
     "author": "Allen Houchins",
@@ -6349,41 +6382,6 @@
     "timestamp": "2024-10-01T08:50:30-04:00",
     "files": [
       "it-and-security/lib/configuration-profiles/macos-passcode-settings.json"
-    ]
-  },
-  {
-    "sha": "3f249fd11b3e9020d0b23af9b0cd85013168a5da",
-    "short_sha": "3f249fd11b",
-    "author": "Brock Walters",
-    "email": "153771548+nonpunctual@users.noreply.github.com",
-    "message": "Nonpunctual passcode ddm (#22531)",
-    "timestamp": "2024-10-01T08:25:59-04:00",
-    "files": [
-      "it-and-security/lib/configuration-profiles/macos-passcode-settings.json",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "8428f193faf443975da5b8bc9ff8e92a56d199a8",
-    "short_sha": "8428f193fa",
-    "author": "Lucas Manuel Rodriguez",
-    "email": "lucas@fleetdm.com",
-    "message": "Move settings to no-team.yml (#22343)",
-    "timestamp": "2024-09-24T14:25:51-03:00",
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/teams/no-team.yml"
-    ]
-  },
-  {
-    "sha": "1fdd127f6c9039d0f50e78322853d3fc88e87464",
-    "short_sha": "1fdd127f6c",
-    "author": "Dave Herder",
-    "email": "27025660+dherder@users.noreply.github.com",
-    "message": "Add macOS policies for patching in workstations-canary.yml (#22323)",
-    "timestamp": "2024-09-23T14:17:39-07:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]
