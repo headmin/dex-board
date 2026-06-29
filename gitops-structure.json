@@ -1,14 +1,14 @@
 {
-  "generated": "2026-06-29T13:23:25Z",
+  "generated": "2026-06-29T18:38:04Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "b4fcb5bcf958fa1bdfe87e69b712ffb02f197900",
-    "short_sha": "b4fcb5bcf9",
-    "message": "Add external storage exclusion for Lucas' macOS workstation (#48263)",
-    "timestamp": "2026-06-25T10:06:08-03:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/b4fcb5bcf958fa1bdfe87e69b712ffb02f197900"
+    "sha": "b591f7ee073e4e0349b941ba8925fe3ae4c85567",
+    "short_sha": "b591f7ee07",
+    "message": "Add external storage exclusion for Steven (#48411)",
+    "timestamp": "2026-06-29T09:38:24-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/b591f7ee073e4e0349b941ba8925fe3ae4c85567"
   },
   "fleets": [
     {
