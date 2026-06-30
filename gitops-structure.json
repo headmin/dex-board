@@ -1,14 +1,14 @@
 {
-  "generated": "2026-06-30T12:37:09Z",
+  "generated": "2026-06-30T18:37:01Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "b591f7ee073e4e0349b941ba8925fe3ae4c85567",
-    "short_sha": "b591f7ee07",
-    "message": "Add external storage exclusion for Steven (#48411)",
-    "timestamp": "2026-06-29T09:38:24-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/b591f7ee073e4e0349b941ba8925fe3ae4c85567"
+    "sha": "e004b0e00f4e036b9b64d6a6ed2ca441bf1c02a8",
+    "short_sha": "e004b0e00f",
+    "message": "Add \"DRIs\" to managed Chrome bookmarks (#48424)",
+    "timestamp": "2026-06-30T08:56:41-04:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/e004b0e00f4e036b9b64d6a6ed2ca441bf1c02a8"
   },
   "fleets": [
     {
