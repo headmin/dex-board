@@ -1,5 +1,31 @@
 [
   {
+    "sha": "8e6c87d5491854d8c45e3dfadc6891691fcda054",
+    "short_sha": "8e6c87d549",
+    "author": "George Karr",
+    "email": "georgekarrv@users.noreply.github.com",
+    "message": "Updating team host id's and new group names for labels in dogfood (#48569)",
+    "timestamp": "2026-07-01T10:47:06-05:00",
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/lib/all/labels/team-g-apple-at-work.yml",
+      "it-and-security/lib/all/labels/team-g-auto-patching.yml",
+      "it-and-security/lib/all/labels/team-g-mdm.yml",
+      "it-and-security/lib/all/labels/team-g-software.yml"
+    ]
+  },
+  {
+    "sha": "3dff28fef68f0b3abdd5eab03b938b7a084711f2",
+    "short_sha": "3dff28fef6",
+    "author": "Noah Talerman",
+    "email": "47070608+noahtalerman@users.noreply.github.com",
+    "message": "Update Chrome managed bookmarks (#48547)",
+    "timestamp": "2026-07-01T09:25:48-04:00",
+    "files": [
+      "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
+    ]
+  },
+  {
     "sha": "e004b0e00f4e036b9b64d6a6ed2ca441bf1c02a8",
     "short_sha": "e004b0e00f",
     "author": "Noah Talerman",
@@ -6356,29 +6382,6 @@
     "timestamp": "2024-11-07T14:38:35-06:00",
     "files": [
       "it-and-security/default.yml"
-    ]
-  },
-  {
-    "sha": "4be695931b7620ee8d8b42cec9b5525726be358d",
-    "short_sha": "4be695931b",
-    "author": "Brock Walters",
-    "email": "153771548+nonpunctual@users.noreply.github.com",
-    "message": "Add macos-execute-disable-fleet-desktop to Workstations (canary) script library (#23616)",
-    "timestamp": "2024-11-07T13:04:45-05:00",
-    "files": [
-      "it-and-security/lib/macos-execute-disable-fleet-desktop.sh"
-    ]
-  },
-  {
-    "sha": "fe9ccd23c62cda3db16ef4ec0bdf30d714a19be5",
-    "short_sha": "fe9ccd23c6",
-    "author": "Lucas Manuel Rodriguez",
-    "email": "lucas@fleetdm.com",
-    "message": "dogfood: Non-canary workstations and servers to stick to `stable` channels (#23123)",
-    "timestamp": "2024-10-23T17:31:37-03:00",
-    "files": [
-      "it-and-security/lib/servers.agent-options.yml",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]

@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-01T12:54:05Z",
+  "generated": "2026-07-01T18:36:37Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "e004b0e00f4e036b9b64d6a6ed2ca441bf1c02a8",
-    "short_sha": "e004b0e00f",
-    "message": "Add \"DRIs\" to managed Chrome bookmarks (#48424)",
-    "timestamp": "2026-06-30T08:56:41-04:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/e004b0e00f4e036b9b64d6a6ed2ca441bf1c02a8"
+    "sha": "8e6c87d5491854d8c45e3dfadc6891691fcda054",
+    "short_sha": "8e6c87d549",
+    "message": "Updating team host id's and new group names for labels in dogfood (#48569)",
+    "timestamp": "2026-07-01T10:47:06-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/8e6c87d5491854d8c45e3dfadc6891691fcda054"
   },
   "fleets": [
     {
@@ -179,14 +179,14 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/rpm-based-linux-hosts.yml"
         },
         {
-          "name": "team-g-mdm",
-          "file": "it-and-security/lib/all/labels/team-g-mdm.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/team-g-mdm.yml"
+          "name": "team-g-apple-at-work",
+          "file": "it-and-security/lib/all/labels/team-g-apple-at-work.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/team-g-apple-at-work.yml"
         },
         {
-          "name": "team-g-software",
-          "file": "it-and-security/lib/all/labels/team-g-software.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/team-g-software.yml"
+          "name": "team-g-auto-patching",
+          "file": "it-and-security/lib/all/labels/team-g-auto-patching.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/team-g-auto-patching.yml"
         },
         {
           "name": "virtual-machines",
