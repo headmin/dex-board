@@ -1,5 +1,57 @@
 [
   {
+    "sha": "37c7bc04eb4fb82a2942f52f44ef135ebd18a220",
+    "short_sha": "37c7bc04eb",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Revert \"Update apps when closed\" (#48758)",
+    "timestamp": "2026-07-06T08:20:26-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-1password-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-android-studio-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-aws-vpn-client-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-brave-browser-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-claude-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-cursor-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-docker-desktop-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-figma-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-firefox-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-github-desktop-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-google-chrome-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-google-drive-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-grammarly-desktop-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-iterm2-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-logi-options-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-loom-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-obsidian-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-parallels-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-postman-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-rectangle-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-slack-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-spotify-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-sublime-text-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-utm-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-visual-studio-code-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-whatsapp-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-zed-running.yml",
+      "it-and-security/lib/macos/misc/pre-install-queries/is-zoom-running.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/macos/policies/update-claude.yml",
+      "it-and-security/lib/macos/policies/update-slack.yml",
+      "it-and-security/lib/windows/misc/pre-install-queries/is-1password-running.yml",
+      "it-and-security/lib/windows/misc/pre-install-queries/is-claude-running.yml",
+      "it-and-security/lib/windows/misc/pre-install-queries/is-firefox-running.yml",
+      "it-and-security/lib/windows/misc/pre-install-queries/is-google-chrome-running.yml",
+      "it-and-security/lib/windows/misc/pre-install-queries/is-slack-running.yml",
+      "it-and-security/lib/windows/misc/pre-install-queries/is-visual-studio-code-running.yml",
+      "it-and-security/lib/windows/misc/pre-install-queries/is-zoom-running.yml",
+      "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/windows/policies/update-claude.yml",
+      "it-and-security/lib/windows/policies/update-slack.yml"
+    ]
+  },
+  {
     "sha": "2359a3eaa541a064dbf4e2deb77c17d04bae0325",
     "short_sha": "2359a3eaa5",
     "author": "Marko Lisica",
@@ -6412,17 +6464,6 @@
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "fa24f130b2cd894148a71be6cb11b15933ec987c",
-    "short_sha": "fa24f130b2",
-    "author": "Brock Walters",
-    "email": "153771548+nonpunctual@users.noreply.github.com",
-    "message": "Update workstations-canary.yml (#23617)",
-    "timestamp": "2024-11-07T15:43:08-05:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]

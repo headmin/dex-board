@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-06T13:11:18Z",
+  "generated": "2026-07-06T18:36:37Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "2359a3eaa541a064dbf4e2deb77c17d04bae0325",
-    "short_sha": "2359a3eaa5",
-    "message": "Update apps when closed (#48662)",
-    "timestamp": "2026-07-06T04:54:04+02:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/2359a3eaa541a064dbf4e2deb77c17d04bae0325"
+    "sha": "37c7bc04eb4fb82a2942f52f44ef135ebd18a220",
+    "short_sha": "37c7bc04eb",
+    "message": "Revert \"Update apps when closed\" (#48758)",
+    "timestamp": "2026-07-06T08:20:26-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/37c7bc04eb4fb82a2942f52f44ef135ebd18a220"
   },
   "fleets": [
     {
@@ -627,11 +627,6 @@
           "name": "eula",
           "file": "it-and-security/lib/macos/misc/eula.pdf",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/misc/eula.pdf"
-        },
-        {
-          "name": "pre-install-queries",
-          "file": "it-and-security/lib/macos/misc/pre-install-queries",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/misc/pre-install-queries"
         }
       ],
       "policies": [
@@ -881,13 +876,6 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/configuration-profiles/Windows Defender compliance settings.xml"
         }
       ],
-      "misc": [
-        {
-          "name": "pre-install-queries",
-          "file": "it-and-security/lib/windows/misc/pre-install-queries",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/misc/pre-install-queries"
-        }
-      ],
       "policies": [
         {
           "name": "1password-installed",
@@ -1044,7 +1032,7 @@
     "software": 14,
     "commands": 1,
     "enrollment_profiles": 1,
-    "misc": 3,
-    "total_files": 188
+    "misc": 1,
+    "total_files": 186
   }
 }
