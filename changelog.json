@@ -1,5 +1,21 @@
 [
   {
+    "sha": "08c22ebe58f0788a7c8d342a04265d374b2b3070",
+    "short_sha": "08c22ebe58",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Install Okta Verify on Windows workstations via Fleet-maintained app (#48952)",
+    "timestamp": "2026-07-08T10:41:49-05:00",
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/windows-with-fleet-maintained-apps-installed.yml",
+      "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/windows/scripts/okta_verify_install.ps1",
+      "it-and-security/lib/windows/scripts/okta_verify_uninstall.ps1",
+      "it-and-security/lib/windows/software/okta-verify.yml"
+    ]
+  },
+  {
     "sha": "37c7bc04eb4fb82a2942f52f44ef135ebd18a220",
     "short_sha": "37c7bc04eb",
     "author": "Allen Houchins",
@@ -6451,18 +6467,6 @@
       "it-and-security/lib/automatic-enrollment.dep.json",
       "it-and-security/lib/software/mac-google-chrome.yml",
       "it-and-security/lib/software/mac-zoom-arm.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "6e0327220b4a5ca02f53ddb1a79812835bbc9e89",
-    "short_sha": "6e0327220b",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Enforce macOS 15.1.1 (#24075)",
-    "timestamp": "2024-11-22T13:00:40-05:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]
   }

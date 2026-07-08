@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-08T12:31:27Z",
+  "generated": "2026-07-08T18:28:20Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "37c7bc04eb4fb82a2942f52f44ef135ebd18a220",
-    "short_sha": "37c7bc04eb",
-    "message": "Revert \"Update apps when closed\" (#48758)",
-    "timestamp": "2026-07-06T08:20:26-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/37c7bc04eb4fb82a2942f52f44ef135ebd18a220"
+    "sha": "08c22ebe58f0788a7c8d342a04265d374b2b3070",
+    "short_sha": "08c22ebe58",
+    "message": "Install Okta Verify on Windows workstations via Fleet-maintained app (#48952)",
+    "timestamp": "2026-07-08T10:41:49-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/08c22ebe58f0788a7c8d342a04265d374b2b3070"
   },
   "fleets": [
     {
@@ -972,16 +972,6 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/install-bitdefender.ps1"
         },
         {
-          "name": "okta_verify_install",
-          "file": "it-and-security/lib/windows/scripts/okta_verify_install.ps1",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/okta_verify_install.ps1"
-        },
-        {
-          "name": "okta_verify_uninstall",
-          "file": "it-and-security/lib/windows/scripts/okta_verify_uninstall.ps1",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/okta_verify_uninstall.ps1"
-        },
-        {
           "name": "uninstall-zoom",
           "file": "it-and-security/lib/windows/scripts/uninstall-zoom.ps1",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/uninstall-zoom.ps1"
@@ -997,11 +987,6 @@
           "name": "google-chrome-arm",
           "file": "it-and-security/lib/windows/software/google-chrome-arm.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/software/google-chrome-arm.yml"
-        },
-        {
-          "name": "okta-verify",
-          "file": "it-and-security/lib/windows/software/okta-verify.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/software/okta-verify.yml"
         },
         {
           "name": "zoom-arm",
@@ -1026,13 +1011,13 @@
     "labels": 24,
     "policies": 42,
     "reports": 21,
-    "scripts": 17,
+    "scripts": 15,
     "configuration_profiles": 43,
     "declaration_profiles": 7,
-    "software": 14,
+    "software": 13,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 186
+    "total_files": 183
   }
 }
