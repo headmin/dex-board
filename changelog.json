@@ -1,5 +1,17 @@
 [
   {
+    "sha": "13a80c4bc8c25f467e065574de84338a9143b9ae",
+    "short_sha": "13a80c4bc8",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Auto-install 1Password patches on Workstations (#48585)",
+    "timestamp": "2026-07-13T09:28:23-05:00",
+    "files": [
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
     "sha": "08c22ebe58f0788a7c8d342a04265d374b2b3070",
     "short_sha": "08c22ebe58",
     "author": "Allen Houchins",
@@ -6454,20 +6466,6 @@
     "files": [
       "it-and-security/lib/software/mac-mozilla-firefox.yml",
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "f47c44f685a9d3c9350ddf220350aa40d539edf0",
-    "short_sha": "f47c44f685",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Enable macOS Setup Experience for Workstations team (#24125)",
-    "timestamp": "2024-11-25T12:27:56-06:00",
-    "files": [
-      "it-and-security/lib/automatic-enrollment.dep.json",
-      "it-and-security/lib/software/mac-google-chrome.yml",
-      "it-and-security/lib/software/mac-zoom-arm.yml",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]

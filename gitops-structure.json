@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-13T12:47:05Z",
+  "generated": "2026-07-13T18:32:24Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "08c22ebe58f0788a7c8d342a04265d374b2b3070",
-    "short_sha": "08c22ebe58",
-    "message": "Install Okta Verify on Windows workstations via Fleet-maintained app (#48952)",
-    "timestamp": "2026-07-08T10:41:49-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/08c22ebe58f0788a7c8d342a04265d374b2b3070"
+    "sha": "13a80c4bc8c25f467e065574de84338a9143b9ae",
+    "short_sha": "13a80c4bc8",
+    "message": "Auto-install 1Password patches on Workstations (#48585)",
+    "timestamp": "2026-07-13T09:28:23-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/13a80c4bc8c25f467e065574de84338a9143b9ae"
   },
   "fleets": [
     {
