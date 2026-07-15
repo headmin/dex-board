@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-15T00:19:06Z",
+  "generated": "2026-07-15T06:42:07Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "13a80c4bc8c25f467e065574de84338a9143b9ae",
-    "short_sha": "13a80c4bc8",
-    "message": "Auto-install 1Password patches on Workstations (#48585)",
-    "timestamp": "2026-07-13T09:28:23-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/13a80c4bc8c25f467e065574de84338a9143b9ae"
+    "sha": "5a563e2bad0ab437964a05d636e4078942700ff6",
+    "short_sha": "5a563e2bad",
+    "message": "Update Zoom Workplace label query (#49317)",
+    "timestamp": "2026-07-14T20:46:35-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/5a563e2bad0ab437964a05d636e4078942700ff6"
   },
   "fleets": [
     {

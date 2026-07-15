@@ -1,5 +1,27 @@
 [
   {
+    "sha": "5a563e2bad0ab437964a05d636e4078942700ff6",
+    "short_sha": "5a563e2bad",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update Zoom Workplace label query (#49317)",
+    "timestamp": "2026-07-14T20:46:35-05:00",
+    "files": [
+      "it-and-security/lib/all/labels/windows-with-fleet-maintained-apps-installed.yml"
+    ]
+  },
+  {
+    "sha": "2c895cf603403d478b9a25f9bedd977265c80d31",
+    "short_sha": "2c895cf603",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Entra client ID to default controls (#49302)",
+    "timestamp": "2026-07-14T20:40:57-05:00",
+    "files": [
+      "it-and-security/default.yml"
+    ]
+  },
+  {
     "sha": "13a80c4bc8c25f467e065574de84338a9143b9ae",
     "short_sha": "13a80c4bc8",
     "author": "Allen Houchins",
@@ -6440,31 +6462,6 @@
     "message": "Bump Firefox version (#24181)",
     "timestamp": "2024-11-26T14:22:52-06:00",
     "files": [
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "c0c247476349b927904aad5a6caf992e504ca670",
-    "short_sha": "c0c2474763",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Updated Zoom download URL (#24151)",
-    "timestamp": "2024-11-26T10:35:38-06:00",
-    "files": [
-      "it-and-security/lib/software/mac-zoom-arm.yml",
-      "it-and-security/lib/software/mac-zoom.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "e8021462f5c0f80f97ff867e3709d555d5c5ee4e",
-    "short_sha": "e8021462f5",
-    "author": "Luke Heath",
-    "email": "luke@fleetdm.com",
-    "message": "Create mac-mozilla-firefox.yml (#24140)",
-    "timestamp": "2024-11-25T14:52:33-06:00",
-    "files": [
-      "it-and-security/lib/software/mac-mozilla-firefox.yml",
       "it-and-security/teams/workstations-canary.yml"
     ]
   }
