@@ -1,5 +1,16 @@
 [
   {
+    "sha": "c27cccb767dc7178f1fab9e2050d5f55cf21aef6",
+    "short_sha": "c27cccb767",
+    "author": "Luke Heath",
+    "email": "luke@fleetdm.com",
+    "message": "Handbook: continuous flow for all product groups (4.91.0) (#49500)",
+    "timestamp": "2026-07-17T15:23:16-07:00",
+    "files": [
+      "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
+    ]
+  },
+  {
     "sha": "5a563e2bad0ab437964a05d636e4078942700ff6",
     "short_sha": "5a563e2bad",
     "author": "Allen Houchins",
@@ -6450,17 +6461,6 @@
     "email": "luke@fleetdm.com",
     "message": "Install updated Firefox on policy failure (#24182)",
     "timestamp": "2024-11-26T17:49:10-06:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "d15fda2693d2bac0a83e6d91c1c7e2929684b53a",
-    "short_sha": "d15fda2693",
-    "author": "Luke Heath",
-    "email": "luke@fleetdm.com",
-    "message": "Bump Firefox version (#24181)",
-    "timestamp": "2024-11-26T14:22:52-06:00",
     "files": [
       "it-and-security/teams/workstations-canary.yml"
     ]

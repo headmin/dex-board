@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-17T18:20:34Z",
+  "generated": "2026-07-18T00:20:55Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "5a563e2bad0ab437964a05d636e4078942700ff6",
-    "short_sha": "5a563e2bad",
-    "message": "Update Zoom Workplace label query (#49317)",
-    "timestamp": "2026-07-14T20:46:35-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/5a563e2bad0ab437964a05d636e4078942700ff6"
+    "sha": "c27cccb767dc7178f1fab9e2050d5f55cf21aef6",
+    "short_sha": "c27cccb767",
+    "message": "Handbook: continuous flow for all product groups (4.91.0) (#49500)",
+    "timestamp": "2026-07-17T15:23:16-07:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/c27cccb767dc7178f1fab9e2050d5f55cf21aef6"
   },
   "fleets": [
     {
