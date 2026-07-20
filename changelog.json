@@ -1,5 +1,16 @@
 [
   {
+    "sha": "8d2a3abeaad2b34d36aa07d76305701b95766f2c",
+    "short_sha": "8d2a3abeaa",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Set byod_fleet for dogfood Apple Business Manager tokens (#49564)",
+    "timestamp": "2026-07-20T09:41:33-05:00",
+    "files": [
+      "it-and-security/default.yml"
+    ]
+  },
+  {
     "sha": "6f07bd9bf833cdf728777fccee503fc1fcf2023d",
     "short_sha": "6f07bd9bf8",
     "author": "Victor Lyuboslavsky",
@@ -6449,18 +6460,6 @@
       "it-and-security/teams/company-owned-iphones.yml",
       "it-and-security/teams/servers-canary.yml",
       "it-and-security/teams/servers.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "459faf45d76da0165a73b6d3fc91ef807244e2b0",
-    "short_sha": "459faf45d7",
-    "author": "Luke Heath",
-    "email": "luke@fleetdm.com",
-    "message": "Bump OS update deadline to not be Monday after holiday (#24225)",
-    "timestamp": "2024-11-27T13:42:04-06:00",
-    "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]
