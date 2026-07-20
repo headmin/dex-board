@@ -1,5 +1,16 @@
 [
   {
+    "sha": "6f07bd9bf833cdf728777fccee503fc1fcf2023d",
+    "short_sha": "6f07bd9bf8",
+    "author": "Victor Lyuboslavsky",
+    "email": "2685025+getvictor@users.noreply.github.com",
+    "message": "Add host 1310 to Macs excluded from external storage restrictions (#49545)",
+    "timestamp": "2026-07-19T15:40:09-05:00",
+    "files": [
+      "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml"
+    ]
+  },
+  {
     "sha": "c27cccb767dc7178f1fab9e2050d5f55cf21aef6",
     "short_sha": "c27cccb767",
     "author": "Luke Heath",
@@ -6452,17 +6463,6 @@
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "25fe7c04534532753b631db0b9488927f6db950c",
-    "short_sha": "25fe7c0453",
-    "author": "Luke Heath",
-    "email": "luke@fleetdm.com",
-    "message": "Install updated Firefox on policy failure (#24182)",
-    "timestamp": "2024-11-26T17:49:10-06:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]

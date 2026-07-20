@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-19T18:16:47Z",
+  "generated": "2026-07-20T00:24:13Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "c27cccb767dc7178f1fab9e2050d5f55cf21aef6",
-    "short_sha": "c27cccb767",
-    "message": "Handbook: continuous flow for all product groups (4.91.0) (#49500)",
-    "timestamp": "2026-07-17T15:23:16-07:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/c27cccb767dc7178f1fab9e2050d5f55cf21aef6"
+    "sha": "6f07bd9bf833cdf728777fccee503fc1fcf2023d",
+    "short_sha": "6f07bd9bf8",
+    "message": "Add host 1310 to Macs excluded from external storage restrictions (#49545)",
+    "timestamp": "2026-07-19T15:40:09-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/6f07bd9bf833cdf728777fccee503fc1fcf2023d"
   },
   "fleets": [
     {
