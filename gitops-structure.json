@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-21T12:30:13Z",
+  "generated": "2026-07-21T18:26:35Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "8d2a3abeaad2b34d36aa07d76305701b95766f2c",
-    "short_sha": "8d2a3abeaa",
-    "message": "Set byod_fleet for dogfood Apple Business Manager tokens (#49564)",
-    "timestamp": "2026-07-20T09:41:33-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/8d2a3abeaad2b34d36aa07d76305701b95766f2c"
+    "sha": "f3bc510d2bbe43e2c361f235f574ce43342daf86",
+    "short_sha": "f3bc510d2b",
+    "message": "Fix Linux uninstall script failing with a relative path (#49592)",
+    "timestamp": "2026-07-21T07:28:35-07:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/f3bc510d2bbe43e2c361f235f574ce43342daf86"
   },
   "fleets": [
     {
