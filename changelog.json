@@ -1,5 +1,18 @@
 [
   {
+    "sha": "5b36fb51aba6a4d6f5834682004d0c687fcb032c",
+    "short_sha": "5b36fb51ab",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Windows 11 hardware readiness report to dogfood GitOps (#49921)",
+    "timestamp": "2026-07-24T22:02:34-05:00",
+    "files": [
+      "it-and-security/fleets/testing-and-qa.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/windows/reports/collect-windows-11-hardware-readiness.yml"
+    ]
+  },
+  {
     "sha": "f3bc510d2bbe43e2c361f235f574ce43342daf86",
     "short_sha": "f3bc510d2b",
     "author": "Jake Stenger",
@@ -6378,18 +6391,6 @@
       "it-and-security/lib/macos/declaration-profiles/software-update-settings.json",
       "it-and-security/teams/compliance-exclusions.yml",
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "f2762cf507db3edb6ebb57128d300954dcddf60f",
-    "short_sha": "f2762cf507",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "added Zoom for debian Linux (#24650)",
-    "timestamp": "2024-12-11T10:22:17-06:00",
-    "files": [
-      "it-and-security/lib/linux/queries/all-debian-hosts.yml",
-      "it-and-security/lib/linux/software/zoom.yml"
     ]
   }
 ]

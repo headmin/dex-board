@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-25T00:24:42Z",
+  "generated": "2026-07-25T06:44:20Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "f3bc510d2bbe43e2c361f235f574ce43342daf86",
-    "short_sha": "f3bc510d2b",
-    "message": "Fix Linux uninstall script failing with a relative path (#49592)",
-    "timestamp": "2026-07-21T07:28:35-07:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/f3bc510d2bbe43e2c361f235f574ce43342daf86"
+    "sha": "5b36fb51aba6a4d6f5834682004d0c687fcb032c",
+    "short_sha": "5b36fb51ab",
+    "message": "Add Windows 11 hardware readiness report to dogfood GitOps (#49921)",
+    "timestamp": "2026-07-24T22:02:34-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/5b36fb51aba6a4d6f5834682004d0c687fcb032c"
   },
   "fleets": [
     {
@@ -953,6 +953,11 @@
           "name": "all-x86-hosts",
           "file": "it-and-security/lib/windows/reports/all-x86-hosts.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/reports/all-x86-hosts.yml"
+        },
+        {
+          "name": "collect-windows-11-hardware-readiness",
+          "file": "it-and-security/lib/windows/reports/collect-windows-11-hardware-readiness.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/reports/collect-windows-11-hardware-readiness.yml"
         }
       ],
       "scripts": [
@@ -1010,7 +1015,7 @@
     "icons": 6,
     "labels": 24,
     "policies": 42,
-    "reports": 21,
+    "reports": 22,
     "scripts": 15,
     "configuration_profiles": 43,
     "declaration_profiles": 7,
@@ -1018,6 +1023,6 @@
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 183
+    "total_files": 184
   }
 }
