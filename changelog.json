@@ -1,5 +1,16 @@
 [
   {
+    "sha": "958fe8b9aaa35c09a5b4c35c540b1eedd6228f10",
+    "short_sha": "958fe8b9aa",
+    "author": "Noah Talerman",
+    "email": "47070608+noahtalerman@users.noreply.github.com",
+    "message": "Add macOS apps to fleet maintained apps for testing & QA (#49983)",
+    "timestamp": "2026-07-27T13:16:01-04:00",
+    "files": [
+      "it-and-security/fleets/testing-and-qa.yml"
+    ]
+  },
+  {
     "sha": "f0cb2f99a39586d640043cb7eefe85968fa47333",
     "short_sha": "f0cb2f99a3",
     "author": "Allen Houchins",
@@ -6377,17 +6388,6 @@
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "03d00cd995f94e0499a86bb620f9f65d7c7e9bb3",
-    "short_sha": "03d00cd995",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Removing iOS and iPadOS apps from the \ud83d\udcbb\ud83d\udc23 Workstations (canary) team (#24713)",
-    "timestamp": "2024-12-13T14:54:49-06:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]
