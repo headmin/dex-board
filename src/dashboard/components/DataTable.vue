@@ -185,12 +185,12 @@ const getStatusClass = (value) => {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-body);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
 }
 
 .table th,
 .table td {
-  padding: 14px 18px;
+  padding: 10px 14px;
   text-align: left;
   vertical-align: middle;
 }
@@ -198,7 +198,7 @@ const getStatusClass = (value) => {
 .table thead th {
   background: var(--fleet-off-white);
   color: var(--fleet-black);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   font-weight: 700;
   border-bottom: 1px solid var(--fleet-black-10);
   user-select: none;

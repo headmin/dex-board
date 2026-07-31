@@ -125,8 +125,9 @@ h3 {
 }
 
 .dim-tab.active {
-  background: var(--fleet-black);
-  color: var(--fleet-white);
+  background: var(--fleet-black-10);
+  color: var(--fleet-black);
+  font-weight: 600;
 }
 
 .breakdown-rows {

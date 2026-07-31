@@ -1196,7 +1196,7 @@ onMounted(() => loadTimeline())
 
 .section h2 {
   font-family: var(--font-body);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   font-weight: 700;
   color: var(--fleet-black);
   margin-bottom: var(--pad-small);

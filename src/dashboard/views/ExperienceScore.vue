@@ -2227,16 +2227,16 @@ onMounted(() => {
 .device-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
 }
 
 .device-table th {
   text-align: left;
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   font-weight: 700;
   color: var(--fleet-black);
   background: var(--fleet-off-white);
-  padding: 14px 18px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--fleet-black-10);
   white-space: nowrap;
   user-select: none;
@@ -2253,7 +2253,7 @@ onMounted(() => {
 }
 
 .device-table td {
-  padding: 14px 18px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--fleet-black-10);
   color: var(--fleet-black-75);
 }

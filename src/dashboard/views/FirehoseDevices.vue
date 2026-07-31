@@ -867,13 +867,13 @@ h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black)
 
 /* ── Tables ──────────────────────────────── */
 .table-wrap { overflow-x: auto; background: var(--fleet-white); border: 1px solid var(--border-color); border-radius: var(--radius-large); }
-.data-table { width: 100%; border-collapse: collapse; font-family: var(--font-body); font-size: var(--font-size-base); }
-.data-table th { text-align: left; padding: 14px 18px; font-weight: 700; color: var(--fleet-black); background: var(--fleet-off-white); border-bottom: 1px solid var(--fleet-black-10); font-size: var(--font-size-base); white-space: nowrap; }
+.data-table { width: 100%; border-collapse: collapse; font-family: var(--font-body); font-size: var(--font-size-sm); }
+.data-table th { text-align: left; padding: 10px 14px; font-weight: 700; color: var(--fleet-black); background: var(--fleet-off-white); border-bottom: 1px solid var(--fleet-black-10); font-size: var(--font-size-sm); white-space: nowrap; }
 .data-table th:first-child { border-top-left-radius: var(--radius-large); }
 .data-table th:last-child { border-top-right-radius: var(--radius-large); }
 .data-table th.sortable { cursor: pointer; user-select: none; }
 .data-table th.sortable:hover { color: var(--fleet-black); }
-.data-table td { padding: 14px 18px; border-bottom: 1px solid var(--fleet-black-10); color: var(--fleet-black-75); }
+.data-table td { padding: 10px 14px; border-bottom: 1px solid var(--fleet-black-10); color: var(--fleet-black-75); }
 .data-table tbody tr:last-child td { border-bottom: 0; }
 .clickable-row { cursor: pointer; transition: background 100ms; }
 .clickable-row:hover { background: var(--fleet-off-white); }

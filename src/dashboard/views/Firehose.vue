@@ -537,24 +537,24 @@ h3 {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-body);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
 }
 
 .data-table th {
   text-align: left;
-  padding: 14px 18px;
+  padding: 10px 14px;
   font-weight: 700;
   color: var(--fleet-black);
   background: var(--fleet-off-white);
   border-bottom: 1px solid var(--fleet-black-10);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   white-space: nowrap;
 }
 .data-table th:first-child { border-top-left-radius: var(--radius-large); }
 .data-table th:last-child { border-top-right-radius: var(--radius-large); }
 
 .data-table td {
-  padding: 14px 18px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--fleet-black-10);
   color: var(--fleet-black-75);
 }

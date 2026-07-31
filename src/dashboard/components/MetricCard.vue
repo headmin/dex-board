@@ -52,7 +52,7 @@ const trendClass = computed(() => {
   background: var(--fleet-white);
   border-radius: var(--radius-large);
   border: 1px solid var(--fleet-black-10);
-  padding: var(--pad-large) var(--pad-medium);
+  padding: var(--pad-medium);
   transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
@@ -76,7 +76,7 @@ const trendClass = computed(() => {
 }
 
 .label {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--fleet-black-75);
 }
