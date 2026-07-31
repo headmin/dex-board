@@ -1,14 +1,14 @@
 {
-  "generated": "2026-05-29T00:31:21Z",
+  "generated": "2026-07-31T06:57:19Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "537cb3e933d2f26f07f8e437700e47f19bd2703b",
-    "short_sha": "537cb3e933",
-    "message": "Adding sec posture query, expand dex queries to testing & qa team (#46021)",
-    "timestamp": "2026-05-21T14:06:22-07:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/537cb3e933d2f26f07f8e437700e47f19bd2703b"
+    "sha": "958fe8b9aaa35c09a5b4c35c540b1eedd6228f10",
+    "short_sha": "958fe8b9aa",
+    "message": "Add macOS apps to fleet maintained apps for testing & QA (#49983)",
+    "timestamp": "2026-07-27T13:16:01-04:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/958fe8b9aaa35c09a5b4c35c540b1eedd6228f10"
   },
   "fleets": [
     {
@@ -129,6 +129,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/keynote-14-installed.yml"
         },
         {
+          "name": "linux-excluded-from-external-storage-restrictions",
+          "file": "it-and-security/lib/all/labels/linux-excluded-from-external-storage-restrictions.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/linux-excluded-from-external-storage-restrictions.yml"
+        },
+        {
           "name": "macos-compatibility-extension-installed",
           "file": "it-and-security/lib/all/labels/macos-compatibility-extension-installed.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macos-compatibility-extension-installed.yml"
@@ -137,6 +142,11 @@
           "name": "macos-screen-lock-exclusions",
           "file": "it-and-security/lib/all/labels/macos-screen-lock-exclusions.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macos-screen-lock-exclusions.yml"
+        },
+        {
+          "name": "macs-excluded-from-external-storage-restrictions",
+          "file": "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml"
         },
         {
           "name": "macs-with-1password-installed",
@@ -169,19 +179,24 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/rpm-based-linux-hosts.yml"
         },
         {
-          "name": "team-g-mdm",
-          "file": "it-and-security/lib/all/labels/team-g-mdm.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/team-g-mdm.yml"
+          "name": "team-g-apple-at-work",
+          "file": "it-and-security/lib/all/labels/team-g-apple-at-work.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/team-g-apple-at-work.yml"
         },
         {
-          "name": "team-g-software",
-          "file": "it-and-security/lib/all/labels/team-g-software.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/team-g-software.yml"
+          "name": "team-g-auto-patching",
+          "file": "it-and-security/lib/all/labels/team-g-auto-patching.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/team-g-auto-patching.yml"
         },
         {
           "name": "virtual-machines",
           "file": "it-and-security/lib/all/labels/virtual-machines.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/virtual-machines.yml"
+        },
+        {
+          "name": "windows-excluded-from-external-storage-restrictions",
+          "file": "it-and-security/lib/all/labels/windows-excluded-from-external-storage-restrictions.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/windows-excluded-from-external-storage-restrictions.yml"
         },
         {
           "name": "windows-screen-lock-exclusions",
@@ -336,6 +351,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/policies/disk-space-check.yml"
         },
         {
+          "name": "removable-storage-read-only",
+          "file": "it-and-security/lib/linux/policies/removable-storage-read-only.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/policies/removable-storage-read-only.yml"
+        },
+        {
           "name": "sshd-permitrootlogin-restricted",
           "file": "it-and-security/lib/linux/policies/sshd-permitrootlogin-restricted.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/policies/sshd-permitrootlogin-restricted.yml"
@@ -363,6 +383,11 @@
           "name": "install-fleet-desktop-required-extension",
           "file": "it-and-security/lib/linux/scripts/install-fleet-desktop-required-extension.sh",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/install-fleet-desktop-required-extension.sh"
+        },
+        {
+          "name": "install-readonly-removable-storage",
+          "file": "it-and-security/lib/linux/scripts/install-readonly-removable-storage.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/install-readonly-removable-storage.sh"
         },
         {
           "name": "uninstall-fleetd-linux",
@@ -574,6 +599,11 @@
         }
       ],
       "declaration_profiles": [
+        {
+          "name": "Disk management settings",
+          "file": "it-and-security/lib/macos/declaration-profiles/Disk management settings.json",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/declaration-profiles/Disk management settings.json"
+        },
         {
           "name": "Passcode settings",
           "file": "it-and-security/lib/macos/declaration-profiles/Passcode settings.json",
@@ -831,6 +861,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/configuration-profiles/Password settings.xml"
         },
         {
+          "name": "Removable storage read-only",
+          "file": "it-and-security/lib/windows/configuration-profiles/Removable storage read-only.xml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/configuration-profiles/Removable storage read-only.xml"
+        },
+        {
           "name": "Screen lock timeout",
           "file": "it-and-security/lib/windows/configuration-profiles/Screen lock timeout.xml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/configuration-profiles/Screen lock timeout.xml"
@@ -918,6 +953,11 @@
           "name": "all-x86-hosts",
           "file": "it-and-security/lib/windows/reports/all-x86-hosts.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/reports/all-x86-hosts.yml"
+        },
+        {
+          "name": "collect-windows-11-hardware-readiness",
+          "file": "it-and-security/lib/windows/reports/collect-windows-11-hardware-readiness.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/reports/collect-windows-11-hardware-readiness.yml"
         }
       ],
       "scripts": [
@@ -937,26 +977,6 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/install-bitdefender.ps1"
         },
         {
-          "name": "okta_verify_install",
-          "file": "it-and-security/lib/windows/scripts/okta_verify_install.ps1",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/okta_verify_install.ps1"
-        },
-        {
-          "name": "okta_verify_uninstall",
-          "file": "it-and-security/lib/windows/scripts/okta_verify_uninstall.ps1",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/okta_verify_uninstall.ps1"
-        },
-        {
-          "name": "turn-off-mdm",
-          "file": "it-and-security/lib/windows/scripts/turn-off-mdm.ps1",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/turn-off-mdm.ps1"
-        },
-        {
-          "name": "uninstall-fleetd-windows",
-          "file": "it-and-security/lib/windows/scripts/uninstall-fleetd-windows.ps1",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/uninstall-fleetd-windows.ps1"
-        },
-        {
           "name": "uninstall-zoom",
           "file": "it-and-security/lib/windows/scripts/uninstall-zoom.ps1",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/uninstall-zoom.ps1"
@@ -972,11 +992,6 @@
           "name": "google-chrome-arm",
           "file": "it-and-security/lib/windows/software/google-chrome-arm.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/software/google-chrome-arm.yml"
-        },
-        {
-          "name": "okta-verify",
-          "file": "it-and-security/lib/windows/software/okta-verify.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/software/okta-verify.yml"
         },
         {
           "name": "zoom-arm",
@@ -998,16 +1013,16 @@
     "fleets": 6,
     "agent_options": 2,
     "icons": 6,
-    "labels": 21,
-    "policies": 41,
-    "reports": 21,
-    "scripts": 18,
-    "configuration_profiles": 42,
-    "declaration_profiles": 6,
-    "software": 14,
+    "labels": 24,
+    "policies": 42,
+    "reports": 22,
+    "scripts": 15,
+    "configuration_profiles": 43,
+    "declaration_profiles": 7,
+    "software": 13,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 181
+    "total_files": 184
   }
 }
