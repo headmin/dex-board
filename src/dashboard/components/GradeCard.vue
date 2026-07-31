@@ -74,12 +74,12 @@ const gradeClass = computed(() => {
 
 const gradeColor = computed(() => {
   const g = props.grade?.toUpperCase()
-  if (g === 'A') return 'var(--fleet-success)'
-  if (g === 'B') return 'var(--fleet-vibrant-blue)'
-  if (g === 'C') return 'var(--fleet-warning)'
-  if (g === 'D') return '#ea580c'
-  if (g === 'F') return 'var(--fleet-error)'
-  return 'var(--fleet-black-50)'
+  if (g === 'A') return '#009a7d'
+  if (g === 'B') return '#009a7d'
+  if (g === 'C') return '#ecc767'
+  if (g === 'D') return '#eb6743'
+  if (g === 'F') return '#eb4343'
+  return '#8b8fa2'
 })
 
 const deltaClass = computed(() => {
@@ -143,7 +143,7 @@ const deltaClass = computed(() => {
 }
 
 .delta-down {
-  color: #dc2626;
+  color: var(--fleet-status-error);
   background: var(--fleet-error-light);
 }
 
@@ -168,9 +168,9 @@ const deltaClass = computed(() => {
 }
 
 .grade-a { color: var(--fleet-success); }
-.grade-b { color: var(--fleet-vibrant-blue); }
+.grade-b { color: var(--status-good); }
 .grade-c { color: var(--fleet-warning); }
-.grade-d { color: #ea580c; }
+.grade-d { color: var(--fleet-ui-orange); }
 .grade-f { color: var(--fleet-error); }
 
 .score-info {

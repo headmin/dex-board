@@ -36,23 +36,23 @@ const gradeClass = computed(() => {
 }
 
 .grade-a {
-  background: #e8f8f0;
-  color: var(--fleet-status-success);
+  background: var(--status-good-bg);
+  color: var(--status-good-text);
 }
 
 .grade-b {
-  background: #e8f0fe;
-  color: #2d5fba;
+  background: var(--status-good-bg);
+  color: var(--status-good-text);
 }
 
 .grade-c {
-  background: #fef9e8;
-  color: #9a7b1a;
+  background: var(--status-fair-bg);
+  color: var(--status-fair-text);
 }
 
 .grade-d {
   background: #fef0e8;
-  color: #b05c1a;
+  color: var(--fleet-ui-orange);
 }
 
 .grade-f {

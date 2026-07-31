@@ -131,6 +131,6 @@ watch(filterParams, load, { deep: true })
 <style scoped>
 .section-header-with-caption { margin-bottom: var(--pad-medium); }
 .section-caption { display: block; font-size: var(--font-size-sm); color: var(--fleet-black-50); margin-top: 2px; }
-.connectivity-note h3 { font-size: var(--font-size-md); margin-bottom: 6px; }
+.connectivity-note h3 { font-size: var(--font-size-md); margin-bottom: 6px; color: var(--fleet-black); font-weight: 700; }
 .connectivity-note p { font-size: var(--font-size-sm); color: var(--fleet-black-50); line-height: 1.5; }
 </style>

@@ -50,9 +50,9 @@ const trendClass = computed(() => {
 <style scoped>
 .metric-card {
   background: var(--fleet-white);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   border: 1px solid var(--fleet-black-10);
-  padding: var(--pad-medium);
+  padding: var(--pad-large) var(--pad-medium);
   transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
@@ -76,10 +76,8 @@ const trendClass = computed(() => {
 }
 
 .label {
-  font-size: var(--font-size-xxsmall);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-wide);
+  font-size: var(--font-size-base);
+  font-weight: 500;
   color: var(--fleet-black-75);
 }
 
@@ -97,12 +95,12 @@ const trendClass = computed(() => {
 
 .trend-up {
   color: var(--fleet-success);
-  background: rgba(61, 182, 123, 0.12);
+  background: var(--status-good-bg);
 }
 
 .trend-down {
   color: var(--fleet-error);
-  background: rgba(214, 108, 123, 0.12);
+  background: var(--status-critical-bg);
 }
 
 .trend-neutral {

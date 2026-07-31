@@ -227,17 +227,14 @@ onMounted(() => {
 }
 
 .field__label {
-  font-size: var(--font-size-xxsmall);
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
   color: var(--fleet-black-75);
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-wide);
 }
 
 .field__label--inline {
-  text-transform: none;
-  font-weight: 400;
-  color: var(--fleet-black);
+  font-weight: 500;
+  color: var(--fleet-black-75);
   font-size: var(--font-size-xsmall);
 }
 

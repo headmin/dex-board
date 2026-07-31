@@ -302,7 +302,7 @@
         :loading="loading.wifiTs"
         xKey="hour"
         yKey="avg_rssi"
-        color="var(--fleet-vibrant-blue)"
+        color="#6a67fe"
       />
     </section>
 
@@ -746,9 +746,9 @@ watch(filterParams, () => {
 <style scoped>
 .dashboard { max-width: 1280px; margin: 0 auto; padding: var(--pad-xlarge); }
 .dashboard-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 24px; }
-.subtitle { font-family: var(--font-mono); font-size: var(--font-size-sm); color: var(--fleet-black-50); }
-h1 { font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-black); font-family: var(--font-mono); }
-h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black); font-family: var(--font-mono); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--fleet-black-10); }
+.subtitle { font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black-50); }
+h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black); }
+h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--fleet-black-10); }
 .error-banner { background: var(--fleet-white); color: var(--fleet-error); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--fleet-black-10); border-left: 3px solid var(--fleet-error); margin-bottom: 24px; }
 .section { margin-bottom: 32px; }
 .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
@@ -770,9 +770,9 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 
 /* Drill-down panel — highlighted context using Fleet's vibrant-blue tint
    (same accent used for signal badges / methodology boxes elsewhere). */
-.drill-section { background: rgba(106, 103, 254, 0.06); border: 1px solid rgba(106, 103, 254, 0.2); border-left: 3px solid var(--fleet-vibrant-blue); border-radius: var(--radius); padding: 20px 24px; margin-top: -8px; margin-bottom: 24px; }
+.drill-section { background: rgba(106, 103, 254, 0.06); border: 1px solid rgba(106, 103, 254, 0.2); border-left: 3px solid var(--fleet-vibrant-blue); border-radius: var(--radius-large); padding: 20px 24px; margin-top: -8px; margin-bottom: 24px; }
 .drill-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.drill-header h3 { color: var(--fleet-black); font-size: var(--font-size-sm); font-weight: 600; margin: 0; }
+.drill-header h3 { color: var(--fleet-black); font-size: var(--font-size-sm); font-weight: 700; margin: 0; }
 .drill-count { color: var(--fleet-black-50); font-weight: 400; margin-left: 4px; }
 .drill-close { background: var(--fleet-white); border: 1px solid rgba(106, 103, 254, 0.25); color: var(--fleet-vibrant-blue); border-radius: var(--radius); width: 28px; height: 28px; cursor: pointer; font-size: 14px; transition: all 150ms ease; }
 .drill-close:hover { background: rgba(106, 103, 254, 0.1); border-color: var(--fleet-vibrant-blue); }

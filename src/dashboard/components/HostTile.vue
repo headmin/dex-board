@@ -192,7 +192,7 @@ function relativeTime(ts) {
 .host-tile {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   padding: 16px 18px 12px;
   color: var(--fleet-black);
   display: flex;
@@ -233,8 +233,8 @@ function relativeTime(ts) {
 /* Deterministic per-first-letter palette — saturated enough to read on white,
    muted enough not to shout. Matches Fleet's existing accent palette. */
 .platform-a { background: var(--rainbow-blue); }  /* blue */
-.platform-b { background: #3db67b; }  /* green */
-.platform-c { background: #ebbc43; color: #3a2e00; }  /* amber — dark text for contrast */
+.platform-b { background: var(--fleet-success); }  /* green */
+.platform-c { background: var(--status-fair); color: #3a2e00; }  /* amber — dark text for contrast */
 .platform-d { background: #9b6bd9; }  /* purple */
 .platform-e { background: #e07b6b; }  /* coral */
 .platform-f { background: #515774; }  /* slate */
@@ -276,11 +276,9 @@ function relativeTime(ts) {
 }
 
 .metric-label {
-  font-size: 11px;
-  color: var(--fleet-black-50);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  font-weight: 600;
+  font-size: 13px;
+  color: var(--fleet-black-75);
+  font-weight: 500;
 }
 
 .metric-value {
@@ -294,11 +292,11 @@ function relativeTime(ts) {
 }
 
 .metric-value.state-critical {
-  color: var(--fleet-error, #d66c7b);
+  color: var(--fleet-error, var(--fleet-error));
 }
 
 .metric-value.state-warn {
-  color: #b05c1a;
+  color: var(--fleet-ui-orange);
 }
 
 /* Meta row (last seen, etc.) sits just above the actions. Push it to the

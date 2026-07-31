@@ -31,7 +31,7 @@
           <PieChart title="Signal quality" :data="wifiDist" :loading="loading.wifi" nameKey="signal_quality" valueKey="cnt" />
         </section>
         <section class="section">
-          <TimeSeriesChart title="Fleet RSSI trend" :data="wifiTs" :loading="loading.wifi" xKey="hour" yKey="avg_rssi" color="var(--fleet-vibrant-blue)" />
+          <TimeSeriesChart title="Fleet RSSI trend" :data="wifiTs" :loading="loading.wifi" xKey="hour" yKey="avg_rssi" color="#6a67fe" />
         </section>
       </div>
 
@@ -570,8 +570,8 @@ watch(filterParams, () => {
 <style scoped>
 .dashboard { max-width: 1280px; margin: 0 auto; padding: var(--pad-xlarge); }
 .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-h1 { font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-black); font-family: var(--font-mono); }
-h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black); font-family: var(--font-mono); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--fleet-black-10); }
+h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black); }
+h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--fleet-black-10); }
 .error-banner { background: var(--fleet-white); color: var(--fleet-error); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--fleet-black-10); border-left: 3px solid var(--fleet-error); margin-bottom: 24px; }
 .section { margin-bottom: 32px; }
 .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
@@ -580,7 +580,7 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 
 /* Tabs */
 .tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 2px solid var(--fleet-black-10); }
-.tab { font-family: var(--font-mono); font-size: var(--font-size-sm); font-weight: 500; padding: 10px 20px; border: none; background: none; color: var(--fleet-black-50); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 150ms, border-color 150ms; }
+.tab { font-family: var(--font-body); font-size: var(--font-size-sm); font-weight: 500; padding: 10px 20px; border: none; background: none; color: var(--fleet-black-50); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 150ms, border-color 150ms; }
 .tab:hover { color: var(--fleet-black-75); }
 .tab.active { color: var(--fleet-black); font-weight: 600; border-bottom-color: var(--fleet-vibrant-blue); }
 

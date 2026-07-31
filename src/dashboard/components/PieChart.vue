@@ -26,7 +26,7 @@ const props = defineProps({
 })
 
 const chartOption = computed(() => ({
-  color: ['#6a67fe', '#009a7d', '#ae6ddf', '#ebbc43', '#5cabdf', '#ff5c83'],
+  color: ['#6a67fe', '#009a7d', '#ae6ddf', '#ecc767', '#5cabdf', '#ff5c83'],
   tooltip: {
     trigger: 'item',
     formatter: '{b}: {c} ({d}%)',

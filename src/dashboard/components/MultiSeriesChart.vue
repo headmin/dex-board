@@ -76,7 +76,7 @@ const chartOption = computed(() => {
         data: props.thresholds.map(t => ({
           yAxis: t.value,
           lineStyle: {
-            color: t.color || '#dc2626',
+            color: t.color || '#eb4343',
             type: 'dashed',
             width: 2
           },
@@ -84,7 +84,7 @@ const chartOption = computed(() => {
             formatter: `${t.label || ''} (${t.value})`,
             position: 'insideEndTop',
             fontSize: 11,
-            color: t.color || '#dc2626'
+            color: t.color || '#eb4343'
           }
         }))
       }
@@ -95,7 +95,7 @@ const chartOption = computed(() => {
       config.markPoint = {
         symbol: 'triangle',
         symbolSize: 12,
-        itemStyle: { color: '#dc2626' },
+        itemStyle: { color: '#eb4343' },
         label: { show: false },
         data: props.anomalies.map(a => ({
           coord: [a.xIndex, a.value],

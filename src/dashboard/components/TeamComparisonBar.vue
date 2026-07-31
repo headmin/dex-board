@@ -37,7 +37,7 @@ const sortedData = computed(() =>
 )
 
 function barColor(grade) {
-  const colors = { A: '#3db67b', B: 'var(--rainbow-blue)', C: '#ebbc43', D: '#e07b3a', F: '#d66c7b' }
+  const colors = { A: '#009a7d', B: '#009a7d', C: '#ecc767', D: '#eb6743', F: '#eb4343' }
   return colors[grade?.toUpperCase()] || '#8b8fa2'
 }
 </script>
@@ -46,14 +46,14 @@ function barColor(grade) {
 .chart-container {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   padding: var(--pad-large);
   box-shadow: var(--box-shadow);
 }
 
 h3 {
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
   margin-bottom: var(--pad-medium);
 }

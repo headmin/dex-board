@@ -385,8 +385,8 @@ onMounted(fetchAll)
   margin-bottom: 24px;
 }
 
-h1 { font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-black); font-family: var(--font-mono); }
-h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black); font-family: var(--font-mono); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--fleet-black-10); }
+h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black); }
+h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--fleet-black-10); }
 
 .error-banner { background: var(--fleet-white); color: var(--fleet-error); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--fleet-black-10); border-left: 3px solid var(--fleet-error); margin-bottom: 24px; font-size: 14px; }
 .loading-row { color: var(--fleet-black-50); padding: 24px; text-align: center; font-size: 14px; }
@@ -406,7 +406,7 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 
 .device-card {
   background: #fff;
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   border: 1px solid #e2e4ea;
   padding: 16px;
   box-shadow: 0px 3px 0px rgba(226, 228, 234, 0.4);
@@ -430,21 +430,19 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  border-radius: var(--radius-full);
 }
 
-.device-badge.healthy { background: rgba(61, 182, 123, 0.15); color: #2b7f56; }
-.device-badge.warning { background: rgba(235, 188, 67, 0.2); color: var(--fleet-status-warning-dark); }
-.device-badge.critical { background: rgba(214, 108, 123, 0.15); color: var(--fleet-status-error); }
+.device-badge.healthy { background: var(--status-good-bg); color: var(--status-good); }
+.device-badge.warning { background: var(--status-fair-bg); color: var(--status-fair-text); }
+.device-badge.critical { background: var(--status-critical-bg); color: var(--status-critical); }
 
 .stat { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
 .stat-bar { flex: 1; height: 6px; background: #f4f4f6; border-radius: 3px; overflow: hidden; }
 .stat-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
 .stat-fill.memory { background: #6a67fe; }
-.stat-fill.disk { background: #ebbc43; }
-.stat-label { font-size: 12px; color: #515774; min-width: 70px; text-align: right; }
+.stat-fill.disk { background: var(--status-fair); }
+.stat-label { font-size: 13px; font-weight: 500; color: var(--fleet-black-75); min-width: 70px; text-align: right; }
 
 .stat-row-bottom {
   display: flex;
@@ -459,7 +457,7 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 .split-half {
   min-width: 0;
   background: #fff;
-  border-radius: 8px;
+  border-radius: var(--radius-large);
   border: 1px solid #e2e4ea;
   padding: 24px;
   box-shadow: 0px 3px 0px rgba(226, 228, 234, 0.4);
@@ -485,10 +483,10 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
   border: 3px solid;
 }
 
-.posture-ring.good { border-color: #3db67b; background: rgba(61, 182, 123, 0.08); }
-.posture-ring.bad { border-color: #d66c7b; background: rgba(214, 108, 123, 0.08); }
+.posture-ring.good { border-color: var(--fleet-success); background: var(--status-good-bg); }
+.posture-ring.bad { border-color: var(--fleet-error); background: var(--status-critical-bg); }
 .posture-pct { font-size: 18px; font-weight: 600; color: #192147; }
-.posture-label { font-size: 12px; font-weight: 500; color: #515774; }
+.posture-label { font-size: 13px; font-weight: 500; color: var(--fleet-black-75); }
 
 /* Network Quality */
 .network-list { display: flex; flex-direction: column; gap: 6px; }
@@ -510,16 +508,16 @@ h2 { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black)
 
 .signal-badge {
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
-.signal-badge.excellent { background: rgba(61, 182, 123, 0.15); color: #2b7f56; }
+.signal-badge.excellent { background: var(--status-good-bg); color: var(--status-good); }
 .signal-badge.good { background: rgba(106, 103, 254, 0.12); color: #4b4ab4; }
-.signal-badge.fair { background: rgba(235, 188, 67, 0.2); color: var(--fleet-status-warning-dark); }
-.signal-badge.poor { background: rgba(214, 108, 123, 0.15); color: var(--fleet-status-error); }
+.signal-badge.fair { background: var(--status-fair-bg); color: var(--status-fair-text); }
+.signal-badge.poor { background: var(--status-critical-bg); color: var(--status-critical); }
 
 .quality-label { font-size: 12px; color: #8b8fa2; text-transform: capitalize; min-width: 60px; }
 

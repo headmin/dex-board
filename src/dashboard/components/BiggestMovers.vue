@@ -113,14 +113,14 @@ async function toggle(mover) {
 .chart-container {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   padding: var(--pad-large);
   box-shadow: var(--box-shadow);
 }
 
 h3 {
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
   margin-bottom: var(--pad-medium);
 }
@@ -237,7 +237,7 @@ h3 {
 .mover-detail {
   background: var(--fleet-off-white);
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   margin: 0 -4px 8px -4px;
   padding: var(--pad-medium);
 }
@@ -258,11 +258,9 @@ h3 {
 }
 
 .detail-label {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--fleet-black-50);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  color: var(--fleet-black-75);
 }
 
 .detail-label.right {
@@ -302,7 +300,7 @@ h3 {
   color: var(--fleet-vibrant-blue);
   background: rgba(106, 103, 254, 0.1);
   padding: 1px 6px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-full);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }

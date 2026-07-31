@@ -2,8 +2,8 @@
   /* Fleet brand colors - 2025 official branding */
   --fleet-black: #192147;
   --fleet-green: #009a7d;
-  --fleet-green-over: #008a70;
-  --fleet-green-down: #007562;
+  --fleet-green-over: #00886c;
+  --fleet-green-down: #00775f;
   --fleet-white: #ffffff;
   
   /* Grayscale derived from fleet-black */
@@ -36,14 +36,36 @@
   --fleet-light-grey: #fafafa;
   --fleet-shadow: #e9e9e9;
   
-  /* Notifications & status */
+  /* ---------------------------------------------------------------
+     Canonical semantic scale — sampled from the capex-savings DEX
+     mockups (fleetdm.com/capex-savings). Single source of truth for
+     grade / health / pressure / status colors. good -> fair ->
+     elevated -> critical, on the Fleet brand green.
+     --------------------------------------------------------------- */
+  --status-good: var(--fleet-green);          /* #009a7d */
+  --status-good-soft: #4bb79b;                /* lighter green, e.g. grade B bars */
+  --status-good-text: var(--fleet-green);     /* #009a7d text on tint */
+  --status-good-bg: #deedea;                  /* green badge tint */
+
+  --status-fair: #ecc767;                     /* gold bar fill (grade C) */
+  --status-fair-text: #a47f1e;                /* dark gold text on tint */
+  --status-fair-bg: #fff5d7;                  /* gold badge tint */
+
+  --status-elevated: #eb6743;                 /* orange (grade D / mid pressure) */
+  --status-elevated-alt: #ec9545;             /* amber-orange variant */
+
+  --status-critical: #eb4343;                 /* clean red (grade F / severe) */
+  --status-critical-soft: #ef6969;            /* softer red text */
+  --status-critical-bg: #fde8e8;              /* red badge tint */
+
+  /* Notifications & status — repointed to the canonical scale above */
   --fleet-offline: #8b8fa2;
-  --fleet-success: #3db67b;
-  --fleet-success-over: #36a26d;
-  --fleet-success-down: #2b7f56;
-  --fleet-warning: #ebbc43;
-  --fleet-error: #d66c7b;
-  --fleet-error-down: #a84757;
+  --fleet-success: var(--status-good);
+  --fleet-success-over: var(--fleet-green-over);
+  --fleet-success-down: var(--fleet-green-down);
+  --fleet-warning: var(--status-fair);
+  --fleet-error: var(--status-critical);
+  --fleet-error-down: #c62f2f;
   --fleet-info: #6a67fe;
   --fleet-yellow-banner: #fef7e0;
   --fleet-yellow-banner-outline: #ece0bb;
@@ -69,20 +91,20 @@
   --fleet-accent-indigo-light: #e0e7ff;
   
   /* UI element colors */
-  --fleet-ui-orange: #ea580c;
+  --fleet-ui-orange: var(--status-elevated);
   --fleet-ui-orange-light: #fed7aa;
   --fleet-ui-orange-dark: #9a3412;
   
   /* Status colors - semantic */
-  --fleet-status-success: #059669;
-  --fleet-status-success-light: #f0fdf4;
+  --fleet-status-success: var(--status-good);
+  --fleet-status-success-light: var(--status-good-bg);
   --fleet-status-success-border: #a7f3d0;
-  --fleet-status-warning: #d97706;
-  --fleet-status-warning-light: #fef3c7;
+  --fleet-status-warning: var(--status-fair-text);
+  --fleet-status-warning-light: var(--status-fair-bg);
   --fleet-status-warning-dark: #92400e;
   --fleet-status-warning-border: #fde68a;
-  --fleet-status-error: #dc2626;
-  --fleet-status-error-light: #fee2e2;
+  --fleet-status-error: var(--status-critical);
+  --fleet-status-error-light: var(--status-critical-bg);
   --fleet-status-error-border: #fecaca;
   --fleet-status-info: #6a67fe;
   --fleet-status-info-light: #f0efff;
@@ -96,6 +118,15 @@
   /* Focus state */
   --fleet-focused-outline: var(--fleet-black);
   --tooltip-bg: #3e4771;
+
+  /* Links / text — canonical Fleet frontend style (@mixin link + CustomLink).
+     Links are black-75 (not blue); hover darkens to black; emphasized CTAs
+     use the brand green. */
+  --link-color: var(--fleet-black-75);
+  --link-color-hover: var(--fleet-black);
+  --link-underline: var(--fleet-black-75);
+  --link-emphasis: var(--fleet-green);
+  --link-emphasis-hover: var(--fleet-green-over);
 
   /* Sidebar */
   --sidebar-width: 220px;

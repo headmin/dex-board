@@ -29,7 +29,7 @@
         :loading="loading.deviceWifi"
         xKey="hour"
         yKey="avg_rssi"
-        color="var(--fleet-vibrant-blue)"
+        color="#6a67fe"
       />
 
       <!-- Device running apps -->
@@ -83,7 +83,7 @@
         :loading="loading.wifiTimeseries"
         xKey="hour"
         yKey="avg_rssi"
-        color="var(--fleet-vibrant-blue)"
+        color="#6a67fe"
       />
     </section>
 
@@ -424,23 +424,21 @@ onMounted(() => fetchAll())
 }
 
 .subtitle {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--font-size-sm);
   color: var(--fleet-black-50);
 }
 
 h1 {
   font-size: var(--font-size-lg);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
-  font-family: var(--font-mono);
 }
 
 h2 {
   font-size: var(--font-size-md);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
-  font-family: var(--font-mono);
   margin-bottom: 16px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--fleet-black-10);
@@ -448,9 +446,8 @@ h2 {
 
 h3 {
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
-  font-family: var(--font-mono);
   margin: 16px 0 8px;
 }
 
@@ -491,7 +488,7 @@ h3 {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
   border-left: 3px solid var(--fleet-vibrant-blue);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   padding: 20px 24px;
   margin-bottom: 32px;
 }
@@ -531,32 +528,37 @@ h3 {
 /* ── Data Tables ─────────────────────────────── */
 .table-wrap {
   overflow-x: auto;
+  background: var(--fleet-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-large);
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-body);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
 }
 
 .data-table th {
   text-align: left;
-  padding: 8px 12px;
-  font-weight: 600;
-  color: var(--fleet-black-50);
-  border-bottom: 2px solid var(--fleet-black-10);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 14px 18px;
+  font-weight: 700;
+  color: var(--fleet-black);
+  background: var(--fleet-off-white);
+  border-bottom: 1px solid var(--fleet-black-10);
+  font-size: var(--font-size-base);
+  white-space: nowrap;
 }
+.data-table th:first-child { border-top-left-radius: var(--radius-large); }
+.data-table th:last-child { border-top-right-radius: var(--radius-large); }
 
 .data-table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--fleet-black-5);
-  color: var(--fleet-black);
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--fleet-black-10);
+  color: var(--fleet-black-75);
 }
+.data-table tbody tr:last-child td { border-bottom: 0; }
 
 .clickable-row {
   cursor: pointer;
@@ -568,34 +570,34 @@ h3 {
 }
 
 .clickable-row.selected {
-  background: #eff6ff;
+  background: var(--sidebar-active-bg);
 }
 
 .hostname {
-  font-family: var(--font-mono);
-  font-weight: 500;
+  font-weight: 700;
+  color: var(--fleet-black);
 }
 
 /* ── RSSI colors ─────────────────────────────── */
-.rssi-excellent { color: #16a34a; font-weight: 600; }
-.rssi-good { color: #65a30d; }
-.rssi-fair { color: #ca8a04; }
-.rssi-poor { color: #dc2626; font-weight: 600; }
+.rssi-excellent { color: var(--status-good); font-weight: 600; }
+.rssi-good { color: var(--status-good); }
+.rssi-fair { color: var(--status-fair-text); }
+.rssi-poor { color: var(--fleet-status-error); font-weight: 600; }
 
 /* ── Quality badges ──────────────────────────── */
 .quality-badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 10px;
+  border-radius: var(--radius-full);
   font-size: var(--font-size-xs);
   font-weight: 600;
 }
 
 .quality-badge.excellent { background: var(--fleet-status-success-light); color: var(--fleet-status-success); }
-.quality-badge.good { background: #ecfccb; color: #3f6212; }
-.quality-badge.fair { background: #fef9c3; color: #854d0e; }
+.quality-badge.good { background: var(--status-good-bg); color: var(--status-good); }
+.quality-badge.fair { background: var(--status-fair-bg); color: var(--status-fair-text); }
 .quality-badge.weak, .quality-badge.poor { background: var(--fleet-status-error-light); color: var(--fleet-status-error); }
-.quality-badge.very_weak { background: #fecaca; color: #7f1d1d; }
+.quality-badge.very_weak { background: var(--status-critical-bg); color: var(--status-critical); }
 
 @media (max-width: 1024px) {
   .metrics-row.four-col {

@@ -95,4 +95,13 @@ export interface Env {
    * it should mirror the patch commitment in your governance doc.
    */
   PATCH_SLA_DAYS?: string
+  /**
+   * Optional JSON map of Fleet numeric team id → friendly name, e.g.
+   * `{"team-275":"Workstations","team-280":"Servers"}`. Telemetry only carries
+   * the numeric id (from the `pack/team-XXX/` result-log prefix); this label
+   * map is the only way to render names without calling the Fleet API. Exposed
+   * via GET /api/config. Unmapped ids fall back to the raw id.
+   * Set: `wrangler secret put TEAM_NAMES`.
+   */
+  TEAM_NAMES?: string
 }

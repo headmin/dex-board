@@ -190,11 +190,11 @@ function clamp(v) {
 
 function barColor(v) {
   if (v < 0) return '#8b8fa2'
-  if (v >= 90) return '#3db67b'
-  if (v >= 75) return 'var(--rainbow-blue)'
-  if (v >= 60) return '#ebbc43'
-  if (v >= 40) return '#e07b3a'
-  return '#d66c7b'
+  if (v >= 90) return '#009a7d'
+  if (v >= 75) return '#5cabdf'
+  if (v >= 60) return '#ecc767'
+  if (v >= 40) return '#eb6743'
+  return '#eb4343'
 }
 
 function formatScore(v) {
@@ -244,7 +244,7 @@ function diffClass(row) {
   display: inline-flex;
   align-self: flex-start;
   padding: 6px 16px;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
   font-size: var(--font-size-sm);
   font-weight: 700;
   letter-spacing: 0.2px;
@@ -252,8 +252,8 @@ function diffClass(row) {
 
 .lifecycle-top { background: #e8f8f0; color: var(--fleet-status-success); }
 .lifecycle-healthy { background: #e8f0fe; color: #2d5fba; }
-.lifecycle-attention { background: #fef9e8; color: #9a7b1a; }
-.lifecycle-under { background: #fef0e8; color: #b05c1a; }
+.lifecycle-attention { background: #fef9e8; color: var(--status-fair-text); }
+.lifecycle-under { background: #fef0e8; color: var(--fleet-ui-orange); }
 .lifecycle-eol { background: #fee8ec; color: var(--fleet-status-error); }
 
 /* ─── Cohort Tabs ────────────────────────────── */
@@ -295,7 +295,7 @@ function diffClass(row) {
 /* ─── Cohort Warning ─────────────────────────── */
 .cohort-warning {
   font-size: var(--font-size-xs);
-  color: #9a7b1a;
+  color: var(--status-fair-text);
   background: #fef9e8;
   padding: 6px 12px;
   border-radius: var(--radius);
@@ -405,7 +405,7 @@ function diffClass(row) {
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-full);
   min-width: 72px;
   text-align: center;
   white-space: nowrap;
@@ -414,7 +414,7 @@ function diffClass(row) {
 .pos-top { background: #e8f8f0; color: var(--fleet-status-success); }
 .pos-above { background: #e8f0fe; color: #2d5fba; }
 .pos-avg { background: var(--fleet-black-5); color: var(--fleet-black-75); }
-.pos-below { background: #fef0e8; color: #b05c1a; }
+.pos-below { background: #fef0e8; color: var(--fleet-ui-orange); }
 
 .bench-value {
   font-size: var(--font-size-sm);

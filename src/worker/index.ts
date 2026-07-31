@@ -82,9 +82,19 @@ app.use('/api/*', async (c, next) => {
 // this once on first read; falls back to dogfood.fleetdm.com if unset.
 app.get('/api/config', (c) => {
   const slaDays = parseInt(c.env.PATCH_SLA_DAYS || '', 10)
+  let teamNames: Record<string, string> = {}
+  try {
+    if (c.env.TEAM_NAMES) {
+      const parsed = JSON.parse(c.env.TEAM_NAMES)
+      if (parsed && typeof parsed === 'object') teamNames = parsed
+    }
+  } catch {
+    // Malformed TEAM_NAMES — fall back to empty map (ids render raw).
+  }
   return c.json({
     fleetUrl: (c.env.FLEET_URL || 'https://dogfood.fleetdm.com').replace(/\/$/, ''),
     patchSlaDays: Number.isFinite(slaDays) && slaDays > 0 ? slaDays : 14,
+    teamNames,
   })
 })
 

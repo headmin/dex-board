@@ -246,16 +246,14 @@ onMounted(() => fetchAll())
 
 h1 {
   font-size: var(--font-size-lg);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
-  font-family: var(--font-mono);
 }
 
 h2 {
   font-size: var(--font-size-md);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
-  font-family: var(--font-mono);
   margin-bottom: 16px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--fleet-black-10);

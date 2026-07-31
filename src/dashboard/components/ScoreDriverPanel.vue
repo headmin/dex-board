@@ -79,7 +79,7 @@ function formatDelta(n) {
 .driver-panel {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   padding: 12px 14px;
   margin-bottom: 10px;
 }
@@ -98,10 +98,10 @@ function formatDelta(n) {
   flex-wrap: wrap;
 }
 .driver-title { display: flex; align-items: center; gap: 8px; }
-.driver-cat { font-family: var(--font-mono); font-weight: 600; font-size: var(--font-size-sm); color: var(--fleet-black); text-transform: uppercase; letter-spacing: 0.4px; }
+.driver-cat { font-weight: 700; font-size: var(--font-size-sm); color: var(--fleet-black); }
 .driver-primary-pill {
   font-family: var(--font-mono); font-size: 10px; font-weight: 700;
-  padding: 2px 8px; border-radius: 10px;
+  padding: 2px 8px; border-radius: var(--radius-full);
   background: rgba(106, 103, 254, 0.12); color: #6a67fe;
   text-transform: uppercase; letter-spacing: 0.4px;
 }
@@ -127,7 +127,7 @@ function formatDelta(n) {
   margin-left: 6px;
   font-size: 9px; font-weight: 700;
   background: rgba(106, 103, 254, 0.12); color: #6a67fe;
-  padding: 1px 6px; border-radius: 8px;
+  padding: 1px 6px; border-radius: var(--radius-full);
   text-transform: uppercase; letter-spacing: 0.4px;
 }
 .signal-static td, .signal-unchanged td { color: var(--fleet-black-50); }

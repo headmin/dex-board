@@ -36,13 +36,13 @@ const props = defineProps({
   zoomable: { type: Boolean, default: true },
   threshold: { type: Number, default: null },
   thresholdLabel: { type: String, default: 'High' },
-  color: { type: String, default: 'var(--rainbow-blue)' },
+  color: { type: String, default: '#5cabdf' },
   yMin: { type: Number, default: null },
   yMax: { type: Number, default: null }
 })
 
 // ECharts paints to canvas and CANNOT resolve CSS custom properties — if
-// a caller passes 'var(--fleet-vibrant-blue)' it ends up unparsed and the
+// a caller passes '#6a67fe' it ends up unparsed and the
 // chart silently falls back to ECharts' default color. Resolve once here.
 function resolveColor(c) {
   if (!c) return c
@@ -116,7 +116,7 @@ const chartOption = computed(() => {
         silent: true,
         symbol: 'none',
         lineStyle: {
-          color: '#dc2626',
+          color: '#eb4343',
           type: 'dashed',
           width: 2
         },
@@ -126,7 +126,7 @@ const chartOption = computed(() => {
             formatter: `${props.thresholdLabel} (${props.threshold})`,
             position: 'insideEndTop',
             fontSize: 11,
-            color: '#dc2626'
+            color: '#eb4343'
           }
         }]
       } : undefined

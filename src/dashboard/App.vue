@@ -175,6 +175,37 @@ body {
   font-family: var(--font-body);
 }
 
+/* ── Links (canonical Fleet frontend style) ──────────────
+   Content links are black-75, weight 600, no underline, darkening to
+   black on hover — never vibrant-blue. Scoped to unclassed <a> so the
+   dark-header nav, buttons, and external CTAs (all classed) are untouched.
+   Use .custom-link for underlined inline links, .link-emphasized for
+   green CTAs. */
+a:not([class]) {
+  color: var(--link-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+a:not([class]):hover { color: var(--link-color-hover); }
+
+.custom-link {
+  color: var(--link-color);
+  font-weight: var(--font-weight-regular);
+  text-decoration: underline;
+  text-decoration-color: var(--link-underline);
+  text-underline-offset: 3px;
+}
+.custom-link:hover {
+  color: var(--link-color-hover);
+  text-decoration-color: var(--link-color-hover);
+}
+
+.link-emphasized {
+  color: var(--link-emphasis);
+  text-decoration-color: var(--link-emphasis);
+}
+.link-emphasized:hover { color: var(--link-emphasis-hover); }
+
 .app-layout {
   display: flex;
   flex-direction: column;
@@ -184,7 +215,7 @@ body {
 
 /* ── Top Navigation (Fleet-style) ────────────── */
 .top-nav {
-  background: var(--gradients-dark-gradient);
+  background: var(--fleet-black);
   color: var(--fleet-white);
   padding: 0 var(--pad-page);
   position: sticky;
@@ -284,7 +315,6 @@ body {
 .top-nav__user {
   font-size: var(--font-size-xsmall);
   color: var(--fleet-black-10);
-  font-family: var(--font-mono);
 }
 
 /* ── App Body ────────────────────────────────── */
@@ -323,10 +353,8 @@ body {
   display: block;
   padding: var(--pad-small) var(--pad-small);
   font-family: var(--font-body);
-  font-size: var(--font-size-xxsmall);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-wide);
+  font-size: var(--font-size-xsmall);
+  font-weight: 600;
   color: var(--fleet-black-50);
   margin-bottom: 2px;
 }

@@ -20,7 +20,7 @@ const { isFiltered, filterLabel, clearDrill } = useDrillFilter()
 
 <style scoped>
 .drill-bar {
-  background: #eff6ff;
+  background: var(--sidebar-active-bg);
   border: 1px solid #bfdbfe;
   border-radius: 8px;
   padding: 10px 16px;

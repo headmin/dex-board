@@ -437,7 +437,7 @@ onMounted(() => fetchAll())
 h1 {
   font-family: var(--font-body);
   font-size: var(--font-size-xl);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
   letter-spacing: var(--letter-spacing-tight);
 }
@@ -445,7 +445,7 @@ h1 {
 h2 {
   font-family: var(--font-body);
   font-size: var(--font-size-base);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
   margin-bottom: var(--pad-medium);
   letter-spacing: var(--letter-spacing-tight);
@@ -551,10 +551,9 @@ h2 {
 
 .stat-label {
   font-family: var(--font-body);
-  font-size: var(--font-size-xs);
-  color: var(--fleet-black-50);
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-wide);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--fleet-black-75);
 }
 
 /* ─── Pressure Colors ─────────────────────────────────── */
@@ -649,33 +648,34 @@ h2 {
 /* ─── Tables ──────────────────────────────────────────── */
 .table-wrap {
   overflow-x: auto;
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius-medium);
+  background: var(--fleet-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-large);
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-body);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
 }
 
 .data-table.compact {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
 }
 
 .data-table th {
   text-align: left;
-  padding: 8px 12px;
-  font-weight: 600;
-  color: var(--fleet-black-50);
-  background: transparent;
-  border-bottom: 2px solid var(--fleet-black-10);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 14px 18px;
+  font-weight: 700;
+  color: var(--fleet-black);
+  background: var(--fleet-off-white);
+  border-bottom: 1px solid var(--fleet-black-10);
+  font-size: var(--font-size-base);
+  white-space: nowrap;
 }
+.data-table th:first-child { border-top-left-radius: var(--radius-large); }
+.data-table th:last-child { border-top-right-radius: var(--radius-large); }
 
 .data-table th.sortable {
   cursor: pointer;
@@ -688,8 +688,9 @@ h2 {
 }
 
 .data-table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--fleet-black-5);
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--fleet-black-10);
+  color: var(--fleet-black-75);
 }
 
 .data-table tbody tr:last-child td {
@@ -833,19 +834,19 @@ h2 {
 }
 
 .ram-bar-used.pressure-ok {
-  background: linear-gradient(90deg, #86efac, var(--fleet-status-success));
+  background: linear-gradient(90deg, var(--fleet-green), var(--fleet-status-success));
 }
 
 .ram-bar-used.pressure-moderate {
-  background: linear-gradient(90deg, #fde68a, var(--fleet-status-warning));
+  background: linear-gradient(90deg, var(--status-fair-bg), var(--fleet-status-warning));
 }
 
 .ram-bar-used.pressure-high {
-  background: linear-gradient(90deg, #fdba74, var(--fleet-ui-orange));
+  background: linear-gradient(90deg, var(--fleet-ui-orange), var(--fleet-ui-orange));
 }
 
 .ram-bar-used.pressure-critical {
-  background: linear-gradient(90deg, #fca5a5, var(--fleet-status-error));
+  background: linear-gradient(90deg, var(--status-critical-bg), var(--fleet-status-error));
 }
 
 .ram-bar-peak {

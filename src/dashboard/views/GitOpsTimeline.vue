@@ -47,9 +47,9 @@
           <span class="legend-label">Lower</span>
           <div class="legend-block" style="background:#ef4444"></div>
           <div class="legend-block" style="background:#f97316"></div>
-          <div class="legend-block" style="background:#eab308"></div>
+          <div class="legend-block" style="background:var(--status-fair-text)"></div>
           <div class="legend-block" style="background:#84cc16"></div>
-          <div class="legend-block" style="background:#22c55e"></div>
+          <div class="legend-block" style="background:var(--fleet-green)"></div>
           <span class="legend-label">Higher</span>
           <span class="legend-deploy"><span class="deploy-dot-legend"></span> Deploy</span>
         </div>
@@ -331,7 +331,7 @@
                   <p>The <strong>DEX composite score</strong> (0–100) measures overall device health. It's a weighted average of four categories, each computed hourly from real device telemetry:</p>
                   <div class="si-categories">
                     <span class="si-cat"><span class="si-dot" style="background:#4a90d9"></span><strong>Performance</strong> 35% — memory %, disk %, top process load, uptime</span>
-                    <span class="si-cat"><span class="si-dot" style="background:#3db67b"></span><strong>Host health</strong> 25% — disk capacity, hardware age</span>
+                    <span class="si-cat"><span class="si-dot" style="background:var(--fleet-success)"></span><strong>Host health</strong> 25% — disk capacity, hardware age</span>
                     <span class="si-cat"><span class="si-dot" style="background:#8b5cf6"></span><strong>Security</strong> 20% — encryption, firewall, SIP, Gatekeeper</span>
                     <span class="si-cat"><span class="si-dot" style="background:#ec4899"></span><strong>Software</strong> 20% — app sprawl, browser extensions</span>
                   </div>
@@ -449,7 +449,7 @@
                       :xLabels="deviceHealthLabels"
                       :series="deviceHealthSeries"
                       :yAxes="[{ name: '%', min: 0, max: 100 }]"
-                      :thresholds="[{ value: 85, label: 'Warning', color: '#dc2626' }]"
+                      :thresholds="[{ value: 85, label: 'Warning', color: '#eb4343' }]"
                       :events="deployMarker(commit) ? [deployMarker(commit)] : []"
                       :zoomable="false"
                     />
@@ -761,9 +761,9 @@ const heatmapDays = computed(() => {
 function cellColor(cell) {
   if (!cell) return '#f5f5f5'
   const s = cell.score
-  if (s >= 80) return '#22c55e'
+  if (s >= 80) return '#009a7d'
   if (s >= 65) return '#84cc16'
-  if (s >= 50) return '#eab308'
+  if (s >= 50) return '#a47f1e'
   if (s >= 35) return '#f97316'
   return '#ef4444'
 }
@@ -1003,7 +1003,7 @@ const deviceHealthSeries = computed(() => [
 
 const deviceScoreSeries = computed(() => [
   { name: 'Composite', data: deviceScoreData.value.composite, color: '#192147' },
-  { name: 'Health', data: deviceScoreData.value.health, color: '#22c55e' },
+  { name: 'Health', data: deviceScoreData.value.health, color: '#009a7d' },
   { name: 'Performance', data: deviceScoreData.value.performance, color: '#3b82f6' },
   { name: 'Network', data: deviceScoreData.value.network, color: '#f59e0b' },
   { name: 'Security', data: deviceScoreData.value.security, color: '#8b5cf6' },
@@ -1147,7 +1147,7 @@ onMounted(() => loadTimeline())
 .timeline-header h1 {
   font-family: var(--font-body);
   font-size: var(--font-size-xl);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
   letter-spacing: var(--letter-spacing-tight);
 }
@@ -1197,7 +1197,7 @@ onMounted(() => loadTimeline())
 .section h2 {
   font-family: var(--font-body);
   font-size: var(--font-size-base);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
   margin-bottom: var(--pad-small);
   letter-spacing: var(--letter-spacing-tight);
@@ -1617,7 +1617,7 @@ onMounted(() => loadTimeline())
 .event-detail-panel {
   background: #fafafe;
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   padding: var(--pad-small) var(--pad-medium);
   margin-top: var(--pad-small);
 }
@@ -1658,9 +1658,7 @@ onMounted(() => loadTimeline())
   text-align: left;
   font-weight: 600;
   color: var(--fleet-black-50);
-  text-transform: uppercase;
   font-size: 10px;
-  letter-spacing: 0.5px;
   padding: 4px 8px;
   border-bottom: 1px solid var(--fleet-black-10);
 }
@@ -1687,13 +1685,13 @@ onMounted(() => loadTimeline())
 .edp-lag {
   font-size: 11px;
   padding: 1px 6px;
-  border-radius: 8px;
+  border-radius: var(--radius-full);
   font-weight: 500;
 }
 
 .lag-fast { background: #d1fae5; color: #065f46; }
-.lag-ok { background: #fef3c7; color: #92400e; }
-.lag-slow { background: #fee2e2; color: #991b1b; }
+.lag-ok { background: var(--status-fair-bg); color: #92400e; }
+.lag-slow { background: var(--status-critical-bg); color: #991b1b; }
 
 .edp-score-detail {
   display: flex;
@@ -1735,10 +1733,8 @@ onMounted(() => loadTimeline())
 
 .detail-section h4 {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
   margin-bottom: var(--pad-small);
 }
 
@@ -1766,7 +1762,7 @@ onMounted(() => loadTimeline())
 }
 
 .fe-icon.score_drop { color: #ef4444; }
-.fe-icon.score_improvement { color: #22c55e; }
+.fe-icon.score_improvement { color: var(--fleet-green); }
 .fe-icon.patch_wave { color: #3b82f6; }
 
 .fe-time {
@@ -1783,12 +1779,12 @@ onMounted(() => loadTimeline())
 .fe-severity {
   font-size: 11px;
   padding: 1px 8px;
-  border-radius: 10px;
+  border-radius: var(--radius-full);
   font-weight: 500;
 }
 
-.fe-severity.high { color: #991b1b; background: #fee2e2; }
-.fe-severity.medium { color: #92400e; background: #fef3c7; }
+.fe-severity.high { color: #991b1b; background: var(--status-critical-bg); }
+.fe-severity.medium { color: #92400e; background: var(--status-fair-bg); }
 .fe-severity.low { color: #065f46; background: #d1fae5; }
 
 /* Pinned devices */
@@ -1806,7 +1802,7 @@ onMounted(() => loadTimeline())
   padding: 4px 10px;
   background: #f0efff;
   border: 1px solid #d8d6ff;
-  border-radius: 16px;
+  border-radius: var(--radius-full);
   font-size: 12px;
   cursor: pointer;
   transition: all 0.15s;
@@ -1877,7 +1873,7 @@ onMounted(() => loadTimeline())
 .score-info-box {
   background: #f8f9fa;
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   padding: var(--pad-medium);
   margin: var(--pad-small) 0;
   font-size: 12px;
@@ -1940,8 +1936,8 @@ onMounted(() => loadTimeline())
 
 .verdict-neutral { background: #f8f9fa; color: var(--fleet-black-50); }
 .verdict-positive { background: #d1fae5; color: #065f46; }
-.verdict-negative { background: #fee2e2; color: #991b1b; }
-.verdict-mixed { background: #fef3c7; color: #92400e; }
+.verdict-negative { background: var(--status-critical-bg); color: #991b1b; }
+.verdict-mixed { background: var(--status-fair-bg); color: #92400e; }
 
 /* ─── Impact summary ───────────────────────────── */
 
@@ -1957,7 +1953,7 @@ onMounted(() => loadTimeline())
   align-items: center;
   padding: var(--pad-small) var(--pad-medium);
   background: #f8f9fa;
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   min-width: 80px;
 }
 
@@ -2102,7 +2098,7 @@ onMounted(() => loadTimeline())
 
 .delta-bad { color: #ef4444; }
 .delta-warn { color: #f59e0b; }
-.delta-good { color: #22c55e; }
+.delta-good { color: var(--fleet-green); }
 .delta-neutral { color: var(--fleet-black-50); }
 
 .ad-tag-btn, .ad-inspect-btn {
@@ -2127,7 +2123,7 @@ onMounted(() => loadTimeline())
 .device-inspect-panel {
   background: #fafafe;
   border: 1px solid #e2e0ff;
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   padding: var(--pad-medium);
   margin-top: var(--pad-small);
 }
@@ -2188,7 +2184,7 @@ onMounted(() => loadTimeline())
 .patch-type {
   font-size: 11px;
   padding: 1px 6px;
-  border-radius: 8px;
+  border-radius: var(--radius-full);
   background: #dbeafe;
   color: #1e40af;
   font-weight: 500;
@@ -2209,14 +2205,14 @@ onMounted(() => loadTimeline())
 .patch-lag {
   font-size: 11px;
   color: #92400e;
-  background: #fef3c7;
+  background: var(--status-fair-bg);
   padding: 1px 6px;
-  border-radius: 8px;
+  border-radius: var(--radius-full);
 }
 
 /* Release toggle + per-release rollout panel */
 .release-toggle { margin-left: 8px; }
-.timeline-entry.is-release .timeline-dot { box-shadow: 0 0 0 3px #fef3c7; }
+.timeline-entry.is-release .timeline-dot { box-shadow: 0 0 0 3px var(--status-fair-bg); }
 .release-rollout-panel { margin-top: 10px; }
 .release-rollout-table { font-size: 12px; }
 .release-rollout-table .patch-type {
@@ -2224,9 +2220,9 @@ onMounted(() => loadTimeline())
   margin-left: 6px;
   font-size: 10px;
   color: #92400e;
-  background: #fef3c7;
+  background: var(--status-fair-bg);
   padding: 1px 5px;
-  border-radius: 6px;
+  border-radius: var(--radius-full);
   text-transform: uppercase;
 }
 .rollout-rel {
@@ -2246,7 +2242,7 @@ onMounted(() => loadTimeline())
 .fma-card {
   background: var(--fleet-white, #fff);
   border: 1px solid var(--fleet-black-10, #e5e7eb);
-  border-radius: var(--radius, 6px);
+  border-radius: var(--radius-large);
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -2259,19 +2255,19 @@ onMounted(() => loadTimeline())
   font-size: 10px;
   text-transform: uppercase;
   padding: 1px 6px;
-  border-radius: 6px;
+  border-radius: var(--radius-full);
   background: var(--fleet-off-white, #f5f5f5);
   color: var(--fleet-black-75, #444);
 }
 .fma-platform.platform-mac { background: #e0e7ff; color: #3730a3; }
 .fma-platform.platform-darwin { background: #e0e7ff; color: #3730a3; }
 .fma-platform.platform-windows { background: #dbeafe; color: #1e40af; }
-.fma-platform.platform-linux { background: #dcfce7; color: #166534; }
+.fma-platform.platform-linux { background: var(--status-good-bg); color: #166534; }
 .fma-badge.added {
   font-size: 10px;
   padding: 1px 6px;
-  border-radius: 6px;
-  background: #fef3c7;
+  border-radius: var(--radius-full);
+  background: var(--status-fair-bg);
   color: #92400e;
   text-transform: uppercase;
   font-weight: 700;

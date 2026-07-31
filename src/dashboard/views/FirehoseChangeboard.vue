@@ -261,7 +261,9 @@ async function renderDiagram() {
 
   let def = 'graph LR\n'
   def += '  classDef default fill:#f8fafc,stroke:#e2e8f0,color:#1e293b\n'
-  def += '  classDef changed fill:#dcfce7,stroke:#22c55e,color:#166534,stroke-width:2px\n'
+  // Mermaid classDef needs literal hex — CSS var() is not valid in its
+  // style directives. These mirror the canonical --status-good tokens.
+  def += '  classDef changed fill:#deedea,stroke:#009a7d,color:#166534,stroke-width:2px\n'
   def += '  classDef fleet fill:#eff6ff,stroke:#3b82f6,color:#1e40af\n'
   def += '  classDef platform fill:#faf5ff,stroke:#a855f7,color:#6b21a8\n\n'
   def += '  ROOT["it-and-security"]:::default\n'
@@ -338,14 +340,14 @@ onUnmounted(() => { if (playTimer) clearInterval(playTimer) })
 .placeholder { color: var(--fleet-black-50); font-size: var(--font-size-sm); padding: 12px; }
 
 .cb-header { padding: 16px 20px; display: flex; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--fleet-black-10); background: var(--fleet-white); flex-shrink: 0; }
-.cb-header h1 { font-family: var(--font-body); font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-black); }
+.cb-header h1 { font-family: var(--font-body); font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black); }
 .cb-meta { font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black-50); }
 
 .cb-main { display: grid; grid-template-columns: 280px 1fr 320px; flex: 1; overflow: hidden; }
 
 /* Tree */
 .tree-panel { border-right: 1px solid var(--fleet-black-10); overflow-y: auto; padding: 12px 0; background: var(--fleet-white); }
-.tree-panel h2 { font-family: var(--font-body); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--fleet-black-50); padding: 0 16px 8px; font-weight: 600; }
+.tree-panel h2 { font-family: var(--font-body); font-size: 13px; color: var(--fleet-black); padding: 0 16px 8px; font-weight: 700; }
 .tree-node { padding: 6px 16px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: var(--font-size-sm); transition: background var(--transition-fast); }
 .tree-node:hover { background: var(--fleet-black-3); }
 .tree-leaf { padding: 5px 16px 5px 28px; font-family: var(--font-mono); font-size: 12px; color: var(--fleet-black-75); transition: background var(--transition-fast); display: flex; align-items: center; gap: 6px; }
@@ -363,7 +365,7 @@ onUnmounted(() => { if (playTimer) clearInterval(playTimer) })
 
 /* Diagram */
 .diagram-panel { overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--fleet-black-3); }
-.diagram-panel h2 { font-family: var(--font-body); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--fleet-black-50); font-weight: 600; }
+.diagram-panel h2 { font-family: var(--font-body); font-size: 13px; color: var(--fleet-black); font-weight: 700; }
 .diagram-zoom-controls { display: flex; gap: 4px; }
 .diagram-zoom-controls button { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius); width: 32px; height: 32px; cursor: pointer; font-size: 16px; font-weight: 500; color: var(--fleet-black-50); display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
 .diagram-zoom-controls button:hover { border-color: var(--fleet-core-vibrant-blue); color: var(--fleet-black); background: var(--fleet-white); }
@@ -374,7 +376,7 @@ onUnmounted(() => { if (playTimer) clearInterval(playTimer) })
 
 /* Detail */
 .detail-panel { border-left: 1px solid var(--fleet-black-10); overflow-y: auto; padding: 16px; background: var(--fleet-white); display: flex; flex-direction: column; gap: 16px; }
-.detail-panel h2 { font-family: var(--font-body); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--fleet-black-50); font-weight: 600; margin: 0; }
+.detail-panel h2 { font-family: var(--font-body); font-size: 13px; color: var(--fleet-black); font-weight: 700; margin: 0; }
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .stat-card { background: var(--fleet-black-3); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-medium); padding: 12px 10px; text-align: center; }
 .stat-value { font-family: var(--font-mono); font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-core-vibrant-blue); }
@@ -403,7 +405,7 @@ onUnmounted(() => { if (playTimer) clearInterval(playTimer) })
 
 /* Timeline bar */
 .timeline-bar { border-top: 1px solid var(--fleet-black-10); padding: 14px 20px; display: flex; align-items: center; gap: 14px; background: var(--fleet-white); flex-shrink: 0; }
-.tl-label { font-family: var(--font-body); font-size: 11px; color: var(--fleet-black-50); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.tl-label { font-family: var(--font-body); font-size: 13px; color: var(--fleet-black-75); font-weight: 600; }
 .tl-controls { display: flex; gap: 4px; }
 .tl-controls button { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); color: var(--fleet-black-75); padding: 6px 12px; border-radius: var(--radius); cursor: pointer; font-size: 14px; transition: all var(--transition-fast); }
 .tl-controls button:hover { border-color: var(--fleet-core-vibrant-blue); color: var(--fleet-black); }

@@ -300,9 +300,9 @@ const historyChartOption = computed(() => ({
       type: 'line',
       smooth: true,
       showSymbol: false,
-      areaStyle: { opacity: 0.08, color: '#ebbc43' },
-      lineStyle: { color: '#ebbc43', width: 2 },
-      itemStyle: { color: '#ebbc43' },
+      areaStyle: { opacity: 0.08, color: '#ecc767' },
+      lineStyle: { color: '#ecc767', width: 2 },
+      itemStyle: { color: '#ecc767' },
       data: memoryHistory.value.map(d => d.disk_percent)
     }
   ]
@@ -482,22 +482,20 @@ onMounted(fetchDeviceData)
 }
 
 /* Support snapshot — pre-connect briefing strip */
-.support-snapshot { background: #f7f8fb; border: 1px solid #e2e4ea; border-radius: 8px; padding: 14px 16px; }
+.support-snapshot { background: #f7f8fb; border: 1px solid #e2e4ea; border-radius: var(--radius-large); padding: 14px 16px; }
 .support-hint { font-size: 12px; color: #8b8fa2; margin: -4px 0 10px; line-height: 1.4; }
 .snapshot-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.snap-chip { display: inline-flex; align-items: baseline; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 6px; border: 1px solid transparent; }
+.snap-chip { display: inline-flex; align-items: baseline; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: var(--radius-full); border: 1px solid transparent; }
 .snap-label { opacity: 0.7; font-weight: 500; }
-.snap-chip.sev-ok { background: #e8f8f0; color: #1a7a4c; }
-.snap-chip.sev-mid { background: #fef9e8; color: #9a7b1a; }
-.snap-chip.sev-high { background: #fdecec; color: #b3261e; }
+.snap-chip.sev-ok { background: var(--status-good-bg); color: var(--status-good-text); }
+.snap-chip.sev-mid { background: var(--status-fair-bg); color: var(--status-fair-text); }
+.snap-chip.sev-high { background: var(--status-critical-bg); color: var(--status-critical); border-color: var(--status-critical); }
 
 .detail-section h3 {
-  font-size: 12px;
-  font-weight: 600;
-  color: #8b8fa2;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fleet-black);
   margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
 }
 
 /* Health Ring Cards */
@@ -510,7 +508,7 @@ onMounted(fetchDeviceData)
 .health-card {
   background: #f9fafc;
   border: 1px solid #e2e4ea;
-  border-radius: 8px;
+  border-radius: var(--radius-large);
   padding: 16px 12px;
   text-align: center;
 }
@@ -532,9 +530,9 @@ onMounted(fetchDeviceData)
   margin: 0 auto 6px;
 }
 
-.health-ring.good { border-color: #3db67b; background: rgba(61,182,123,0.06); }
-.health-ring.warning { border-color: #ebbc43; background: rgba(235,188,67,0.06); }
-.health-ring.critical { border-color: #d66c7b; background: rgba(214,108,123,0.06); }
+.health-ring.good { border-color: var(--fleet-success); background: var(--status-good-bg); }
+.health-ring.warning { border-color: var(--status-fair); background: var(--status-fair-bg); }
+.health-ring.critical { border-color: var(--fleet-error); background: var(--status-critical-bg); }
 .health-ring.neutral { border-color: #c5c7d1; background: #f9fafc; }
 
 .ring-value { font-size: 18px; font-weight: 600; color: #192147; }
@@ -574,24 +572,24 @@ onMounted(fetchDeviceData)
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  background: rgba(214,108,123,0.08);
+  background: var(--status-critical-bg);
   border-radius: 4px;
-  border-left: 3px solid #d66c7b;
+  border-left: 3px solid var(--fleet-error);
 }
 
 .security-item.enabled {
-  background: rgba(61,182,123,0.06);
-  border-left-color: #3db67b;
+  background: var(--status-good-bg);
+  border-left-color: var(--fleet-success);
 }
 
 .status-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: #d66c7b;
+  background: var(--fleet-error);
   flex-shrink: 0;
 }
 
-.security-item.enabled .status-dot { background: #3db67b; }
+.security-item.enabled .status-dot { background: var(--fleet-success); }
 
 .security-name { font-size: 13px; color: #192147; flex: 1; }
 
@@ -601,8 +599,8 @@ onMounted(fetchDeviceData)
   color: #8b8fa2;
 }
 
-.security-item.enabled .security-status { color: #3db67b; }
-.security-item:not(.enabled) .security-status { color: #d66c7b; }
+.security-item.enabled .security-status { color: var(--fleet-success); }
+.security-item:not(.enabled) .security-status { color: var(--fleet-error); }
 
 /* Signal Badge */
 .signal-badge {
@@ -615,10 +613,10 @@ onMounted(fetchDeviceData)
   margin-right: 6px;
 }
 
-.signal-badge.excellent { background: rgba(61,182,123,0.15); color: #2b7f56; }
+.signal-badge.excellent { background: var(--status-good-bg); color: var(--status-good); }
 .signal-badge.good { background: rgba(106,103,254,0.12); color: #4b4ab4; }
-.signal-badge.fair { background: rgba(235,188,67,0.2); color: var(--fleet-status-warning-dark); }
-.signal-badge.poor { background: rgba(214,108,123,0.15); color: var(--fleet-status-error); }
+.signal-badge.fair { background: var(--status-fair-bg); color: var(--fleet-status-warning-dark); }
+.signal-badge.poor { background: var(--status-critical-bg); color: var(--fleet-status-error); }
 
 .signal-quality {
   font-size: 12px;
@@ -644,12 +642,10 @@ onMounted(fetchDeviceData)
 }
 
 .data-table th {
-  font-size: 12px;
-  font-weight: 600;
-  color: #8b8fa2;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  background: #f9fafc;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--fleet-black);
+  background: var(--fleet-off-white);
 }
 
 .data-table td { color: #192147; }
@@ -665,7 +661,7 @@ onMounted(fetchDeviceData)
   color: #515774;
 }
 
-.state-badge.running { background: rgba(61,182,123,0.1); color: #2b7f56; }
+.state-badge.running { background: var(--status-good-bg); color: var(--status-good); }
 .state-badge.sleeping { background: rgba(106,103,254,0.08); color: #4b4ab4; }
 
 .loading, .no-data {

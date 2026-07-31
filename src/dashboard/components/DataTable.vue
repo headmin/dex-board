@@ -25,7 +25,7 @@
                 v-if="isSortable(col)"
                 class="sort-indicator"
                 :class="{ 'sort-indicator-active': sortKey === col.key }"
-              >{{ sortKey === col.key && !sortAsc ? '▼' : '▲' }}</span>
+              >{{ sortKey === col.key ? (sortAsc ? '▲' : '▼') : '⇅' }}</span>
             </th>
           </tr>
         </thead>
@@ -39,7 +39,7 @@
               <span v-if="col.type === 'status'" class="badge" :class="getStatusClass(row[col.key])">
                 {{ row[col.key] }}
               </span>
-              <span v-else>{{ formatCell(row[col.key], col) }}</span>
+              <span v-else :class="cellToneClass(col, row)">{{ formatCell(row[col.key], col) }}</span>
             </td>
           </tr>
         </tbody>
@@ -132,6 +132,15 @@ const getCellClass = (col) => {
   return classes
 }
 
+// Opt-in per-cell threshold coloring, matching the mockup pressure/health
+// tables. A column may set `tone: (value, row) => 'good'|'fair'|'elevated'
+// |'critical'|null` to tint its numeric value on the canonical scale.
+const cellToneClass = (col, row) => {
+  if (typeof col.tone !== 'function') return []
+  const t = col.tone(row[col.key], row)
+  return t ? ['cell-tone', `cell-tone--${t}`] : []
+}
+
 const getStatusClass = (value) => {
   const v = String(value).toLowerCase()
   if (v === 'active' || v === 'enabled' || v === 'yes' || v === 'healthy') return 'badge--success'
@@ -142,10 +151,10 @@ const getStatusClass = (value) => {
 </script>
 
 <style scoped>
-/* Aligned with the /hosts table look: borderless container, transparent
-   thead with a 2px bottom rule, mono uppercase header labels, dense
-   8px/12px padding. Used across /reports and any future view that picks
-   up <DataTable>. */
+/* Aligned with the capex-savings DEX mockups: a rounded, bordered table
+   card with a soft-grey header, sentence-case navy header labels in the
+   body font, and roomy rows with light dividers. Used across /reports and
+   any view that picks up <DataTable>. */
 .table-container {
   background: transparent;
 }
@@ -158,62 +167,62 @@ const getStatusClass = (value) => {
 }
 
 .table-header h3 {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: 700;
   color: var(--fleet-black);
   margin: 0;
-  font-family: var(--font-mono);
 }
 
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
+  background: var(--fleet-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-large);
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-body);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
 }
 
 .table th,
 .table td {
-  padding: 8px 12px;
+  padding: 14px 18px;
   text-align: left;
   vertical-align: middle;
 }
 
 .table thead th {
-  background: transparent;
-  color: var(--fleet-black-50);
-  text-transform: uppercase;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  border-bottom: 2px solid var(--fleet-black-10);
+  background: var(--fleet-off-white);
+  color: var(--fleet-black);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  border-bottom: 1px solid var(--fleet-black-10);
   user-select: none;
+  white-space: nowrap;
 }
+.table thead th:first-child { border-top-left-radius: var(--radius-large); }
+.table thead th:last-child { border-top-right-radius: var(--radius-large); }
 .table thead th.sortable { cursor: pointer; }
-.table thead th.sortable:hover { background-color: var(--fleet-black-10); color: var(--fleet-black); }
-.table thead th.sort-active { color: var(--fleet-black); }
+.table thead th.sortable:hover { color: var(--fleet-black); }
+.table thead th.sortable:hover .sort-indicator { color: var(--fleet-black-50); }
 .table thead th .sort-indicator {
   display: inline-block;
-  width: 9px;            /* reserve space so layout doesn't shift on toggle */
-  margin-left: 4px;
-  font-size: 9px;
+  width: 12px;           /* reserve space so layout doesn't shift on toggle */
+  margin-left: 6px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--fleet-black-25);
   text-align: center;
   transition: color 100ms;
 }
-.table thead th .sort-indicator-active { color: var(--fleet-vibrant-blue); }
-.table thead th.sortable:hover .sort-indicator { color: var(--fleet-black-50); }
-.table thead th.sortable:hover .sort-indicator-active { color: var(--fleet-vibrant-blue); }
+.table thead th .sort-indicator-active { color: var(--fleet-black-75); }
 
 .table tbody tr {
-  border-bottom: 1px solid var(--fleet-black-5);
+  border-bottom: 1px solid var(--fleet-black-10);
 }
 
 .table tbody tr:last-child {
@@ -229,7 +238,7 @@ const getStatusClass = (value) => {
 }
 
 .table td {
-  color: var(--fleet-black);
+  color: var(--fleet-black-75);
 }
 
 .table td.mono {
@@ -243,6 +252,13 @@ const getStatusClass = (value) => {
 .table td.text-right {
   text-align: right;
 }
+
+/* Opt-in threshold coloring (col.tone) — canonical status scale */
+.cell-tone { font-weight: 600; font-variant-numeric: tabular-nums; }
+.cell-tone--good { color: var(--status-good); }
+.cell-tone--fair { color: var(--status-fair-text); }
+.cell-tone--elevated { color: var(--fleet-ui-orange); }
+.cell-tone--critical { color: var(--status-critical); }
 
 /* Badge styles matching Fleet */
 .badge {
@@ -258,7 +274,7 @@ const getStatusClass = (value) => {
 }
 
 .badge--critical {
-  background-color: var(--fleet-vibrant-red);
+  background-color: var(--status-critical);
 }
 
 .badge--high {

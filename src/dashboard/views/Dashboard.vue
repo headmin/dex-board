@@ -47,7 +47,7 @@
         :xLabels="heatmapHours"
         :yLabels="heatmapHosts"
         :loading="loading.heatmap"
-        :colorRange="['#22c55e','#84cc16','#eab308','#f97316','#ef4444']"
+        :colorRange="['#009a7d','#84cc16','#a47f1e','#f97316','#ef4444']"
         tooltipLabel="Health score"
         @cell-click="onHeatmapClick"
       />
@@ -120,7 +120,7 @@
             :xLabels="drillHealthLabels"
             :series="drillHealthSeries"
             :yAxes="[{ name: 'Percent', min: 0, max: 100 }]"
-            :thresholds="[{ value: 85, label: 'Warning', color: '#dc2626' }]"
+            :thresholds="[{ value: 85, label: 'Warning', color: '#eb4343' }]"
             :anomalies="drillAnomalies"
             :events="drillHealthEvents"
             :loading="loading.drill"
@@ -412,7 +412,7 @@
             :xLabels="healthTimeLabels"
             :series="healthSeries"
             :yAxes="[{ name: 'Percent', min: 0, max: 100 }]"
-            :thresholds="[{ value: 85, label: 'Warning', color: '#dc2626' }]"
+            :thresholds="[{ value: 85, label: 'Warning', color: '#eb4343' }]"
             :anomalies="memoryAnomalies"
             :events="fleetHealthEvents"
             :loading="loading.deviceHealth"
@@ -674,9 +674,9 @@ const memoryAnomalies = ref([])
 const latestDeviceHealth = ref([])
 const deviceHealthColumns = [
   { key: 'hostname', label: 'Hostname' },
-  { key: 'memory_percent', label: 'Memory %', type: 'number' },
+  { key: 'memory_percent', label: 'Memory %', type: 'number', tone: (v) => v == null ? null : (v >= 75 ? 'critical' : v >= 50 ? 'elevated' : v >= 25 ? 'fair' : 'good') },
   { key: 'memory_used_gb', label: 'Memory used (GB)', type: 'number' },
-  { key: 'disk_percent', label: 'Disk %', type: 'number' },
+  { key: 'disk_percent', label: 'Disk %', type: 'number', tone: (v) => v == null ? null : (v >= 75 ? 'critical' : v >= 50 ? 'elevated' : v >= 25 ? 'fair' : 'good') },
   { key: 'disk_free_gb', label: 'Disk free (GB)', type: 'number' },
   { key: 'uptime_days', label: 'Uptime (days)', type: 'number' },
   { key: 'event_time', label: 'Time', type: 'datetime' }
@@ -703,12 +703,12 @@ const visibleDeployments = computed(() =>
 const riskMatrix = ref([])
 const riskColumns = [
   { key: 'hostname', label: 'Hostname' },
-  { key: 'avg_mem', label: 'Avg memory %', type: 'number' },
-  { key: 'avg_disk', label: 'Avg disk %', type: 'number' },
+  { key: 'avg_mem', label: 'Avg memory %', type: 'number', tone: (v) => v == null ? null : (v >= 75 ? 'critical' : v >= 50 ? 'elevated' : v >= 25 ? 'fair' : 'good') },
+  { key: 'avg_disk', label: 'Avg disk %', type: 'number', tone: (v) => v == null ? null : (v >= 75 ? 'critical' : v >= 50 ? 'elevated' : v >= 25 ? 'fair' : 'good') },
   { key: 'encrypted', label: 'Encrypted' },
   { key: 'firewall', label: 'Firewall' },
   { key: 'sip', label: 'SIP' },
-  { key: 'risk_score', label: 'Risk score', type: 'number' }
+  { key: 'risk_score', label: 'Risk score', type: 'number', tone: (v) => v == null ? null : (v >= 75 ? 'critical' : v >= 50 ? 'elevated' : v >= 25 ? 'fair' : 'good') }
 ]
 
 // ═══════════════════════════════════════════════════════
@@ -847,15 +847,15 @@ function catGrade(v) {
 
 function catColor(v) {
   if (v < 0) return '#8b8fa2'
-  if (v >= 90) return '#3db67b'
+  if (v >= 90) return '#009a7d'
   if (v >= 75) return '#4a90d9'
-  if (v >= 60) return '#ebbc43'
-  if (v >= 40) return '#e07b3a'
-  return '#d66c7b'
+  if (v >= 60) return '#ecc767'
+  if (v >= 40) return '#eb6743'
+  return '#eb4343'
 }
 
 function scoreColor(grade) {
-  const c = { A: '#3db67b', B: '#4a90d9', C: '#ebbc43', D: '#e07b3a', F: '#d66c7b' }
+  const c = { A: '#009a7d', B: '#4a90d9', C: '#ecc767', D: '#eb6743', F: '#eb4343' }
   return c[grade] || '#8b8fa2'
 }
 
@@ -1418,7 +1418,7 @@ onMounted(() => {
 h1 {
   font-family: var(--font-body);
   font-size: var(--font-size-xl);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
   letter-spacing: var(--letter-spacing-tight);
 }
@@ -1426,7 +1426,7 @@ h1 {
 h2 {
   font-family: var(--font-body);
   font-size: var(--font-size-base);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
   margin-bottom: var(--pad-medium);
   letter-spacing: var(--letter-spacing-tight);
@@ -1437,10 +1437,10 @@ h2 {
   align-items: center;
   gap: 10px;
   background: var(--fleet-error-light);
-  color: #dc2626;
+  color: var(--fleet-status-error);
   padding: 12px 16px;
   border-radius: var(--radius-medium);
-  border: 1px solid #fecaca;
+  border: 1px solid var(--status-critical-bg);
   margin-bottom: var(--pad-large);
   font-family: var(--font-body);
   font-size: var(--font-size-sm);
@@ -1517,7 +1517,7 @@ h2 {
 
 /* ─── Device Deep Dive ──────────────────────── */
 .device-dive h2 {
-  color: var(--fleet-vibrant-blue);
+  color: var(--fleet-black);
 }
 
 .device-info-bar {
@@ -1526,7 +1526,7 @@ h2 {
   padding: 16px 20px;
   background: var(--fleet-info-light);
   border: 1px solid #bfdbfe;
-  border-radius: var(--radius-medium);
+  border-radius: var(--radius-large);
   margin-bottom: var(--pad-large);
   flex-wrap: wrap;
 }
@@ -1539,10 +1539,8 @@ h2 {
 
 .info-label {
   font-family: var(--font-body);
-  font-size: var(--font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-wide);
-  color: var(--fleet-black-50);
+  font-size: var(--font-size-sm);
+  color: var(--fleet-black-75);
   font-weight: 600;
 }
 
@@ -1562,7 +1560,7 @@ h2 {
 
 .security-card {
   background: var(--fleet-white);
-  border-radius: var(--radius-medium);
+  border-radius: var(--radius-large);
   padding: var(--pad-large);
   text-align: center;
   border: 1px solid var(--fleet-black-10);
@@ -1581,7 +1579,7 @@ h2 {
 
 .security-card.bad {
   background: var(--fleet-error-light);
-  border-color: #fecaca;
+  border-color: var(--status-critical-bg);
 }
 
 .sec-icon {
@@ -1591,13 +1589,14 @@ h2 {
   color: var(--fleet-black-50);
 }
 
-.security-card.good .sec-icon { color: #059669; }
-.security-card.bad .sec-icon { color: #dc2626; }
+.security-card.good .sec-icon { color: var(--status-good); }
+.security-card.bad .sec-icon { color: var(--fleet-status-error); }
 
 .sec-label {
   font-family: var(--font-body);
   font-size: var(--font-size-sm);
-  color: var(--fleet-black-50);
+  color: var(--fleet-black-75);
+  font-weight: 500;
   margin-bottom: 4px;
 }
 
@@ -1608,8 +1607,8 @@ h2 {
   color: var(--fleet-black);
 }
 
-.security-card.good .sec-status { color: #059669; }
-.security-card.bad .sec-status { color: #dc2626; }
+.security-card.good .sec-status { color: var(--status-good); }
+.security-card.bad .sec-status { color: var(--fleet-status-error); }
 
 /* ─── Responsive ────────────────────────────── */
 @media (max-width: 1024px) {
@@ -1678,7 +1677,7 @@ h2 {
 .score-overview {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius-medium);
+  border-radius: var(--radius-large);
   padding: var(--pad-large);
 }
 
@@ -1700,9 +1699,9 @@ h2 {
 }
 
 .score-grade.grade-a { color: var(--fleet-success); }
-.score-grade.grade-b { color: var(--fleet-vibrant-blue); }
+.score-grade.grade-b { color: var(--status-good); }
 .score-grade.grade-c { color: var(--fleet-warning); }
-.score-grade.grade-d { color: #ea580c; }
+.score-grade.grade-d { color: var(--fleet-ui-orange); }
 .score-grade.grade-f { color: var(--fleet-error); }
 
 .score-details {
@@ -1729,7 +1728,7 @@ h2 {
 .incomplete-tag {
   background: var(--fleet-black-5);
   padding: 1px 6px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-full);
   font-weight: 600;
 }
 
@@ -1760,7 +1759,8 @@ h2 {
 
 .cat-label {
   font-size: var(--font-size-sm);
-  color: var(--fleet-black);
+  color: var(--fleet-black-75);
+  font-weight: 500;
   min-width: 120px;
 }
 
@@ -1790,7 +1790,7 @@ h2 {
 .lifecycle-badge-inline {
   display: inline-block;
   padding: 2px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-full);
   font-size: 11px;
   font-weight: 700;
   margin-left: 10px;
@@ -1798,11 +1798,11 @@ h2 {
   letter-spacing: 0.2px;
 }
 
-.lifecycle-top { background: #e8f8f0; color: #1a7a4c; }
+.lifecycle-top { background: #e8f8f0; color: var(--status-good); }
 .lifecycle-healthy { background: #e8f0fe; color: #2d5fba; }
-.lifecycle-attention { background: #fef9e8; color: #9a7b1a; }
-.lifecycle-under { background: #fef0e8; color: #b05c1a; }
-.lifecycle-eol { background: #fee8ec; color: #b01a3a; }
+.lifecycle-attention { background: #fef9e8; color: var(--status-fair-text); }
+.lifecycle-under { background: #fef0e8; color: var(--fleet-ui-orange); }
+.lifecycle-eol { background: #fee8ec; color: var(--status-critical); }
 
 /* ─── Benchmark Section ──────────────────────── */
 .benchmark-section {
@@ -1813,7 +1813,7 @@ h2 {
 
 .benchmark-section h4 {
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
   margin-bottom: var(--pad-medium);
 }
@@ -1828,16 +1828,15 @@ h2 {
 .sw-panel {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   padding: var(--pad-large);
   box-shadow: var(--box-shadow);
 }
 
 .sw-panel h3 {
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
-  font-family: var(--font-mono);
   margin-bottom: var(--pad-medium);
 }
 
@@ -1873,7 +1872,7 @@ h2 {
   font-size: 10px;
   font-weight: 600;
   padding: 1px 6px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-full);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
@@ -1904,13 +1903,13 @@ h2 {
   font-size: 11px;
   font-weight: 600;
   padding: 1px 6px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-full);
 }
 
-.lag-fast { background: #e8f8f0; color: #1a7a4c; }
+.lag-fast { background: #e8f8f0; color: var(--status-good); }
 .lag-ok { background: #e8f0fe; color: #2d5fba; }
-.lag-slow { background: #fef9e8; color: #9a7b1a; }
-.lag-critical { background: #fee8ec; color: #b01a3a; }
+.lag-slow { background: #fef9e8; color: var(--status-fair-text); }
+.lag-critical { background: #fee8ec; color: var(--status-critical); }
 
 .usage-summary {
   display: flex;
@@ -1944,8 +1943,8 @@ h2 {
 
 .usage-filter-btn.stale.active {
   background: #fee8ec;
-  border-color: #d66c7b;
-  color: #b01a3a;
+  border-color: var(--fleet-error);
+  color: var(--status-critical);
 }
 
 .usage-filter-btn strong {
@@ -2024,16 +2023,16 @@ h2 {
   font-size: 10px;
   font-weight: 600;
   padding: 1px 6px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-full);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 
-.app-usage-cat.daily { background: #e8f8f0; color: #1a7a4c; }
+.app-usage-cat.daily { background: #e8f8f0; color: var(--status-good); }
 .app-usage-cat.weekly { background: #e8f0fe; color: #2d5fba; }
-.app-usage-cat.monthly { background: #fef9e8; color: #9a7b1a; }
-.app-usage-cat.stale { background: #fef0e8; color: #b05c1a; }
-.app-usage-cat.never { background: #fee8ec; color: #b01a3a; }
+.app-usage-cat.monthly { background: #fef9e8; color: var(--status-fair-text); }
+.app-usage-cat.stale { background: #fef0e8; color: var(--fleet-ui-orange); }
+.app-usage-cat.never { background: #fee8ec; color: var(--status-critical); }
 
 .app-usage-days {
   font-size: var(--font-size-xs);
@@ -2069,13 +2068,13 @@ h2 {
   font-size: var(--font-size-xs);
   font-weight: 600;
   padding: 3px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-full);
 }
 
-.wc-pill.daily { background: #e8f8f0; color: #1a7a4c; }
+.wc-pill.daily { background: #e8f8f0; color: var(--status-good); }
 .wc-pill.weekly { background: #e8f0fe; color: #2d5fba; }
-.wc-pill.monthly { background: #fef9e8; color: #9a7b1a; }
-.wc-pill.unused { background: #fef0e8; color: #b05c1a; }
+.wc-pill.monthly { background: #fef9e8; color: var(--status-fair-text); }
+.wc-pill.unused { background: #fef0e8; color: var(--fleet-ui-orange); }
 
 .wc-browser-section, .wc-license-section {
   margin-top: var(--pad-medium);
@@ -2085,7 +2084,7 @@ h2 {
 
 .wc-browser-section h4, .wc-license-section h4 {
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: #065f46;
   margin: 0 0 8px 0;
 }
@@ -2106,7 +2105,7 @@ h2 {
   transition: width 300ms ease-out;
 }
 
-.wc-browser-segment:nth-child(1) { background: #059669; }
+.wc-browser-segment:nth-child(1) { background: var(--status-good); }
 .wc-browser-segment:nth-child(2) { background: #10b981; }
 .wc-browser-segment:nth-child(3) { background: #34d399; }
 .wc-browser-segment:nth-child(4) { background: #6ee7b7; }
@@ -2159,7 +2158,7 @@ h2 {
 
 .wc-license-days {
   font-size: var(--font-size-xs);
-  color: #b05c1a;
+  color: var(--fleet-ui-orange);
   font-weight: 600;
 }
 
@@ -2194,7 +2193,7 @@ h2 {
 .deploy-panel {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   margin-top: var(--pad-medium);
   box-shadow: var(--box-shadow);
   overflow: hidden;

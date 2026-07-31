@@ -90,18 +90,15 @@ const slaSummary = computed(() => {
   font-size: var(--font-size-sm);
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   overflow: hidden;
 }
 .mttp-table th {
   text-align: left;
   padding: 10px 14px;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  color: var(--fleet-black-50);
+  font-size: 13px;
+  color: var(--fleet-black-75);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
   border-bottom: 1px solid var(--fleet-black-10);
   background: var(--fleet-off-white);
 }
@@ -142,11 +139,11 @@ const slaSummary = computed(() => {
 .mttp-table .lag-missed {
   font-weight: 700;
   padding: 1px 6px;
-  border-radius: var(--radius-sm, 4px);
+  border-radius: var(--radius-full);
 }
-.lag-met { background: #e8f8f0; color: #1a7a4c; }
-.lag-warn { background: #fef9e8; color: #9a7b1a; }
-.lag-missed { background: #fdecec; color: #b3261e; }
+.lag-met { background: var(--status-good-bg); color: var(--status-good); }
+.lag-warn { background: var(--status-fair-bg); color: var(--status-fair-text); }
+.lag-missed { background: var(--status-critical-bg); color: var(--status-critical); }
 .mttp-caption {
   margin: 8px 0 0;
   font-size: var(--font-size-xs);

@@ -108,8 +108,8 @@ watch(filterParams, load, { deep: true })
 .section-header-with-caption { margin-bottom: var(--pad-medium); }
 .section-caption { display: block; font-size: var(--font-size-sm); color: var(--fleet-black-50); margin-top: 2px; }
 
-.sw-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius); overflow: hidden; }
-.sw-table th { text-align: left; padding: 10px 14px; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--fleet-black-10); background: var(--fleet-off-white); }
+.sw-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); overflow: hidden; }
+.sw-table th { text-align: left; padding: 10px 14px; font-size: var(--font-size-sm); color: var(--fleet-black-75); font-weight: 600; border-bottom: 1px solid var(--fleet-black-10); background: var(--fleet-off-white); }
 .sw-table td { padding: 8px 14px; color: var(--fleet-black-75); border-bottom: 1px solid var(--fleet-black-5); vertical-align: middle; }
 .sw-table tr:last-child td { border-bottom: none; }
 .sw-table tr:hover td { background: var(--fleet-off-white); }
@@ -122,9 +122,9 @@ watch(filterParams, load, { deep: true })
 .sw-bar-track { position: relative; height: 18px; background: var(--fleet-black-5); border-radius: var(--radius-sm, 4px); overflow: hidden; }
 .sw-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--radius-sm, 4px); }
 .sw-bar-label { position: absolute; right: 6px; top: 0; line-height: 18px; font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 600; color: var(--fleet-black-75); }
-.sev-ok { background: #b7e4c7; }
-.sev-mid { background: #ffe08a; }
-.sev-high { background: #f3a3a3; }
+.sev-ok { background: var(--status-good); }
+.sev-mid { background: var(--status-fair); }
+.sev-high { background: var(--status-critical); }
 
-.sw-empty { text-align: center; font-family: var(--font-mono); color: var(--fleet-black-50); font-style: italic; padding: 28px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius); }
+.sw-empty { text-align: center; font-family: var(--font-mono); color: var(--fleet-black-50); font-style: italic; padding: 28px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); }
 </style>

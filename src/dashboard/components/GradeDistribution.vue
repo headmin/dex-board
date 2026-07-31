@@ -29,7 +29,7 @@
           <p>The composite score (0–100) is a weighted average of four categories computed hourly from device telemetry:</p>
           <div class="category-row">
             <span class="cat-pill" style="background:var(--rainbow-blue)">Performance 35%</span>
-            <span class="cat-pill" style="background:#3db67b">Device Health 25%</span>
+            <span class="cat-pill" style="background:var(--fleet-success)">Device Health 25%</span>
             <span class="cat-pill" style="background:#8b5cf6">Security 20%</span>
             <span class="cat-pill" style="background:#ec4899">Software 20%</span>
           </div>
@@ -69,7 +69,7 @@ const grades = computed(() => {
 })
 
 function gradeColor(grade) {
-  const colors = { A: '#3db67b', B: 'var(--rainbow-blue)', C: '#ebbc43', D: '#e07b3a', F: '#d66c7b' }
+  const colors = { A: '#009a7d', B: '#009a7d', C: '#ecc767', D: '#eb6743', F: '#eb4343' }
   return colors[grade] || '#8b8fa2'
 }
 
@@ -84,14 +84,14 @@ function thresholdLabel(grade) {
 .chart-container {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   padding: var(--pad-large);
   box-shadow: var(--box-shadow);
 }
 
 h3 {
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
   margin-bottom: var(--pad-medium);
 }
@@ -198,7 +198,7 @@ h3 {
 .cat-pill {
   font-size: 11px;
   padding: 2px 8px;
-  border-radius: 10px;
+  border-radius: var(--radius-full);
   color: white;
   font-weight: 500;
 }

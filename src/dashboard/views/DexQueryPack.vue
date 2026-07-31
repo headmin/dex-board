@@ -42,7 +42,7 @@
             yKey="avg_memory"
             :threshold="85"
             thresholdLabel="Warning"
-            color="var(--rainbow-blue)"
+            color="#5cabdf"
           />
           <TimeSeriesChart
             title="Average disk usage %"
@@ -271,8 +271,8 @@ const diskColumns = [
   { key: 'hostname', label: 'Host' },
   { key: 'disk_total_gb', label: 'Total GB', type: 'number' },
   { key: 'disk_free_gb', label: 'Free GB', type: 'number' },
-  { key: 'disk_percent', label: 'Used %', type: 'number' },
-  { key: 'memory_percent', label: 'Memory %', type: 'number' },
+  { key: 'disk_percent', label: 'Used %', type: 'number', tone: (v) => v == null ? null : (v >= 75 ? 'critical' : v >= 50 ? 'elevated' : v >= 25 ? 'fair' : 'good') },
+  { key: 'memory_percent', label: 'Memory %', type: 'number', tone: (v) => v == null ? null : (v >= 75 ? 'critical' : v >= 50 ? 'elevated' : v >= 25 ? 'fair' : 'good') },
   { key: 'last_seen', label: 'Last seen', type: 'datetime' }
 ]
 
@@ -280,7 +280,7 @@ const processColumns = [
   { key: 'hostname', label: 'Host' },
   { key: 'process_name', label: 'Process' },
   { key: 'memory_mb', label: 'Memory MB', type: 'number' },
-  { key: 'memory_percent', label: 'Memory %', type: 'number' },
+  { key: 'memory_percent', label: 'Memory %', type: 'number', tone: (v) => v == null ? null : (v >= 75 ? 'critical' : v >= 50 ? 'elevated' : v >= 25 ? 'fair' : 'good') },
   { key: 'threads', label: 'Threads', type: 'number' },
   { key: 'state', label: 'State' }
 ]
@@ -551,16 +551,14 @@ onMounted(() => {
 
 h1 {
   font-size: var(--font-size-lg);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
-  font-family: var(--font-mono);
 }
 
 h2 {
   font-size: var(--font-size-md);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fleet-black);
-  font-family: var(--font-mono);
   margin-bottom: 16px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--fleet-black-10);

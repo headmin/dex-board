@@ -18,7 +18,7 @@ const FALLBACK_FLEET_URL = 'https://dogfood.fleetdm.com'
 // threshold line renders sensibly before /api/config lands (or if unset).
 const FALLBACK_PATCH_SLA_DAYS = 14
 
-const config = ref({ fleetUrl: FALLBACK_FLEET_URL, patchSlaDays: FALLBACK_PATCH_SLA_DAYS })
+const config = ref({ fleetUrl: FALLBACK_FLEET_URL, patchSlaDays: FALLBACK_PATCH_SLA_DAYS, teamNames: {} })
 let inflight = null
 let loaded = false
 
@@ -34,6 +34,9 @@ async function load() {
       const sla = Number(data?.patchSlaDays)
       if (Number.isFinite(sla) && sla > 0) {
         config.value = { ...config.value, patchSlaDays: sla }
+      }
+      if (data?.teamNames && typeof data.teamNames === 'object') {
+        config.value = { ...config.value, teamNames: data.teamNames }
       }
       loaded = true
       return config.value
