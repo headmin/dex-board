@@ -1059,18 +1059,34 @@ export const firehoseScoreQueries: QueryConfig[] = [
   // Every (software, new_version) pair seen patching in the window — ONE
   // cheap query so the GitOps "only show releases with patch data" toggle
   // can match the whole FMA feed instead of the visible top-N slice.
+  // Scoped by the global fleet filter (search/model/platform/RAM) and
+  // annotated with the platforms of the hosts that patched, so a Windows
+  // feed entry can't claim a macOS transition as its own.
   {
     name: 'firehose.scores.patched_versions',
     domain: 'scores',
     client: 'core' as const,
-    description: 'Distinct (software_name, new_version) pairs with patch events in the window',
+    description: 'Distinct (software_name, new_version) pairs with patch events in the window, with host platforms — fleet-filter scoped',
     params: [
+      ...FILTER_PARAMS,
       { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 180, default: 30 },
     ],
     sql: `
-      SELECT DISTINCT software_name, new_version
-      FROM dex_patch_events FINAL
-      WHERE event_time >= now() - toIntervalDay({windowDays:UInt32})
+      WITH ${FILTERED_HOSTS_CTE},
+      host_platforms AS (
+        SELECT host_id, argMax(platform, timestamp) AS platform
+        FROM fleetd_info GROUP BY host_id
+      )
+      SELECT
+        e.software_name                                 AS software_name,
+        e.new_version                                   AS new_version,
+        groupUniqArray(coalesce(hp.platform, ''))       AS platforms,
+        countDistinct(e.host_identifier)                AS hosts
+      FROM dex_patch_events AS e FINAL
+      INNER JOIN filtered_hosts fh ON e.host_identifier = fh.host_id
+      LEFT JOIN host_platforms hp ON e.host_identifier = hp.host_id
+      WHERE e.event_time >= now() - toIntervalDay({windowDays:UInt32})
+      GROUP BY software_name, new_version
     `,
   },
   // Distribution of days_to_patch as a per-day histogram, split by patch

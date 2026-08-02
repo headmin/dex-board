@@ -388,6 +388,7 @@ import { useChangelog, fileTags } from '../composables/useChangelog'
 import { useDailyScoreSeries } from '../composables/useDailyScoreSeries'
 import { buildChangeImpact } from '../composables/useChangeImpact'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useFleetFilter } from '../composables/useFleetFilter'
 import { query } from '../services/api'
 import dayjs from 'dayjs'
 
@@ -682,7 +683,7 @@ async function fetchChangelog() {
 // ─── FMA upstream app releases ──────────────────────
 const { releases: fmaReleases, fetchFmaReleases } = useFmaReleases()
 const fmaWindowDays = 30
-const fmaLimit = ref(24)
+const fmaLimit = ref(12)
 const fmaDeviceCounts = ref({})
 const fmaDeviceLoading = ref({})
 const fmaEagerLoaded = ref(false)
@@ -728,25 +729,45 @@ const onlyWithData = ref(true)
 const patchedPairs = ref([])
 const patchedPairsLoaded = ref(false)
 
+// Scoped by the SAME global filter bar as the rest of the app — the pair
+// set narrows with Fleet/platform/model/RAM selections, so "releases with
+// patch data" means data from the hosts currently in scope.
+const { filterParams } = useFleetFilter()
+
 async function fetchPatchedPairs() {
   try {
-    patchedPairs.value = await query('firehose.scores.patched_versions', { windowDays: fmaWindowDays })
+    patchedPairs.value = await query('firehose.scores.patched_versions', {
+      ...filterParams.value,
+      windowDays: fmaWindowDays,
+    })
   } catch {
     patchedPairs.value = []
   }
   patchedPairsLoaded.value = true
 }
+watch(filterParams, () => { fetchPatchedPairs() })
 
-// Mirrors fma_release_devices matching: exact version_to + case-insensitive
-// bidirectional name containment (Cursor ↔ Cursor.app).
+// osquery platform strings → FMA feed platform buckets.
+function platformsMatchBucket(platforms, bucket) {
+  const known = (platforms || []).filter(Boolean)
+  if (!known.length) return true // platform unknown — fall back to name match
+  return known.some(p => platformBucket(p) === bucket || (bucket === 'linux' && ['ubuntu', 'rhel', 'amzn'].includes(p)))
+}
+
+// Mirrors fma_release_devices matching (exact version_to + case-insensitive
+// bidirectional name containment), plus a platform gate: a Windows feed
+// entry can't claim a macOS transition just because the names contain
+// each other.
 function releaseHasPatchData(r) {
   const app = String(r.app || '').toLowerCase()
   if (app.length < 4) return false
   const ver = String(r.version_to || '')
+  const bucket = platformBucket(r.platform)
   return patchedPairs.value.some(p => {
     if (String(p.new_version) !== ver) return false
     const sw = String(p.software_name || '').toLowerCase()
-    return sw.includes(app) || app.includes(sw)
+    if (!(sw.includes(app) || app.includes(sw))) return false
+    return platformsMatchBucket(p.platforms, bucket)
   })
 }
 
