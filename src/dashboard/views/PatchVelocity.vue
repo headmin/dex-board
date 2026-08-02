@@ -122,7 +122,7 @@
 
       <div v-if="fastApps.length || slowApps.length" class="apps-split">
         <div class="apps-col">
-          <h3 class="apps-col-title apps-col-title--good">Working well</h3>
+          <h3 class="apps-col-title apps-col-title--good">Fastest five</h3>
           <div class="apps-rows">
             <div v-for="a in fastApps" :key="a.software_name" class="app-row">
               <div class="app-row-label">
@@ -134,7 +134,7 @@
           </div>
         </div>
         <div class="apps-col">
-          <h3 class="apps-col-title apps-col-title--bad">The outliers</h3>
+          <h3 class="apps-col-title apps-col-title--bad">Slowest five</h3>
           <div class="apps-rows">
             <div v-for="a in slowApps" :key="a.software_name" class="app-row" :class="{ 'app-row--bad': Number(a.avg_lag) > config.patchSlaDays * 2 }">
               <div class="app-row-label">
@@ -326,14 +326,15 @@ function lagColor(days) {
   return palette.critical
 }
 
-const fastApps = computed(() => byApp.value
+// Top/bottom 5 from one sorted list, split without overlap when fewer
+// than ten apps qualify.
+const rankedApps = computed(() => byApp.value
   .filter(a => Number(a.hosts) >= 3)
-  .sort((a, b) => Number(a.avg_lag) - Number(b.avg_lag))
-  .slice(0, 3))
-const slowApps = computed(() => byApp.value
-  .filter(a => Number(a.hosts) >= 3)
-  .sort((a, b) => Number(b.avg_lag) - Number(a.avg_lag))
-  .slice(0, 3))
+  .sort((a, b) => Number(a.avg_lag) - Number(b.avg_lag)))
+const fastApps = computed(() => rankedApps.value.slice(0, 5))
+const slowApps = computed(() => rankedApps.value
+  .slice(Math.max(5, rankedApps.value.length - 5))
+  .reverse())
 
 // ─── What everyone is waiting for — plain-words stages ────────
 const { commits, fetchChangelog } = useChangelog()
