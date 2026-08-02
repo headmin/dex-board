@@ -57,6 +57,11 @@
   --status-critical: #eb4343;                 /* clean red (grade F / severe) */
   --status-critical-soft: #ef6969;            /* softer red text */
   --status-critical-bg: #fde8e8;              /* red badge tint */
+  --status-elevated-bg: #fdeee8;              /* orange badge tint (grade D) */
+
+  /* Info tints (the #f8f7ff/#f0efff family, tokenized) */
+  --info-tint: #f0efff;
+  --info-tint-soft: #f8f7ff;
 
   /* Notifications & status — repointed to the canonical scale above */
   --fleet-offline: #8b8fa2;
@@ -129,24 +134,25 @@
   --link-emphasis-hover: var(--fleet-green-over);
 
   /* Sidebar */
-  --sidebar-width: 220px;
+  --sidebar-width: 200px;
   --sidebar-bg: var(--fleet-white);
   --sidebar-border: var(--fleet-black-10);
   --sidebar-active-bg: rgba(0, 154, 125, 0.08);
 
-  /* Spacing - matching Fleet's padding scale */
+  /* Spacing — density-corrected scale (replaces the zoom:0.9 shell hack;
+     0.9 x previous, snapped; mockup-normalized value wins conflicts) */
   --pad-xxsmall: 2px;
   --pad-xsmall: 4px;
   --pad-xs: 4px;
   --pad-small: 8px;
-  --pad-smedium: 12px;
-  --pad-icon: 14px;
-  --pad-medium: 16px;
-  --pad-large: 24px;
-  --pad-xlarge: 32px;
-  --pad-page: 40px;
-  --pad-xxlarge: 48px;
-  --pad-xxl: 48px;
+  --pad-smedium: 11px;
+  --pad-icon: 13px;
+  --pad-medium: 14px;
+  --pad-large: 20px;   /* mockup card padding (normalized) = 20 */
+  --pad-xlarge: 28px;
+  --pad-page: 36px;
+  --pad-xxlarge: 44px;
+  --pad-xxl: 44px;
 
   /* Border radii */
   --radius: 4px;
@@ -174,22 +180,55 @@
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", monospace;
   
-  /* Font sizes - Fleet scale */
-  --font-size-xxsmall: 12px;
-  --font-size-xsmall: 14px;
-  --font-size-small: 16px;
-  --font-size-medium: 18px;
-  --font-size-large: 20px;
-  --font-size-xlarge: 24px;
-  --font-size-xxlarge: 32px;
-  
-  /* Font size aliases for convenience */
-  --font-size-xs: 11px;
-  --font-size-sm: 13px;
-  --font-size-base: 15px;
-  --font-size-md: 16px;
-  --font-size-lg: 18px;
-  --font-size-xl: 22px;
+  /* Font sizes - Fleet scale (density-corrected) */
+  --font-size-xxsmall: 11px;
+  --font-size-xsmall: 13px;
+  --font-size-small: 14px;
+  --font-size-medium: 16px;
+  --font-size-large: 18px;
+  --font-size-xlarge: 22px;
+  --font-size-xxlarge: 28px;
+
+  /* Font size aliases for convenience (density-corrected) */
+  --font-size-xs: 10px;
+  --font-size-sm: 12px;
+  --font-size-base: 13px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+
+  /* ── Component tokens — normalized mockup measurements ── */
+  --card-pad: 20px;
+  --card-title-size: 16px;
+  --section-gap: 12px;
+
+  --table-font-size: 14px;          /* mockup table body 14.25 */
+  --table-header-font-size: 12px;
+  --table-cell-pad-y: 10px;         /* -> ~40px rows, matches mockup */
+  --table-cell-pad-x: 16px;
+  --table-header-height: 36px;
+
+  --metric-value-size: 17px;        /* mockup stat-tile value */
+  --metric-label-size: 11px;
+  --metric-tile-gap: 8px;
+
+  --chip-height: 24px;
+  --chip-font-size: 11px;
+  --chip-pad-x: 12px;
+  --chip-dot-size: 6px;
+
+  --gauge-track-height: 12px;       /* utilization gauge on grey track */
+  --bar-height: 10px;               /* comparative score bar, trackless */
+  --bar-row-pitch: 36px;
+
+  --grade-badge-size: 20px;         /* square, per health-table mockup */
+  --grade-badge-font-size: 14px;
+  --grade-badge-radius: 6px;
+
+  --toggle-height: 24px;
+  --toggle-font-size: 12px;
+  --toggle-seg-pad-x: 10px;
+  --toggle-radius: 6px;
   
   /* Font weights */
   --font-weight-regular: 400;

@@ -241,7 +241,7 @@ onMounted(() => fetchAll())
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 h1 {
@@ -254,42 +254,42 @@ h2 {
   font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--fleet-black);
-  margin-bottom: 16px;
-  padding-bottom: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 7px;
   border-bottom: 1px solid var(--fleet-black-10);
 }
 
 .error-banner {
   background: var(--fleet-white);
   color: var(--fleet-error);
-  padding: 12px 16px;
+  padding: 11px 14px;
   border-radius: var(--radius);
   border: 1px solid var(--fleet-black-10);
   border-left: 3px solid var(--fleet-error);
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .info-banner {
   background: var(--fleet-off-white);
   color: var(--fleet-vibrant-blue);
-  padding: 16px 20px;
+  padding: 14px 18px;
   border-radius: var(--radius);
   border: 1px solid var(--fleet-black-10);
   border-left: 3px solid var(--fleet-vibrant-blue);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: 22px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
 .section {
-  margin-bottom: 32px;
+  margin-bottom: 29px;
 }
 
 .metrics-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 22px;
+  margin-bottom: 22px;
 }
 
 .metrics-row.four-col {
@@ -299,8 +299,8 @@ h2 {
 .charts-row.two-col {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 22px;
+  margin-bottom: 22px;
 }
 
 @media (max-width: 1024px) {
@@ -319,7 +319,7 @@ h2 {
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+    gap: 14px;
   }
 }
 </style>

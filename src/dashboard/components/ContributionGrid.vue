@@ -212,7 +212,7 @@ function hideTooltip() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 h3 {
@@ -224,15 +224,15 @@ h3 {
 
 .grid-controls {
   display: flex;
-  gap: 8px;
+  gap: 7px;
   align-items: center;
 }
 
 .grid-loading, .grid-empty {
   text-align: center;
-  padding: 40px;
+  padding: 36px;
   color: #8b8fa2;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .grid-scroll {
@@ -253,7 +253,7 @@ h3 {
 .months {
   flex: 1;
   display: grid;
-  font-size: 11px;
+  font-size: 10px;
   color: #8b8fa2;
   font-weight: 500;
 }
@@ -276,7 +276,7 @@ h3 {
 }
 
 .day-label {
-  font-size: 11px;
+  font-size: 10px;
   color: #8b8fa2;
   display: flex;
   align-items: center;
@@ -315,12 +315,12 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
-  margin-top: 12px;
+  gap: 5px;
+  margin-top: 11px;
 }
 
 .legend-label {
-  font-size: 11px;
+  font-size: 10px;
   color: #8b8fa2;
 }
 
@@ -341,9 +341,9 @@ h3 {
   transform: translate(-50%, -100%);
   background: var(--tooltip-bg);
   color: #fff;
-  padding: 8px 12px;
+  padding: 7px 11px;
   border-radius: var(--radius);
-  font-size: 12px;
+  font-size: 11px;
   white-space: nowrap;
   pointer-events: none;
   z-index: 10;

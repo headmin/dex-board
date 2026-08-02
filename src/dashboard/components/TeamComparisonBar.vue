@@ -61,7 +61,7 @@ h3 {
 .bars {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 11px;
 }
 
 .bar-row {
@@ -83,7 +83,7 @@ h3 {
 }
 
 .bar-track {
-  height: 14px;
+  height: var(--gauge-track-height);
   background: var(--fleet-black-10);
   border-radius: var(--radius-full);
   position: relative;

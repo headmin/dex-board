@@ -25,14 +25,14 @@ const gradeClass = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 28px;
-  height: 24px;
-  padding: 0 8px;
-  border-radius: var(--radius);
+  min-width: var(--grade-badge-size);
+  width: var(--grade-badge-size);
+  height: var(--grade-badge-size);
+  padding: 0;
+  border-radius: var(--grade-badge-radius);
   font-family: var(--font-body);
-  font-size: var(--font-size-xs);
+  font-size: var(--grade-badge-font-size);
   font-weight: 700;
-  letter-spacing: 0.5px;
 }
 
 .grade-a {

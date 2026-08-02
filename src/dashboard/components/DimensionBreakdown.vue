@@ -86,7 +86,7 @@ function gradeColor(grade) {
   justify-content: space-between;
   margin-bottom: var(--pad-medium);
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 7px;
 }
 
 h3 {
@@ -104,7 +104,7 @@ h3 {
 }
 
 .dim-tab {
-  padding: 6px 14px;
+  padding: 5px 13px;
   border: none;
   background: var(--fleet-white);
   font-family: var(--font-body);
@@ -139,14 +139,14 @@ h3 {
 .breakdown-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .breakdown-row.clickable {
   cursor: pointer;
   border-radius: var(--radius);
-  padding: 12px 8px;
-  margin: 0 -8px;
+  padding: 11px 7px;
+  margin: 0 -7px;
   transition: background 150ms ease-in-out;
 }
 
@@ -178,12 +178,12 @@ h3 {
 .score-bar-group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
 }
 
 .score-bar-track {
   flex: 1;
-  height: 8px;
+  height: var(--bar-height);
   background: transparent;
   border-radius: var(--radius-full);
   overflow: hidden;
@@ -198,7 +198,7 @@ h3 {
 .score-number {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   min-width: 72px;
 }
 

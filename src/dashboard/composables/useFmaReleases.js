@@ -58,6 +58,54 @@ function releasesByDay() {
   return map
 }
 
+// ─── Shared helpers (previously duplicated in GitOpsTimeline.vue and
+// FirehoseTimeline.vue) ─────────────────────────────────────────────
+
+// Format a lag expressed in hours as "Nh" under a day, "Nd" above.
+export function formatHours(h) {
+  const n = Number(h)
+  if (!isFinite(n)) return '?'
+  if (n < 24) return `${Math.round(n)}h`
+  return `${Math.round(n / 24)}d`
+}
+
+// Sum device_count across the matched patch-wave rows for a release.
+// `counts` is the { [release.id]: rows[] } map (a ref or a plain object).
+// Returns null when the release hasn't been loaded yet — callers use that
+// to distinguish "not loaded" from "loaded, zero matches".
+export function totalDevicesForRelease(counts, releaseId) {
+  const map = counts && 'value' in counts ? counts.value : counts
+  const rows = map ? map[releaseId] : null
+  if (!rows) return null
+  return rows.reduce((sum, r) => sum + Number(r.device_count || 0), 0)
+}
+
+// Load the patch waves for one release into caller-owned state, guarding
+// against double-loads. `queryFn` is the API query function (kept injectable
+// so views keep their exact query wiring); `state` holds:
+//   deviceCounts:  ref({ [release.id]: rows[] })
+//   deviceLoading: ref({ [release.id]: boolean })
+//   windowDays:    number (default 30)
+// Preserves the exact query name/params the views use today
+// (scores.fma_release_devices via fetchReleaseDevices).
+export async function loadFmaReleaseDevices(queryFn, release, state) {
+  const { deviceCounts, deviceLoading, windowDays = 30 } = state
+  if (!release || !release.app || !release.version_to) return
+  if (deviceLoading.value[release.id]) return
+  deviceLoading.value = { ...deviceLoading.value, [release.id]: true }
+  try {
+    const rows = await queryFn('scores.fma_release_devices', {
+      softwarePattern: release.app,
+      versionTo: release.version_to,
+      releaseTime: dayjs(release.timestamp).format('YYYY-MM-DD HH:mm:ss'),
+      windowDays
+    })
+    deviceCounts.value = { ...deviceCounts.value, [release.id]: rows || [] }
+  } finally {
+    deviceLoading.value = { ...deviceLoading.value, [release.id]: false }
+  }
+}
+
 export function useFmaReleases() {
   return {
     releases,

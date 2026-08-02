@@ -133,7 +133,7 @@ const deltaClass = computed(() => {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   font-weight: 600;
-  padding: 3px 8px;
+  padding: 3px 7px;
   border-radius: var(--radius);
 }
 
@@ -160,7 +160,7 @@ const deltaClass = computed(() => {
 }
 
 .grade-display {
-  font-size: 44px;
+  font-size: 40px;
   font-weight: 700;
   line-height: 1;
   color: var(--fleet-black-33);
@@ -219,7 +219,7 @@ const deltaClass = computed(() => {
   font-weight: 500;
   color: var(--fleet-black-50);
   background: var(--fleet-black-5);
-  padding: 4px 8px;
+  padding: 4px 7px;
   border-radius: var(--radius);
 }
 

@@ -9,6 +9,7 @@ import FirehoseInsights from './views/FirehoseInsights.vue'
 import Firehose from './views/Firehose.vue'
 import DexOverview from './views/DexOverview.vue'
 import AuditLogs from './views/AuditLogs.vue'
+import StyleGuide from './views/StyleGuide.vue'
 import Lifecycle from './views/Lifecycle.vue'
 import SoftwareWaste from './views/SoftwareWaste.vue'
 import Connectivity from './views/Connectivity.vue'
@@ -26,6 +27,7 @@ const routes = [
   { path: '/software-waste', name: 'Software waste', component: SoftwareWaste },
   { path: '/overview', name: 'Overview', component: DexOverview },
   { path: '/audit', name: 'Audit', component: AuditLogs },
+  { path: '/styleguide', name: 'Style guide', component: StyleGuide },
   { path: '/raw', name: 'Raw', component: Firehose },
   // Legacy redirects
   { path: '/firehose', redirect: '/raw' },

@@ -270,18 +270,18 @@ const historyChartOption = computed(() => ({
   legend: {
     data: ['Memory %', 'Disk %'],
     bottom: 0,
-    textStyle: { color: '#515774', fontSize: 12 }
+    textStyle: { color: '#515774', fontSize: 11 }
   },
   grid: { left: '3%', right: '4%', bottom: '15%', top: '8%', containLabel: true },
   xAxis: {
     type: 'category',
     data: memoryHistory.value.map(d => dayjs(d.time).format('HH:mm')),
-    axisLabel: { rotate: 45, fontSize: 11, color: '#8b8fa2' },
+    axisLabel: { rotate: 45, fontSize: 10, color: '#8b8fa2' },
     axisLine: { lineStyle: { color: '#e2e4ea' } }
   },
   yAxis: {
     type: 'value', max: 100, min: 0,
-    axisLabel: { formatter: '{value}%', color: '#8b8fa2', fontSize: 11 },
+    axisLabel: { formatter: '{value}%', color: '#8b8fa2', fontSize: 10 },
     splitLine: { lineStyle: { color: '#f0f1f4' } }
   },
   series: [
@@ -387,22 +387,22 @@ onMounted(fetchDeviceData)
 }
 
 .header-info h2 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #192147;
-  margin: 0 0 6px 0;
+  margin: 0 0 5px 0;
 }
 
 .header-meta {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   align-items: center;
   flex-wrap: wrap;
 }
 
 .meta-badge {
-  font-size: 12px;
-  padding: 2px 8px;
+  font-size: 11px;
+  padding: 2px 7px;
   background: #f4f4f6;
   border-radius: 4px;
   color: #515774;
@@ -410,7 +410,7 @@ onMounted(fetchDeviceData)
 }
 
 .meta-id {
-  font-size: 11px;
+  font-size: 10px;
   color: #8b8fa2;
   font-family: "SourceCodePro", monospace;
 }
@@ -418,21 +418,21 @@ onMounted(fetchDeviceData)
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   flex-shrink: 0;
 }
 
 .compare-link {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 5px;
+  padding: 5px 11px;
   background: #fff;
   border: 1px solid #6a67fe;
   color: #6a67fe;
   border-radius: 4px;
   font-family: "Inter", sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 150ms;
@@ -445,13 +445,13 @@ onMounted(fetchDeviceData)
 .fleet-link {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 5px;
+  padding: 5px 11px;
   background: #009a7d;
   color: #fff;
   text-decoration: none;
   border-radius: 4px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   transition: background 150ms;
 }
@@ -462,7 +462,7 @@ onMounted(fetchDeviceData)
   width: 36px; height: 36px;
   border: none;
   background: none;
-  font-size: 22px;
+  font-size: 20px;
   cursor: pointer;
   color: #8b8fa2;
   border-radius: 4px;
@@ -492,32 +492,32 @@ onMounted(fetchDeviceData)
 .snap-chip.sev-high { background: var(--status-critical-bg); color: var(--status-critical); border-color: var(--status-critical); }
 
 .detail-section h3 {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--fleet-black);
-  margin-bottom: 12px;
+  margin-bottom: 11px;
 }
 
 /* Health Ring Cards */
 .health-cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 11px;
 }
 
 .health-card {
   background: #f9fafc;
   border: 1px solid #e2e4ea;
   border-radius: var(--radius-large);
-  padding: 16px 12px;
+  padding: 14px 11px;
   text-align: center;
 }
 
 .health-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #8b8fa2;
   font-weight: 500;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 }
 
 .health-ring {
@@ -527,7 +527,7 @@ onMounted(fetchDeviceData)
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 6px;
+  margin: 0 auto 5px;
 }
 
 .health-ring.good { border-color: var(--fleet-success); background: var(--status-good-bg); }
@@ -538,7 +538,7 @@ onMounted(fetchDeviceData)
 .ring-value { font-size: 18px; font-weight: 600; color: #192147; }
 
 .health-sub {
-  font-size: 11px;
+  font-size: 10px;
   color: #8b8fa2;
   white-space: nowrap;
   overflow: hidden;
@@ -554,7 +554,7 @@ onMounted(fetchDeviceData)
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 7px 0;
   border-bottom: 1px solid #f0f1f4;
 }
 
@@ -570,8 +570,8 @@ onMounted(fetchDeviceData)
 .security-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 9px;
+  padding: 9px 13px;
   background: var(--status-critical-bg);
   border-radius: 4px;
   border-left: 3px solid var(--fleet-error);
@@ -594,7 +594,7 @@ onMounted(fetchDeviceData)
 .security-name { font-size: 13px; color: #192147; flex: 1; }
 
 .security-status {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #8b8fa2;
 }
@@ -605,12 +605,12 @@ onMounted(fetchDeviceData)
 /* Signal Badge */
 .signal-badge {
   display: inline-block;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  margin-right: 6px;
+  margin-right: 5px;
 }
 
 .signal-badge.excellent { background: var(--status-good-bg); color: var(--status-good); }
@@ -619,7 +619,7 @@ onMounted(fetchDeviceData)
 .signal-badge.poor { background: var(--status-critical-bg); color: var(--fleet-status-error); }
 
 .signal-quality {
-  font-size: 12px;
+  font-size: 11px;
   color: #8b8fa2;
   text-transform: capitalize;
 }
@@ -631,12 +631,12 @@ onMounted(fetchDeviceData)
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .data-table th,
 .data-table td {
-  padding: 8px 12px;
+  padding: 7px 11px;
   text-align: left;
   border-bottom: 1px solid #f0f1f4;
 }
@@ -654,8 +654,8 @@ onMounted(fetchDeviceData)
 .data-table .process-name { font-weight: 500; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .state-badge {
-  font-size: 11px;
-  padding: 1px 6px;
+  font-size: 10px;
+  padding: 1px 5px;
   border-radius: 3px;
   background: #f4f4f6;
   color: #515774;
@@ -665,10 +665,10 @@ onMounted(fetchDeviceData)
 .state-badge.sleeping { background: rgba(106,103,254,0.08); color: #4b4ab4; }
 
 .loading, .no-data {
-  padding: 24px;
+  padding: 22px;
   text-align: center;
   color: #8b8fa2;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 @media (max-width: 640px) {

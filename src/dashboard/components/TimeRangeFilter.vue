@@ -35,7 +35,7 @@ const { selectedRange, timeRanges, setRange } = useTimeRange()
 }
 
 .range-btn {
-  padding: 6px 12px;
+  padding: 5px 11px;
   border: none;
   background: transparent;
   border-radius: calc(var(--radius) - 2px);

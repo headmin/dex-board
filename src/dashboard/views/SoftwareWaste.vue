@@ -122,7 +122,7 @@ watch(filterParams, load, { deep: true })
 
 .sw-bar-col { width: 200px; }
 .sw-bar-row { display: flex; align-items: center; gap: 10px; }
-.sw-bar-track { position: relative; flex: 1; height: 14px; background: var(--fleet-black-10); border-radius: var(--radius-full); overflow: hidden; }
+.sw-bar-track { position: relative; flex: 1; height: var(--gauge-track-height); background: var(--fleet-black-10); border-radius: var(--radius-full); overflow: hidden; }
 .sw-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--radius-full); }
 .sw-bar-label { font-size: var(--font-size-xs); font-weight: 600; color: var(--fleet-black-75); min-width: 38px; text-align: right; }
 .sev-ok { background: var(--status-good); }

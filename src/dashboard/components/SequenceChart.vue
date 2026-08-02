@@ -120,7 +120,7 @@ const chartOption = computed(() => {
       trigger: 'item',
       backgroundColor: '#3e4771',
       borderColor: '#3e4771',
-      textStyle: { color: '#fff', fontSize: 12 },
+      textStyle: { color: '#fff', fontSize: 11 },
       borderRadius: 4
     },
     grid: {
@@ -134,7 +134,7 @@ const chartOption = computed(() => {
       min: 0,
       max: props.timeLabels.length,
       axisLabel: {
-        fontSize: 10,
+        fontSize: 9,
         color: '#8b8fa2',
         formatter(val) {
           const idx = Math.round(val)
@@ -150,7 +150,7 @@ const chartOption = computed(() => {
       type: 'category',
       data: props.categories,
       inverse: true,
-      axisLabel: { fontSize: 12, color: '#515774', width: 120, overflow: 'truncate' },
+      axisLabel: { fontSize: 11, color: '#515774', width: 120, overflow: 'truncate' },
       axisTick: { show: false },
       axisLine: { show: false },
       splitLine: { show: true, lineStyle: { color: '#f0f1f4' } }

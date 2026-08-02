@@ -98,13 +98,13 @@ const containerStyle = computed(() => {
 .skeleton {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 11px;
   padding: 4px 0;
 }
 
 /* ─── Metric variant ──────────────────────────── */
 .skeleton.metric {
-  gap: 10px;
+  gap: 9px;
 }
 
 .bone-text {
@@ -129,7 +129,7 @@ const containerStyle = computed(() => {
 
 .chart-skeleton {
   display: flex;
-  gap: 8px;
+  gap: 7px;
   height: 100%;
   min-height: 200px;
 }
@@ -138,7 +138,7 @@ const containerStyle = computed(() => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 8px 0;
+  padding: 7px 0;
 }
 
 .chart-y-axis .bone-tick {
@@ -162,7 +162,7 @@ const containerStyle = computed(() => {
 .chart-x-axis {
   display: flex;
   justify-content: space-between;
-  padding-top: 8px;
+  padding-top: 7px;
 }
 
 .chart-x-axis .bone-tick {
@@ -183,8 +183,8 @@ const containerStyle = computed(() => {
 
 .table-header {
   display: flex;
-  gap: 16px;
-  padding: 12px 0;
+  gap: 14px;
+  padding: 11px 0;
   border-bottom: 1px solid var(--fleet-black-10);
 }
 
@@ -195,8 +195,8 @@ const containerStyle = computed(() => {
 
 .table-row {
   display: flex;
-  gap: 16px;
-  padding: 14px 0;
+  gap: 14px;
+  padding: 13px 0;
   border-bottom: 1px solid var(--fleet-black-5);
 }
 
@@ -220,7 +220,7 @@ const containerStyle = computed(() => {
 .heatmap-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .bone-label {

@@ -69,7 +69,7 @@ const chartOption = computed(() => ({
     position: 'top',
     backgroundColor: '#3e4771',
     borderColor: '#3e4771',
-    textStyle: { color: '#fff', fontSize: 12 },
+    textStyle: { color: '#fff', fontSize: 11 },
     borderRadius: 4,
     formatter(params) {
       const label = props.yLabels[params.value[1]] || ''
@@ -91,7 +91,7 @@ const chartOption = computed(() => ({
     position: 'top',
     splitArea: { show: false },
     axisLabel: {
-      fontSize: 11,
+      fontSize: 10,
       color: '#8b8fa2',
       interval: 'auto',
       rotate: 0
@@ -105,7 +105,7 @@ const chartOption = computed(() => ({
     splitArea: { show: false },
     inverse: true,
     axisLabel: {
-      fontSize: 12,
+      fontSize: 11,
       color: '#515774',
       width: 130,
       overflow: 'truncate',
@@ -126,7 +126,7 @@ const chartOption = computed(() => ({
     inRange: {
       color: props.colorRange
     },
-    textStyle: { fontSize: 10, color: '#8b8fa2' },
+    textStyle: { fontSize: 9, color: '#8b8fa2' },
     show: true
   },
   series: [{

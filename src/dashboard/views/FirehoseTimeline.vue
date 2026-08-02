@@ -1002,7 +1002,7 @@ h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black)
 .fma-chip-group { display: flex; gap: 4px; }
 .fma-chip {
   font-size: var(--font-size-xs);
-  padding: 4px 10px; border: 1px solid var(--fleet-black-10); background: var(--fleet-white);
+  padding: 4px 9px; border: 1px solid var(--fleet-black-10); background: var(--fleet-white);
   color: var(--fleet-black-75); border-radius: var(--radius-full); cursor: pointer; transition: border-color 100ms;
 }
 .fma-chip:hover { border-color: #6a67fe; color: var(--fleet-black); }
@@ -1016,13 +1016,13 @@ h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black)
 /* ── Timeline control strip ── */
 .timeline-controls {
   display: flex; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
-  padding: 10px 12px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large);
+  padding: 9px 11px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large);
 }
 .event-chip-group { display: flex; gap: 4px; }
 .event-chip {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: var(--font-size-xs);
-  padding: 4px 10px; border: 1px solid var(--fleet-black-10); background: var(--fleet-white);
+  padding: 4px 9px; border: 1px solid var(--fleet-black-10); background: var(--fleet-white);
   color: var(--fleet-black-50); border-radius: var(--radius-full); cursor: pointer; transition: all 100ms;
 }
 .event-chip:hover { color: var(--fleet-black); border-color: var(--fleet-black-50); }
@@ -1060,8 +1060,8 @@ h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black)
 .patch-bucket-row {
   display: grid; align-items: center;
   grid-template-columns: 16px auto 1fr auto auto auto auto;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 9px;
+  padding: 9px 13px;
   cursor: pointer;
   font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black);
 }
@@ -1069,7 +1069,7 @@ h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black)
 .patch-bucket.expanded .patch-bucket-row { border-bottom: 1px solid var(--fleet-black-5); }
 .patch-bucket-caret { font-size: 10px; color: var(--fleet-black-50); text-align: center; }
 .patch-bucket .patch-badge { /* reuses badge style from bucket bg */
-  font-size: 9px; font-weight: 700; letter-spacing: 0.5px; padding: 2px 6px; border-radius: var(--radius-full); background: #6a67fe; color: var(--fleet-white); flex-shrink: 0;
+  font-size: 8px; font-weight: 700; letter-spacing: 0.5px; padding: 2px 6px; border-radius: var(--radius-full); background: #6a67fe; color: var(--fleet-white); flex-shrink: 0;
 }
 .patch-bucket-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .patch-bucket-versions { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
@@ -1079,7 +1079,7 @@ h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black)
 .patch-bucket-drilldown { padding: 10px 14px; background: #fafaff; }
 .patch-bucket-summary {
   display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
-  padding: 6px 8px; margin-bottom: 8px;
+  padding: 5px 7px; margin-bottom: 8px;
   background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large);
   font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black);
 }

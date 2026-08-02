@@ -99,7 +99,7 @@ h3 {
 .distribution {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
 
@@ -107,26 +107,26 @@ h3 {
 .dist-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
 }
 
 .grade-cell {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   min-width: 80px;
   flex-shrink: 0;
 }
 
 .grade-threshold {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
   font-family: 'SF Mono', 'Fira Code', monospace;
 }
 
 .dist-track {
   flex: 1;
-  height: 10px;
+  height: var(--bar-height);
   background: var(--fleet-black-5);
   border-radius: var(--radius-full);
   overflow: hidden;
@@ -142,7 +142,7 @@ h3 {
 .dist-stats {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: 5px;
   min-width: 70px;
   justify-content: flex-end;
 }
@@ -169,7 +169,7 @@ h3 {
 .dist-info-btn {
   border: none;
   background: none;
-  font-size: 12px;
+  font-size: 11px;
   color: #6a67fe;
   cursor: pointer;
   font-family: var(--font-body);
@@ -181,7 +181,7 @@ h3 {
 
 .dist-info {
   margin-top: var(--pad-small);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.6;
   color: var(--fleet-black);
 }
@@ -192,12 +192,12 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-bottom: 10px;
+  margin-bottom: 9px;
 }
 
 .cat-pill {
-  font-size: 11px;
-  padding: 2px 8px;
+  font-size: 10px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
   color: white;
   font-weight: 500;
@@ -207,9 +207,9 @@ h3 {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 }
 
 .cat-details strong {
@@ -217,7 +217,7 @@ h3 {
 }
 
 .fdrag-note {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
   font-style: italic;
   margin-bottom: 0;

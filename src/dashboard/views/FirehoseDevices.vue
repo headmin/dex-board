@@ -741,7 +741,7 @@ h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black)
   display: inline-flex; align-items: center; gap: 6px;
   font-size: var(--font-size-xs);
   font-weight: 600;
-  padding: 3px 10px;
+  padding: 3px 9px;
   border-radius: var(--radius-full);
   border: 1px solid;
 }
@@ -787,7 +787,7 @@ h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black)
 .compare-btn {
   font-size: var(--font-size-xs);
   font-weight: 600;
-  padding: 6px 12px;
+  padding: 5px 11px;
   color: var(--fleet-vibrant-blue);
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
@@ -804,10 +804,10 @@ h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black)
 .open-fleet-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-size: var(--font-size-xs);
   font-weight: 600;
-  padding: 6px 12px;
+  padding: 5px 11px;
   color: var(--fleet-vibrant-blue);
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
@@ -826,7 +826,7 @@ h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black)
   position: fixed; inset: 0;
   background: rgba(25, 33, 71, 0.45);
   display: flex; align-items: flex-start; justify-content: center;
-  padding: 32px 16px;
+  padding: 29px 14px;
   z-index: 100;
   overflow-y: auto;
 }
@@ -900,7 +900,7 @@ h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black)
 .ram-bar-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
 .ram-bar-title { font-family: var(--font-body); font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black-75); }
 .ram-bar-numbers { font-size: var(--font-size-sm); font-weight: 600; }
-.ram-bar-track { height: 14px; background: var(--fleet-black-10); border-radius: var(--radius-full); overflow: hidden; }
+.ram-bar-track { height: var(--gauge-track-height); background: var(--fleet-black-10); border-radius: var(--radius-full); overflow: hidden; }
 .ram-bar-used { height: 100%; border-radius: 4px; transition: width 400ms ease; }
 .ram-bar-used.pressure-ok { background: linear-gradient(90deg, var(--fleet-green), var(--fleet-green)); }
 .ram-bar-used.pressure-moderate { background: linear-gradient(90deg, var(--status-fair-bg), var(--status-fair-text)); }

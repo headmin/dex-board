@@ -211,9 +211,6 @@ a:not([class]):hover { color: var(--link-color-hover); }
   flex-direction: column;
   min-height: 100vh;
   background: var(--fleet-white);
-  /* Global density scale — the layout is all-px; this brings the whole UI down
-     to a denser, compact scale (≈ browser zoom) without touching every value. */
-  zoom: 0.9;
 }
 
 /* ── Top Navigation (Fleet-style) ────────────── */
@@ -230,7 +227,7 @@ a:not([class]):hover { color: var(--link-color-hover); }
   display: flex;
   align-items: center;
   gap: var(--pad-xlarge);
-  max-width: 1600px;
+  max-width: 1440px;
   margin: 0 auto;
 }
 
@@ -251,12 +248,12 @@ a:not([class]):hover { color: var(--link-color-hover); }
   background-color: var(--fleet-green);
   color: var(--fleet-white);
   font-weight: 700;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .top-nav__logo-text {
   font-weight: 700;
-  font-size: 16px;
+  font-size: 14px;
   letter-spacing: 0.3px;
 }
 
@@ -334,9 +331,9 @@ a:not([class]):hover { color: var(--link-color-hover); }
   border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 52px);
+  height: calc(100vh - 50px);
   position: sticky;
-  top: 52px;
+  top: 50px;
   overflow-y: auto;
 }
 
@@ -365,8 +362,8 @@ a:not([class]):hover { color: var(--link-color-hover); }
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px var(--pad-small);
+  gap: 9px;
+  padding: 9px var(--pad-small);
   color: var(--fleet-black-75);
   text-decoration: none;
   font-family: var(--font-body);
@@ -422,7 +419,7 @@ a:not([class]):hover { color: var(--link-color-hover); }
 .content-wrapper {
   flex: 1;
   padding: var(--pad-large);
-  max-width: 1440px;
+  max-width: 1300px;
   width: 100%;
 }
 
@@ -430,13 +427,13 @@ a:not([class]):hover { color: var(--link-color-hover); }
 .wc-banner {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   background: rgba(61, 182, 123, 0.1);
   color: #065f46;
   font-family: var(--font-body);
   font-size: var(--font-size-xsmall);
   font-weight: 500;
-  padding: 10px 16px;
+  padding: 9px 14px;
   margin: var(--pad-medium) var(--pad-large) 0;
   border-radius: var(--radius);
   border: 1px solid rgba(61, 182, 123, 0.3);

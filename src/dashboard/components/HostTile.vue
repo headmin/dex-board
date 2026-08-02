@@ -193,11 +193,11 @@ function relativeTime(ts) {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
-  padding: 16px 18px 12px;
+  padding: 14px 16px 11px;
   color: var(--fleet-black);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 13px;
   transition: border-color 150ms ease, box-shadow 150ms ease;
   box-shadow: var(--box-shadow);
   /* Equal-height tiles in the grid — actions stay pinned to the bottom
@@ -214,7 +214,7 @@ function relativeTime(ts) {
 .tile-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
 }
 
 .tile-avatar {
@@ -225,7 +225,7 @@ function relativeTime(ts) {
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   color: #fff;
   flex-shrink: 0;
 }
@@ -265,7 +265,7 @@ function relativeTime(ts) {
 .tile-metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 11px;
 }
 
 .metric-cell {
@@ -276,7 +276,7 @@ function relativeTime(ts) {
 }
 
 .metric-label {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--fleet-black-75);
   font-weight: 500;
 }
@@ -304,7 +304,7 @@ function relativeTime(ts) {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 10px;
+  padding-top: 9px;
   border-top: 1px solid var(--fleet-black-5);
   font-size: var(--font-size-xs);
   color: var(--fleet-black-50);
@@ -320,7 +320,7 @@ function relativeTime(ts) {
 .tile-actions {
   display: flex;
   align-items: stretch;
-  gap: 6px;
+  gap: 5px;
 }
 
 .tile-action {
@@ -328,11 +328,11 @@ function relativeTime(ts) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 6px 8px;
+  gap: 4px;
+  padding: 5px 7px;
   border-radius: var(--radius);
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--fleet-black-75);
   background: transparent;

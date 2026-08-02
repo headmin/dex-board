@@ -135,7 +135,7 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 4px;
+  padding: 9px 4px;
   border-bottom: 1px solid var(--fleet-black-5);
   margin: 0 -4px;
   border-radius: var(--radius);
@@ -175,13 +175,13 @@ h3 {
 .mover-change {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
 }
 
 .grade-transition {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .arrow {
@@ -205,7 +205,7 @@ h3 {
 }
 
 .expand-arrow {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-33);
   min-width: 16px;
   text-align: center;
@@ -221,7 +221,7 @@ h3 {
   color: var(--fleet-black-50);
   text-decoration: none;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   transition: all var(--transition-fast);
   border: 1px solid transparent;
 }
@@ -238,7 +238,7 @@ h3 {
   background: var(--fleet-off-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
-  margin: 0 -4px 8px -4px;
+  margin: 0 -4px 7px -4px;
   padding: var(--pad-medium);
 }
 
@@ -251,14 +251,14 @@ h3 {
 .detail-header {
   display: grid;
   grid-template-columns: 1fr 60px 60px 70px;
-  gap: 8px;
-  padding-bottom: 8px;
+  gap: 7px;
+  padding-bottom: 7px;
   border-bottom: 1px solid var(--fleet-black-10);
   margin-bottom: 4px;
 }
 
 .detail-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--fleet-black-75);
 }
@@ -270,8 +270,8 @@ h3 {
 .detail-row {
   display: grid;
   grid-template-columns: 1fr 60px 60px 70px;
-  gap: 8px;
-  padding: 6px 0;
+  gap: 7px;
+  padding: 5px 0;
   border-bottom: 1px solid var(--fleet-black-5);
 }
 
@@ -281,8 +281,8 @@ h3 {
 
 .detail-row.is-driver {
   background: rgba(106, 103, 254, 0.05);
-  margin: 0 -8px;
-  padding: 6px 8px;
+  margin: 0 -7px;
+  padding: 5px 7px;
   border-radius: var(--radius);
 }
 
@@ -291,15 +291,15 @@ h3 {
   color: var(--fleet-black);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .driver-tag {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: var(--fleet-vibrant-blue);
   background: rgba(106, 103, 254, 0.1);
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: var(--radius-full);
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -348,7 +348,7 @@ h3 {
 .inspect-cta {
   display: inline-flex;
   align-items: center;
-  padding: 6px 12px;
+  padding: 5px 11px;
   font-size: var(--font-size-xs);
   font-weight: 700;
   color: var(--fleet-white);

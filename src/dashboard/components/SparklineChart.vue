@@ -44,7 +44,7 @@ const chartOption = computed(() => ({
     trigger: 'axis',
     backgroundColor: '#3e4771',
     borderColor: '#3e4771',
-    textStyle: { color: '#fff', fontSize: 11 },
+    textStyle: { color: '#fff', fontSize: 10 },
     borderRadius: 4,
     formatter: (params) => `${params[0].value.toFixed(0)}`
   } : { show: false },

@@ -546,7 +546,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 h1 {
@@ -559,25 +559,25 @@ h2 {
   font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--fleet-black);
-  margin-bottom: 16px;
-  padding-bottom: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 7px;
   border-bottom: 1px solid var(--fleet-black-10);
 }
 
 .error-banner {
   background: var(--fleet-white);
   color: var(--fleet-error);
-  padding: 12px 16px;
+  padding: 11px 14px;
   border-radius: var(--radius);
   border: 1px solid var(--fleet-black-10);
   border-left: 3px solid var(--fleet-error);
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .tabs {
   display: flex;
   gap: 4px;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
   padding: 4px;
   background: var(--fleet-black-5);
   border-radius: var(--radius-large);
@@ -585,11 +585,11 @@ h2 {
 }
 
 .tab {
-  padding: 10px 20px;
+  padding: 9px 18px;
   border: none;
   background: transparent;
   border-radius: var(--radius-medium);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--fleet-black-50);
   cursor: pointer;
@@ -610,14 +610,14 @@ h2 {
 }
 
 .section {
-  margin-bottom: 32px;
+  margin-bottom: 29px;
 }
 
 .metrics-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 22px;
+  margin-bottom: 22px;
 }
 
 .metrics-row.four-col {
@@ -625,13 +625,13 @@ h2 {
 }
 
 .charts-row {
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .charts-row.two-col {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+  gap: 22px;
 }
 
 @media (max-width: 1024px) {
@@ -656,7 +656,7 @@ h2 {
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+    gap: 14px;
   }
 
   .tabs {
@@ -671,7 +671,7 @@ h2 {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 40px 24px;
+  padding: 36px 22px;
   z-index: 1000;
   overflow-y: auto;
 }

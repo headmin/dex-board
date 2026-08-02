@@ -60,7 +60,7 @@ const chartOption = computed(() => {
       trigger: 'axis',
       backgroundColor: '#3e4771',
       borderColor: '#3e4771',
-      textStyle: { color: '#fff', fontSize: 12 },
+      textStyle: { color: '#fff', fontSize: 11 },
       borderRadius: 4
     },
     toolbox: {
@@ -82,14 +82,14 @@ const chartOption = computed(() => {
       type: 'category',
       boundaryGap: false,
       data: props.data.map(d => d[props.xKey]),
-      axisLabel: { color: '#8b8fa2', fontSize: 12 },
+      axisLabel: { color: '#8b8fa2', fontSize: 11 },
       axisLine: { lineStyle: { color: '#e2e4ea' } }
     },
     yAxis: {
       type: 'value',
       min: props.yMin,
       max: props.yMax,
-      axisLabel: { color: '#8b8fa2', fontSize: 12 },
+      axisLabel: { color: '#8b8fa2', fontSize: 11 },
       splitLine: { lineStyle: { color: '#f0f1f4' } }
     },
     series: [{
@@ -125,7 +125,7 @@ const chartOption = computed(() => {
           label: {
             formatter: `${props.thresholdLabel} (${props.threshold})`,
             position: 'insideEndTop',
-            fontSize: 11,
+            fontSize: 10,
             color: '#eb4343'
           }
         }]

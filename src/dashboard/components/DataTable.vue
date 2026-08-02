@@ -13,7 +13,7 @@
       <span>No data available</span>
     </div>
     <div v-else class="table-wrapper">
-      <table class="table" :class="{ 'table--clickable': clickable }">
+      <table class="table" :class="{ 'table--clickable': clickable, 'table--compact': density === 'compact' }">
         <thead>
           <tr>
             <th
@@ -31,7 +31,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="(row, index) in sortedData"
+            v-for="(row, index) in visibleData"
             :key="index"
             @click="clickable && $emit('row-click', row)"
           >
@@ -62,6 +62,12 @@ const props = defineProps({
   // Default sort: column key + direction. Either is optional.
   defaultSortKey: { type: String, default: '' },
   defaultSortAsc: { type: Boolean, default: true },
+  // 'compact' tightens cell padding and drops the font a step.
+  density: { type: String, default: 'default' },
+  // Case-insensitive substring match against every column's value.
+  filter: { type: String, default: '' },
+  // 0 = unlimited; otherwise the final (filtered + sorted) list is sliced.
+  maxRows: { type: Number, default: 0 },
 })
 
 defineEmits(['row-click'])
@@ -86,13 +92,24 @@ function toggleSort(key) {
   }
 }
 
+// Filter first (cheap substring test per row), then sort the survivors.
+const filteredData = computed(() => {
+  const f = props.filter.trim().toLowerCase()
+  if (!f) return props.data
+  const keys = props.columns.map(c => c.key)
+  return props.data.filter(row => keys.some(k => {
+    const v = row[k]
+    return v != null && String(v).toLowerCase().includes(f)
+  }))
+})
+
 const sortedData = computed(() => {
-  if (!sortKey.value || !props.data.length) return props.data
+  if (!sortKey.value || !filteredData.value.length) return filteredData.value
   const col = props.columns.find(c => c.key === sortKey.value)
   const isNum = col && (col.type === 'number' || col.type === 'datetime')
   const key = sortKey.value
   const dir = sortAsc.value ? 1 : -1
-  return props.data.slice().sort((a, b) => {
+  return filteredData.value.slice().sort((a, b) => {
     const av = a[key]; const bv = b[key]
     if (av == null && bv == null) return 0
     if (av == null) return 1   // nulls sort to bottom regardless of direction
@@ -104,6 +121,10 @@ const sortedData = computed(() => {
     return String(av).localeCompare(String(bv), undefined, { numeric: true }) * dir
   })
 })
+
+const visibleData = computed(() =>
+  props.maxRows > 0 ? sortedData.value.slice(0, props.maxRows) : sortedData.value
+)
 
 const formatCell = (value, col) => {
   if (value === null || value === undefined) return '-'
@@ -185,12 +206,12 @@ const getStatusClass = (value) => {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-body);
-  font-size: var(--font-size-sm);
+  font-size: var(--table-font-size);
 }
 
 .table th,
 .table td {
-  padding: 10px 14px;
+  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
   text-align: left;
   vertical-align: middle;
 }
@@ -198,7 +219,7 @@ const getStatusClass = (value) => {
 .table thead th {
   background: var(--fleet-off-white);
   color: var(--fleet-black);
-  font-size: var(--font-size-sm);
+  font-size: var(--table-header-font-size);
   font-weight: 700;
   border-bottom: 1px solid var(--fleet-black-10);
   user-select: none;
@@ -212,14 +233,26 @@ const getStatusClass = (value) => {
 .table thead th .sort-indicator {
   display: inline-block;
   width: 12px;           /* reserve space so layout doesn't shift on toggle */
-  margin-left: 6px;
-  font-size: 11px;
+  margin-left: 5px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--fleet-black-25);
   text-align: center;
   transition: color 100ms;
 }
 .table thead th .sort-indicator-active { color: var(--fleet-black-75); }
+
+/* Compact density */
+.table--compact {
+  font-size: var(--font-size-sm);
+}
+.table--compact th,
+.table--compact td {
+  padding: 6px 12px;
+}
+.table--compact thead th {
+  font-size: var(--font-size-xs);
+}
 
 .table tbody tr {
   border-bottom: 1px solid var(--fleet-black-10);
@@ -260,43 +293,46 @@ const getStatusClass = (value) => {
 .cell-tone--elevated { color: var(--fleet-ui-orange); }
 .cell-tone--critical { color: var(--status-critical); }
 
-/* Badge styles matching Fleet */
+/* Badge styles — tinted pills on the canonical status scale */
 .badge {
   display: inline-flex;
   align-items: center;
   padding: var(--pad-xxsmall) var(--pad-small);
-  border-radius: var(--radius-xxlarge);
-  font-size: var(--font-size-xxsmall);
-  font-weight: 700;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
   text-transform: capitalize;
-  color: var(--fleet-white);
   line-height: 1;
 }
 
 .badge--critical {
-  background-color: var(--status-critical);
+  background-color: var(--status-critical-bg);
+  color: var(--status-critical);
 }
 
 .badge--high {
-  background-color: var(--rainbow-orange);
-  color: var(--fleet-black);
+  background-color: var(--status-elevated-bg);
+  color: var(--status-elevated);
 }
 
 .badge--medium {
-  background-color: var(--fleet-warning);
-  color: var(--fleet-black);
+  background-color: var(--status-fair-bg);
+  color: var(--status-fair-text);
 }
 
 .badge--low {
-  background-color: var(--fleet-info);
+  background-color: var(--info-tint);
+  color: var(--fleet-status-info);
 }
 
 .badge--success {
-  background-color: var(--fleet-success);
+  background-color: var(--status-good-bg);
+  color: var(--status-good-text);
 }
 
 .badge--info {
-  background-color: var(--fleet-vibrant-blue);
+  background-color: var(--info-tint);
+  color: var(--fleet-status-info);
 }
 
 .badge--neutral {
@@ -314,7 +350,7 @@ const getStatusClass = (value) => {
 
 .table-empty svg {
   display: block;
-  margin: 0 auto 12px;
+  margin: 0 auto 11px;
   color: var(--fleet-black-25);
 }
 

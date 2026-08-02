@@ -455,7 +455,7 @@ h2 {
   font-family: var(--font-body);
   font-size: var(--font-size-sm);
   color: var(--fleet-black-50);
-  margin: -8px 0 var(--pad-medium);
+  margin: -7px 0 var(--pad-medium);
   line-height: var(--line-height-relaxed);
 }
 
@@ -470,10 +470,10 @@ h2 {
 .error-banner {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   background: var(--fleet-status-error-light);
   color: var(--fleet-status-error);
-  padding: 12px 16px;
+  padding: 11px 14px;
   border-radius: var(--radius-medium);
   border: 1px solid var(--fleet-status-error-border);
   margin-bottom: var(--pad-large);
@@ -626,7 +626,7 @@ h2 {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius);
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
   color: var(--fleet-black-50);
   width: 32px;
@@ -664,7 +664,7 @@ h2 {
 
 .data-table th {
   text-align: left;
-  padding: 10px 14px;
+  padding: 9px 13px;
   font-weight: 700;
   color: var(--fleet-black);
   background: var(--fleet-off-white);
@@ -686,7 +686,7 @@ h2 {
 }
 
 .data-table td {
-  padding: 10px 14px;
+  padding: 9px 13px;
   border-bottom: 1px solid var(--fleet-black-10);
   color: var(--fleet-black-75);
 }
@@ -696,7 +696,7 @@ h2 {
 }
 
 .data-table tfoot td {
-  padding: 12px 16px;
+  padding: 11px 14px;
   border-top: 1px solid var(--fleet-black-10);
   border-bottom: none;
   background: var(--fleet-black-3);
@@ -751,7 +751,7 @@ h2 {
 .risk-badge {
   display: inline-flex;
   align-items: center;
-  padding: 6px 14px;
+  padding: 5px 13px;
   border-radius: var(--radius-full);
   font-family: var(--font-body);
   font-size: var(--font-size-xs);
@@ -806,7 +806,7 @@ h2 {
 
 .ram-tier-count {
   font-family: var(--font-body);
-  font-size: 10px;
+  font-size: 9px;
   color: var(--fleet-black-50);
 }
 
@@ -815,7 +815,7 @@ h2 {
 }
 
 .ram-bar-track {
-  height: 14px;
+  height: var(--gauge-track-height);
   background: var(--fleet-black-10);
   border-radius: var(--radius-full);
   position: relative;
@@ -857,16 +857,16 @@ h2 {
 .ram-bar-labels {
   display: flex;
   justify-content: space-between;
-  margin-top: 6px;
+  margin-top: 5px;
 }
 
 .ram-used-label {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-75);
 }
 
 .ram-free-label {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
 }
 
@@ -884,7 +884,7 @@ h2 {
 }
 
 .ram-device-count {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--fleet-black-50);
 }
 

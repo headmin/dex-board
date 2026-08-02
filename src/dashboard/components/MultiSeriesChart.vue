@@ -49,9 +49,9 @@ const chartOption = computed(() => {
     max: axis.max ?? null,
     position: i === 0 ? 'left' : 'right',
     axisLine: { show: props.yAxes.length > 1 },
-    axisLabel: { color: '#8b8fa2', fontSize: 12 },
+    axisLabel: { color: '#8b8fa2', fontSize: 11 },
     splitLine: { lineStyle: { color: '#f0f1f4' } },
-    nameTextStyle: { fontSize: 11, color: '#8b8fa2' }
+    nameTextStyle: { fontSize: 10, color: '#8b8fa2' }
   }))
 
   const seriesConfigs = props.series.map((s, i) => {
@@ -83,7 +83,7 @@ const chartOption = computed(() => {
           label: {
             formatter: `${t.label || ''} (${t.value})`,
             position: 'insideEndTop',
-            fontSize: 11,
+            fontSize: 10,
             color: t.color || '#eb4343'
           }
         }))
@@ -115,7 +115,7 @@ const chartOption = computed(() => {
           label: {
             formatter: evt.label,
             position: 'insideStartTop',
-            fontSize: 10,
+            fontSize: 9,
             color: evt.color || '#6a67fe',
             rotate: 90,
             offset: [0, 6]
@@ -133,7 +133,7 @@ const chartOption = computed(() => {
       axisPointer: { type: 'cross' },
       backgroundColor: '#3e4771',
       borderColor: '#3e4771',
-      textStyle: { color: '#fff', fontSize: 12 },
+      textStyle: { color: '#fff', fontSize: 11 },
       borderRadius: 4,
       formatter: props.events.length > 0 ? (params) => {
         const idx = Array.isArray(params) ? params[0]?.dataIndex : params?.dataIndex
@@ -153,7 +153,7 @@ const chartOption = computed(() => {
     legend: {
       top: 0,
       data: props.series.map(s => s.name),
-      textStyle: { fontSize: 12, color: '#515774' }
+      textStyle: { fontSize: 11, color: '#515774' }
     },
     toolbox: {
       right: 16,
@@ -175,7 +175,7 @@ const chartOption = computed(() => {
       type: 'category',
       boundaryGap: false,
       data: props.xLabels,
-      axisLabel: { fontSize: 12, color: '#8b8fa2' },
+      axisLabel: { fontSize: 11, color: '#8b8fa2' },
       axisLine: { lineStyle: { color: '#e2e4ea' } }
     },
     yAxis: yAxisConfigs,

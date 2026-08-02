@@ -175,8 +175,8 @@ onMounted(() => {
 
 .search-group .field__input {
   width: 100%;
-  padding-left: 36px;
-  padding-right: 36px;
+  padding-left: 32px;
+  padding-right: 32px;
 }
 
 .search-clear {
@@ -275,7 +275,7 @@ select.field__input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   padding: var(--pad-small) var(--pad-medium);
   height: 36px;
   border: 0;
@@ -347,7 +347,7 @@ select.field__input {
 .device-count {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: 5px;
   padding: var(--pad-small) var(--pad-smedium);
   background: var(--fleet-black-5);
   border-radius: var(--radius);

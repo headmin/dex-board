@@ -88,7 +88,7 @@
 <style scoped>
 .cohort-suggest {
   display: inline;
-  padding: 2px 8px;
+  padding: 2px 7px;
   margin: 0 2px;
   font-size: var(--font-size-xs);
   color: var(--fleet-vibrant-blue);
@@ -242,7 +242,7 @@ function diffClass(row) {
 .lifecycle-badge {
   display: inline-flex;
   align-self: flex-start;
-  padding: 6px 16px;
+  padding: 5px 14px;
   border-radius: var(--radius-full);
   font-size: var(--font-size-sm);
   font-weight: 700;
@@ -266,11 +266,11 @@ function diffClass(row) {
 }
 
 .cohort-tab {
-  padding: 6px 14px;
+  padding: 5px 13px;
   border: none;
   background: transparent;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: #666;
   cursor: pointer;
@@ -296,7 +296,7 @@ function diffClass(row) {
   font-size: var(--font-size-xs);
   color: var(--status-fair-text);
   background: #fef9e8;
-  padding: 6px 12px;
+  padding: 5px 11px;
   border-radius: var(--radius);
   border: 1px solid #f5e6a3;
 }
@@ -305,13 +305,13 @@ function diffClass(row) {
 .benchmark-rows {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .benchmark-row {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 11px;
 }
 
 .bench-label,
@@ -336,7 +336,7 @@ function diffClass(row) {
 
 .bench-bar-track {
   position: relative;
-  height: 14px;
+  height: var(--gauge-track-height);
   background: var(--fleet-black-10);
   border-radius: var(--radius-full);
   overflow: visible;
@@ -389,7 +389,7 @@ function diffClass(row) {
   top: -14px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 600;
   white-space: nowrap;
   pointer-events: auto;
@@ -401,9 +401,9 @@ function diffClass(row) {
 
 /* ─── Position Labels ────────────────────────── */
 .bench-position {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
   min-width: 72px;
   text-align: center;
@@ -426,17 +426,17 @@ function diffClass(row) {
 /* ─── Legend ──────────────────────────────────── */
 .benchmark-legend {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   margin-top: 4px;
-  padding-top: 8px;
+  padding-top: 7px;
   border-top: 1px solid var(--fleet-black-5);
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
+  gap: 5px;
+  font-size: 10px;
   color: var(--fleet-black-50);
 }
 
@@ -455,9 +455,9 @@ function diffClass(row) {
 .bench-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
-  font-size: 11px;
+  gap: 11px;
+  margin-top: 14px;
+  font-size: 10px;
   color: var(--fleet-black-75);
   font-family: var(--font-mono, var(--font-body));
 }

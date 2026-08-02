@@ -76,7 +76,7 @@ const trendClass = computed(() => {
 }
 
 .label {
-  font-size: var(--font-size-sm);
+  font-size: var(--metric-label-size);
   font-weight: 500;
   color: var(--fleet-black-75);
 }
@@ -87,7 +87,7 @@ const trendClass = computed(() => {
   gap: 2px;
   font-size: var(--font-size-xxsmall);
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 2px 5px;
   border-radius: var(--radius-xxlarge);
   line-height: 1;
 }
@@ -108,7 +108,7 @@ const trendClass = computed(() => {
 }
 
 .value {
-  font-size: var(--font-size-xlarge);
+  font-size: var(--metric-value-size);
   font-weight: 700;
   color: var(--fleet-black);
   line-height: 1.2;

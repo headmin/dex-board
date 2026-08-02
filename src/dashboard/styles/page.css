@@ -1,0 +1,73 @@
+/**
+ * Shared page-layout classes for dashboard views.
+ * Uses fleet-tokens.css variables exclusively.
+ */
+
+/* ─── Vertical page stack ─────────────────────── */
+.page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-large);
+}
+
+/* ─── Metric card rows ────────────────────────── */
+.metrics-row {
+  display: grid;
+  gap: var(--pad-smedium);
+}
+
+.metrics-row.two-col { grid-template-columns: repeat(2, 1fr); }
+.metrics-row.three-col { grid-template-columns: repeat(3, 1fr); }
+.metrics-row.four-col { grid-template-columns: repeat(4, 1fr); }
+.metrics-row.five-col { grid-template-columns: repeat(5, 1fr); }
+.metrics-row.six-col { grid-template-columns: repeat(6, 1fr); }
+
+/* ─── Chart rows ──────────────────────────────── */
+.charts-row {
+  display: grid;
+  gap: var(--pad-smedium);
+}
+
+.charts-row.two-col { grid-template-columns: repeat(2, 1fr); }
+
+/* ─── Error banner (the ONE allowed left-stripe) ── */
+.error-banner {
+  background: var(--fleet-white);
+  color: var(--status-critical);
+  padding: var(--pad-smedium) var(--pad-medium);
+  border: 1px solid var(--fleet-black-10);
+  border-left: 3px solid var(--status-critical);
+  border-radius: var(--radius-large);
+  font-size: var(--font-size-base);
+}
+
+/* ─── Section caption ─────────────────────────── */
+.section-caption {
+  font-size: 13px;
+  color: var(--fleet-black-75);
+}
+
+/* ─── Responsive collapse ─────────────────────── */
+@media (max-width: 900px) {
+  .metrics-row.two-col,
+  .metrics-row.three-col,
+  .metrics-row.four-col,
+  .metrics-row.five-col,
+  .metrics-row.six-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .charts-row.two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .metrics-row.two-col,
+  .metrics-row.three-col,
+  .metrics-row.four-col,
+  .metrics-row.five-col,
+  .metrics-row.six-col {
+    grid-template-columns: 1fr;
+  }
+}

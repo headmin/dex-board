@@ -1369,8 +1369,8 @@ onMounted(() => {
   grid-template-columns: 1fr auto;
   grid-template-areas: "main delta" "caption caption";
   align-items: center;
-  gap: 4px 20px;
-  padding: 16px 20px;
+  gap: 4px 18px;
+  padding: 14px 18px;
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
   border-left: 4px solid var(--fleet-black-25);
@@ -1382,7 +1382,7 @@ onMounted(() => {
 .exposure-eyebrow-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
   flex-wrap: wrap;
   margin-bottom: 2px;
 }
@@ -1404,7 +1404,7 @@ onMounted(() => {
   color: var(--fleet-black-50);
   font-size: var(--font-size-xs);
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 2px 7px;
   cursor: pointer;
   border-left: 1px solid var(--fleet-black-10);
 }
@@ -1490,11 +1490,11 @@ onMounted(() => {
 .time-range-group {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .time-range-hint {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
   font-style: italic;
   cursor: help;
@@ -1517,8 +1517,8 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 11px;
+  margin-bottom: 11px;
   flex-wrap: wrap;
 }
 .team-breakdown-header h3 {
@@ -1528,17 +1528,17 @@ onMounted(() => {
   color: var(--fleet-black);
 }
 .team-breakdown-note {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
   font-style: italic;
 }
 .team-breakdown-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
+  gap: 11px;
 }
 .team-card {
-  padding: 12px 14px;
+  padding: 11px 13px;
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
   background: var(--fleet-off-white);
@@ -1547,8 +1547,8 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 7px;
+  margin-bottom: 7px;
 }
 .team-card-id {
   font-family: var(--font-mono);
@@ -1557,17 +1557,17 @@ onMounted(() => {
   color: var(--fleet-black);
 }
 .team-card-hosts {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
 }
 .team-card-grade-row {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 7px;
+  margin-bottom: 9px;
 }
 .team-card-grade {
-  font-size: 32px;
+  font-size: 29px;
   font-weight: 700;
   line-height: 1;
 }
@@ -1582,22 +1582,22 @@ onMounted(() => {
   color: var(--fleet-black);
 }
 .team-card-score-max {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
   margin-left: 2px;
 }
 .team-card-cats {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
 .team-cat {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: 10px;
-  font-size: 11px;
+  font-size: 10px;
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
 }
@@ -1614,13 +1614,13 @@ onMounted(() => {
   border-style: dashed;
 }
 .team-card-missing {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
   line-height: 1.5;
 }
 .team-card-missing code {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9px;
   background: var(--fleet-black-10);
   padding: 1px 4px;
   border-radius: 3px;
@@ -1639,7 +1639,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 }
 .trend-title {
   font-size: var(--font-size-sm);
@@ -1655,7 +1655,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   margin-top: 4px;
-  font-size: 10px;
+  font-size: 9px;
   color: var(--fleet-black-33);
 }
 
@@ -1691,14 +1691,14 @@ onMounted(() => {
 .breakdown-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .info-toggle {
   background: var(--fleet-off-white);
   border: 1px solid var(--fleet-black-25);
   border-radius: var(--radius);
-  padding: 4px 12px;
+  padding: 4px 11px;
   font-family: var(--font-body);
   font-size: var(--font-size-xs);
   font-weight: 600;
@@ -1715,7 +1715,7 @@ onMounted(() => {
   background: none;
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius);
-  padding: 4px 12px;
+  padding: 4px 11px;
   font-family: var(--font-body);
   font-size: var(--font-size-xs);
   color: var(--fleet-black-75);
@@ -1752,7 +1752,7 @@ onMounted(() => {
   font-size: var(--font-size-sm);
   color: var(--fleet-black-75);
   line-height: 1.5;
-  margin: 0 0 8px 0;
+  margin: 0 0 7px 0;
 }
 
 .method-content p:last-child {
@@ -1766,13 +1766,13 @@ onMounted(() => {
 .signal-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
 }
 
 .signal-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .signal-info {
@@ -1798,8 +1798,8 @@ onMounted(() => {
    pills — the color stops at the value. Gauges keep tracks; these don't. */
 .signal-bar-track {
   flex: 1;
-  height: 10px;
-  background: transparent;
+  height: var(--gauge-track-height);
+  background: var(--fleet-black-10);
   border-radius: var(--radius-full);
   overflow: hidden;
 }
@@ -1812,7 +1812,7 @@ onMounted(() => {
 
 .signal-detail {
   display: block;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-33);
   font-style: italic;
 }
@@ -1838,7 +1838,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   height: 100%;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-33);
   font-style: italic;
   /* the track itself is transparent (score bars are trackless) — paused rows
@@ -1849,9 +1849,9 @@ onMounted(() => {
 
 .signal-type-pill {
   display: inline-block;
-  margin-left: 6px;
-  padding: 1px 6px;
-  font-size: 10px;
+  margin-left: 5px;
+  padding: 1px 5px;
+  font-size: 9px;
   font-weight: 500;
   border-radius: var(--radius-full);
   vertical-align: middle;
@@ -1870,8 +1870,8 @@ onMounted(() => {
 .signal-status-pill {
   display: inline-block;
   margin-left: 4px;
-  padding: 1px 6px;
-  font-size: 10px;
+  padding: 1px 5px;
+  font-size: 9px;
   font-weight: 500;
   border-radius: var(--radius-full);
   background: var(--status-fair-bg);
@@ -1923,13 +1923,13 @@ onMounted(() => {
 .patch-timeline {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
 .patch-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
 }
 
 .patch-name {
@@ -1942,7 +1942,7 @@ onMounted(() => {
 
 .patch-bar-track {
   flex: 1;
-  height: 14px;
+  height: var(--gauge-track-height);
   background: var(--fleet-black-10);
   border-radius: var(--radius-full);
   overflow: hidden;
@@ -1983,8 +1983,8 @@ onMounted(() => {
 .app-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 0;
+  gap: 11px;
+  padding: 7px 0;
   border-bottom: 1px solid var(--fleet-black-5);
 }
 
@@ -2020,7 +2020,7 @@ onMounted(() => {
   transition: background 150ms ease-in-out;
   border-radius: var(--radius);
   margin: 0 -4px;
-  padding: 8px 4px;
+  padding: 7px 4px;
 }
 
 .app-row.clickable:hover {
@@ -2028,7 +2028,7 @@ onMounted(() => {
 }
 
 .drill-arrow {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-33);
   min-width: 16px;
   text-align: center;
@@ -2039,7 +2039,7 @@ onMounted(() => {
   background: var(--fleet-off-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
-  margin: 4px 0 8px 0;
+  margin: 4px 0 7px 0;
   padding: var(--pad-small) var(--pad-medium);
 }
 
@@ -2058,8 +2058,8 @@ onMounted(() => {
 .drill-device-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 6px 0;
+  gap: 11px;
+  padding: 5px 0;
   border-bottom: 1px solid var(--fleet-black-5);
 }
 
@@ -2081,9 +2081,9 @@ onMounted(() => {
 }
 
 .drill-usage {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius);
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -2125,7 +2125,7 @@ onMounted(() => {
   font-size: var(--font-size-sm);
   color: var(--status-good);
   font-weight: 500;
-  padding: 8px 0;
+  padding: 7px 0;
 }
 
 /* ─── Two column layout ───────────────────────── */
@@ -2184,13 +2184,13 @@ onMounted(() => {
   justify-content: space-between;
   margin-bottom: var(--pad-medium);
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 11px;
 }
 
 .device-table-title-group {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   flex: 1;
   min-width: 0;
 }
@@ -2229,7 +2229,7 @@ onMounted(() => {
 
 .mini-dist-label {
   display: none;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   color: #fff;
   white-space: nowrap;
@@ -2251,7 +2251,7 @@ onMounted(() => {
 
 .device-search-input {
   font-size: var(--font-size-sm);
-  padding: 6px 12px 6px 30px;
+  padding: 5px 11px 5px 27px;
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius);
   width: 220px;
@@ -2283,7 +2283,7 @@ onMounted(() => {
   font-weight: 700;
   color: var(--fleet-black);
   background: var(--fleet-off-white);
-  padding: 10px 14px;
+  padding: 9px 13px;
   border-bottom: 1px solid var(--fleet-black-10);
   white-space: nowrap;
   user-select: none;
@@ -2300,7 +2300,7 @@ onMounted(() => {
 }
 
 .device-table td {
-  padding: 10px 14px;
+  padding: 9px 13px;
   border-bottom: 1px solid var(--fleet-black-10);
   color: var(--fleet-black-75);
 }
@@ -2328,7 +2328,7 @@ onMounted(() => {
 
 .device-row-cta {
   display: inline-block;
-  margin-left: 6px;
+  margin-left: 5px;
   font-weight: 600;
   color: var(--fleet-black-25);
   transition: color var(--transition-fast), transform var(--transition-fast);
@@ -2362,11 +2362,11 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 7px;
   background: #f0fdf4;
   border: 1px solid #d1fae5;
   border-radius: var(--radius-large);
-  padding: 10px 16px;
+  padding: 9px 14px;
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: #065f46;
@@ -2380,7 +2380,7 @@ onMounted(() => {
 
 .patch-movers-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .patch-trend { font-size: var(--font-size-xs); font-weight: 600;
-  padding: 2px 8px; border-radius: var(--radius-full); background: var(--fleet-off-white);
+  padding: 2px 7px; border-radius: var(--radius-full); background: var(--fleet-off-white);
 }
 .patch-trend-arrow { font-weight: 700; }
 .patch-trend--faster { color: var(--status-good); }

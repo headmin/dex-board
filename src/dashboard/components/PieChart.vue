@@ -32,14 +32,14 @@ const chartOption = computed(() => ({
     formatter: '{b}: {c} ({d}%)',
     backgroundColor: '#3e4771',
     borderColor: '#3e4771',
-    textStyle: { color: '#fff', fontSize: 12 },
+    textStyle: { color: '#fff', fontSize: 11 },
     borderRadius: 4
   },
   legend: {
     orient: 'vertical',
     right: 10,
     top: 'center',
-    textStyle: { color: '#515774', fontSize: 12 }
+    textStyle: { color: '#515774', fontSize: 11 }
   },
   series: [{
     type: 'pie',
@@ -57,7 +57,7 @@ const chartOption = computed(() => ({
     emphasis: {
       label: {
         show: true,
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: 'bold'
       }
     },

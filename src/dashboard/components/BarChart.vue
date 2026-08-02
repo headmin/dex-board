@@ -37,7 +37,7 @@ const chartOption = computed(() => {
         axisPointer: { type: 'shadow' },
         backgroundColor: '#3e4771',
         borderColor: '#3e4771',
-        textStyle: { color: '#fff', fontSize: 12 },
+        textStyle: { color: '#fff', fontSize: 11 },
         borderRadius: 4
       },
       grid: {
@@ -48,7 +48,7 @@ const chartOption = computed(() => {
       },
       xAxis: {
         type: 'value',
-        axisLabel: { color: '#8b8fa2', fontSize: 12 },
+        axisLabel: { color: '#8b8fa2', fontSize: 11 },
         splitLine: { lineStyle: { color: '#f0f1f4' } }
       },
       yAxis: {
@@ -58,7 +58,7 @@ const chartOption = computed(() => {
           width: 100,
           overflow: 'truncate',
           color: '#8b8fa2',
-          fontSize: 12
+          fontSize: 11
         }
       },
       series: [{
@@ -78,7 +78,7 @@ const chartOption = computed(() => {
       axisPointer: { type: 'shadow' },
       backgroundColor: '#3e4771',
       borderColor: '#3e4771',
-      textStyle: { color: '#fff', fontSize: 12 },
+      textStyle: { color: '#fff', fontSize: 11 },
       borderRadius: 4
     },
     grid: {
@@ -95,12 +95,12 @@ const chartOption = computed(() => {
         width: 80,
         overflow: 'truncate',
         color: '#8b8fa2',
-        fontSize: 12
+        fontSize: 11
       }
     },
     yAxis: {
       type: 'value',
-      axisLabel: { color: '#8b8fa2', fontSize: 12 },
+      axisLabel: { color: '#8b8fa2', fontSize: 11 },
       splitLine: { lineStyle: { color: '#f0f1f4' } }
     },
     series: [{

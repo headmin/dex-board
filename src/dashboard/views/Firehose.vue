@@ -419,8 +419,8 @@ onMounted(() => fetchAll())
 .dashboard-header {
   display: flex;
   align-items: baseline;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 14px;
+  margin-bottom: 22px;
 }
 
 .subtitle {
@@ -439,8 +439,8 @@ h2 {
   font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--fleet-black);
-  margin-bottom: 16px;
-  padding-bottom: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 7px;
   border-bottom: 1px solid var(--fleet-black-10);
 }
 
@@ -448,28 +448,28 @@ h3 {
   font-size: var(--font-size-sm);
   font-weight: 700;
   color: var(--fleet-black);
-  margin: 16px 0 8px;
+  margin: 14px 0 7px;
 }
 
 .error-banner {
   background: var(--fleet-white);
   color: var(--fleet-error);
-  padding: 12px 16px;
+  padding: 11px 14px;
   border-radius: var(--radius);
   border: 1px solid var(--fleet-black-10);
   border-left: 3px solid var(--fleet-error);
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .section {
-  margin-bottom: 32px;
+  margin-bottom: 29px;
 }
 
 .metrics-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 22px;
+  margin-bottom: 22px;
 }
 
 .metrics-row.four-col {
@@ -479,8 +479,8 @@ h3 {
 .charts-row.two-col {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 22px;
+  margin-bottom: 22px;
 }
 
 /* ── Device Drawer ───────────────────────────── */
@@ -488,15 +488,15 @@ h3 {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
-  padding: 20px 24px;
-  margin-bottom: 32px;
+  padding: 18px 22px;
+  margin-bottom: 29px;
 }
 
 .drawer-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .drawer-header h2 {
@@ -509,7 +509,7 @@ h3 {
   background: none;
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius);
-  font-size: 20px;
+  font-size: 18px;
   cursor: pointer;
   color: var(--fleet-black-50);
   width: 32px;
@@ -541,7 +541,7 @@ h3 {
 
 .data-table th {
   text-align: left;
-  padding: 10px 14px;
+  padding: 9px 13px;
   font-weight: 700;
   color: var(--fleet-black);
   background: var(--fleet-off-white);
@@ -553,7 +553,7 @@ h3 {
 .data-table th:last-child { border-top-right-radius: var(--radius-large); }
 
 .data-table td {
-  padding: 10px 14px;
+  padding: 9px 13px;
   border-bottom: 1px solid var(--fleet-black-10);
   color: var(--fleet-black-75);
 }
@@ -586,7 +586,7 @@ h3 {
 /* ── Quality badges ──────────────────────────── */
 .quality-badge {
   display: inline-block;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
   font-size: var(--font-size-xs);
   font-weight: 600;
@@ -613,7 +613,7 @@ h3 {
   }
   .dashboard-header {
     flex-direction: column;
-    gap: 8px;
+    gap: 7px;
   }
 }
 </style>

@@ -540,7 +540,7 @@ function diffClass(diff) {
 .compare-header-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
 }
 
 .mode-toggle {
@@ -552,11 +552,11 @@ function diffClass(diff) {
 }
 
 .mode-btn {
-  padding: 6px 14px;
+  padding: 5px 13px;
   border: none;
   background: transparent;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: #666;
   cursor: pointer;
@@ -580,8 +580,8 @@ function diffClass(diff) {
 .cohort-info-card .cohort-meta {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 5px;
+  margin-top: 7px;
 }
 
 .cohort-item {
@@ -590,10 +590,10 @@ function diffClass(diff) {
 }
 
 .cohort-key {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--fleet-black-75);
-  margin-right: 8px;
+  margin-right: 7px;
   min-width: 50px;
   display: inline-block;
 }
@@ -601,14 +601,14 @@ function diffClass(diff) {
 .cohort-meta-empty {
   font-size: var(--font-size-sm);
   color: var(--fleet-black-33);
-  margin-top: 8px;
+  margin-top: 7px;
 }
 
 .close-compare {
   background: none;
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius);
-  padding: 6px 14px;
+  padding: 5px 13px;
   font-family: var(--font-body);
   font-size: var(--font-size-sm);
   color: var(--fleet-black-75);
@@ -646,18 +646,18 @@ function diffClass(diff) {
 }
 
 .selector-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--fleet-black-75);
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 
 .selector-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  padding-top: 8px;
+  gap: 7px;
+  margin-top: 7px;
+  padding-top: 7px;
   border-top: 1px solid var(--fleet-black-5);
 }
 
@@ -677,7 +677,7 @@ function diffClass(diff) {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 8px;
+  padding: 0 7px;
   flex-shrink: 0;
 }
 
@@ -687,7 +687,7 @@ function diffClass(diff) {
   border-radius: 50%;
   width: 36px;
   height: 36px;
-  font-size: 18px;
+  font-size: 16px;
   color: var(--fleet-black-50);
   cursor: pointer;
   display: flex;
@@ -712,7 +712,7 @@ function diffClass(diff) {
   width: 100%;
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius);
-  padding: 8px 28px 8px 10px;
+  padding: 7px 25px 7px 9px;
   font-family: var(--font-body);
   font-size: var(--font-size-sm);
   color: var(--fleet-black);
@@ -756,7 +756,7 @@ function diffClass(diff) {
   margin-bottom: var(--pad-medium);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .diff-count {
@@ -776,9 +776,9 @@ function diffClass(diff) {
 .compare-row {
   display: grid;
   grid-template-columns: minmax(160px, 1fr) 160px 160px 110px;
-  gap: 28px;
+  gap: 25px;
   align-items: center;
-  padding: 12px 16px;
+  padding: 11px 14px;
   border-bottom: 1px solid var(--fleet-black-5);
   border-radius: var(--radius);
 }
@@ -791,12 +791,12 @@ function diffClass(diff) {
 
 .compare-row.header {
   border-bottom: 1px solid var(--fleet-black-10);
-  padding-bottom: 10px;
+  padding-bottom: 9px;
   margin-bottom: 2px;
 }
 
 .compare-row.header span {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--fleet-black-75);
 }
@@ -821,7 +821,7 @@ function diffClass(diff) {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 5px;
   font-variant-numeric: tabular-nums;
   font-family: var(--font-mono, var(--font-body));
 }
@@ -850,19 +850,19 @@ function diffClass(diff) {
 .sw-diff-header, .sw-diff-row {
   display: grid;
   grid-template-columns: minmax(200px, 1fr) 160px 160px;
-  gap: 28px;
+  gap: 25px;
   align-items: center;
-  padding: 10px 16px;
+  padding: 9px 14px;
 }
 
 .sw-diff-header {
-  padding-bottom: 8px;
+  padding-bottom: 7px;
   border-bottom: 1px solid var(--fleet-black-10);
   margin-bottom: 2px;
 }
 
 .sw-diff-header span {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--fleet-black-75);
 }
@@ -882,9 +882,9 @@ function diffClass(diff) {
 .sw-diff-app { font-size: var(--font-size-sm); color: var(--fleet-black); }
 
 .usage-tag {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -911,7 +911,7 @@ function diffClass(diff) {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 7px;
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: #065f46;
@@ -936,13 +936,13 @@ function diffClass(diff) {
 .platform-stat-strip {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 14px;
 }
 
 .platform-stat {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
@@ -951,24 +951,24 @@ function diffClass(diff) {
 }
 
 .platform-stat-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--fleet-black-75);
 }
 
 .platform-stat-value {
   font-family: var(--font-mono, var(--font-body));
-  font-size: 28px;
+  font-size: 25px;
   font-weight: 700;
   color: var(--fleet-black);
   line-height: 1.1;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .platform-stat-unit {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--fleet-black-50);
   margin-left: 2px;
@@ -985,7 +985,7 @@ function diffClass(diff) {
 /* ─── MTTP Section ────────────────────────────── */
 .mttp-section h3 {
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 11px;
   align-items: baseline;
 }
 
@@ -998,7 +998,7 @@ function diffClass(diff) {
 .mttp-headline {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  gap: 16px;
+  gap: 14px;
   align-items: stretch;
   padding: var(--pad-medium) 0;
   max-width: 920px;
@@ -1026,10 +1026,10 @@ function diffClass(diff) {
 }
 
 .mttp-side-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--fleet-black-75);
-  margin-bottom: 8px;
+  margin-bottom: 7px;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1038,14 +1038,14 @@ function diffClass(diff) {
 
 .mttp-big {
   font-family: var(--font-mono, var(--font-body));
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 700;
   color: var(--fleet-black);
   line-height: 1;
 }
 
 .mttp-unit {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--fleet-black-50);
   margin-left: 2px;
@@ -1058,9 +1058,9 @@ function diffClass(diff) {
 
 .mttp-substats {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   align-items: center;
-  margin-top: 8px;
+  margin-top: 7px;
   font-size: var(--font-size-xs);
   color: var(--fleet-black-50);
 }
@@ -1074,7 +1074,7 @@ function diffClass(diff) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   min-width: 110px;
 }
 
@@ -1082,7 +1082,7 @@ function diffClass(diff) {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 14px;
+  padding: 5px 13px;
   border-radius: var(--radius-full);
   font-family: var(--font-mono, var(--font-body));
   font-size: var(--font-size-sm);
@@ -1096,7 +1096,7 @@ function diffClass(diff) {
 .mttp-diff-arrow { font-size: 14px; line-height: 1; }
 
 .mttp-diff-caption {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--fleet-black-75);
 }
@@ -1116,8 +1116,8 @@ function diffClass(diff) {
   border: none;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 0;
+  gap: 7px;
+  padding: 5px 0;
   font-family: var(--font-body);
   font-size: var(--font-size-sm);
   font-weight: 600;
@@ -1129,7 +1129,7 @@ function diffClass(diff) {
 .mttp-details-toggle:hover { filter: brightness(0.85); }
 
 .mttp-details-icon {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--fleet-black-50);
   min-width: 10px;
 }

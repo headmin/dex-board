@@ -375,14 +375,14 @@ onMounted(fetchAll)
 .dashboard {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 32px;
+  padding: 29px;
 }
 
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black); }
@@ -401,14 +401,14 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
 .device-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  gap: 14px;
 }
 
 .device-card {
   background: #fff;
   border-radius: var(--radius-large);
   border: 1px solid #e2e4ea;
-  padding: 16px;
+  padding: 14px;
   box-shadow: 0px 3px 0px rgba(226, 228, 234, 0.4);
   transition: box-shadow 150ms ease-in-out;
 }
@@ -427,9 +427,9 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
 .device-model { font-size: 12px; color: #8b8fa2; margin-bottom: 12px; }
 
 .device-badge {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
 }
 
@@ -447,7 +447,7 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
 .stat-row-bottom {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 11px;
   color: #8b8fa2;
   margin-top: 4px;
 }
@@ -459,7 +459,7 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
   background: #fff;
   border-radius: var(--radius-large);
   border: 1px solid #e2e4ea;
-  padding: 24px;
+  padding: 22px;
   box-shadow: 0px 3px 0px rgba(226, 228, 234, 0.4);
 }
 .split-half h2 { border-bottom: none; margin-bottom: 12px; padding-bottom: 0; }
@@ -468,7 +468,7 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
 .posture-grid {
   display: flex;
   justify-content: space-around;
-  padding: 16px 0;
+  padding: 14px 0;
 }
 
 .posture-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
@@ -494,22 +494,22 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
 .network-row {
   display: grid;
   grid-template-columns: 1fr 1fr auto auto;
-  gap: 12px;
+  gap: 11px;
   align-items: center;
-  padding: 8px 12px;
+  padding: 7px 11px;
   background: #f9fafc;
   border-radius: 4px;
   border: 1px solid #f0f1f4;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .network-host { font-weight: 500; color: #192147; }
 .network-ssid { color: #515774; }
 
 .signal-badge {
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -531,9 +531,9 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
 .filter-select {
   border: 1px solid #e2e4ea;
   border-radius: 4px;
-  padding: 5px 28px 5px 10px;
+  padding: 4px 25px 4px 9px;
   font-family: "Inter", sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   color: #515774;
   background: #fff;
   cursor: pointer;
@@ -575,7 +575,7 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 40px 24px;
+  padding: 36px 22px;
   z-index: 1000;
   overflow-y: auto;
 }

@@ -95,15 +95,15 @@ const slaSummary = computed(() => {
 }
 .mttp-table th {
   text-align: left;
-  padding: 10px 14px;
-  font-size: 13px;
+  padding: 9px 13px;
+  font-size: 12px;
   color: var(--fleet-black-75);
   font-weight: 600;
   border-bottom: 1px solid var(--fleet-black-10);
   background: var(--fleet-off-white);
 }
 .mttp-table td {
-  padding: 8px 14px;
+  padding: 7px 13px;
   color: var(--fleet-black-75);
   border-bottom: 1px solid var(--fleet-black-5);
 }
@@ -118,14 +118,14 @@ const slaSummary = computed(() => {
   text-align: center;
   color: var(--fleet-black-50);
   font-style: italic;
-  padding: 20px;
+  padding: 18px;
 }
 
 /* SLA attainment headline + per-cell met/missed coloring */
 .mttp-sla-headline {
   font-size: var(--font-size-sm);
   color: var(--fleet-black-75);
-  margin-bottom: 10px;
+  margin-bottom: 9px;
 }
 .mttp-sla-pct {
   font-weight: 700;
@@ -136,14 +136,14 @@ const slaSummary = computed(() => {
 .mttp-table .lag-warn,
 .mttp-table .lag-missed {
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: var(--radius-full);
 }
 .lag-met { background: var(--status-good-bg); color: var(--status-good); }
 .lag-warn { background: var(--status-fair-bg); color: var(--status-fair-text); }
 .lag-missed { background: var(--status-critical-bg); color: var(--status-critical); }
 .mttp-caption {
-  margin: 8px 0 0;
+  margin: 7px 0 0;
   font-size: var(--font-size-xs);
   color: var(--fleet-black-50);
   line-height: 1.4;

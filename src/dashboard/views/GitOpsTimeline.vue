@@ -1161,7 +1161,7 @@ onMounted(() => loadTimeline())
 }
 
 .range-btn {
-  padding: 8px 16px;
+  padding: 7px 14px;
   border: none;
   border-radius: calc(var(--radius) - 2px);
   background: transparent;
@@ -1214,7 +1214,7 @@ onMounted(() => loadTimeline())
 .section-hint code {
   font-family: var(--font-mono);
   background: var(--fleet-black-5);
-  padding: 2px 6px;
+  padding: 2px 5px;
   border-radius: var(--radius);
   font-size: var(--font-size-xs);
 }
@@ -1236,7 +1236,7 @@ onMounted(() => loadTimeline())
 
 .heatmap-label {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
   display: flex;
   align-items: center;
@@ -1245,7 +1245,7 @@ onMounted(() => loadTimeline())
 }
 
 .heatmap-hour {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--fleet-black-33);
   text-align: center;
 }
@@ -1289,7 +1289,7 @@ onMounted(() => loadTimeline())
   margin-top: var(--pad-small);
   justify-content: flex-end;
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
 }
 
@@ -1408,7 +1408,7 @@ onMounted(() => loadTimeline())
   display: flex;
   align-items: center;
   gap: var(--pad-small);
-  margin-bottom: 6px;
+  margin-bottom: 5px;
   flex-wrap: wrap;
 }
 
@@ -1417,7 +1417,7 @@ onMounted(() => loadTimeline())
   font-size: var(--font-size-xs);
   color: var(--fleet-core-vibrant-blue);
   background: var(--fleet-accent-blue-light);
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius);
   font-weight: 500;
 }
@@ -1430,8 +1430,8 @@ onMounted(() => loadTimeline())
 
 .impact-badge {
   font-family: var(--font-body);
-  font-size: 11px;
-  padding: 2px 10px;
+  font-size: 10px;
+  padding: 2px 9px;
   border-radius: var(--radius-full);
   font-weight: 500;
 }
@@ -1442,10 +1442,10 @@ onMounted(() => loadTimeline())
 
 .tag-count {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-core-vibrant-blue);
   background: var(--fleet-accent-blue-light);
-  padding: 2px 10px;
+  padding: 2px 9px;
   border-radius: var(--radius-full);
   font-weight: 500;
 }
@@ -1462,7 +1462,7 @@ onMounted(() => loadTimeline())
 .commit-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-family: var(--font-body);
   font-size: var(--font-size-xs);
   color: var(--fleet-black-50);
@@ -1476,8 +1476,8 @@ onMounted(() => loadTimeline())
 /* ─── Change Type Pills ───────────────────────────────── */
 .change-type-pill {
   font-family: var(--font-body);
-  font-size: 10px;
-  padding: 2px 8px;
+  font-size: 9px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
   font-weight: 600;
   text-transform: uppercase;
@@ -1494,7 +1494,7 @@ onMounted(() => loadTimeline())
 
 .fleet-obs-label {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
   margin-right: 2px;
 }
@@ -1508,9 +1508,9 @@ onMounted(() => loadTimeline())
 
 .file-path {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
-  padding: 4px 8px;
+  padding: 4px 7px;
   background: var(--fleet-black-3);
   border-radius: var(--radius);
 }
@@ -1519,20 +1519,20 @@ onMounted(() => loadTimeline())
 .fleet-events-summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   margin-top: var(--pad-small);
 }
 
 .fleet-badge {
   font-family: var(--font-body);
-  font-size: 11px;
-  padding: 3px 10px;
+  font-size: 10px;
+  padding: 3px 9px;
   border-radius: var(--radius-full);
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
   position: relative;
-  padding-right: 22px;
+  padding-right: 20px;
 }
 
 .fleet-badge:hover {
@@ -1556,7 +1556,7 @@ onMounted(() => loadTimeline())
   transform: translateY(-50%);
   border: none;
   background: none;
-  font-size: 13px;
+  font-size: 12px;
   color: inherit;
   opacity: 0;
   cursor: pointer;
@@ -1572,10 +1572,10 @@ onMounted(() => loadTimeline())
   border: none;
   background: none;
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-core-vibrant-blue);
   cursor: pointer;
-  padding: 3px 8px;
+  padding: 3px 7px;
 }
 
 .badge-restore:hover { text-decoration: underline; }
@@ -1592,8 +1592,8 @@ onMounted(() => loadTimeline())
 
 .fe-corr {
   font-family: var(--font-body);
-  font-size: 10px;
-  padding: 2px 8px;
+  font-size: 9px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
   font-weight: 600;
   text-transform: uppercase;
@@ -1606,9 +1606,9 @@ onMounted(() => loadTimeline())
 
 .fleet-more {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
-  padding: 3px 10px;
+  padding: 3px 9px;
 }
 
 /* ─── Event detail panel (inline) ────────────── */
@@ -1638,7 +1638,7 @@ onMounted(() => loadTimeline())
 .edp-close {
   border: none;
   background: none;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--fleet-black-50);
   cursor: pointer;
   padding: 0 4px;
@@ -1650,20 +1650,20 @@ onMounted(() => loadTimeline())
 .edp-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .edp-table th {
   text-align: left;
   font-weight: 600;
   color: var(--fleet-black-50);
-  font-size: 10px;
-  padding: 4px 8px;
+  font-size: 9px;
+  padding: 4px 7px;
   border-bottom: 1px solid var(--fleet-black-10);
 }
 
 .edp-table td {
-  padding: 5px 8px;
+  padding: 4px 7px;
   border-bottom: 1px solid var(--fleet-black-10);
   color: var(--fleet-black);
 }
@@ -1677,13 +1677,13 @@ onMounted(() => loadTimeline())
 
 .edp-mono {
   font-family: 'SF Mono', 'Fira Code', monospace;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
 }
 
 .edp-lag {
-  font-size: 11px;
-  padding: 1px 6px;
+  font-size: 10px;
+  padding: 1px 5px;
   border-radius: var(--radius-full);
   font-weight: 500;
 }
@@ -1713,7 +1713,7 @@ onMounted(() => loadTimeline())
 .fleet-event-row.clickable:hover { background: #f8f7ff; border-radius: var(--radius); }
 
 .fe-expand-hint {
-  font-size: 11px;
+  font-size: 10px;
   color: #6a67fe;
   margin-left: auto;
 }
@@ -1731,7 +1731,7 @@ onMounted(() => loadTimeline())
 }
 
 .detail-section h4 {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--fleet-black);
   margin-bottom: var(--pad-small);
@@ -1757,7 +1757,7 @@ onMounted(() => loadTimeline())
 .fe-icon {
   width: 20px;
   text-align: center;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .fe-icon.score_drop { color: #ef4444; }
@@ -1765,7 +1765,7 @@ onMounted(() => loadTimeline())
 .fe-icon.patch_wave { color: #3b82f6; }
 
 .fe-time {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--fleet-black-50);
   min-width: 100px;
 }
@@ -1776,8 +1776,8 @@ onMounted(() => loadTimeline())
 }
 
 .fe-severity {
-  font-size: 11px;
-  padding: 1px 8px;
+  font-size: 10px;
+  padding: 1px 7px;
   border-radius: var(--radius-full);
   font-weight: 500;
 }
@@ -1790,7 +1790,7 @@ onMounted(() => loadTimeline())
 .pinned-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   align-items: center;
 }
 
@@ -1798,11 +1798,11 @@ onMounted(() => loadTimeline())
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 4px 9px;
   background: #f0efff;
   border: 1px solid #d8d6ff;
   border-radius: var(--radius-full);
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -1832,7 +1832,7 @@ onMounted(() => loadTimeline())
   background: none;
   color: var(--fleet-black-50);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   padding: 0 2px;
   line-height: 1;
   margin-left: 2px;
@@ -1841,7 +1841,7 @@ onMounted(() => loadTimeline())
 .pin-remove:hover { color: #ef4444; }
 
 .pin-hint {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--fleet-black-50);
   margin-top: 4px;
   font-style: italic;
@@ -1860,7 +1860,7 @@ onMounted(() => loadTimeline())
 .score-info-btn {
   border: none;
   background: none;
-  font-size: 12px;
+  font-size: 11px;
   color: #6a67fe;
   cursor: pointer;
   font-family: var(--font-body);
@@ -1875,7 +1875,7 @@ onMounted(() => loadTimeline())
   border-radius: var(--radius-large);
   padding: var(--pad-medium);
   margin: var(--pad-small) 0;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.6;
   color: var(--fleet-black);
 }
@@ -1886,14 +1886,14 @@ onMounted(() => loadTimeline())
   display: flex;
   flex-direction: column;
   gap: 3px;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 }
 
 .si-cat {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 5px;
+  font-size: 11px;
 }
 
 .si-dot {
@@ -1904,13 +1904,13 @@ onMounted(() => loadTimeline())
 }
 
 .si-grades {
-  font-size: 12px;
+  font-size: 11px;
   padding: 4px 0;
   border-top: 1px solid var(--fleet-black-10);
 }
 
 .si-context {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
   font-style: italic;
   margin-bottom: 0;
@@ -1919,7 +1919,7 @@ onMounted(() => loadTimeline())
 /* ─── Impact explainer and verdict ─────────────── */
 
 .impact-explainer {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--fleet-black-50);
   margin-bottom: var(--pad-small);
   line-height: 1.5;
@@ -1957,14 +1957,14 @@ onMounted(() => loadTimeline())
 }
 
 .impact-number {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--fleet-black);
   font-family: 'SF Mono', 'Fira Code', monospace;
 }
 
 .impact-label {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
   text-align: center;
 }
@@ -1982,10 +1982,10 @@ onMounted(() => loadTimeline())
 
 .pin-search-input {
   width: 100%;
-  padding: 4px 10px;
+  padding: 4px 9px;
   border: 1px dashed #d8d6ff;
   border-radius: 16px;
-  font-size: 12px;
+  font-size: 11px;
   font-family: var(--font-body);
   background: transparent;
   color: var(--fleet-black);
@@ -2020,7 +2020,7 @@ onMounted(() => loadTimeline())
 .pin-search-result {
   display: flex;
   flex-direction: column;
-  padding: 6px 10px;
+  padding: 5px 9px;
   cursor: pointer;
   border-bottom: 1px solid var(--fleet-black-10);
   transition: background 0.1s;
@@ -2030,13 +2030,13 @@ onMounted(() => loadTimeline())
 .pin-search-result:hover { background: #f8f7ff; }
 
 .psr-name {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: #6a67fe;
 }
 
 .psr-meta {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--fleet-black-50);
 }
 
@@ -2045,14 +2045,14 @@ onMounted(() => loadTimeline())
 .rollout-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   margin-top: var(--pad-small);
-  padding: 5px 14px;
+  padding: 4px 13px;
   border: 1px solid #6a67fe;
   border-radius: var(--radius);
   background: transparent;
   color: #6a67fe;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -2090,7 +2090,7 @@ onMounted(() => loadTimeline())
 }
 
 .ad-delta {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   font-family: 'SF Mono', 'Fira Code', monospace;
 }
@@ -2101,8 +2101,8 @@ onMounted(() => loadTimeline())
 .delta-neutral { color: var(--fleet-black-50); }
 
 .ad-tag-btn, .ad-inspect-btn {
-  font-size: 11px;
-  padding: 2px 10px;
+  font-size: 10px;
+  padding: 2px 9px;
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius);
   background: var(--fleet-white);
@@ -2141,7 +2141,7 @@ onMounted(() => loadTimeline())
 .inspect-close {
   border: none;
   background: none;
-  font-size: 18px;
+  font-size: 16px;
   color: var(--fleet-black-50);
   cursor: pointer;
   padding: 0 4px;
@@ -2181,8 +2181,8 @@ onMounted(() => loadTimeline())
 .patch-row:last-child { border-bottom: none; }
 
 .patch-type {
-  font-size: 11px;
-  padding: 1px 6px;
+  font-size: 10px;
+  padding: 1px 5px;
   border-radius: var(--radius-full);
   background: #dbeafe;
   color: #1e40af;
@@ -2197,15 +2197,15 @@ onMounted(() => loadTimeline())
 
 .patch-versions {
   font-family: 'SF Mono', 'Fira Code', monospace;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--fleet-black-50);
 }
 
 .patch-lag {
-  font-size: 11px;
+  font-size: 10px;
   color: #92400e;
   background: var(--status-fair-bg);
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: var(--radius-full);
 }
 
@@ -2216,42 +2216,42 @@ onMounted(() => loadTimeline())
 .release-rollout-table { font-size: 12px; }
 .release-rollout-table .patch-type {
   display: inline-block;
-  margin-left: 6px;
-  font-size: 10px;
+  margin-left: 5px;
+  font-size: 9px;
   color: #92400e;
   background: var(--status-fair-bg);
-  padding: 1px 5px;
+  padding: 1px 4px;
   border-radius: var(--radius-full);
   text-transform: uppercase;
 }
 .rollout-rel {
   margin-left: 4px;
   color: #6b7280;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 /* Upstream FMA releases */
 .fma-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
-  margin-top: 12px;
+  gap: 11px;
+  margin-top: 11px;
 }
 .fma-card {
   background: var(--fleet-white, #fff);
   border: 1px solid var(--fleet-black-10, #e5e7eb);
   border-radius: var(--radius-large);
-  padding: 12px;
+  padding: 11px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 .fma-head { display: flex; align-items: center; gap: 6px; }
 .fma-app { font-weight: 600; font-size: 13px; }
 .fma-platform {
-  font-size: 10px;
+  font-size: 9px;
   text-transform: uppercase;
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: var(--radius-full);
   background: var(--fleet-off-white, #f5f5f5);
   color: var(--fleet-black-75, #444);
@@ -2261,8 +2261,8 @@ onMounted(() => loadTimeline())
 .fma-platform.platform-windows { background: #dbeafe; color: #1e40af; }
 .fma-platform.platform-linux { background: var(--status-good-bg); color: #166534; }
 .fma-badge.added {
-  font-size: 10px;
-  padding: 1px 6px;
+  font-size: 9px;
+  padding: 1px 5px;
   border-radius: var(--radius-full);
   background: var(--status-fair-bg);
   color: #92400e;

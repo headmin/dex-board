@@ -23,22 +23,22 @@ const { isFiltered, filterLabel, clearDrill } = useDrillFilter()
   background: var(--sidebar-active-bg);
   border: 1px solid #bfdbfe;
   border-radius: 8px;
-  padding: 10px 16px;
-  margin-bottom: 20px;
+  padding: 9px 14px;
+  margin-bottom: 18px;
 }
 
 .drill-content {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
 }
 
 .drill-icon {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .drill-label {
-  font-size: 14px;
+  font-size: 13px;
   color: #1e40af;
   flex: 1;
 }
@@ -47,8 +47,8 @@ const { isFiltered, filterLabel, clearDrill } = useDrillFilter()
   background: white;
   border: 1px solid #93c5fd;
   border-radius: 6px;
-  padding: 4px 12px;
-  font-size: 13px;
+  padding: 4px 11px;
+  font-size: 12px;
   color: #1e40af;
   cursor: pointer;
   transition: background 0.15s;
