@@ -80,7 +80,7 @@
 
         <div class="device-count">
           <span class="count-value">{{ deviceCount.toLocaleString() }}</span>
-          <span class="count-label">{{ Number(deviceCount) === 1 ? 'device' : 'devices' }}</span>
+          <span class="count-label">{{ Number(deviceCount) === 1 ? 'host' : 'hosts' }}</span>
         </div>
       </div>
     </div>
@@ -127,13 +127,17 @@ watch(searchText, (val) => {
   }
 })
 
-watch([searchText, selectedOS, selectedModel, selectedEncryption, selectedRAMTier], () => {
+// Order matters: firehose mode must be set BEFORE the first count fetch,
+// and a mode flip must refetch — otherwise the badge shows the legacy
+// devices.count (a single stale row) against a full firehose fleet.
+watch(isFirehose, (val) => {
+  setFirehoseMode(val)
   fetchDeviceCount()
 }, { immediate: true })
 
-watch(isFirehose, (val) => {
-  setFirehoseMode(val)
-}, { immediate: true })
+watch([searchText, selectedOS, selectedModel, selectedEncryption, selectedRAMTier], () => {
+  fetchDeviceCount()
+})
 
 onMounted(() => {
   if (isFirehose.value) {

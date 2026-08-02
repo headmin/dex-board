@@ -70,22 +70,22 @@
       <!-- Device summary cards -->
       <div class="metrics-row six-col">
         <MetricCard label="MTTP" :value="mttpValue" :subtitle="mttpSubtitle" :loading="loading.detail" />
-        <MetricCard label="SNR" :value="detail.snr" unit="dB" :loading="loading.detail" />
+        <MetricCard label="SNR" :value="detail.snr || null" unit="dB" :loading="loading.detail" />
         <MetricCard label="Quality" :value="detail.signal_quality" :loading="loading.detail" />
-        <MetricCard label="Tx Rate" :value="detail.transmit_rate" unit="Mbps" :loading="loading.detail" />
+        <MetricCard label="Tx Rate" :value="detail.transmit_rate || null" unit="Mbps" :loading="loading.detail" />
         <MetricCard label="Fleetd" :value="detail.version" :loading="loading.detail" />
         <MetricCard label="Uptime" :value="formatUptime(detail.uptime_seconds)" :loading="loading.detail" />
       </div>
 
       <!-- Health, OS & VPN fact chips -->
       <div v-if="deviceHealth.cpu_class || deviceOS.os_version || deviceVPN.network_confidence" class="detail-badges">
-        <Chip v-if="deviceHealth.cpu_class" label="CPU" :value="String(deviceHealth.cpu_class)" />
+        <Chip v-if="deviceHealth.cpu_class" label="CPU" :value="humanizeToken(deviceHealth.cpu_class)" />
         <Chip v-if="deviceHealth.ram_tier" label="RAM" :value="String(deviceHealth.ram_tier)" />
         <Chip
           v-if="deviceHealth.swap_pressure"
           :tone="chipTone('swap', deviceHealth.swap_pressure)"
           label="Swap"
-          :value="String(deviceHealth.swap_pressure)"
+          :value="humanizeToken(deviceHealth.swap_pressure, { capitalize: false })"
         />
         <Chip
           v-if="deviceHealth.battery_health_score"
@@ -93,7 +93,7 @@
           label="Battery"
           :value="`${deviceHealth.battery_health_score} (${deviceHealth.battery_percent}%)`"
         />
-        <Chip v-if="deviceOS.os_version" label="macOS" :value="String(deviceOS.os_version)" />
+        <Chip v-if="deviceOS.os_version" :label="osChipLabel" :value="String(deviceOS.os_version)" />
         <Chip
           v-if="deviceOS.os_currency"
           :tone="chipTone('os', deviceOS.os_currency)"
@@ -104,19 +104,19 @@
           v-if="deviceOS.uptime_risk"
           :tone="chipTone('uptime', deviceOS.uptime_risk)"
           label="Uptime"
-          :value="`${deviceOS.uptime_days}d (${deviceOS.uptime_risk})`"
+          :value="`${deviceOS.uptime_days}d (${humanizeToken(deviceOS.uptime_risk, { capitalize: false })})`"
         />
         <Chip
           v-if="deviceOS.dex_os_health"
           :tone="chipTone('dex', deviceOS.dex_os_health)"
           label="OS health"
-          :value="String(deviceOS.dex_os_health)"
+          :value="humanizeToken(deviceOS.dex_os_health, { capitalize: false })"
         />
         <Chip
           v-if="deviceVPN.network_confidence"
           :tone="chipTone('vpn', deviceVPN.network_confidence)"
           label="Network"
-          :value="String(deviceVPN.network_confidence)"
+          :value="humanizeToken(deviceVPN.network_confidence, { capitalize: false })"
         />
       </div>
 
@@ -128,7 +128,7 @@
             <thead><tr><th>Identifier</th><th>Count</th><th>Severity</th><th>Last crash</th></tr></thead>
             <tbody>
               <tr v-for="c in deviceCrashes" :key="c.crashed_identifier">
-                <td class="hostname">{{ c.crashed_identifier }}</td>
+                <td class="mono-id">{{ c.crashed_identifier }}</td>
                 <td>{{ c.crash_count_7d }}</td>
                 <td><Badge :tone="badgeTone(c.crash_severity)" :label="c.crash_severity" /></td>
                 <td class="muted">{{ c.last_crash_at }}</td>
@@ -201,10 +201,16 @@
         <div class="table-wrap">
           <table class="data-table">
             <thead>
-              <tr><th>Process</th><th>Class</th><th>RSS (MB)</th><th>Threads</th><th>Pressure</th></tr>
+              <tr>
+                <th @click="procSortBy('process_name')" class="sortable">Process {{ procSortIcon('process_name') }}</th>
+                <th @click="procSortBy('process_class')" class="sortable">Class {{ procSortIcon('process_class') }}</th>
+                <th @click="procSortBy('rss_mb', true)" class="sortable">RSS (MB) {{ procSortIcon('rss_mb') }}</th>
+                <th @click="procSortBy('threads', true)" class="sortable">Threads {{ procSortIcon('threads') }}</th>
+                <th @click="procSortBy('mem_pressure')" class="sortable">Pressure {{ procSortIcon('mem_pressure') }}</th>
+              </tr>
             </thead>
             <tbody>
-              <tr v-for="p in deviceProcesses" :key="p.pid">
+              <tr v-for="p in sortedDeviceProcesses" :key="p.pid">
                 <td class="hostname">{{ p.process_name }}</td>
                 <td><Badge :tone="badgeTone(p.process_class)" :label="p.process_class" /></td>
                 <td :class="memClass(p.rss_mb)">{{ p.rss_mb }}</td>
@@ -222,10 +228,15 @@
         <div class="table-wrap">
           <table class="data-table">
             <thead>
-              <tr><th>App</th><th>Version</th><th>Days stale</th><th>Tier</th></tr>
+              <tr>
+                <th @click="adoptSortBy('app_name')" class="sortable">App {{ adoptSortIcon('app_name') }}</th>
+                <th @click="adoptSortBy('version')" class="sortable">Version {{ adoptSortIcon('version') }}</th>
+                <th @click="adoptSortBy('days_since_opened', true)" class="sortable">Days stale {{ adoptSortIcon('days_since_opened') }}</th>
+                <th @click="adoptSortBy('usage_tier')" class="sortable">Tier {{ adoptSortIcon('usage_tier') }}</th>
+              </tr>
             </thead>
             <tbody>
-              <tr v-for="a in deviceAdoption" :key="a.bundle_identifier">
+              <tr v-for="a in sortedDeviceAdoption" :key="a.bundle_identifier">
                 <td class="hostname">{{ a.app_name }}</td>
                 <td class="muted">{{ a.version }}</td>
                 <td>{{ a.days_since_opened || '—' }}</td>
@@ -241,10 +252,15 @@
         <div class="table-wrap">
           <table class="data-table">
             <thead>
-              <tr><th>When</th><th>App</th><th>From → To</th><th>Lag (days)</th></tr>
+              <tr>
+                <th @click="patchSortBy('event_time', true)" class="sortable">When {{ patchSortIcon('event_time') }}</th>
+                <th @click="patchSortBy('software_name')" class="sortable">App {{ patchSortIcon('software_name') }}</th>
+                <th>From → To</th>
+                <th @click="patchSortBy('days_to_patch', true)" class="sortable">Lag (days) {{ patchSortIcon('days_to_patch') }}</th>
+              </tr>
             </thead>
             <tbody>
-              <tr v-for="(p, pi) in devicePatches" :key="pi">
+              <tr v-for="(p, pi) in sortedDevicePatches" :key="pi">
                 <td class="muted">{{ formatPatchTime(p.event_time) }}</td>
                 <td class="hostname">{{ p.software_name }}</td>
                 <td class="muted mono">{{ p.old_version || '—' }} → {{ p.new_version }}</td>
@@ -305,7 +321,7 @@
                 </div>
                 <span v-else class="muted">—</span>
               </td>
-              <td :class="rssiClass(d.rssi)">{{ d.rssi ? `${d.rssi} dBm` : '—' }}</td>
+              <td class="nowrap" :class="rssiClass(d.rssi)">{{ d.rssi ? `${d.rssi} dBm` : '—' }}</td>
               <td>
                 <Badge v-if="d.signal_quality" :tone="badgeTone(d.signal_quality)" :label="d.signal_quality" />
                 <span v-else>—</span>
@@ -337,6 +353,7 @@ import Chip from '../components/base/Chip.vue'
 import GaugeBar from '../components/base/GaugeBar.vue'
 import { buildSignalDrivers } from '../composables/scoreFormulas'
 import { displayHost } from '../composables/displayName'
+import { humanizeToken } from '../composables/humanize'
 import { useSort } from '../composables/useSort'
 import { palette } from '../composables/uiPalette'
 import dayjs from 'dayjs'
@@ -360,6 +377,16 @@ const { config: appConfig } = useAppConfig()
 // we prefer hardware_serial (globally unique, short) → host_id → hostname
 // for highest-precision lookup, matching the convention used by HostTile.
 const FLEET_ALL_HOSTS_LABEL_ID = 7
+// OS chip label follows the host platform (was hardcoded "macOS")
+const osChipLabel = computed(() => {
+  const p = String(detail.value?.platform || selected.value?.platform || '').toLowerCase()
+  // darwin contains "win" — check Apple platforms FIRST
+  if (p.includes('darwin') || p.includes('mac')) return 'macOS'
+  if (p.includes('linux') || p.includes('ubuntu')) return 'Linux'
+  if (p.includes('win')) return 'Windows'
+  return 'OS'
+})
+
 const openInFleetUrl = computed(() => {
   const base = appConfig.value.fleetUrl
   const d = detail.value || {}
@@ -379,6 +406,19 @@ const loading = ref({ list: false, detail: false, deviceWifi: false, deviceApps:
 
 const devices = ref([])
 const { sortKey: sortCol, sortAsc, toggleSort: sortBy, sortRows: sortDeviceRows } = useSort('hostname', true)
+// Drawer tables: sortable (user request) — sensible severity-first defaults
+const { sortKey: procSortCol, sortAsc: procSortAsc, toggleSort: procSortBy, sortRows: sortProcRows } = useSort('rss_mb', false)
+const sortedDeviceProcesses = computed(() => sortProcRows(deviceProcesses.value))
+function procSortIcon(col) { return procSortCol.value === col ? (procSortAsc.value ? '▲' : '▼') : '' }
+
+const { sortKey: adoptSortCol, sortAsc: adoptSortAsc, toggleSort: adoptSortBy, sortRows: sortAdoptRows } = useSort('days_since_opened', false)
+const sortedDeviceAdoption = computed(() => sortAdoptRows(deviceAdoption.value))
+function adoptSortIcon(col) { return adoptSortCol.value === col ? (adoptSortAsc.value ? '▲' : '▼') : '' }
+
+const { sortKey: patchSortCol, sortAsc: patchSortAsc, toggleSort: patchSortBy, sortRows: sortPatchRows } = useSort('event_time', false)
+const sortedDevicePatches = computed(() => sortPatchRows(devicePatches.value))
+function patchSortIcon(col) { return patchSortCol.value === col ? (patchSortAsc.value ? '▲' : '▼') : '' }
+
 // memory desc by default — biggest hogs at the top
 const { sortKey: appSortCol, sortAsc: appSortAsc, toggleSort: toggleAppSort, sortRows: sortAppRows } = useSort('memory_mb', false)
 
@@ -800,6 +840,8 @@ h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black)
 .hostname { font-weight: 700; color: var(--fleet-black); }
 .muted { color: var(--fleet-black-50); font-size: var(--font-size-xs); }
 .mono { font-family: var(--font-mono); }
+.mono-id { font-family: var(--font-mono); font-size: var(--font-size-sm); color: var(--fleet-black-75); }
+.nowrap { white-space: nowrap; }
 
 .drivers-section { transition: box-shadow 600ms ease-out; border-radius: var(--radius); }
 .drivers-section.flash { box-shadow: 0 0 0 3px rgba(106, 103, 254, 0.35); }
@@ -840,7 +882,12 @@ h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black)
 .pressure-critical { color: var(--fleet-status-error); }
 
 /* Detail fact chips */
-.detail-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.detail-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: var(--pad-medium) 0 var(--pad-large);
+}
 
 .crash-section { margin-bottom: 16px; }
 </style>

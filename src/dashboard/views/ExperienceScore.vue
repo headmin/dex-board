@@ -33,7 +33,7 @@
         :delta="tileDeltas.composite"
         :sparklineData="fleet.sparkline"
         :loading="loading.fleet"
-        :subtitle="fleet.deviceCount ? `${fleet.deviceCount} devices` : ''"
+        :subtitle="fleet.deviceCount ? `${fleet.deviceCount} hosts` : ''"
       />
     </section>
 
@@ -1698,7 +1698,7 @@ onMounted(() => {
    pills — the color stops at the value. Gauges keep tracks; these don't. */
 .signal-bar-track {
   flex: 1;
-  height: var(--gauge-track-height);
+  height: var(--bar-height);
   background: var(--fleet-black-10);
   border-radius: var(--radius-full);
   overflow: hidden;

@@ -47,7 +47,7 @@
               <td class="num"><strong>{{ a.unused_hosts }}</strong></td>
               <td class="sw-bar-col">
                 <div class="sw-bar-row">
-                  <GaugeBar class="sw-bar" :value="a.pct_unused" :color="shareColor(a.pct_unused)" />
+                  <GaugeBar class="sw-bar" height="var(--bar-height)" :value="a.pct_unused" :color="shareColor(a.pct_unused)" />
                   <span class="sw-bar-label">{{ a.pct_unused }}%</span>
                 </div>
               </td>

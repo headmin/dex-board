@@ -8,7 +8,7 @@
     <section class="section">
       <SectionHeader title="Fleet summary" />
       <div class="metrics-row four-col">
-        <MetricCard label="Hosts" :value="summary.total_devices" :loading="loading" />
+        <MetricCard label="Hosts reporting pressure" :value="summary.total_devices" :loading="loading" />
         <MetricCard label="Avg memory pressure" :value="summary.avg_mem_pressure_pct" unit="%" :loading="loading" />
         <MetricCard label="High pressure (>50%)" :value="summary.high_pressure_devices" :loading="loading" />
         <MetricCard label="Critical (>70%)" :value="summary.critical_pressure_devices" :loading="loading" />
@@ -31,7 +31,7 @@
               <span class="stat-label">avg RAM (GB)</span>
             </div>
             <div class="arch-stat">
-              <span class="stat-value" :class="pressureClass(a.avg_mem_pressure_pct)">{{ a.avg_mem_pressure_pct }}%</span>
+              <span class="stat-value" :class="a.avg_mem_pressure_pct ? pressureClass(a.avg_mem_pressure_pct) : ''" :title="a.avg_mem_pressure_pct ? '' : 'No memory-pressure telemetry for this architecture'">{{ a.avg_mem_pressure_pct ? a.avg_mem_pressure_pct + '%' : '—' }}</span>
               <span class="stat-label">avg pressure</span>
             </div>
             <div class="arch-stat">

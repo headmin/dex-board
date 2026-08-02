@@ -275,7 +275,7 @@ function diffClass(row) {
 
 .bench-bar-track {
   position: relative;
-  height: var(--gauge-track-height);
+  height: var(--bar-height);
   background: var(--fleet-black-10);
   border-radius: var(--radius-full);
   overflow: visible;

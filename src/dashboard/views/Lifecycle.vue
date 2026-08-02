@@ -56,7 +56,7 @@
               <td class="num">{{ h.ram_gb }}GB</td>
               <td>
                 <Badge :tone="batteryTone(h.battery_health_score)">
-                  {{ h.battery_health_score || '—' }}<template v-if="h.battery_health_pct"> · {{ Math.round(h.battery_health_pct) }}%</template>
+                  {{ h.battery_health_score || '—' }}<template v-if="h.battery_health_pct"> · {{ Math.min(100, Math.round(h.battery_health_pct)) }}%</template>
                 </Badge>
               </td>
               <td>

@@ -83,7 +83,7 @@ h3 {
 }
 
 .bar-track {
-  height: var(--gauge-track-height);
+  height: var(--bar-height);
   background: var(--fleet-black-10);
   border-radius: var(--radius-full);
   position: relative;

@@ -48,6 +48,7 @@ export const palette = {
 /** Categorical series palette for multi-series charts (identity, not status). */
 export const categorical = [
   '#6a67fe', '#009a7d', '#ae6ddf', '#ecc767', '#5cabdf', '#ff5c83',
+  '#ec9545', '#506e92',
 ]
 
 /** Ordinal good→bad ramp for heatmaps / banded scales. */

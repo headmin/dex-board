@@ -26,7 +26,7 @@ const fillStyle = computed(() => {
 <style scoped>
 .score-bar {
   width: 100%;
-  background: transparent;
+  background: var(--fleet-black-10);
 }
 
 .score-bar-fill {

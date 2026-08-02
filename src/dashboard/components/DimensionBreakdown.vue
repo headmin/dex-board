@@ -15,7 +15,7 @@
     <SkeletonLoader v-if="loading" variant="chart" height="280px" />
     <div v-else-if="!activeData.length" class="empty-state">No data for this dimension</div>
     <div v-else class="breakdown-rows">
-      <div v-for="(row, idx) in activeData" :key="row.name" class="breakdown-row clickable" :style="{ opacity: rowFade(idx) }" @click="$emit('row-click', { dimension: activeDimension, value: row.name })" :title="'Filter fleet by ' + row.name + ' (' + row.count + (Number(row.count) === 1 ? ' device)' : ' devices)')">
+      <div v-for="(row, idx) in activeData" :key="row.name" class="breakdown-row clickable" :style="{ opacity: rowFade(idx) }" @click="$emit('row-click', { dimension: activeDimension, value: row.name })" :title="'Filter fleet by ' + row.name + ' (' + row.count + (Number(row.count) === 1 ? ' host)' : ' hosts)')">
         <div class="row-label">
           <span class="row-name">{{ prettyName(row.name) }}</span>
           <span class="row-count">{{ row.count }}</span>
@@ -208,7 +208,7 @@ h3 {
 .score-bar-track {
   flex: 1;
   height: var(--bar-height);
-  background: transparent;
+  background: var(--fleet-black-10);
   border-radius: var(--radius-full);
   overflow: hidden;
 }

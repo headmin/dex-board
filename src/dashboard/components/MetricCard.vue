@@ -35,6 +35,7 @@ const props = defineProps({
 })
 
 const formattedValue = computed(() => {
+  if (props.value === null || props.value === undefined || props.value === '') return '—'
   if (typeof props.value === 'number') {
     return props.value.toLocaleString()
   }

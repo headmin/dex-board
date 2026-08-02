@@ -108,6 +108,9 @@ export const firehoseWifiQueries: QueryConfig[] = [
         count() AS samples
       FROM wifi_signal
       WHERE host_id = {filterHostId:String}
+        -- rssi = 0 is the "no reading" sentinel (real RSSI is negative dBm);
+        -- plotting it pins the chart at 0 and reads as perfect signal
+        AND rssi < 0
       GROUP BY hour
       ORDER BY hour
     `,

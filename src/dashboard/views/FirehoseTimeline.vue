@@ -48,7 +48,7 @@
           >See in timeline →</a>
         </FmaReleaseCard>
       </div>
-      <BaseButton v-if="fmaTopReleases.length < fmaReleases.length" class="fma-more-btn" @click="fmaLimit += 12">
+      <BaseButton v-if="visibleFmaReleases.length > 0 && fmaTopReleases.length < fmaReleases.length" class="fma-more-btn" @click="fmaLimit += 12">
         Show 12 more releases
       </BaseButton>
     </section>
@@ -90,7 +90,7 @@
       <div v-else class="daemons-grid">
         <div v-for="d in filteredDaemons" :key="d.bundle_identifier" class="daemon-card">
           <div class="daemon-head">
-            <span class="daemon-name">{{ d.app_name }}</span>
+            <span class="daemon-name">{{ d.app_name || d.bundle_identifier }}</span>
             <span class="daemon-hosts"><strong>{{ d.hosts_running }}</strong> host{{ d.hosts_running === 1 ? '' : 's' }}</span>
           </div>
           <div class="daemon-bundle mono">{{ d.bundle_identifier }}</div>
@@ -629,6 +629,12 @@ const visibleFmaReleases = computed(() => {
 const releasesWithData = computed(() =>
   fmaTopReleases.value.filter(r => (totalDevicesForRelease(r.id) || 0) > 0).length
 )
+
+// If the patch-data filter would empty the section entirely, switch it off —
+// an empty flagship section with an active filter reads as broken.
+watch([releasesWithData, fmaEagerLoaded], ([n, loaded]) => {
+  if (loaded && onlyWithData.value && n === 0) onlyWithData.value = false
+})
 
 // Shared helpers from useFmaReleases, bound to this view's state.
 function loadFmaReleaseDevices(release) {

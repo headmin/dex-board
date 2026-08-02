@@ -337,12 +337,18 @@ async function renderDiagram() {
       mermaidInstance = mod.default
       mermaidInstance.initialize({ startOnLoad: false, theme: 'neutral', flowchart: { curve: 'basis', padding: 16 } })
     }
-    const { svg } = await mermaidInstance.render('mermaid-' + Date.now(), def)
-    diagramSvg.value = svg
+    // Unique counter id + generation guard: two same-tick renders with a
+    // Date.now() id collide inside mermaid and both return EMPTY SVGs
+    // (the always-blank-diagram bug).
+    const gen = ++renderGen
+    const { svg } = await mermaidInstance.render('mermaid-' + gen, def)
+    if (gen === renderGen) diagramSvg.value = svg
   } catch (e) {
     diagramSvg.value = `<div style="padding:20px;color:var(--fleet-black-50)">Diagram error: ${e.message}</div>`
   }
 }
+
+let renderGen = 0
 
 watch(sliderIndex, () => {
   springOpenChanged()
@@ -361,9 +367,14 @@ async function fetchData() {
       commits.value = text.trim().split('\n').filter(Boolean).map(l => JSON.parse(l)).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
     }
     if (structRes.ok) structure.value = await structRes.json()
-    sliderIndex.value = commits.value.length - 1
+    // Setting sliderIndex triggers the watcher's renderDiagram(); a second
+    // explicit call here raced it (see render guard above). Only render
+    // directly when the index didn't change (watcher won't fire).
+    const last = commits.value.length - 1
+    const willWatch = sliderIndex.value !== last
+    sliderIndex.value = last
     await nextTick()
-    renderDiagram()
+    if (!willWatch) renderDiagram()
   } catch (e) { error.value = e.message }
   finally { loading.value = false }
 }

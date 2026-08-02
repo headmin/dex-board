@@ -45,7 +45,7 @@ const markerLeft = computed(() => {
 .gauge-bar {
   position: relative;
   width: 100%;
-  height: var(--gauge-track-height);
+  height: v-bind(height);
   background: var(--fleet-black-10);
   border-radius: var(--radius-full);
   overflow: visible;
