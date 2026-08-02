@@ -106,9 +106,49 @@
       <section v-if="daemons.length" class="section">
         <SectionHeader
           title="Background apps &amp; daemons"
-          :caption="`System services, helpers, security agents — running on the fleet but not tracked by app-adoption · ${daemons.length} services`"
+          :caption="`System services, helpers, security agents — software nobody opened, so app-adoption never sees it · ${daemons.length} services`"
         />
-        <DataTable :data="daemons" :columns="daemonCols" :loading="loading.apps" density="compact" :maxRows="20" />
+
+        <!-- Layer 1: what this fleet of agents amounts to -->
+        <div class="metrics-row four-col">
+          <MetricCard label="Services" :value="daemons.length" :loading="loading.apps" subtitle="non-Apple, seen in the last 2 days" />
+          <MetricCard label="Hosts reporting" :value="daemonReportingHosts" :loading="loading.apps" subtitle="coverage denominator" />
+          <MetricCard label="Fleet RAM footprint" :value="daemonFleetRamGb" unit="GB" :loading="loading.apps" subtitle="p95 per instance × hosts — estimate" />
+          <MetricCard label="Universal services" :value="universalDaemonCount" :loading="loading.apps" subtitle="on every reporting host" />
+        </div>
+
+        <!-- Layer 2: agents that are almost everywhere — the gap list -->
+        <div v-if="daemonGaps.length" class="daemon-gaps">
+          <div class="daemon-gaps-head">
+            <h3>Almost universal — coverage gaps</h3>
+            <span class="daemon-gaps-hint">On ≥80% of reporting hosts but not all — services meant to be everywhere tend to live here</span>
+          </div>
+          <div class="daemon-gap-rows">
+            <div v-for="g in daemonGaps" :key="g.bundle_identifier" class="daemon-gap-row">
+              <div class="daemon-gap-label">
+                <span class="daemon-gap-name">{{ g.app_name }}</span>
+                <span class="daemon-gap-bundle">{{ g.bundle_identifier }}</span>
+              </div>
+              <MeterBar :value="g.coverage_pct" semantics="none" :color="palette.good" height="10px" />
+              <span class="daemon-gap-count">{{ g.hosts_running }}/{{ g.reporting_hosts }} · {{ g.missing }} missing</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layer 3: per-service footprint, sortable -->
+        <DataTable
+          :data="daemonRows"
+          :columns="daemonCols"
+          :loading="loading.apps"
+          density="compact"
+          :maxRows="20"
+          defaultSortKey="fleet_ram_mb"
+          :defaultSortAsc="false"
+        />
+        <p class="daemon-footnote">
+          Fleet RAM = p95 memory per instance × hosts running — a standing-footprint estimate, not a simultaneous
+          measurement. Coverage denominator: {{ daemonReportingHosts ?? '—' }} hosts reporting process telemetry in the last 2 days.
+        </p>
       </section>
     </div>
 
@@ -300,6 +340,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { query } from '../services/api'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
@@ -311,6 +352,7 @@ import DataTable from '../components/DataTable.vue'
 import PageHeader from '../components/base/PageHeader.vue'
 import SectionHeader from '../components/base/SectionHeader.vue'
 import Tabs from '../components/base/Tabs.vue'
+import MeterBar from '../components/base/MeterBar.vue'
 import OverviewPane from '../components/analytics/OverviewPane.vue'
 import { palette } from '../composables/uiPalette'
 import { useFleetFilter } from '../composables/useFleetFilter'
@@ -344,6 +386,8 @@ const { filterParams } = useFleetFilter()
 const fp = () => ({ ...filterParams.value })
 
 const error = ref(null)
+const route = useRoute()
+const router = useRouter()
 const activeTab = ref('overview')
 const fetchedTabs = ref(new Set())
 const loading = ref({ wifi: false, apps: false, hw: false, fleetd: false, health: false, vpn: false, crashes: false, adoption: false })
@@ -397,10 +441,45 @@ const appCols = [
 const daemons = ref([])
 const daemonCols = [
   { key: 'app_name', label: 'Service' },
-  { key: 'bundle_identifier', label: 'Bundle ID', mono: true },
-  { key: 'path', label: 'Path', mono: true },
-  { key: 'hosts_running', label: 'Hosts' },
+  { key: 'bundle_identifier', label: 'Bundle ID' },
+  { key: 'path', label: 'Path' },
+  { key: 'hosts_running', label: 'Hosts', type: 'number', align: 'right' },
+  { key: 'coverage_pct', label: 'Coverage %', type: 'number', align: 'right' },
+  { key: 'p95_memory_mb', label: 'RAM/inst (p95 MB)', type: 'number', align: 'right' },
+  { key: 'fleet_ram_mb', label: 'Fleet RAM (MB)', type: 'number', align: 'right' },
 ]
+
+// Rows enriched with the two derived numbers the table sorts on. Coverage
+// uses the hosts-reporting-process-telemetry denominator the query returns;
+// fleet RAM is p95-per-instance × hosts — an estimate, labeled as such.
+const daemonRows = computed(() => daemons.value.map(d => {
+  const reporting = Number(d.reporting_hosts) || 0
+  const hosts = Number(d.hosts_running) || 0
+  return {
+    ...d,
+    coverage_pct: reporting ? Math.round((hosts / reporting) * 100) : null,
+    fleet_ram_mb: d.p95_memory_mb != null ? Math.round(Number(d.p95_memory_mb) * hosts) : null,
+  }
+}))
+
+const daemonReportingHosts = computed(() => Number(daemons.value[0]?.reporting_hosts) || null)
+
+const daemonFleetRamGb = computed(() => {
+  const totalMb = daemonRows.value.reduce((s, d) => s + (d.fleet_ram_mb || 0), 0)
+  return totalMb ? +(totalMb / 1024).toFixed(1) : null
+})
+
+const universalDaemonCount = computed(() =>
+  daemonRows.value.filter(d => d.coverage_pct === 100).length
+)
+
+// Services on ≥80% but <100% of reporting hosts — probably meant to be
+// universal. Never padded: hidden entirely when nothing qualifies.
+const daemonGaps = computed(() => daemonRows.value
+  .filter(d => d.coverage_pct != null && d.coverage_pct >= 80 && d.coverage_pct < 100)
+  .map(d => ({ ...d, missing: (Number(d.reporting_hosts) || 0) - (Number(d.hosts_running) || 0) }))
+  .sort((a, b) => b.coverage_pct - a.coverage_pct)
+  .slice(0, 6))
 
 // ── Hardware data ───────────────────────────────────
 const hwDeviceCount = ref(0)
@@ -525,7 +604,7 @@ async function fetchTab(tab) {
     }
     else if (tab === 'apps') {
       loading.value.apps = true
-      const [s, top, peak, all, daemonRows] = await Promise.all([
+      const [s, top, peak, all, daemonData] = await Promise.all([
         query('firehose.apps.fleet_summary', { ...fp() }),
         query('firehose.apps.top', { limit: 10, ...fp() }),
         query('firehose.apps.memory_hogs', { limit: 10, ...fp() }),
@@ -536,7 +615,7 @@ async function fetchTab(tab) {
       topApps.value = top
       peakApps.value = peak.map(h => ({ ...h, label: `${h.app_name} (${displayHost(h)})` }))
       allApps.value = all
-      daemons.value = daemonRows || []
+      daemons.value = daemonData || []
       loading.value.apps = false
     }
     else if (tab === 'hardware') {
@@ -830,6 +909,17 @@ const heroView = computed(() => {
 onMounted(() => {
   fetchedTabs.value.add('overview')
   fetchCoverage()
+  // Deep-linkable tabs: /analytics?tab=apps opens on that tab.
+  const wanted = String(route.query.tab || '')
+  if (wanted && wanted !== 'overview' && tabs.some(t => t.id === wanted)) switchTab(wanted)
+})
+
+// Keep the URL in sync so the current tab survives reload/share.
+watch(activeTab, (tab) => {
+  const q = { ...route.query }
+  if (tab === 'overview') delete q.tab
+  else q.tab = tab
+  router.replace({ query: q })
 })
 
 // When the top filter changes, invalidate the per-tab cache and re-fetch
@@ -880,6 +970,41 @@ watch(filterParams, () => {
 .hero-rail-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hero-rail-count { font-family: var(--font-mono); font-weight: 700; }
 .hero-rail-empty { font-size: var(--font-size-sm); color: var(--fleet-black-50); font-style: italic; }
+
+/* ─── Background apps & daemons — footprint & coverage ── */
+.daemon-gaps {
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+  padding: var(--pad-large);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.daemon-gaps-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.daemon-gaps-head h3 { margin: 0; font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); }
+.daemon-gaps-hint { font-size: var(--font-size-sm); color: var(--fleet-black-50); text-align: right; }
+.daemon-gap-rows { display: flex; flex-direction: column; gap: 11px; }
+.daemon-gap-row {
+  display: grid;
+  grid-template-columns: 260px 1fr 150px;
+  align-items: center;
+  gap: 14px;
+}
+.daemon-gap-label { display: flex; flex-direction: column; min-width: 0; }
+.daemon-gap-name { font-size: var(--font-size-base); font-weight: 600; color: var(--fleet-black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.daemon-gap-bundle { font-family: var(--font-mono); font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.daemon-gap-count { font-family: var(--font-mono); font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black-75); text-align: right; }
+.daemon-footnote {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--fleet-black-50);
+  text-wrap: pretty;
+}
+@media (max-width: 900px) {
+  .daemon-gap-row { grid-template-columns: 1fr 90px; }
+  .daemon-gap-row .meter-bar { display: none; }
+}
 
 @media (max-width: 1100px) {
   .an-hero { grid-template-columns: 1fr; gap: 20px; }

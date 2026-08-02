@@ -18,41 +18,38 @@
         </button>
       </div>
 
-      <div class="filter-divider"></div>
-
       <div class="filters-group">
-        <div class="field field--inline">
-          <label class="field__label field__label--inline">Platform</label>
-          <select v-model="selectedOS" class="field__input">
+        <label class="filter-pill" :class="{ 'filter-pill--active': selectedOS }">
+          <span class="filter-pill-label">Platform</span>
+          <select v-model="selectedOS">
             <option value="">All</option>
             <option v-for="os in osOptions" :key="os" :value="os">{{ os }}</option>
           </select>
-        </div>
+        </label>
 
-        <div class="field field--inline">
-          <label class="field__label field__label--inline">Model</label>
-          <select v-model="selectedModel" class="field__input">
+        <label class="filter-pill" :class="{ 'filter-pill--active': selectedModel }">
+          <span class="filter-pill-label">Model</span>
+          <select v-model="selectedModel">
             <option value="">All</option>
             <option v-for="m in modelOptions" :key="m" :value="m">{{ m }}</option>
           </select>
-        </div>
+        </label>
 
-        <div class="field field--inline">
-          <label class="field__label field__label--inline" title="Filters hosts with RAM at or below the selected tier">RAM</label>
-          <select v-model="selectedRAMTier" class="field__input">
+        <label class="filter-pill" :class="{ 'filter-pill--active': selectedRAMTier }" title="Filters hosts with RAM at or below the selected tier">
+          <span class="filter-pill-label">RAM</span>
+          <select v-model="selectedRAMTier">
             <option value="">All</option>
             <option v-for="r in ramTierOptions" :key="r" :value="r">{{ formatRamOption(r) }}</option>
           </select>
-        </div>
+        </label>
 
-        <div v-if="teamOptions.length" class="field field--inline">
-          <label class="field__label field__label--inline" title="Filter to hosts in a specific Fleet (extracted from osquery event name; data layer ships as 'team-XXX')">Fleet</label>
-          <select v-model="selectedTeam" class="field__input">
-            <option value="">All fleets</option>
+        <label v-if="teamOptions.length" class="filter-pill" :class="{ 'filter-pill--active': selectedTeam }" title="Filter to hosts in a specific Fleet (extracted from osquery event name; data layer ships as 'team-XXX')">
+          <span class="filter-pill-label">Fleet</span>
+          <select v-model="selectedTeam">
+            <option value="">All</option>
             <option v-for="t in teamOptions" :key="t" :value="t">{{ t }}</option>
           </select>
-        </div>
-
+        </label>
       </div>
 
       <button v-if="isFleetFiltered" class="button button--inverse button--small" @click="clearFleetFilter">
@@ -140,7 +137,8 @@ onMounted(() => {
 .filter-content {
   display: flex;
   align-items: center;
-  gap: var(--pad-medium);
+  flex-wrap: wrap;
+  gap: var(--pad-small) var(--pad-smedium);
   max-width: 1440px;
 }
 
@@ -148,8 +146,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   position: relative;
-  flex: 0 1 280px;
-  min-width: 180px;
+  flex: 0 1 300px;
+  min-width: 220px;
 }
 
 .search-icon {
@@ -186,42 +184,73 @@ onMounted(() => {
   color: var(--fleet-black);
 }
 
-.filter-divider {
-  width: 1px;
-  height: 24px;
-  background: var(--fleet-black-10);
-}
-
 .filters-group {
   display: flex;
   align-items: center;
-  gap: var(--pad-medium);
+  gap: var(--pad-small);
   flex-wrap: wrap;
 }
 
-/* Fleet Input Styles */
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--pad-xsmall);
-}
-
-.field--inline {
-  flex-direction: row;
+/* One filter = one pill. The label lives inside the control, so a wrap
+   can never orphan a label from its select; pills wrap as whole units. */
+.filter-pill {
+  display: inline-flex;
   align-items: center;
-  gap: var(--pad-small);
+  height: 32px;
+  padding-left: 10px;
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color var(--transition-base), background-color var(--transition-base);
 }
 
-.field__label {
-  font-size: var(--font-size-sm);
+.filter-pill:hover {
+  border-color: var(--fleet-black-50);
+}
+
+.filter-pill:focus-within {
+  border-color: var(--fleet-black-75);
+}
+
+.filter-pill--active {
+  border-color: var(--fleet-green);
+  background: var(--status-good-bg);
+}
+
+.filter-pill--active .filter-pill-label {
+  color: var(--status-good-text);
+}
+
+.filter-pill-label {
+  font-size: var(--font-size-xxsmall);
   font-weight: 600;
-  color: var(--fleet-black-75);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--fleet-black-50);
+  white-space: nowrap;
 }
 
-.field__label--inline {
-  font-weight: 500;
-  color: var(--fleet-black-75);
+.filter-pill select {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font-family: inherit;
   font-size: var(--font-size-xsmall);
+  font-weight: 600;
+  color: var(--fleet-black);
+  padding: 0 26px 0 7px;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23515774' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
 }
 
 .field__input {
@@ -246,26 +275,9 @@ onMounted(() => {
   border-color: var(--fleet-black-75-down);
 }
 
-select.field__input {
-  appearance: none;
-  -webkit-appearance: none;
-  padding-right: 28px;
-  min-width: 96px;
-  max-width: 200px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23515774' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 9px center;
-  cursor: pointer;
-}
-
 .field__input::placeholder {
   color: var(--fleet-black-50);
   font-style: italic;
-}
-
-select.field__input {
-  cursor: pointer;
-  padding-right: var(--pad-large);
 }
 
 /* Button Styles */
@@ -297,8 +309,8 @@ select.field__input {
 }
 
 .button--small {
-  padding: var(--pad-xsmall) var(--pad-small);
-  height: 28px;
+  padding: var(--pad-xsmall) var(--pad-smedium);
+  height: 32px; /* one control height across the whole bar */
   font-size: var(--font-size-xxsmall);
 }
 
@@ -344,9 +356,10 @@ select.field__input {
 
 .device-count {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 5px;
-  padding: var(--pad-small) var(--pad-smedium);
+  height: 32px;
+  padding: 0 var(--pad-smedium);
   background: var(--fleet-black-5);
   border-radius: var(--radius);
 }
@@ -364,15 +377,9 @@ select.field__input {
 }
 
 @media (max-width: 1024px) {
-  .filter-content {
-    flex-wrap: wrap;
-  }
   .search-group {
     flex: 1 1 100%;
     max-width: none;
-  }
-  .filter-divider {
-    display: none;
   }
   .filter-actions {
     margin-left: 0;

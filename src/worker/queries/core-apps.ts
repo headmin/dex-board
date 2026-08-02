@@ -93,12 +93,20 @@ export const firehoseAppsQueries: QueryConfig[] = [
         FROM adoption_gap
         WHERE timestamp > now() - INTERVAL 14 DAY
           AND bundle_identifier != ''
+      ),
+      reporting AS (
+        SELECT countDistinct(host_id) AS n
+        FROM running_apps
+        WHERE timestamp > now() - INTERVAL 2 DAY
       )
       SELECT
         app_name,
         bundle_identifier,
         any(path) AS path,
         countDistinct(host_id) AS hosts_running,
+        round(avg(memory_mb), 0) AS avg_memory_mb,
+        round(quantile(0.95)(memory_mb), 0) AS p95_memory_mb,
+        (SELECT n FROM reporting) AS reporting_hosts,
         max(toDate(timestamp)) AS last_seen,
         min(toDate(timestamp)) AS first_seen
       FROM running_apps
