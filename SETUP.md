@@ -53,15 +53,33 @@ If the ClickPipe is later re-created (which gives it a new UUID-suffixed name), 
 
 DEX Board's signals come from a fixed set of Fleet scheduled queries. They must be deployed and **enabled** for any data to flow.
 
-### 3.1 Apply the DEX query packs
+### 3.1 Apply the DEX query pack (upstream — the only supported source)
+
+Apply Fleet's **upstream** DEX query pack. It is the source of truth for the
+queries this dashboard scores from — it emits all seven scoring tables
+(`os_health`, `process_health`, `crash_summary`, `crash_detail`,
+`adoption_gap`, `vpn_gate`, `wifi_signal`) plus `security_posture` and
+`device_health`.
 
 ```bash
 fleetctl login                                    # against your Fleet server
-fleetctl apply -f setup/fleet-query-packs/all/dex-queries.yml
-fleetctl apply -f setup/fleet-query-packs/macos/dex-queries.yml
-fleetctl apply -f setup/fleet-query-packs/linux/dex-queries.yml
-fleetctl apply -f setup/fleet-query-packs/windows/dex-queries.yml
+
+# From a clone of fleetdm/fleet:
+fleetctl apply -f it-and-security/lib/all/reports/dex-queries.yml
+
+# Or directly from GitHub:
+curl -fsSL https://raw.githubusercontent.com/fleetdm/fleet/main/it-and-security/lib/all/reports/dex-queries.yml \
+  | fleetctl apply -f -
 ```
+
+> ⚠️ Do **not** apply the copies in `setup/fleet-query-packs/` — they are
+> reduced reference snapshots that do *not* emit the scoring tables. Applying
+> them silently under-populates Performance, Software, and Network: the
+> `ifNull()` defaults make missing data look "average" instead of missing.
+> See `setup/fleet-query-packs/README.md`.
+
+After queries have had one collection interval to run, verify data landed
+(section 3.2a below) **before** trusting any grade the dashboard shows.
 
 ### 3.2 Required scheduled queries
 
@@ -80,7 +98,24 @@ The firehose materialized views key off the `name` column on the ClickPipe table
 - `fleetd information`
 - `System Information`
 
-If any of these are paused or missing, the corresponding tile/view will show blanks. The dashboard does *not* tell you which schedule is dead — verify on the Fleet side.
+If any of these are paused or missing, the corresponding tile/view will show blanks.
+
+### 3.2a Post-setup sanity check — assert the scoring tables have data
+
+The composite grade is only trustworthy when every scoring table has rows:
+the scorer's `ifNull()` defaults make an **empty** table look like an
+**average** fleet. After the queries have run at least once, verify:
+
+```bash
+# Via the worker API (same check the dashboard runs):
+curl -s -X POST https://<your-worker>/api/query \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"firehose.scores.readiness"}' | jq
+```
+
+Every `row_count` should be > 0 (`security_posture` may lag — the score has
+an explicit OS-layer fallback for it). The Experience page also runs this
+check on load and shows a warning banner listing any empty scoring tables.
 
 ### 3.3 Configure Fleet's ClickHouse logger (for the Fleet-logs instance)
 

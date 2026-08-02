@@ -19,6 +19,15 @@
       </div>
     </section>
 
+    <!-- ─── Scoring readiness warning (SETUP.md §3.2a) ──────── -->
+    <div v-if="missingSignals.length" class="readiness-banner">
+      <strong>Scoring signals missing:</strong>
+      {{ missingSignals.join(', ') }} — these tables are empty, so the affected
+      categories default to "average" instead of real data. Check that the
+      upstream DEX query pack is applied and its schedules are enabled
+      (SETUP.md §3.1–3.2).
+    </div>
+
     <!-- ─── Fleet Composite Grade Hero ─────────────────────── -->
     <section class="hero-section">
       <GradeCard
@@ -140,6 +149,8 @@
         :sparklineData="cat.sparkline"
         :loading="loading.categories"
         :clickable="true"
+        :subtitle="cat.key === 'network' ? 'Informational — not in composite' : ''"
+        :title="cat.key === 'network' ? 'Network quality is shown for context but excluded from the composite score: Wi-Fi signal is too volatile for a number that drives quarterly decisions. See SCORE-IDEA.md.' : ''"
         @click="toggleSignals(cat.key)"
       />
     </section>
@@ -192,7 +203,7 @@
               <div
                 v-if="!sig.inactive"
                 class="signal-bar-fill"
-                :style="{ width: sig.score + '%', backgroundColor: signalColor(sig.score) }"
+                :style="{ width: sig.score + '%', backgroundColor: signalBarColor(sig.score) }"
               ></div>
               <div v-else class="signal-bar-empty">no data</div>
             </div>
@@ -565,6 +576,7 @@ const dimensionData = ref({ os: [], model: [], ram: [], team: [] })
 const expandedCategory = ref(null)
 const signals = ref([])
 const showMethodology = ref(false)
+const missingSignals = ref([])
 
 // Software detail state
 const patchStats = ref({})
@@ -831,12 +843,15 @@ function buildMoverDetail(hostId) {
 
   const num = (v) => (v === null || v === undefined || v === '') ? null : Number(v)
 
+  // Weights mirror the canonical composite (core-scores.ts):
+  // 0.25*DH + 0.35*Perf + 0.20*Sec + 0.20*SW. Network is informational —
+  // shown for context but excluded from the composite (see SCORE-IDEA.md).
   const cats = [
-    { key: 'performance',   label: 'Performance',   weight: 30 },
+    { key: 'performance',   label: 'Performance',   weight: 35 },
     { key: 'device_health', label: 'Device Health', weight: 25 },
-    { key: 'network',       label: 'Network',       weight: 20 },
-    { key: 'security',      label: 'Security',      weight: 15 },
-    { key: 'software',      label: 'Software',      weight: 10 },
+    { key: 'security',      label: 'Security',      weight: 20 },
+    { key: 'software',      label: 'Software',      weight: 20 },
+    { key: 'network',       label: 'Network',       weight: null },
   ].map(c => {
     const currVal = row ? num(row[`curr_${c.key}`]) : null
     const prevVal = row ? num(row[`prev_${c.key}`]) : null
@@ -860,7 +875,10 @@ function buildMoverDetail(hostId) {
   const driver = driverIdx >= 0 ? cats[driverIdx] : null
   if (driver && driver.delta !== null) {
     const dir = driver.delta > 0 ? 'improved' : 'declined'
-    insight = `${driver.label} ${dir} by ${Math.abs(driver.delta).toFixed(1)} points (${driver.weight}% weight), `
+    const weightNote = driver.weight === null
+      ? 'informational — not in the composite'
+      : `${driver.weight}% weight`
+    insight = `${driver.label} ${dir} by ${Math.abs(driver.delta).toFixed(1)} points (${weightNote}), `
     if (Math.abs(driver.delta) > 5) {
       insight += `which was the primary driver of this device's score change.`
     } else {
@@ -1260,11 +1278,20 @@ async function toggleAppDrill(appName, mode) {
   drillLoading.value = false
 }
 
-// Mockup convention: healthy scores read as plain navy (no tint); only
-// degraded scores are colored on the canonical scale (gold -> orange -> red).
+// Mockup convention for TEXT (table cells): healthy scores read as plain
+// navy; only degraded scores are colored (gold -> orange -> red).
 function signalColor(score) {
   if (score >= 75) return '#515774'
   if (score >= 60) return '#a47f1e'
+  if (score >= 40) return '#eb6743'
+  return '#eb4343'
+}
+
+// Mockup convention for BAR FILLS (score breakdown): the good band is brand
+// green — never navy. Green -> gold -> orange -> red on the canonical scale.
+function signalBarColor(score) {
+  if (score >= 75) return '#009a7d'
+  if (score >= 60) return '#ecc767'
   if (score >= 40) return '#eb6743'
   return '#eb4343'
 }
@@ -1277,6 +1304,21 @@ function fetchAll() {
   fetchTileDeltas()
   fetchDrillDowns()
   fetchTeamBreakdown()
+  fetchReadiness()
+}
+
+// Post-setup sanity check: scoring tables must be non-empty or the grade is
+// built on ifNull() defaults. security_posture is excluded here — the score
+// has an explicit OS-layer fallback for it (see SCORE-IDEA.md, Security).
+async function fetchReadiness() {
+  try {
+    const rows = await query('firehose.scores.readiness')
+    missingSignals.value = rows
+      .filter(r => Number(r.row_count) === 0 && r.tbl !== 'security_posture')
+      .map(r => r.tbl)
+  } catch (e) {
+    console.error('Readiness check failed:', e)
+  }
 }
 
 // Time-range-scoped views only: refetch these (and nothing else) when the user
@@ -1653,20 +1695,20 @@ onMounted(() => {
 }
 
 .info-toggle {
-  background: none;
-  border: 1px solid var(--fleet-vibrant-blue);
+  background: var(--fleet-off-white);
+  border: 1px solid var(--fleet-black-25);
   border-radius: var(--radius);
   padding: 4px 12px;
   font-family: var(--font-body);
   font-size: var(--font-size-xs);
-  font-weight: 500;
-  color: var(--fleet-vibrant-blue);
+  font-weight: 600;
+  color: var(--fleet-black-75);
   cursor: pointer;
   transition: all 150ms ease-in-out;
 }
 
 .info-toggle:hover {
-  background: rgba(106, 103, 254, 0.08);
+  background: var(--fleet-black-5);
 }
 
 .close-btn {
@@ -1686,10 +1728,21 @@ onMounted(() => {
   border-color: var(--fleet-black-25);
 }
 
+/* ─── Scoring readiness warning ───────────────── */
+.readiness-banner {
+  background: var(--status-fair-bg);
+  border: 1px solid var(--fleet-yellow-banner-outline);
+  border-radius: var(--radius-large);
+  padding: var(--pad-smedium) var(--pad-medium);
+  margin-bottom: var(--pad-medium);
+  font-size: var(--font-size-sm);
+  color: var(--fleet-black);
+}
+
 /* ─── Methodology info box ────────────────────── */
 .methodology-box {
-  background: #f0f0ff;
-  border: 1px solid rgba(106, 103, 254, 0.2);
+  background: var(--fleet-off-white);
+  border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
   padding: var(--pad-medium);
   margin-bottom: var(--pad-medium);
@@ -1741,10 +1794,12 @@ onMounted(() => {
   color: var(--fleet-black-75);
 }
 
+/* Score bars (comparative, per the Score-breakdown mockup): thin trackless
+   pills — the color stops at the value. Gauges keep tracks; these don't. */
 .signal-bar-track {
   flex: 1;
-  height: 14px;
-  background: var(--fleet-black-10);
+  height: 10px;
+  background: transparent;
   border-radius: var(--radius-full);
   overflow: hidden;
 }
@@ -1786,8 +1841,10 @@ onMounted(() => {
   font-size: 11px;
   color: var(--fleet-black-33);
   font-style: italic;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  /* the track itself is transparent (score bars are trackless) — paused rows
+     get their own soft strip so "no data" doesn't float in whitespace */
+  background: var(--fleet-black-5);
+  border-radius: var(--radius-full);
 }
 
 .signal-type-pill {
@@ -1801,13 +1858,13 @@ onMounted(() => {
 }
 
 .signal-type-pill--config {
-  background: rgba(108, 92, 231, 0.12);
-  color: #6c5ce7;
+  background: var(--fleet-accent-purple-light);
+  color: var(--fleet-accent-purple);
 }
 
 .signal-type-pill--time {
-  background: rgba(0, 167, 124, 0.12);
-  color: #00875f;
+  background: var(--status-good-bg);
+  color: var(--status-good-text);
 }
 
 .signal-status-pill {

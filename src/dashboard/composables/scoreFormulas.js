@@ -1,8 +1,14 @@
 /**
- * Per-signal scoring formulas. Mirror the case-tables and weights from
- * DEVICE_SCORES_CTE in src/worker/queries/alt-scores.ts. Keep these two
- * in sync — any drift means the device-drivers panel's computed category
- * total won't match what firehose.scores.biggest_movers returns.
+ * Per-signal scoring formulas for the drivers panel. Mirrors the case-tables
+ * and weights in src/worker/queries/core-scores.ts (the CANONICAL scoring
+ * source of truth). Keep these in sync — any drift means the device-drivers
+ * panel's computed category total won't match the server's scores.
+ *
+ * Scope note: this file scores the signals present in the
+ * firehose.scores.device_signals_compare row (week-over-week movement).
+ * Security posture (FileVault/firewall/Gatekeeper/SIP — 70% of the canonical
+ * Security score when present) changes rarely and is NOT in the compare row,
+ * so the Security drivers below track only its OS-layer components.
  */
 
 // ── value → sub-score (0-100) ──
@@ -149,6 +155,11 @@ export const CATEGORY_RULES = {
   security: {
     label: 'Security',
     weight: 0.20,
+    // OS-layer components only. The canonical Security score (core-scores.ts)
+    // is posture-aware — FileVault 25% + firewall 20% + Gatekeeper 15% +
+    // SIP 10% + OS currency 15% + DEX OS health 15% when security_posture has
+    // a row. Posture flips rarely, so week-over-week drivers track only the
+    // OS-layer pair (the server's fallback formula, 50/50).
     signals: [
       { key: 'os_currency',   label: 'OS currency',   weight: 0.50, scoreFn: osCurrencyScore },
       { key: 'dex_os_health', label: 'DEX OS health', weight: 0.50, scoreFn: dexOsHealthScore },

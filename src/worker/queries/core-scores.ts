@@ -1,11 +1,18 @@
 /**
  * Firehose DEX score queries — computed at query time from raw firehose tables.
  *
+ * ⚠ CANONICAL SCORING SOURCE OF TRUTH. The SQL in this file defines the score.
+ * SCORE-IDEA.md documents it and scoreFormulas.js mirrors the driver-level
+ * case tables — when formulas change, change them HERE first, then sync those.
+ *
  * Scoring formulas:
  *   Device Health (25%): CPU class + RAM tier + battery + swap pressure
  *   Performance (35%):   Swap/compression pressure + top process RSS + uptime risk
  *   Network (info only):  RSSI + SNR + Tx rate + VPN confidence (excluded from composite)
- *   Security (20%):      OS currency + DEX OS health (limited signals)
+ *   Security (20%):      Posture-aware when security_posture has a row:
+ *                        FileVault 25% + firewall 20% + Gatekeeper 15% + SIP 10%
+ *                        + OS currency 15% + DEX OS health 15%.
+ *                        Fallback (no posture row): OS currency 50% + DEX OS health 50%.
  *   Software (20%):      Crash frequency + app adoption + app count
  *
  * Composite = 0.25*DH + 0.35*Perf + 0.20*Sec + 0.20*SW
@@ -893,6 +900,29 @@ export const firehoseScoreQueries: QueryConfig[] = [
       FROM cur_health ch, prv_health ph, cur_os co, prv_os po,
            cur_proc cp,   prv_proc pp,   cur_crash cc, prv_crash pc,
            cur_adopt ca,  prv_adopt pa
+    `,
+  },
+
+  // ── Scoring readiness sanity check ─────────────────────
+  // Post-setup guard (SETUP.md §3.2a): the composite is only trustworthy when
+  // every scoring table has data. ifNull() defaults make an *empty* table look
+  // like an *average* fleet, so emptiness must be surfaced explicitly.
+  {
+    name: 'firehose.scores.readiness',
+    domain: 'scores',
+    client: 'core',
+    description: 'Row counts for every table the DEX score reads — empty tables mean the applied query pack is incomplete',
+    params: [],
+    sql: `
+      SELECT 'device_health' AS tbl, count() AS row_count FROM device_health
+      UNION ALL SELECT 'os_health', count() FROM os_health
+      UNION ALL SELECT 'process_health', count() FROM process_health
+      UNION ALL SELECT 'crash_summary', count() FROM crash_summary
+      UNION ALL SELECT 'crash_detail', count() FROM crash_detail
+      UNION ALL SELECT 'adoption_gap', count() FROM adoption_gap
+      UNION ALL SELECT 'vpn_gate', count() FROM vpn_gate
+      UNION ALL SELECT 'wifi_signal', count() FROM wifi_signal
+      UNION ALL SELECT 'security_posture', count() FROM security_posture
     `,
   },
 ]

@@ -84,8 +84,8 @@ function formatDelta(n) {
   margin-bottom: 10px;
 }
 .driver-panel.is-primary {
-  border-left: 3px solid #6a67fe;
-  background: #f8f7ff;
+  border-color: var(--fleet-black-25);
+  background: var(--fleet-off-white);
 }
 .driver-header {
   display: flex;
@@ -99,10 +99,9 @@ function formatDelta(n) {
 }
 .driver-title { display: flex; align-items: center; gap: 8px; }
 .driver-cat { font-weight: 700; font-size: var(--font-size-sm); color: var(--fleet-black); }
-.driver-primary-pill { font-size: 10px; font-weight: 700;
-  padding: 2px 8px; border-radius: var(--radius-full);
-  background: rgba(106, 103, 254, 0.12); color: #6a67fe;
-  text-transform: uppercase; letter-spacing: 0.4px;
+.driver-primary-pill { font-size: 11px; font-weight: 600;
+  padding: 2px 10px; border-radius: var(--radius-full);
+  background: var(--fleet-black-10); color: var(--fleet-black-75);
 }
 .driver-totals { display: flex; align-items: baseline; gap: 6px; font-size: var(--font-size-sm); }
 .driver-prev, .driver-curr { color: var(--fleet-black); }
@@ -120,14 +119,13 @@ function formatDelta(n) {
 .signal-table .signal-value .ver-arrow { margin: 0 6px; color: var(--fleet-black-50); }
 .signal-table .signal-contribution { width: 27%; text-align: right; font-size: var(--font-size-xs); }
 .signal-table .muted { color: var(--fleet-black-50); }
-.signal-driver td { background: rgba(106, 103, 254, 0.06); }
+.signal-driver td { background: var(--fleet-black-5); }
 .signal-driver .signal-label::after {
   content: 'driver';
   margin-left: 6px;
-  font-size: 9px; font-weight: 700;
-  background: rgba(106, 103, 254, 0.12); color: #6a67fe;
-  padding: 1px 6px; border-radius: var(--radius-full);
-  text-transform: uppercase; letter-spacing: 0.4px;
+  font-size: 10px; font-weight: 600;
+  background: var(--fleet-black-10); color: var(--fleet-black-75);
+  padding: 1px 8px; border-radius: var(--radius-full);
 }
 .signal-static td, .signal-unchanged td { color: var(--fleet-black-50); }
 .mono { font-family: var(--font-mono); }

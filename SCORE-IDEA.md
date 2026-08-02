@@ -73,17 +73,31 @@ Performance complaints.
 
 ### Security (20% of composite)
 
-*Is the OS current and healthy?*
+*Is the device's security posture healthy, and is the OS current?*
+
+> **Scoring source of truth:** the SQL in `src/worker/queries/core-scores.ts`
+> is canonical for every formula in this document. If this doc and the SQL
+> ever disagree, the SQL wins — and this doc has a bug.
+
+When the device has security-posture telemetry (`security_posture` table,
+from the "DEX - Device security posture" query), Security is posture-aware:
 
 | Signal | Weight | What it measures |
 |---|---|---|
-| OS currency | 50% | current / n-1 / n-2 / legacy. Running the latest macOS = 100. |
-| DEX OS health | 50% | Composite from osquery: combines OS version, uptime risk, and crash frequency into healthy / acceptable / degraded. |
+| FileVault (disk encryption) | 25% | Enabled = 100, disabled = 0. |
+| Firewall | 20% | Enabled = 100, disabled = 0. |
+| Gatekeeper | 15% | Enabled = 100, disabled = 0. |
+| SIP (System Integrity Protection) | 10% | Enabled = 100, disabled = 0. |
+| OS currency | 15% | current / n-1 / n-2 / legacy. Running the latest macOS = 100. |
+| DEX OS health | 15% | Composite from osquery: OS version, uptime risk, and crash frequency into healthy / acceptable / degraded. |
 
-Security is intentionally limited to **OS-layer signals** from the firehose.
-Full security posture (disk encryption, firewall, SIP, Gatekeeper) requires
-Fleet's built-in compliance queries which feed a separate scoring pipeline.
-When those signals become available in the firehose, they'll be added here.
+**Fallback:** devices with no posture row are scored on OS-layer signals only —
+OS currency 50% + DEX OS health 50% — so missing posture telemetry reads as
+"average", never as a false penalty.
+
+Note for the score-drivers panel: posture signals flip rarely, so
+week-over-week drivers track only the OS-layer pair; posture state is shown
+on the host detail view instead.
 
 ### Software (20% of composite)
 
