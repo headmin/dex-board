@@ -1361,11 +1361,10 @@ onMounted(() => {
   padding: 14px 18px;
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-left: 4px solid var(--fleet-black-25);
   border-radius: var(--radius-large);
 }
-.exposure-section--worse { border-left-color: var(--status-critical); }
-.exposure-section--better { border-left-color: var(--status-good); }
+.exposure-section--worse { border-color: var(--status-critical-soft); background: var(--status-critical-bg); }
+.exposure-section--better { border-color: var(--status-good); background: var(--status-good-bg); }
 .exposure-main { grid-area: main; display: flex; flex-direction: column; gap: 2px; }
 .exposure-eyebrow-row {
   display: flex;
@@ -2117,18 +2116,18 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  background: #f0fdf4;
-  border: 1px solid #d1fae5;
+  background: var(--status-good-bg);
+  border: 1px solid var(--fleet-status-success-border);
   border-radius: var(--radius-large);
   padding: 9px 14px;
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: #065f46;
+  color: var(--status-good-text);
   margin-top: var(--pad-medium);
 }
 
 .wc-drill-notice svg {
-  stroke: #065f46;
+  stroke: var(--status-good-text);
   flex-shrink: 0;
 }
 

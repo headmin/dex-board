@@ -43,8 +43,8 @@ const chartOption = computed(() => ({
   yAxis: { type: 'value', show: false, ...yRange.value },
   tooltip: props.showTooltip ? {
     trigger: 'axis',
-    backgroundColor: '#3e4771',
-    borderColor: '#3e4771',
+    backgroundColor: palette.tooltipBg,
+    borderColor: palette.tooltipBg,
     textStyle: { color: '#fff', fontSize: 10 },
     borderRadius: 4,
     formatter: (params) => `${params[0].value.toFixed(0)}`

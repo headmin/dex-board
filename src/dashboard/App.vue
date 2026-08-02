@@ -428,8 +428,8 @@ a:not([class]):hover { color: var(--link-color-hover); }
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: rgba(61, 182, 123, 0.1);
-  color: #065f46;
+  background: var(--status-good-bg);
+  color: var(--status-good-text);
   font-family: var(--font-body);
   font-size: var(--font-size-xsmall);
   font-weight: 500;
@@ -440,7 +440,7 @@ a:not([class]):hover { color: var(--link-color-hover); }
 }
 
 .wc-banner svg {
-  stroke: #065f46;
+  stroke: var(--status-good-text);
   flex-shrink: 0;
 }
 

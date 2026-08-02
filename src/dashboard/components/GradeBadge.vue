@@ -51,12 +51,12 @@ const gradeClass = computed(() => {
 }
 
 .grade-d {
-  background: #fef0e8;
+  background: var(--status-elevated-bg);
   color: var(--fleet-ui-orange);
 }
 
 .grade-f {
-  background: #fee8ec;
+  background: var(--status-critical-bg);
   color: var(--fleet-status-error);
 }
 

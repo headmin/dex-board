@@ -44,6 +44,7 @@
 </template>
 
 <script setup>
+import { gradeColor as sharedGradeColor } from '../composables/gradeColors'
 import { computed } from 'vue'
 import SkeletonLoader from './SkeletonLoader.vue'
 import SparklineChart from './SparklineChart.vue'
@@ -72,15 +73,7 @@ const gradeClass = computed(() => {
   return ''
 })
 
-const gradeColor = computed(() => {
-  const g = props.grade?.toUpperCase()
-  if (g === 'A') return '#009a7d'
-  if (g === 'B') return '#009a7d'
-  if (g === 'C') return '#ecc767'
-  if (g === 'D') return '#eb6743'
-  if (g === 'F') return '#eb4343'
-  return '#8b8fa2'
-})
+const gradeColor = computed(() => sharedGradeColor(props.grade))
 
 const deltaClass = computed(() => {
   if (props.delta > 0) return 'delta-up'

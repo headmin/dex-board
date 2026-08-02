@@ -14,7 +14,7 @@
     </div>
     <SkeletonLoader v-if="loading" variant="metric" />
     <template v-else>
-      <div class="value">{{ formattedValue }}</div>
+      <div class="value">{{ formattedValue }}<span v-if="unit" class="unit">{{ unit }}</span></div>
       <div v-if="subtitle" class="subtitle">{{ subtitle }}</div>
     </template>
   </div>
@@ -28,6 +28,7 @@ const props = defineProps({
   label: { type: String, required: true },
   value: { type: [Number, String], default: 0 },
   subtitle: { type: String, default: '' },
+  unit: { type: String, default: '' },
   loading: { type: Boolean, default: false },
   trend: { type: Number, default: null },
   clickable: { type: Boolean, default: false }
@@ -112,6 +113,13 @@ const trendClass = computed(() => {
   font-weight: 700;
   color: var(--fleet-black);
   line-height: 1.2;
+}
+
+.unit {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--fleet-black-50);
+  margin-left: 3px;
 }
 
 .subtitle {

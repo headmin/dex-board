@@ -40,6 +40,7 @@
 </template>
 
 <script setup>
+import { gradeColor as sharedGradeColor } from '../composables/gradeColors'
 import { ref, computed } from 'vue'
 import SkeletonLoader from './SkeletonLoader.vue'
 import GradeBadge from './GradeBadge.vue'
@@ -66,8 +67,7 @@ const activeData = computed(() => {
 })
 
 function gradeColor(grade) {
-  const colors = { A: '#009a7d', B: '#009a7d', C: '#ecc767', D: '#eb6743', F: '#eb4343' }
-  return colors[grade?.toUpperCase()] || '#8b8fa2'
+  return sharedGradeColor(grade)
 }
 </script>
 

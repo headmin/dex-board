@@ -6,7 +6,8 @@
  * diagram string MUST be a literal hex, and it must come from here so the
  * CSS tokens and the JS palette can only drift in one reviewable place.
  *
- * Rule of thumb: quoted 'var(--x)' anywhere in a .vue file is a bug.
+ * Rule of thumb: quoted 'var(--x)' in a CHART/DIAGRAM option object is a bug
+ * (DOM :style bindings resolve var() fine and may keep using tokens).
  */
 export const palette = {
   // Neutrals (mirror --fleet-black* / --fleet-off-white)

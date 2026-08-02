@@ -22,6 +22,7 @@
 </template>
 
 <script setup>
+import { gradeColor as sharedGradeColor } from '../composables/gradeColors'
 import { computed } from 'vue'
 import SkeletonLoader from './SkeletonLoader.vue'
 import GradeBadge from './GradeBadge.vue'
@@ -37,8 +38,7 @@ const sortedData = computed(() =>
 )
 
 function barColor(grade) {
-  const colors = { A: '#009a7d', B: '#009a7d', C: '#ecc767', D: '#eb6743', F: '#eb4343' }
-  return colors[grade?.toUpperCase()] || '#8b8fa2'
+  return sharedGradeColor(grade)
 }
 </script>
 
