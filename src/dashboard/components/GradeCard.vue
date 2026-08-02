@@ -144,7 +144,7 @@ const deltaClass = computed(() => {
 
 .delta-down {
   color: var(--fleet-status-error);
-  background: var(--fleet-error-light);
+  background: var(--fleet-status-error-light);
 }
 
 .delta-flat {

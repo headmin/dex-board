@@ -45,10 +45,10 @@
         </div>
         <div class="heatmap-legend">
           <span class="legend-label">Lower</span>
-          <div class="legend-block" style="background:#ef4444"></div>
-          <div class="legend-block" style="background:#f97316"></div>
-          <div class="legend-block" style="background:var(--status-fair-text)"></div>
-          <div class="legend-block" style="background:#84cc16"></div>
+          <div class="legend-block" style="background:#eb4343"></div>
+          <div class="legend-block" style="background:#eb6743"></div>
+          <div class="legend-block" style="background:var(--status-fair)"></div>
+          <div class="legend-block" style="background:#4bb79b"></div>
           <div class="legend-block" style="background:var(--fleet-green)"></div>
           <span class="legend-label">Higher</span>
           <span class="legend-deploy"><span class="deploy-dot-legend"></span> Deploy</span>
@@ -759,13 +759,13 @@ const heatmapDays = computed(() => {
 })
 
 function cellColor(cell) {
-  if (!cell) return '#f5f5f5'
+  if (!cell) return '#f4f4f6'
   const s = cell.score
   if (s >= 80) return '#009a7d'
-  if (s >= 65) return '#84cc16'
-  if (s >= 50) return '#a47f1e'
-  if (s >= 35) return '#f97316'
-  return '#ef4444'
+  if (s >= 65) return '#4bb79b'
+  if (s >= 50) return '#ecc767'
+  if (s >= 35) return '#eb6743'
+  return '#eb4343'
 }
 
 function cellTooltip(date, hour, cell) {

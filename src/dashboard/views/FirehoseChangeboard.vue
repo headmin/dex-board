@@ -260,12 +260,12 @@ async function renderDiagram() {
   const changed = changedFilesSet.value
 
   let def = 'graph LR\n'
-  def += '  classDef default fill:#f8fafc,stroke:#e2e8f0,color:#1e293b\n'
+  def += '  classDef default fill:#f9fafc,stroke:#e2e4ea,color:#192147\n'
   // Mermaid classDef needs literal hex — CSS var() is not valid in its
   // style directives. These mirror the canonical --status-good tokens.
-  def += '  classDef changed fill:#deedea,stroke:#009a7d,color:#166534,stroke-width:2px\n'
-  def += '  classDef fleet fill:#eff6ff,stroke:#3b82f6,color:#1e40af\n'
-  def += '  classDef platform fill:#faf5ff,stroke:#a855f7,color:#6b21a8\n\n'
+  def += '  classDef changed fill:#deedea,stroke:#009a7d,color:#00775f,stroke-width:2px\n'
+  def += '  classDef fleet fill:#f0efff,stroke:#6a67fe,color:#4b4ab4\n'
+  def += '  classDef platform fill:#f3e8ff,stroke:#ae6ddf,color:#6b21a8\n\n'
   def += '  ROOT["it-and-security"]:::default\n'
 
   const gcChanged = changed.has('it-and-security/default.yml')

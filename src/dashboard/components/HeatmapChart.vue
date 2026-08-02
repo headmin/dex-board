@@ -31,7 +31,7 @@ const props = defineProps({
   maxValue: { type: Number, default: null },
   colorRange: {
     type: Array,
-    default: () => ['#22c55e', '#84cc16', '#eab308', '#f97316', '#ef4444']
+    default: () => ['#009a7d', '#4bb79b', '#ecc767', '#eb6743', '#eb4343']
   },
   tooltipLabel: { type: String, default: 'Score' }
 })

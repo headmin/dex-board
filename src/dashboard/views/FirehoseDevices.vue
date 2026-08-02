@@ -728,7 +728,7 @@ h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black)
 .metrics-row.six-col { grid-template-columns: repeat(6, 1fr); }
 
 .search-input { font-size: var(--font-size-sm); padding: 8px 14px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); width: 260px; background: var(--fleet-white); }
-.search-input:focus { outline: none; border-color: var(--fleet-vibrant-blue); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+.search-input:focus { outline: none; border-color: var(--fleet-vibrant-blue); box-shadow: 0 0 0 2px rgba(106, 103, 254, 0.15); }
 
 /* ── Device Drawer ───────────────────────── */
 .device-drawer { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); padding: 20px 24px; margin-bottom: 32px; box-shadow: var(--shadow-sm); }

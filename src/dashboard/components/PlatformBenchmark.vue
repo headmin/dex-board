@@ -190,7 +190,7 @@ function clamp(v) {
 function barColor(v) {
   if (v < 0) return '#8b8fa2'
   if (v >= 90) return '#009a7d'
-  if (v >= 75) return '#5cabdf'
+  if (v >= 75) return '#4bb79b'
   if (v >= 60) return '#ecc767'
   if (v >= 40) return '#eb6743'
   return '#eb4343'

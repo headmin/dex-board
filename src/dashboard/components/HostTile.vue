@@ -291,7 +291,7 @@ function relativeTime(ts) {
 }
 
 .metric-value.state-critical {
-  color: var(--fleet-error, var(--fleet-error));
+  color: var(--fleet-error);
 }
 
 .metric-value.state-warn {

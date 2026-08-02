@@ -848,14 +848,14 @@ function catGrade(v) {
 function catColor(v) {
   if (v < 0) return '#8b8fa2'
   if (v >= 90) return '#009a7d'
-  if (v >= 75) return '#4a90d9'
+  if (v >= 75) return '#4bb79b'
   if (v >= 60) return '#ecc767'
   if (v >= 40) return '#eb6743'
   return '#eb4343'
 }
 
 function scoreColor(grade) {
-  const c = { A: '#009a7d', B: '#4a90d9', C: '#ecc767', D: '#eb6743', F: '#eb4343' }
+  const c = { A: '#009a7d', B: '#009a7d', C: '#ecc767', D: '#eb6743', F: '#eb4343' }
   return c[grade] || '#8b8fa2'
 }
 

@@ -453,11 +453,11 @@ const trendRangeText = computed(() => {
 })
 const trendColor = computed(() => {
   const g = (fleet.value.grade || '').toUpperCase()
-  if (g === 'A') return '#10b981'
-  if (g === 'B') return '#3b82f6'
-  if (g === 'C') return '#f59e0b'
+  if (g === 'A') return '#009a7d'
+  if (g === 'B') return '#009a7d'
+  if (g === 'C') return '#ecc767'
   if (g === 'D') return '#eb6743'
-  if (g === 'F') return '#ef4444'
+  if (g === 'F') return '#eb4343'
   return '#6a67fe'
 })
 
@@ -1352,7 +1352,7 @@ onMounted(() => {
 .exposure-window-picker {
   display: inline-flex;
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius-sm, 4px);
+  border-radius: var(--radius);
   overflow: hidden;
 }
 .exposure-window-btn {
@@ -1375,7 +1375,7 @@ onMounted(() => {
 .exposure-signal {
   display: inline-flex; align-items: baseline; gap: 5px; font-size: var(--font-size-xs);
   background: var(--fleet-off-white); border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius-sm, 4px); padding: 2px 7px;
+  border-radius: var(--radius); padding: 2px 7px;
 }
 .exposure-signal-label { color: var(--fleet-black-50); }
 .exposure-signal-now { font-weight: 700; color: var(--fleet-black-75); }
@@ -2165,7 +2165,7 @@ onMounted(() => {
 }
 
 .mini-dist-segment.grade-A { background: var(--fleet-success); }
-.mini-dist-segment.grade-B { background: var(--rainbow-blue); }
+.mini-dist-segment.grade-B { background: var(--status-good-soft); }
 .mini-dist-segment.grade-C { background: var(--status-fair); }
 .mini-dist-segment.grade-D { background: var(--fleet-ui-orange); }
 .mini-dist-segment.grade-F { background: var(--fleet-error); }

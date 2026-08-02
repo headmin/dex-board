@@ -339,7 +339,7 @@ h3 {
 .grid-tooltip {
   position: absolute;
   transform: translate(-50%, -100%);
-  background: var(--fleet-tooltip-bg);
+  background: var(--tooltip-bg);
   color: #fff;
   padding: 8px 12px;
   border-radius: var(--radius);
@@ -357,7 +357,7 @@ h3 {
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: var(--fleet-tooltip-bg);
+  border-top-color: var(--tooltip-bg);
 }
 
 .tooltip-date {

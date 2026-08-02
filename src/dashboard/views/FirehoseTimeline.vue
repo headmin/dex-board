@@ -910,7 +910,7 @@ h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black)
 .charts-row.two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 24px; }
 .filter-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
 .search-input { font-size: var(--font-size-sm); padding: 8px 14px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); flex: 1; min-width: 200px; background: var(--fleet-white); }
-.search-input:focus { outline: none; border-color: var(--fleet-vibrant-blue); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+.search-input:focus { outline: none; border-color: var(--fleet-vibrant-blue); box-shadow: 0 0 0 2px rgba(106, 103, 254, 0.15); }
 .filter-select { font-size: var(--font-size-sm); padding: 8px 12px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); background: var(--fleet-white); color: var(--fleet-black); }
 .copy-md-btn { margin-left: auto; font-family: var(--font-body); font-size: 13px; font-weight: 500; padding: 8px 14px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); background: var(--fleet-white); color: var(--fleet-black); cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; }
 .copy-md-btn:hover:not(:disabled) { border-color: var(--fleet-vibrant-blue); color: var(--fleet-vibrant-blue); }
