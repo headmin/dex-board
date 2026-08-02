@@ -1049,10 +1049,35 @@ export const firehoseScoreQueries: QueryConfig[] = [
         round(avg(days_to_patch), 2)                   AS avg_lag,
         round(quantile(0.5)(days_to_patch), 2)         AS p50_lag,
         round(quantile(0.9)(days_to_patch), 2)         AS p90_lag,
+        round(quantile(0.95)(days_to_patch), 2)        AS p95_lag,
         round(100.0 * countIf(days_to_patch <= {slaDays:UInt32}) / nullIf(count(), 0), 1) AS pct_within_sla
       FROM dex_patch_events FINAL
       WHERE event_time >= now() - toIntervalDay({windowDays:UInt32} + {offsetDays:UInt32})
         AND event_time <  now() - toIntervalDay({offsetDays:UInt32})
+    `,
+  },
+  // Distribution of days_to_patch as a per-day histogram, split by patch
+  // type. The client folds this into an adoption/survival curve. Clock:
+  // fleet-first sighting → host applies; the sample is transitions that
+  // completed inside the window (hosts that never patched have no event
+  // and are invisible to this clock — the page must say so).
+  {
+    name: 'firehose.scores.mttp_survival',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'Histogram of days_to_patch (per whole day, by patch_type) for the adoption curve',
+    params: [
+      { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 365, default: 90 },
+    ],
+    sql: `
+      SELECT
+        patch_type,
+        toUInt32(floor(days_to_patch)) AS day_bucket,
+        count()                        AS n_events
+      FROM dex_patch_events FINAL
+      WHERE event_time >= now() - toIntervalDay({windowDays:UInt32})
+      GROUP BY patch_type, day_bucket
+      ORDER BY patch_type, day_bucket
     `,
   },
   {

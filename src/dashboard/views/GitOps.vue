@@ -45,7 +45,7 @@
       </div>
       <div class="hero-mttp-strip">
         <span class="mono">
-          <template v-if="mttp7 && mttp7.avg_lag != null">MTTP {{ Number(mttp7.avg_lag).toFixed(1) }}d · 7d window</template>
+          <template v-if="mttp7 && mttp7.p50_lag != null">MTTP {{ Number(mttp7.p50_lag).toFixed(1) }}d median · 7d window</template>
           <template v-else>MTTP — · no patch events in 7d</template>
           <template v-if="mttpTrend"> · {{ mttpTrend.delta }}d {{ mttpTrend.faster ? 'faster' : 'slower' }} than prior 7d</template>
           <template v-if="vendorLagMedian"> · vendor→first-patch median {{ vendorLagMedian.hours < 48 ? Math.round(vendorLagMedian.hours) + 'h' : (vendorLagMedian.hours / 24).toFixed(1) + 'd' }} (for the {{ vendorLagMedian.n }} loaded release{{ vendorLagMedian.n === 1 ? '' : 's' }} with patch data)</template>
@@ -1015,8 +1015,8 @@ async function fetchMttpStrip() {
 }
 
 const mttpTrend = computed(() => {
-  const c = mttp7.value?.avg_lag
-  const p = mttpPrior7.value?.avg_lag
+  const c = mttp7.value?.p50_lag
+  const p = mttpPrior7.value?.p50_lag
   if (c == null || p == null) return null
   const d = Number(c) - Number(p)
   return { delta: Math.abs(d).toFixed(1), faster: d < 0 }

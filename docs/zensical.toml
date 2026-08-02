@@ -48,6 +48,7 @@ nav = [
   { "Home" = "index.md" },
   { "Query registry" = "queries.md" },
   { "Authentication" = "auth.md" },
+  { "Patch velocity gaps" = "patch-velocity-gaps.md" },
 ]
 
 # With the "extra_css" option you can add your own CSS styling to customize
