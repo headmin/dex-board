@@ -4,506 +4,342 @@
     <div class="pv-header">
       <div>
         <h1 class="pv-title">Patch velocity</h1>
-        <div class="pv-subtitle">How long a fix takes to reach the fleet, and what each change measurably did</div>
+        <div class="pv-subtitle">How fast updates actually reach everyone</div>
       </div>
       <div class="pv-actions">
-        <BaseButton variant="secondary" @click="showMethod = !showMethod">{{ showMethod ? 'Hide method' : 'Method & data shapes' }}</BaseButton>
+        <BaseButton variant="secondary" @click="showMethod = !showMethod">{{ showMethod ? 'Hide method' : 'How we measure this' }}</BaseButton>
       </div>
     </div>
 
+    <!-- The rigor lives here, one click away — not as page furniture. -->
     <div v-if="showMethod" class="method-panel">
       <div class="method-col">
-        <h3>Two clocks, never mixed</h3>
-        <p><strong>Fleet-internal MTTP (days)</strong> — first fleet sighting of a version → this host applies it (<code>days_to_patch</code>). Every MTTP number on this page uses this clock.</p>
-        <p><strong>Vendor lag (hours)</strong> — vendor publication (RSS) → first fleet apply (<code>hours_to_first_patch</code>). Appears only in the stage breakdown, labeled.</p>
-        <p>The velocity target is <strong>{{ config.patchSlaDays }} days</strong>, set by the <code>PATCH_SLA_DAYS</code> worker variable.</p>
+        <h3>How this is measured</h3>
+        <p><strong>Clock starts:</strong> the fleet first sees a new version anywhere. <strong>Clock stops:</strong> this host reports it. Elapsed is wall clock.</p>
+        <p><strong>Who is counted:</strong> only hosts observed completing an update. A host still on the old build has no event and is in none of these numbers — so the real picture is worse than shown, never better. Fresh installs after a fix are excluded by construction.</p>
+        <p>Medians and percentiles are reported instead of the mean: patch times have a heavy tail, and the mean ({{ mean90 != null ? mean90.toFixed(1) + 'd' : '—' }}) would read as slower than the typical host actually is.</p>
       </div>
       <div class="method-col">
-        <h3>Cohort rules</h3>
-        <p>A staged rollout is an experiment the fleet already ran: patched hosts are the exposed cohort, hosts still waiting are the control. Effect = difference in mean composite-score change (7d window), with a 95% interval.</p>
+        <h3>How "did it help" is judged</h3>
+        <p>A staged rollout is a natural experiment: hosts that got the update vs. hosts still waiting, compared on composite-score change over 7 days.</p>
         <ul>
-          <li>Control cohort ≥ {{ RULES.MIN_CONTROL }} hosts, or the row says "not measurable".</li>
-          <li>Any other change reaching ≥{{ RULES.CONFOUNDER_OVERLAP * 100 }}% of the same exposed hosts is named as a confounder.</li>
-          <li>"Likely caused" is the strongest verdict this page will use.</li>
+          <li>Fewer than {{ RULES.MIN_CONTROL }} hosts waiting → "can't be measured".</li>
+          <li>Other changes reaching the same hosts are named as confounders.</li>
+          <li>"Likely" is the strongest word used — never "proved".</li>
         </ul>
       </div>
       <div class="method-col">
-        <h3>What's missing for the full measurement spec</h3>
+        <h3>Known blind spots</h3>
         <ul>
-          <li><strong>installed_at</strong> — install receipts / bundle mtime / MsiInstaller events; today every t₁ is poll-bounded ±1h.</li>
-          <li><strong>Relaunch gap</strong> — processes.start_time vs file.mtime; on-disk installs currently count as patched.</li>
-          <li><strong>Eligible cohort at t₀</strong> — per-host version observations; numbers are conditional on patching, right-censored hosts invisible.</li>
-          <li><strong>Host online time</strong> — elapsed is wall clock; a laptop in a drawer reads as slow.</li>
-          <li><strong>Urgency feed</strong> — no CVE/severity scope; all patches weigh the same.</li>
+          <li>Timestamps are poll-bounded (±1h) — no install receipts yet.</li>
+          <li>An update installed on disk counts as done even if the old build is still running; the relaunch gap isn't instrumented.</li>
+          <li>No CVE/severity feed — all patches weigh the same.</li>
         </ul>
-        <p>The full inventory with the osquery queries per gap lives in <code>docs/docs/patch-velocity-gaps.md</code>.</p>
+        <p>The full list with the queries that close each gap: <code>docs/docs/patch-velocity-gaps.md</code>.</p>
       </div>
     </div>
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
-    <!-- ─── The measurement contract — move any of these and every number moves -->
-    <div class="contract-strip">
-      <span class="contract-label">Measured as</span>
-      <span class="contract-chip"><span class="contract-k">clock starts</span><strong>fleet-first sighting of the version</strong></span>
-      <span class="contract-chip"><span class="contract-k">clock stops</span><strong>new version seen in inventory</strong></span>
-      <span class="contract-chip"><span class="contract-k">elapsed</span><strong>wall clock</strong></span>
-      <span class="contract-chip"><span class="contract-k">denominator</span><strong>hosts observed transitioning</strong></span>
-      <span class="contract-note">Fixed, not switchable — the alternative clocks (vendor release, fixed-build-running, host-online-time, held-affected-at-t₀) aren't instrumented yet · <button class="contract-link" @click="showMethod = true">what's missing</button></span>
-    </div>
-
-    <!-- ─── Answer — the number and the target ──────────────── -->
+    <!-- ─── Two numbers ─────────────────────────────────────── -->
     <section class="pv-hero">
-      <div class="hero-block">
-        <span class="hero-eyebrow">Time to patch · 90d</span>
-        <div class="hero-count-row">
-          <span class="hero-count" :style="{ color: heroColor }">{{ p50_90 != null ? p50_90.toFixed(1) : '—' }}</span>
-          <span class="hero-count-of">days · p50 · target {{ config.patchSlaDays }}</span>
+      <div class="hero-numbers">
+        <div class="hero-num">
+          <span class="hero-eyebrow">Half of updates land in</span>
+          <div class="hero-count-row">
+            <span class="hero-count hero-count--good">{{ p50_90 != null ? fmtDays(p50_90) : '—' }}</span>
+            <span class="hero-count-of">{{ p50_90 != null ? unitFor(p50_90) : '' }}</span>
+          </div>
         </div>
-        <div class="hero-quantiles">
-          <span class="hero-q"><span class="hero-q-k">p90</span><strong :class="p90_90 != null && p90_90 > config.patchSlaDays ? 'hl-critical' : ''">{{ p90_90 != null ? p90_90.toFixed(1) + 'd' : '—' }}</strong></span>
-          <span class="hero-q"><span class="hero-q-k">p95</span><strong :class="p95_90 != null && p95_90 > config.patchSlaDays ? 'hl-critical' : ''">{{ p95_90 != null ? p95_90.toFixed(1) + 'd' : '—' }}</strong></span>
-          <span v-if="summary90 && summary90.n_events" class="hero-q"><span class="hero-q-k">n</span><strong>{{ summary90.n_events.toLocaleString() }}</strong></span>
+        <div class="hero-divider"></div>
+        <div class="hero-num">
+          <span class="hero-eyebrow">Nine in ten in</span>
+          <div class="hero-count-row">
+            <span class="hero-count" :class="p90_90 != null && p90_90 > config.patchSlaDays ? 'hero-count--bad' : 'hero-count--good'">{{ p90_90 != null ? fmtDays(p90_90) : '—' }}</span>
+            <span class="hero-count-of">{{ p90_90 != null ? unitFor(p90_90) : '' }}</span>
+          </div>
         </div>
       </div>
-      <div class="hero-narrative">
-        <p class="hero-headline">
-          <template v-if="p50_90 != null">
-            Half the observed transitions land inside <span :class="p50_90 <= config.patchSlaDays ? 'hl-good' : 'hl-fair'">{{ p50_90 < 1.5 ? 'a day' : p50_90.toFixed(1) + ' days' }}</span><template v-if="p90_90 != null"> — <span :class="p90_90 > config.patchSlaDays * 2 ? 'hl-critical' : 'hl-fair'">the slowest tenth takes {{ p90_90.toFixed(0) }}+ days</span>, and the tail is where the risk lives</template>.
+      <p class="hero-headline">
+        <template v-if="p50_90 != null && p90_90 != null">
+          The first half is fine. <span class="hl-fair">The stragglers take {{ Math.round(p90_90 - p50_90) }} more days</span> — and that is where the risk lives.
         </template>
-          <template v-else-if="!loading">No patch events in the last 90 days — nothing to measure.</template>
-          <template v-else>Measuring…</template>
-        </p>
-        <p class="hero-support">
-          <template v-if="weekTrend">This week's median is {{ weekTrend.current }}d, {{ Math.abs(weekTrend.delta) }}d {{ weekTrend.delta < 0 ? 'faster' : 'slower' }} than the prior week. </template>
-          These are transitions that completed — a host still on the old build has no event and is in none of these numbers. That is the biggest honesty gap on this page, and it is stated rather than hidden.
-        </p>
-      </div>
-      <div class="hero-rail">
-        <span class="hero-eyebrow">Patched within · of observed transitions</span>
-        <div class="hero-coverage">
-          <div v-for="c in coverageDays" :key="c.day" class="hero-cov-cell" :class="{ 'hero-cov-cell--target': c.day === 7 }">
-            <span class="hero-cov-day">day {{ c.day }}</span>
-            <span class="hero-cov-pct">{{ c.pct != null ? c.pct + '%' : '—' }}</span>
-          </div>
-        </div>
-        <div v-if="byType.length > 1" class="hero-rail-list">
-          <div v-for="t in byType" :key="t.patch_type" class="hero-rail-row">
-            <span>{{ t.patch_type === 'os' ? 'OS updates' : 'App updates' }}</span>
-            <span class="hero-rail-count">{{ t.p50_lag }}d <span class="hero-rail-sub">median · {{ t.n_events }} events</span></span>
-          </div>
-        </div>
-        <span class="hero-rail-note">No urgency/CVE feed is wired — the scope is all patches, not security fixes.</span>
-      </div>
+        <template v-else-if="!loading">No updates observed in the last 90 days — nothing to measure.</template>
+        <template v-else>Measuring…</template>
+      </p>
     </section>
 
-    <!-- ─── Why — the tail, not the average ─────────────────── -->
-    <section class="grammar-section">
-      <div class="grammar-head">
-        <h2 class="grammar-title">Why — the tail, not the average</h2>
-        <span class="grammar-hint">Share of observed transitions still incomplete after d days · conditional on patching — never-patched hosts are invisible to this clock</span>
+    <!-- ─── Coverage after a version ships ──────────────────── -->
+    <section class="curve-card">
+      <div class="curve-head">
+        <h2>Coverage after a new version ships</h2>
+        <span class="curve-sub">{{ totalObserved ? totalObserved.toLocaleString() + ' updates observed · 90d' : '' }}</span>
       </div>
-      <div class="curve-card">
-        <svg viewBox="0 0 740 240" class="curve-svg" role="img" aria-label="Share of observed transitions still incomplete by days since fleet-first sighting">
-          <line x1="56" y1="24" x2="716" y2="24" stroke="var(--fleet-black-5)" stroke-width="1" />
-          <line x1="56" y1="110" x2="716" y2="110" stroke="var(--fleet-black-5)" stroke-width="1" />
-          <line x1="56" y1="196" x2="716" y2="196" stroke="var(--fleet-black-10)" stroke-width="1" />
-          <text x="46" y="28" text-anchor="end" class="curve-tick">100%</text>
-          <text x="46" y="114" text-anchor="end" class="curve-tick">50%</text>
-          <text x="46" y="200" text-anchor="end" class="curve-tick">0%</text>
-          <line :x1="curveX(config.patchSlaDays)" y1="14" :x2="curveX(config.patchSlaDays)" y2="196" :stroke="curveColors.app" stroke-width="1" stroke-dasharray="4 3" />
-          <text :x="curveX(config.patchSlaDays) + 5" y="20" class="curve-target">target day {{ config.patchSlaDays }}</text>
-          <path v-for="s in curve" :key="s.type" :d="curvePath(s.points)" fill="none" :stroke="curveColors[s.type] || palette.info" stroke-width="2.5" stroke-linejoin="round" />
-          <text v-for="d in [0, 7, 14, 21, 30]" :key="'x' + d" :x="curveX(d)" y="214" text-anchor="middle" class="curve-tick">{{ d }}</text>
-          <text x="386" y="232" text-anchor="middle" class="curve-tick">days since fleet-first sighting · wall clock</text>
-        </svg>
-        <div class="curve-rail">
-          <div class="curve-legend">
-            <div v-for="s in curve" :key="s.type" class="curve-legend-row">
-              <span class="curve-swatch" :style="{ background: curveColors[s.type] || palette.info }"></span>
-              <span class="curve-legend-name">{{ s.type === 'os' ? 'OS updates' : 'App updates' }}</span>
-              <span class="curve-legend-n mono">{{ s.total.toLocaleString() }} events</span>
-            </div>
-          </div>
-          <div class="curve-note">
-            <template v-if="coverageAt(1) != null">{{ coverageAt(1) }}% of observed transitions complete inside the first day — the curve is about everyone else. This is an empirical curve, not Kaplan–Meier: without knowing who held an affected version at t₀, right-censored hosts can't be carried, only named.</template>
-            <template v-else>No transitions in the window.</template>
-          </div>
-          <div class="curve-mean">
-            <span>Mean would read {{ mean90 != null ? mean90.toFixed(1) + 'd' : '—' }}</span>
-            <span class="curve-mean-badge">not reported</span>
-          </div>
-        </div>
-      </div>
+      <svg v-if="coveragePoints.length" viewBox="0 0 900 260" class="coverage-svg" role="img" aria-label="Share of observed updates completed over time">
+        <line x1="60" y1="48" x2="860" y2="48" stroke="var(--fleet-black-25)" stroke-width="1" stroke-dasharray="5 4" />
+        <text x="60" y="40" class="curve-label">90% — where we want to be by day {{ config.patchSlaDays }}</text>
+        <line x1="60" y1="210" x2="860" y2="210" stroke="var(--fleet-black-10)" stroke-width="1" />
+        <path :d="coverageAreaPath" :fill="'rgba(0,154,125,0.10)'" />
+        <path :d="coverageLinePath" fill="none" :stroke="palette.good" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+        <line :x1="covX(7)" y1="48" :x2="covX(7)" y2="210" stroke="var(--fleet-black-50)" stroke-width="1" stroke-dasharray="4 3" />
+        <circle :cx="covX(7)" :cy="covY(coverageAt(7) || 0)" r="7" fill="var(--fleet-white)" stroke="var(--fleet-black)" stroke-width="3" />
+        <g v-if="coverageAt(7) != null">
+          <rect :x="covX(7) + 16" y="86" width="200" height="40" rx="6" fill="var(--fleet-black)" />
+          <text :x="covX(7) + 28" y="103" class="curve-callout-main">{{ coverageAt(7) }}% by day 7</text>
+          <text :x="covX(7) + 28" y="118" class="curve-callout-sub">{{ (totalObserved - Math.round(totalObserved * coverageAt(7) / 100)).toLocaleString() }} updates took longer</text>
+        </g>
+        <text v-for="d in [0, 7, 14, 21, 30]" :key="'cx' + d" :x="covX(d)" y="232" text-anchor="middle" class="curve-tick" :class="{ 'curve-tick--bold': d === 7 }">{{ d === 0 ? 'day 0' : d }}</text>
+      </svg>
+      <EmptyState v-else small title="No updates in the window." />
     </section>
 
-    <!-- ─── Where the days go, and whose they are ───────────── -->
-    <section class="grammar-section">
-      <div class="grammar-head">
-        <h2 class="grammar-title">Where the days go, and whose they are</h2>
-        <span class="grammar-hint">Six stages, each with an owner · different samples and clocks per row — never a strict sum</span>
+    <!-- ─── App by app ──────────────────────────────────────── -->
+    <section class="apps-card">
+      <div class="curve-head">
+        <h2>App by app</h2>
+        <span class="curve-sub">One dot per app — where it lands, not an average of averages</span>
       </div>
-      <div class="stages-card">
-        <div v-for="s in stages" :key="s.label" class="stage-row" :class="{ 'stage-row--na': s.kind === 'missing' }">
-          <div class="stage-label">
-            <span class="stage-name">{{ s.label }}</span>
-            <span class="stage-sub">{{ s.sub }}</span>
-          </div>
-          <span class="owner-chip" :class="`owner-chip--${s.ownerTone}`">{{ s.owner }}</span>
-          <div class="stage-bar">
-            <div v-if="s.kind === 'measured'" class="stage-fill" :style="{ width: s.pct + '%', background: s.color }"></div>
-            <span v-else-if="s.kind === 'bounded'" class="stage-na stage-na--bound">{{ s.note }}</span>
-            <span v-else class="stage-na">{{ s.reason }}</span>
-          </div>
-          <div class="stage-value">
-            <template v-if="s.kind === 'measured'">
-              <span class="stage-days" :style="{ color: s.color }">{{ s.value.toFixed(1) }}d</span>
-              <span class="stage-note">{{ s.note }}</span>
-            </template>
-            <span v-else-if="s.kind === 'bounded'" class="stage-days stage-days--bound">{{ s.bound }}</span>
-            <span v-else class="stage-note">—</span>
-          </div>
-        </div>
-        <div class="stages-footer">
-          <span class="stages-insight">{{ stagesInsight }}</span>
-        </div>
+      <div class="dot-legend">
+        <span class="dot-legend-item dot-legend-item--good"><span class="dot-swatch" :style="{ background: palette.good }"></span>{{ appsInside.length }} app{{ appsInside.length === 1 ? '' : 's' }} inside the {{ config.patchSlaDays }}-day target</span>
+        <span class="dot-legend-item"><span class="dot-swatch" :style="{ background: palette.elevated }"></span>{{ appsOutside.length }} outside it</span>
       </div>
-    </section>
+      <svg v-if="appDots.length" viewBox="0 0 900 130" class="dots-svg" role="img" aria-label="Each app plotted by its average days to patch">
+        <rect x="60" :width="dotX(config.patchSlaDays) - 60" y="18" height="74" :fill="'rgba(0,154,125,0.06)'" />
+        <line :x1="dotX(config.patchSlaDays)" y1="12" :x2="dotX(config.patchSlaDays)" y2="92" :stroke="palette.good" stroke-width="1" stroke-dasharray="4 3" />
+        <line x1="60" y1="92" x2="860" y2="92" stroke="var(--fleet-black-10)" stroke-width="1" />
+        <circle
+          v-for="a in appDots" :key="a.software_name"
+          :cx="dotX(a.lag)" :cy="a.cy" r="6"
+          :fill="dotColor(a.lag)"
+        >
+          <title>{{ a.software_name }} — {{ a.lag.toFixed(1) }}d mean · {{ a.hosts }} hosts</title>
+        </circle>
+        <text v-if="slowestDot" :x="Math.min(dotX(slowestDot.lag), 840)" y="34" text-anchor="end" class="curve-label curve-label--bad">{{ slowestDot.software_name }} — {{ slowestDot.lag.toFixed(0) }}d</text>
+        <text v-for="d in dotTicks" :key="'dx' + d" :x="dotX(d)" y="114" text-anchor="middle" class="curve-tick" :class="{ 'curve-tick--bold': d === config.patchSlaDays }">{{ d === 0 ? 'day 0' : d }}</text>
+        <text x="460" y="128" text-anchor="middle" class="curve-tick">average days to patch, per app · hover a dot for the name</text>
+      </svg>
+      <EmptyState v-else small title="No apps with enough patch data in the window." />
 
-    <!-- ─── The two facts this page can't see yet ───────────── -->
-    <section class="grammar-section">
-      <div class="pv-cards-grid">
-        <div class="fact-card fact-card--warn">
-          <div class="fact-head">
-            <h3>Patched on disk, old build still running</h3>
-            <span class="fact-badge fact-badge--na">not instrumented</span>
-          </div>
-          <p class="fact-body">
-            Inventory says fixed; memory may say otherwise. Exposure doesn't close until the process
-            restarts — and today <strong>every on-disk install on this page is counted as patched</strong>,
-            which flatters every number above. One osquery join closes the blind spot:
-          </p>
-          <pre class="fact-code">SELECT p.pid, p.name, p.start_time, f.mtime
-FROM processes p JOIN file f ON f.path = p.path
-WHERE f.mtime &gt; p.start_time;</pre>
-          <div class="fact-foot">
-            <span>Same pattern for OS updates: SystemVersion.plist mtime vs boot time = staged, not rebooted.</span>
-          </div>
-        </div>
-
-        <div class="fact-card">
-          <div class="fact-head">
-            <h3>How precisely each timestamp is known</h3>
-            <span v-if="summary90 && summary90.n_events" class="fact-n">{{ summary90.n_events.toLocaleString() }} transitions</span>
-          </div>
-          <div class="evidence-rows">
-            <div class="evidence-row">
-              <div class="evidence-label"><span class="evidence-name">Inventory diff</span><span class="evidence-sub">hourly osquery snapshot</span></div>
-              <div class="evidence-meter"><div class="evidence-fill" :style="{ width: '100%', background: palette.fair }"></div></div>
-              <span class="evidence-pct"><strong>100%</strong> <span class="dim">±1h</span></span>
-            </div>
-            <div class="evidence-row evidence-row--na">
-              <div class="evidence-label"><span class="evidence-name">Install receipt</span><span class="evidence-sub">package_receipts, rpm</span></div>
-              <div class="evidence-meter"></div>
-              <span class="evidence-pct"><span class="dim">0% · not collected · ±2m</span></span>
-            </div>
-            <div class="evidence-row evidence-row--na">
-              <div class="evidence-label"><span class="evidence-name">Event log</span><span class="evidence-sub">MsiInstaller 1033/1034</span></div>
-              <div class="evidence-meter"></div>
-              <span class="evidence-pct"><span class="dim">0% · not collected · ±2m</span></span>
-            </div>
-            <div class="evidence-row evidence-row--na">
-              <div class="evidence-label"><span class="evidence-name">Bundle mtime</span><span class="evidence-sub">Info.plist replacement</span></div>
-              <div class="evidence-meter"></div>
-              <span class="evidence-pct"><span class="dim">0% · not collected · ±1h</span></span>
-            </div>
-          </div>
-          <div class="fact-foot">
-            <span>Every timestamp on this page is poll-bounded. Once receipts land, grades are reported per row and never averaged together.</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ─── The denominator ─────────────────────────────────── -->
-    <section class="grammar-section">
-      <div class="grammar-head">
-        <h2 class="grammar-title">Who is in the count</h2>
-        <span class="grammar-hint">The denominator decides the number — this page's is narrower than it should be, and says so</span>
-      </div>
-      <div class="denom-card">
-        <div class="denom-row denom-row--current">
-          <div class="denom-label"><span class="denom-name">Hosts observed completing a transition</span><span class="denom-sub">the only hosts in every number above — conditional on patching</span></div>
-          <span class="denom-count mono">{{ summary90 && summary90.n_hosts ? summary90.n_hosts : '—' }}</span>
-        </div>
-        <div class="denom-row">
-          <div class="denom-label"><span class="denom-name">Installed the title fresh after the fix</span><span class="denom-sub">excluded by construction — a transition needs a from-version, so they can't fake instant success</span></div>
-          <span class="denom-count mono dim">out</span>
-        </div>
-        <div class="denom-row denom-row--gap">
-          <div class="denom-label"><span class="denom-name">Still on the old build, or offline</span><span class="denom-sub">right-censored — no event, so they are in none of these numbers. Counting them needs per-host version observations at t₀</span></div>
-          <span class="denom-count mono dim">not countable yet</span>
-        </div>
-        <div class="denom-foot">The measurement spec's denominator is "held an affected version at t₀". Until per-host software observations are collected, every figure here is conditional on the patch having happened — real MTTP is worse than shown, never better.</div>
-      </div>
-    </section>
-
-    <!-- ─── Change impact — measured, not inferred ──────────── -->
-    <section class="grammar-section">
-      <div class="grammar-head">
-        <h2 class="grammar-title">Change impact — measured, not inferred</h2>
-        <span class="grammar-hint">Hosts that got the change vs. hosts still waiting · 95% interval · correlation, not attribution</span>
-      </div>
-      <div class="impact-grid">
-        <div class="impact-card">
-          <div class="impact-head-row">
-            <span>Change & metric</span><span>Cohorts</span><span class="center">Effect on score · 95% CI</span><span class="right">Reading</span>
-          </div>
-          <div v-if="impactLoading" class="impact-loading">Comparing cohorts…</div>
-          <EmptyState v-else-if="!impactRows.length" small title="No changes with rollouts in the 14-day window to measure." />
-          <div v-for="row in impactRows" :key="row.id" class="impact-row" :class="{ 'impact-row--na': row.verdict.key === 'not-measurable' }">
-            <div class="impact-change">
-              <span class="impact-name">{{ row.label }}</span>
-              <span class="impact-sub">composite score change · 7d window<template v-if="row.sha"> · <span class="mono">{{ row.sha }}</span></template></span>
-            </div>
-            <div class="impact-cohorts">
-              <span><span class="dim">exposed</span> <strong class="mono">{{ row.exposedN ?? '—' }}</strong></span>
-              <span><span class="dim">control</span> <strong class="mono" :class="{ 'cohort-zero': row.controlN === 0 }">{{ row.controlN ?? '—' }}</strong></span>
-            </div>
-            <div class="impact-ci">
-              <template v-if="row.effect != null && row.verdict.key !== 'not-measurable'">
-                <div class="ci-track">
-                  <div class="ci-zero"></div>
-                  <div class="ci-range" :style="ciRangeStyle(row)"></div>
-                  <div class="ci-dot" :style="ciDotStyle(row)"></div>
-                </div>
-                <div class="ci-text" :style="{ color: effectColor(row) }">
-                  {{ row.effect > 0 ? '+' : '' }}{{ row.effect }} <span class="dim">({{ row.ciLow > 0 ? '+' : '' }}{{ row.ciLow }} to {{ row.ciHigh > 0 ? '+' : '' }}{{ row.ciHigh }})</span>
-                </div>
-              </template>
-              <div v-else class="ci-empty">{{ row.effect != null ? 'reading withheld by rule' : 'no comparison possible' }}</div>
-            </div>
-            <div class="impact-reading">
-              <span class="verdict-badge" :class="`verdict--${row.verdict.key}`">{{ row.verdict.label }}</span>
-              <span class="verdict-note">{{ row.verdict.note }}<template v-if="row.confounders.length"> · confounder: {{ row.confounders.slice(0, 3).join(', ') }}{{ row.confounders.length > 3 ? ` +${row.confounders.length - 3} more` : '' }}</template><template v-else-if="row.verdict.key === 'likely'"> · no confounder detected</template></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="engine-card">
-          <h3>What the engine emits</h3>
-          <p>One reading per change. Nothing renders unless every field computes — that's why rows can say "not measurable".</p>
-          <pre v-if="engineSample">{{ engineSample }}</pre>
-          <div class="engine-rules">
-            <span class="engine-rules-label">Rules</span>
-            <span>Control cohort ≥ {{ RULES.MIN_CONTROL }} hosts, or the row is withheld.</span>
-            <span>Changes reaching ≥{{ RULES.CONFOUNDER_OVERLAP * 100 }}% of the same hosts are named as confounders.</span>
-            <span>"Likely caused" is the strongest word this page will use.</span>
-            <span>Metric limit: composite-score change is the only per-host before/after available — per-metric effects (memory, crashes) aren't wired yet.</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ─── Who — who waits longest ─────────────────────────── -->
-    <section class="grammar-section">
-      <div class="grammar-head">
-        <h2 class="grammar-title">Who — who waits longest</h2>
-      </div>
-      <div class="who-grid">
-        <div class="who-card">
-          <div class="who-head">
-            <h3>Time to patch by hardware model</h3>
-            <span class="grammar-hint">mean days · target {{ config.patchSlaDays }} · no team field on hosts, so model is the cohort</span>
-          </div>
-          <div v-if="byModel.length" class="who-rows">
-            <div v-for="m in byModel" :key="m.model" class="who-row">
-              <div class="who-row-label">
-                <span class="who-name mono">{{ m.model }}</span>
-                <span class="who-sub">{{ m.hosts }} host{{ m.hosts === 1 ? '' : 's' }} · {{ m.events }} events</span>
+      <div v-if="fastApps.length || slowApps.length" class="apps-split">
+        <div class="apps-col">
+          <h3 class="apps-col-title apps-col-title--good">Working well</h3>
+          <div class="apps-rows">
+            <div v-for="a in fastApps" :key="a.software_name" class="app-row">
+              <div class="app-row-label">
+                <span class="app-row-name">{{ a.software_name }}</span>
+                <span class="app-row-sub">{{ a.hosts }} host{{ a.hosts === 1 ? '' : 's' }} · spread {{ Number(a.min_lag).toFixed(1) }}–{{ Number(a.max_lag).toFixed(1) }}d</span>
               </div>
-              <div class="who-meter">
-                <div class="who-fill" :style="{ width: modelPct(m) + '%', background: lagColor(m.avgLag) }"></div>
-              </div>
-              <span class="who-value mono" :style="{ color: lagColor(m.avgLag) }">{{ m.avgLag.toFixed(1) }}d</span>
+              <span class="app-row-value mono" :style="{ color: palette.good }">{{ Number(a.avg_lag).toFixed(1) }}d</span>
             </div>
           </div>
-          <EmptyState v-else small title="No per-model patch data in the window." />
         </div>
-
-        <div class="who-card">
-          <div class="who-head">
-            <h3>Hosts dragging MTTP</h3>
-            <span class="grammar-hint">mean days over 30d, worst first</span>
-          </div>
-          <div v-if="slowHosts.length" class="who-rows">
-            <div v-for="h in slowHosts" :key="h.host_identifier" class="who-row who-row--click" :title="`Open ${hostName(h)} — full host detail`" @click="openHost(h.host_identifier)">
-              <div class="who-row-label">
-                <span class="who-name">{{ hostName(h) }}</span>
-                <span class="who-sub">{{ h.n_patches }} patch{{ h.n_patches === 1 ? '' : 'es' }} · {{ h.n_apps }} app{{ h.n_apps === 1 ? '' : 's' }}<span v-if="Number(h.n_patches) === 1" class="who-single"> · single event</span></span>
+        <div class="apps-col">
+          <h3 class="apps-col-title apps-col-title--bad">The outliers</h3>
+          <div class="apps-rows">
+            <div v-for="a in slowApps" :key="a.software_name" class="app-row" :class="{ 'app-row--bad': Number(a.avg_lag) > config.patchSlaDays * 2 }">
+              <div class="app-row-label">
+                <span class="app-row-name">{{ a.software_name }}</span>
+                <span class="app-row-sub">{{ a.hosts }} host{{ a.hosts === 1 ? '' : 's' }} · spread {{ Number(a.min_lag).toFixed(1) }}–{{ Number(a.max_lag).toFixed(1) }}d</span>
               </div>
-              <div class="who-meter">
-                <div class="who-fill" :style="{ width: hostPct(h) + '%', background: lagColor(Number(h.avg_lag)) }"></div>
-              </div>
-              <span class="who-value mono" :style="{ color: lagColor(Number(h.avg_lag)) }">{{ h.avg_lag }}d</span>
+              <span class="app-row-value mono" :style="{ color: lagColor(Number(a.avg_lag)) }">{{ Number(a.avg_lag).toFixed(1) }}d</span>
             </div>
           </div>
-          <EmptyState v-else small title="No per-host patch data in the window." />
-          <div class="who-footer">Ranked by mean days-to-patch — correlation with host behavior (offline windows, deferred restarts), not a verdict.</div>
+          <span class="apps-col-foot">Averaging these into one number would hide every one of them.</span>
         </div>
       </div>
     </section>
 
-    <!-- ─── Act — changes that would move the number ────────── -->
+    <!-- ─── What everyone is waiting for ────────────────────── -->
+    <section class="waiting-card">
+      <div class="curve-head">
+        <h2>What everyone is waiting for</h2>
+        <span class="curve-sub">typical days per step · different samples per row, so they don't sum</span>
+      </div>
+      <div class="waiting-rows">
+        <div v-for="w in waitingRows" :key="w.label" class="waiting-row" :class="{ 'waiting-row--na': w.value == null }">
+          <span class="waiting-label">{{ w.label }}</span>
+          <div class="waiting-meter">
+            <div v-if="w.value != null" class="waiting-fill" :style="{ width: w.pct + '%', background: w.color }"></div>
+            <span v-else class="waiting-na">{{ w.na }}</span>
+          </div>
+          <span class="waiting-value mono" :style="w.value != null ? { color: w.color } : {}">{{ w.value != null ? w.value.toFixed(1) + 'd' : '—' }}</span>
+        </div>
+      </div>
+      <div class="waiting-foot">{{ waitingFoot }}</div>
+    </section>
+
+    <!-- ─── The blind spot, in plain words ──────────────────── -->
+    <section class="blind-card">
+      <div class="blind-count">
+        <span class="blind-count-num">?</span>
+        <span class="blind-count-sub">machines</span>
+      </div>
+      <div class="blind-body">
+        <h2>Some machines have the fix but still run the old version</h2>
+        <p>The update installed, nobody quit the app, so the old code is the one running. We can't count these machines yet — one osquery check would make them visible. Until then this page counts them as done, like every other tool does.</p>
+      </div>
+    </section>
+
+    <!-- ─── Did recent rollouts help? ────────────────────────── -->
     <section class="grammar-section">
       <div class="grammar-head">
-        <h2 class="grammar-title">Act — what would move the number, and what would make it honest</h2>
-        <span class="grammar-hint">Operational levers carry computed estimates; measurement levers state what they unlock, never invented days</span>
+        <h2 class="grammar-title">Did recent rollouts help?</h2>
+        <span class="grammar-hint">Hosts that got the update vs. hosts still waiting · correlation, not attribution</span>
       </div>
-      <div v-if="levers.length" class="act-card">
-        <table class="act-table">
-          <thead>
-            <tr>
-              <th>Change</th>
-              <th>Stage it fixes</th>
-              <th class="num">Hosts</th>
-              <th>Evidence behind the estimate</th>
-              <th class="num">MTTP effect</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="l in levers" :key="l.id">
-              <td>
-                <div class="lever-name">{{ l.change }}</div>
-                <div class="lever-sub">{{ l.sub }}</div>
-              </td>
-              <td class="act-muted">{{ l.stage }}</td>
-              <td class="num mono">{{ l.hosts }}</td>
-              <td class="act-muted">{{ l.evidence }}</td>
-              <td class="num" :class="l.kind === 'measurement' ? 'lever-effect--meta' : 'lever-effect'">{{ l.kind === 'measurement' ? l.effect : '~' + l.effect }}</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="impact-card">
+        <div v-if="impactLoading" class="impact-loading">Comparing…</div>
+        <EmptyState v-else-if="!impactRows.length" small title="No rollouts in the 14-day window to judge." />
+        <div v-for="row in impactRows" :key="row.id" class="impact-row">
+          <div class="impact-main">
+            <span class="impact-name">{{ row.label }}</span>
+            <span class="impact-reading-text">{{ readingSentence(row) }}</span>
+          </div>
+          <div class="impact-side">
+            <span class="verdict-badge" :class="`verdict--${row.verdict.key}`">{{ verdictLabel(row) }}</span>
+            <span v-if="row.exposedN != null" class="impact-counts mono">{{ row.exposedN }} updated · {{ row.controlN }} waiting</span>
+          </div>
+        </div>
+        <div class="impact-foot">Judged on composite-score change over 7 days. "Likely" is the strongest word this list uses.</div>
       </div>
-      <EmptyState v-else small title="No lever has computable evidence in this window." />
     </section>
+
+    <!-- ─── What would speed this up ────────────────────────── -->
+    <section class="grammar-section">
+      <div class="grammar-head">
+        <h2 class="grammar-title">What would speed this up</h2>
+        <span class="grammar-hint">Only changes whose evidence computes from this fleet's data</span>
+      </div>
+      <div class="lever-rows">
+        <div v-for="l in levers" :key="l.id" class="lever-row">
+          <div class="lever-main">
+            <span class="lever-name">{{ l.change }}</span>
+            <span class="lever-sub">{{ l.evidence }}</span>
+          </div>
+          <div class="lever-effect-block">
+            <span class="lever-effect-num" :class="l.kind === 'measurement' ? 'lever-effect-num--meta' : ''">{{ l.effect }}</span>
+            <span class="lever-effect-sub">{{ l.effectSub }}</span>
+          </div>
+        </div>
+        <EmptyState v-if="!levers.length" small title="No lever has computable evidence in this window." />
+      </div>
+    </section>
+
+    <!-- ─── The one footer sentence ─────────────────────────── -->
+    <div class="pv-footer">
+      <span>Counted over machines seen completing an update — from the fleet first seeing a version to each machine reporting it, in wall-clock days. Machines that haven't updated yet aren't in the count, so the real picture is worse than shown, never better.</span>
+      <button class="pv-footer-link" @click="showMethod = true">How we measure this ›</button>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import BaseButton from '../components/base/BaseButton.vue'
 import EmptyState from '../components/base/EmptyState.vue'
 import { useAppConfig } from '../composables/useAppConfig'
 import { usePatchVelocity } from '../composables/usePatchVelocity'
 import { usePatchEvents } from '../composables/usePatchEvents'
 import { useChangelog, fileTags } from '../composables/useChangelog'
-import { useFmaReleases, loadFmaReleaseDevices } from '../composables/useFmaReleases'
+import { useFmaReleases } from '../composables/useFmaReleases'
 import { useDailyScoreSeries } from '../composables/useDailyScoreSeries'
 import { buildChangeImpact } from '../composables/useChangeImpact'
 import { buildImpactRows, COHORT_RULES } from '../composables/useCohortImpact'
 import { query } from '../services/api'
-import { displayHost } from '../composables/displayName'
 import { palette } from '../composables/uiPalette'
 import dayjs from 'dayjs'
 
 const RULES = COHORT_RULES
-const router = useRouter()
 const { config } = useAppConfig()
 const error = ref(null)
 const showMethod = ref(false)
 
 // ─── Core MTTP data ───────────────────────────────────────────
-const { summary90, current7, prior7, byType, byApp, byHost, loading, fetchAll } = usePatchVelocity()
-const byHostAll = ref([])
+const { summary90, byApp, byHost, loading, fetchAll } = usePatchVelocity()
+const { fetchPatchSummaryBucketed } = usePatchEvents()
 
 const p50_90 = computed(() => summary90.value?.p50_lag != null ? Number(summary90.value.p50_lag) : null)
 const p90_90 = computed(() => summary90.value?.p90_lag != null ? Number(summary90.value.p90_lag) : null)
-const p95_90 = computed(() => summary90.value?.p95_lag != null ? Number(summary90.value.p95_lag) : null)
 const mean90 = computed(() => summary90.value?.avg_lag != null ? Number(summary90.value.avg_lag) : null)
 
-// ─── Adoption curve (empirical, conditional on patching) ──────
-// Histogram of days_to_patch folded into "share of observed transitions
-// still incomplete after d days". NOT Kaplan–Meier: hosts that never
-// patched produce no event and are invisible to this clock — the page
-// says so wherever the curve is read.
+// Big numbers read in whole units where possible: "22 hours" beats "0.9".
+function fmtDays(d) { return d < 1.5 ? Math.round(d * 24) : (d < 10 ? d.toFixed(1) : Math.round(d)) }
+function unitFor(d) { return d < 1.5 ? 'hours' : 'days' }
+
+// ─── Coverage curve (share of observed updates completed) ─────
 const survivalRows = ref([])
+const totalObserved = computed(() => survivalRows.value.reduce((s, r) => s + Number(r.n_events), 0))
+
+function coverageAt(d) {
+  if (!totalObserved.value) return null
+  const done = survivalRows.value.filter(r => Number(r.day_bucket) < d).reduce((s, r) => s + Number(r.n_events), 0)
+  return Math.round((done / totalObserved.value) * 100)
+}
 
 const CURVE_MAX_DAY = 30
-
-const curve = computed(() => {
-  const byType = new Map()
-  for (const r of survivalRows.value) {
-    const t = r.patch_type || 'app'
-    if (!byType.has(t)) byType.set(t, [])
-    byType.get(t).push({ day: Number(r.day_bucket), n: Number(r.n_events) })
-  }
-  const series = []
-  for (const [type, rows] of byType) {
-    const total = rows.reduce((s, r) => s + r.n, 0)
-    if (!total) continue
-    // remaining(d) = share of transitions that took MORE than d days
-    const points = []
-    let done = 0
-    for (let d = 0; d <= CURVE_MAX_DAY; d++) {
-      done += rows.filter(r => r.day === d).reduce((s, r) => s + r.n, 0)
-      points.push({ day: d, remaining: 1 - done / total })
-    }
-    series.push({ type, total, points })
-  }
-  return series.sort((a, b) => b.total - a.total)
+const coveragePoints = computed(() => {
+  if (!totalObserved.value) return []
+  const pts = []
+  for (let d = 0; d <= CURVE_MAX_DAY; d++) pts.push({ day: d, pct: coverageAt(d + 1) })
+  return pts
 })
 
-/** Cumulative share of observed transitions complete within d days. */
-function coverageAt(d) {
-  const all = survivalRows.value
-  const total = all.reduce((s, r) => s + Number(r.n_events), 0)
-  if (!total) return null
-  const done = all.filter(r => Number(r.day_bucket) < d).reduce((s, r) => s + Number(r.n_events), 0)
-  return Math.round((done / total) * 100)
-}
-const coverageDays = computed(() => [1, 3, 7, 14].map(d => ({ day: d, pct: coverageAt(d) })))
+// SVG geometry (viewBox 0 0 900 260; x 60..860; y: 100% → 30, 0% → 210)
+const covX = (day) => 60 + (Math.min(day, CURVE_MAX_DAY) / CURVE_MAX_DAY) * 800
+const covY = (pct) => 210 - (pct / 100) * 180
+const coverageLinePath = computed(() => {
+  if (!coveragePoints.value.length) return ''
+  let p = `M${covX(0)},${covY(coveragePoints.value[0].pct)}`
+  for (const pt of coveragePoints.value.slice(1)) p += ` L${covX(pt.day).toFixed(1)},${covY(pt.pct).toFixed(1)}`
+  return p
+})
+const coverageAreaPath = computed(() =>
+  coverageLinePath.value ? `${coverageLinePath.value} L${covX(CURVE_MAX_DAY)},210 L${covX(0)},210 Z` : ''
+)
 
-// SVG geometry for the curve (viewBox 0 0 740 240, plot x 56..716, y 24..196)
-const curveX = (day) => 56 + (Math.min(day, CURVE_MAX_DAY) / CURVE_MAX_DAY) * 660
-const curveY = (remaining) => 24 + (1 - remaining) * 172
-function curvePath(points) {
-  let dPath = `M${curveX(0)},${curveY(1)}`
-  for (const p of points) {
-    dPath += ` H${curveX(p.day + 1).toFixed(1)} V${curveY(p.remaining).toFixed(1)}`
-  }
-  return dPath
-}
-const curveColors = { app: palette.good, os: palette.elevated }
-
-const heroColor = computed(() => {
-  if (p50_90.value == null) return 'var(--fleet-black-50)'
+// ─── App dots ─────────────────────────────────────────────────
+const DOT_MAX_DAY = 45
+const appDots = computed(() => {
+  const rows = byApp.value.filter(a => Number(a.hosts) >= 2)
+  // three lanes so overlapping dots stay readable, like the design
+  return rows.map((a, i) => ({
+    ...a,
+    lag: Math.min(Number(a.avg_lag), DOT_MAX_DAY),
+    cy: [44, 60, 76][i % 3],
+  }))
+})
+const appsInside = computed(() => appDots.value.filter(a => a.lag <= Number(config.value.patchSlaDays)))
+const appsOutside = computed(() => appDots.value.filter(a => a.lag > Number(config.value.patchSlaDays)))
+const slowestDot = computed(() => appDots.value.length ? appDots.value.reduce((m, a) => (a.lag > m.lag ? a : m)) : null)
+const dotX = (d) => 60 + (Math.min(d, DOT_MAX_DAY) / DOT_MAX_DAY) * 800
+const dotTicks = computed(() => [0, 7, 14, 21, 30, 45].filter(d => d !== 7 || Number(config.value.patchSlaDays) !== 7).concat(Number(config.value.patchSlaDays)).sort((a, b) => a - b))
+function dotColor(lag) {
   const sla = Number(config.value.patchSlaDays) || 14
-  if (p50_90.value <= sla / 2) return 'var(--status-good-soft)'
-  if (p50_90.value <= sla) return 'var(--fleet-white)'
-  if (p50_90.value <= sla * 2) return 'var(--status-fair)'
-  return '#ff9a9a'
-})
+  if (lag <= sla) return palette.good
+  if (lag <= sla * 2) return palette.fair
+  return palette.elevated
+}
+function lagColor(days) {
+  const sla = Number(config.value.patchSlaDays) || 14
+  if (days <= sla / 2) return palette.good
+  if (days <= sla) return palette.fair
+  if (days <= sla * 2) return palette.elevated
+  return palette.critical
+}
 
-// Week-over-week trend on the MEDIAN — the fleet-level mean is deliberately
-// not reported on this page (heavy right tail makes it misleading).
-const weekTrend = computed(() => {
-  const c = current7.value?.p50_lag
-  const p = prior7.value?.p50_lag
-  if (c == null || p == null) return null
-  return { current: Number(c).toFixed(1), delta: +(Number(c) - Number(p)).toFixed(1) }
-})
+const fastApps = computed(() => byApp.value
+  .filter(a => Number(a.hosts) >= 3)
+  .sort((a, b) => Number(a.avg_lag) - Number(b.avg_lag))
+  .slice(0, 3))
+const slowApps = computed(() => byApp.value
+  .filter(a => Number(a.hosts) >= 3)
+  .sort((a, b) => Number(b.avg_lag) - Number(a.avg_lag))
+  .slice(0, 3))
 
-// ─── Chains (for stage B + impact candidates) ─────────────────
+// ─── What everyone is waiting for — plain-words stages ────────
 const { commits, fetchChangelog } = useChangelog()
 const { releases: fmaReleases, fetchFmaReleases } = useFmaReleases()
-const { fetchPatchSummaryBucketed } = usePatchEvents()
 const { fetchDailySeries, deltaAfter, judgementFor } = useDailyScoreSeries()
-
 const patchBuckets = ref([])
-const fmaDeviceCounts = ref({})
-const fmaDeviceLoading = ref({})
 
 const impact = computed(() => buildChangeImpact({
   commits: commits.value,
@@ -514,7 +350,6 @@ const impact = computed(() => buildChangeImpact({
   judgementFor,
 }))
 
-// ─── Stages — each measured on its own labeled sample ─────────
 function median(xs) {
   const a = xs.filter(x => isFinite(x)).sort((x, y) => x - y)
   if (!a.length) return null
@@ -522,239 +357,86 @@ function median(xs) {
   return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2
 }
 
-const vendorStage = computed(() => {
-  const hours = []
-  for (const r of fmaReleases.value) {
-    const rows = fmaDeviceCounts.value[r.id]
-    if (!rows?.length) continue
-    const first = Math.min(...rows.map(x => Number(x.hours_to_first_patch)).filter(isFinite))
-    if (isFinite(first)) hours.push(first)
-  }
-  return hours.length ? { days: median(hours) / 24, n: hours.length } : null
-})
-
-const commitStage = computed(() => {
+const approveDays = computed(() => {
   const gaps = impact.value.chains
     .filter(ch => ch.release)
     .map(ch => dayjs(ch.anchorDay).diff(dayjs(String(ch.release.timestamp).slice(0, 10)), 'day'))
     .filter(g => g >= 0)
-  return gaps.length ? { days: median(gaps), n: gaps.length } : null
+  return gaps.length ? median(gaps) : null
 })
-
-// Commit → first observed rollout day, over verified chains.
-const rolloutStage = computed(() => {
+const fleetPartDays = computed(() => {
   const gaps = impact.value.chains
     .map(ch => {
-      const firstBucketDay = ch.bucketKeys.map(k => String(k).split('::')[0]).sort()[0]
-      return firstBucketDay ? dayjs(firstBucketDay).diff(dayjs(ch.anchorDay), 'day') : null
+      const first = ch.bucketKeys.map(k => String(k).split('::')[0]).sort()[0]
+      return first ? dayjs(first).diff(dayjs(ch.anchorDay), 'day') : null
     })
     .filter(g => g != null && g >= 0)
-  return gaps.length ? { days: median(gaps), n: gaps.length } : null
+  return gaps.length ? median(gaps) : null
 })
 
-// Six stages, each with an owner — the 6b decomposition. `kind` controls
-// rendering: 'measured' (bar + number), 'bounded' (a ceiling we can state,
-// not a measurement), 'missing' (not instrumented — reason + what unlocks it).
-const stages = computed(() => {
-  const raw = [
-    {
-      label: 'Vendor releases → first host patched',
-      sub: 'vendor clock, FMA-matched releases only',
-      owner: 'vendor + pipeline', ownerTone: 'neutral',
-      kind: vendorStage.value ? 'measured' : 'missing',
-      value: vendorStage.value?.days ?? null,
-      note: vendorStage.value ? `median of ${vendorStage.value.n} release${vendorStage.value.n === 1 ? '' : 's'} with patch data` : null,
-      reason: 'not measurable — no FMA release matched to patch events in this window',
-      color: palette.good,
-    },
-    {
-      label: 'Release → manifest commit',
-      sub: 'the human review queue',
-      owner: 'humans', ownerTone: 'critical',
-      kind: commitStage.value ? 'measured' : 'missing',
-      value: commitStage.value?.days ?? null,
-      note: commitStage.value ? `median of ${commitStage.value.n} name-matched chain${commitStage.value.n === 1 ? '' : 's'}` : null,
-      reason: 'not measurable — no name-matched release→commit chains in the current windows',
-      color: palette.critical,
-    },
-    {
-      label: 'Commit → rollout begins',
-      sub: 'GitOps apply to first observed transition',
-      owner: 'release process', ownerTone: 'neutral',
-      kind: rolloutStage.value ? 'measured' : 'missing',
-      value: rolloutStage.value?.days ?? null,
-      note: rolloutStage.value ? `median of ${rolloutStage.value.n} verified chain${rolloutStage.value.n === 1 ? '' : 's'}` : null,
-      reason: 'not measurable — no verified commit→rollout chains in the current windows',
-      color: palette.good,
-    },
-    {
-      label: 'First host → half of hosts',
-      sub: 'fleet median (p50) · 90d · all transitions',
-      owner: 'host availability', ownerTone: 'neutral',
-      kind: p50_90.value != null ? 'measured' : 'missing',
-      value: p50_90.value,
-      note: 'all observed transitions',
-      reason: 'not measurable — no patch events in 90d',
-      color: palette.fair,
-    },
-    {
-      label: 'Applied → seen in inventory',
-      sub: 'measurement lag, not exposure',
-      owner: 'osquery cadence', ownerTone: 'info',
-      kind: 'bounded',
-      value: null,
-      bound: '≤ 1h',
-      note: 'bounded by the hourly poll — every timestamp on this page carries it',
-      color: palette.info,
-    },
-    {
-      label: 'Installed on disk → actually relaunched',
-      sub: 'old build still in memory',
-      owner: 'end user', ownerTone: 'critical',
-      kind: 'missing',
-      value: null,
-      reason: 'not instrumented — needs processes.start_time vs file.mtime in the query pack',
-      color: palette.elevated,
-    },
+const waitingRows = computed(() => {
+  const rows = [
+    { label: 'Waiting for us to approve it', value: approveDays.value, color: palette.critical, na: 'nothing to compare this window' },
+    { label: 'Waiting for the machine to apply it', value: p50_90.value, color: palette.fair, na: 'no updates in the window' },
+    { label: "Fleet's own part of the job", value: fleetPartDays.value, color: palette.good, na: 'nothing to compare this window' },
+    { label: 'Waiting for someone to restart', value: null, color: palette.elevated, na: "can't see this yet — not instrumented" },
   ]
-  const max = Math.max(...raw.map(s => s.value ?? 0), 0.1)
-  return raw.map(s => ({ ...s, pct: s.value != null ? Math.max(2, (s.value / max) * 100) : 0 }))
+  const max = Math.max(...rows.map(r => r.value ?? 0), 0.1)
+  return rows.map(r => ({ ...r, pct: r.value != null ? Math.max(2, (r.value / max) * 100) : 0 }))
 })
 
-const stagesInsight = computed(() => {
-  const measurable = stages.value.filter(s => s.value != null)
-  if (!measurable.length) return 'No stage is measurable yet — the clocks need patch events and matched chains.'
-  const worst = measurable.reduce((a, b) => (b.value > a.value ? b : a))
-  return `The largest measured delay is "${worst.label.toLowerCase()}" at ${worst.value.toFixed(1)} days (${worst.note}). Stages come from different samples and clocks — they don't sum to one number. The relaunch stage is likely the largest of all, and it is the one we can't see yet.`
+const waitingFoot = computed(() => {
+  const measured = waitingRows.value.filter(r => r.value != null)
+  if (!measured.length) return 'None of these steps is measurable in the current window.'
+  const worst = measured.reduce((a, b) => (b.value > a.value ? b : a))
+  return `The longest measured wait is "${worst.label.toLowerCase()}" at ${worst.value.toFixed(1)} days. The restart wait is probably the biggest of all — it's the one we can't see yet.`
 })
 
-// ─── Impact rows (cohort comparisons) ─────────────────────────
+// ─── Did recent rollouts help? ────────────────────────────────
 const impactRows = ref([])
 const impactLoading = ref(false)
 
 async function computeImpact() {
   impactLoading.value = true
+  const seen = new Set()
   const candidates = []
-  for (const ch of impact.value.chains.slice(0, 5)) {
-    candidates.push({
-      id: ch.id,
-      label: ch.release ? `${ch.release.app} ${ch.release.version_to} promotion` : `${ch.software} rollout (committed)`,
-      software: ch.software,
-      sha: ch.commits[0]?.short_sha,
-    })
-  }
-  const chained = new Set(impact.value.chains.map(c => c.software.toLowerCase()))
-  const topBuckets = [...patchBuckets.value].sort((a, b) => Number(b.hosts) - Number(a.hosts))
-  for (const b of topBuckets) {
-    if (candidates.length >= 8) break
-    if (chained.has(String(b.software_name).toLowerCase())) continue
-    if (candidates.some(c => c.software === b.software_name)) continue
-    candidates.push({
-      id: `rollout-${b.software_name}`,
-      label: `${b.software_name} rollout`,
-      software: b.software_name,
-      sha: null,
-    })
+  for (const b of [...patchBuckets.value].sort((x, y) => Number(y.hosts) - Number(x.hosts))) {
+    if (candidates.length >= 6) break
+    const sw = String(b.software_name)
+    if (seen.has(sw.toLowerCase())) continue
+    seen.add(sw.toLowerCase())
+    candidates.push({ id: `rollout-${sw}`, label: `${sw} rollout`, software: sw })
   }
   impactRows.value = await buildImpactRows(candidates, 14)
   impactLoading.value = false
 }
 
-// CI bar on a fixed [-3, +3] pts scale, clamped.
-const ciPct = (x) => Math.max(0, Math.min(100, ((x + 3) / 6) * 100))
-function ciRangeStyle(row) {
-  const l = ciPct(row.ciLow), r = ciPct(row.ciHigh)
-  const color = effectColor(row)
-  return { left: l + '%', width: Math.max(2, r - l) + '%', background: color, opacity: 0.3 }
-}
-function ciDotStyle(row) {
-  return { left: ciPct(row.effect) + '%', background: effectColor(row) }
-}
-function effectColor(row) {
-  if (row.verdict.key === 'none' || row.verdict.key === 'not-measurable') return palette.ink50
-  return row.effect > 0 ? palette.good : row.effect < 0 ? palette.critical : 'var(--fleet-black-50)'
-}
-
-const engineSample = computed(() => {
-  const r = impactRows.value.find(x => x.effect != null && x.verdict.key !== 'not-measurable')
-    || impactRows.value.find(x => x.effect != null)
-  if (!r) return ''
-  return [
-    `change      ${r.label}`,
-    `metric      composite score Δ · 7d`,
-    `exposed     ${r.exposedN} hosts`,
-    `control     ${r.controlN} hosts`,
-    `effect      ${r.effect > 0 ? '+' : ''}${r.effect} pts`,
-    `ci95        ${r.ciLow} … ${r.ciHigh}`,
-    `p           ${r.p}`,
-    `confounders ${r.confounders.length ? r.confounders.join(', ') : 'none detected'}`,
-  ].join('\n')
-})
-
-// ─── Who ──────────────────────────────────────────────────────
-const byModel = computed(() => {
-  const groups = new Map()
-  for (const h of byHostAll.value) {
-    const model = h.hardware_model || 'unknown'
-    if (!groups.has(model)) groups.set(model, { model, hosts: 0, events: 0, lagSum: 0 })
-    const g = groups.get(model)
-    g.hosts++
-    g.events += Number(h.n_patches) || 0
-    g.lagSum += (Number(h.avg_lag) || 0) * (Number(h.n_patches) || 0)
+function verdictLabel(row) {
+  switch (row.verdict.key) {
+    case 'likely': return row.effect > 0 ? 'Likely helped' : 'Likely hurt'
+    case 'wide': return 'Unclear'
+    case 'none': return 'No effect found'
+    default: return "Can't be measured"
   }
-  return [...groups.values()]
-    .filter(g => g.events >= 3 && g.model !== 'unknown')
-    .map(g => ({ ...g, avgLag: g.lagSum / g.events }))
-    .sort((a, b) => b.avgLag - a.avgLag)
-    .slice(0, 6)
-})
-const modelPct = (m) => {
-  const max = Math.max(...byModel.value.map(x => x.avgLag), 0.1)
-  return Math.max(2, (m.avgLag / max) * 100)
 }
 
-const slowHosts = computed(() => byHost.value.slice(0, 8))
-const hostPct = (h) => {
-  const max = Math.max(...slowHosts.value.map(x => Number(x.avg_lag)), 0.1)
-  return Math.max(2, (Number(h.avg_lag) / max) * 100)
-}
-const hostName = (h) => displayHost({ hostname: h.hostname, computer_name: h.computer_name, host_id: h.host_identifier })
-function openHost(id) { if (id) router.push(`/hosts/${id}`) }
-
-function lagColor(days) {
-  const sla = Number(config.value.patchSlaDays) || 14
-  if (days <= sla / 2) return palette.good
-  if (days <= sla) return palette.fair
-  if (days <= sla * 2) return palette.elevated
-  return palette.critical
+function readingSentence(row) {
+  const v = row.verdict.key
+  if (v === 'likely') {
+    return `Scores of updated hosts moved ${row.effect > 0 ? 'up' : 'down'} ${Math.abs(row.effect).toFixed(1)} points vs. hosts still waiting${row.confounders.length ? ` — but ${row.confounders[0]} rolled out to the same hosts, so the credit is shared` : ''}.`
+  }
+  if (v === 'wide') {
+    return `Scores moved ${row.effect > 0 ? 'up' : 'down'} ${Math.abs(row.effect).toFixed(1)} points, but too few hosts to say it with confidence.`
+  }
+  if (v === 'none') return 'No measurable difference between updated and waiting hosts.'
+  if (row.controlN != null && row.controlN < RULES.MIN_CONTROL) return `Nearly everyone already has it — only ${row.controlN} host${row.controlN === 1 ? '' : 's'} left to compare against.`
+  return row.verdict.note + '.'
 }
 
-// ─── Act — levers whose evidence computes ─────────────────────
+// ─── What would speed this up ─────────────────────────────────
 const levers = computed(() => {
   const out = []
 
-  // 1. Auto-promotion evidence: apps whose rollout is name-linked to a
-  // commit (human-promoted) vs apps that roll out with no matching commit.
-  const chainedSw = new Set(impact.value.chains.map(c => c.software.toLowerCase()))
-  const withCommit = byApp.value.filter(a => chainedSw.has(String(a.software_name).toLowerCase()))
-  const withoutCommit = byApp.value.filter(a => !chainedSw.has(String(a.software_name).toLowerCase()))
-  if (withCommit.length >= 3 && withoutCommit.length >= 3) {
-    const mWith = median(withCommit.map(a => Number(a.avg_lag)))
-    const mWithout = median(withoutCommit.map(a => Number(a.avg_lag)))
-    if (mWith != null && mWithout != null && mWith - mWithout >= 0.5) {
-      out.push({
-        id: 'auto-promote',
-        change: 'Auto-promote routine app updates',
-        sub: 'skip the human commit for low-risk titles',
-        stage: 'Review queue',
-        hosts: summary90.value?.n_hosts ?? '—',
-        evidence: `${withoutCommit.length} titles already roll out without a commit; they run ${(mWith - mWithout).toFixed(1)}d faster (median) than the ${withCommit.length} committed ones`,
-        effect: `−${(mWith - mWithout).toFixed(1)}d`,
-      })
-    }
-  }
-
-  // 2. Chase the slow tail: fleet-average effect of the slowest hosts.
   const totalEvents = Number(summary90.value?.n_events) || 0
   const fleetAvg = Number(summary90.value?.avg_lag)
   if (totalEvents && isFinite(fleetAvg)) {
@@ -764,37 +446,21 @@ const levers = computed(() => {
       if (gain >= 0.1) {
         out.push({
           id: 'slow-tail',
-          change: `Follow up with the ${worst.length} slowest hosts`,
-          sub: 'offline windows and deferred restarts, not downloads',
-          stage: 'The long tail',
-          hosts: worst.length,
-          evidence: `They average ${median(worst.map(h => Number(h.avg_lag))).toFixed(0)}d vs the fleet's ${fleetAvg.toFixed(1)}d — if they matched the fleet mean, the 90d average falls by ~${gain.toFixed(1)}d`,
-          effect: `−${gain.toFixed(1)}d`,
+          change: `Follow up with the ${worst.length} slowest machines`,
+          evidence: `They average ${median(worst.map(h => Number(h.avg_lag))).toFixed(0)} days vs the fleet's ${fleetAvg.toFixed(1)} — usually offline windows and deferred restarts`,
+          effect: `−${gain.toFixed(1)} days`,
+          effectSub: 'off the fleet average',
         })
       }
     }
   }
 
-  // 3+4. Measurement levers — they don't move MTTP, they make the number
-  // honest. Effects are stated as what they unlock, never as invented days.
   out.push({
     id: 'instrument-relaunch',
-    change: 'Instrument the relaunch gap',
-    sub: 'processes.start_time vs file.mtime in the DEX pack',
-    stage: 'End user (stage 6)',
-    hosts: '—',
-    evidence: 'Not collected today — every on-disk install is counted as patched, which flatters every number on this page',
-    effect: 'unlocks stage 6',
-    kind: 'measurement',
-  })
-  out.push({
-    id: 'install-receipts',
-    change: 'Collect install receipts',
-    sub: 'package_receipts (macOS) · MsiInstaller events (Windows)',
-    stage: 'Measurement (stage 5)',
-    hosts: '—',
-    evidence: 'All timestamps are currently poll-bounded ±1h; receipts are ±2m',
-    effect: 'precision only',
+    change: 'Start counting restarts',
+    evidence: 'One osquery check makes the still-running-old-code machines visible — today they count as done',
+    effect: 'closes the blind spot',
+    effectSub: 'measurement, not speed',
     kind: 'measurement',
   })
 
@@ -814,29 +480,19 @@ onMounted(async () => {
     fetchFmaReleases(),
     fetchDailySeries(),
     fetchPatchSummaryBucketed(fmt(start), fmt(end), 1).then(rows => { patchBuckets.value = rows || [] }).catch(() => {}),
-    query('firehose.scores.mttp_by_host', { windowDays: 30, limit: 200 }).then(rows => { byHostAll.value = rows || [] }).catch(() => {}),
     query('firehose.scores.mttp_survival', { windowDays: 90 }).then(rows => { survivalRows.value = rows || [] }).catch(() => {}),
   ])
-
-  // Eager-load patch matches for the top releases (vendor stage sample).
-  const top = fmaReleases.value.slice(0, 24)
-  await Promise.all(top.map(r => loadFmaReleaseDevices(query, r, {
-    deviceCounts: fmaDeviceCounts,
-    deviceLoading: fmaDeviceLoading,
-    windowDays: 30,
-  })))
-
   await computeImpact()
 })
 </script>
 
 <style scoped>
-.pv-page { max-width: 1280px; margin: 0 auto; padding: var(--pad-large); }
+.pv-page { max-width: 1120px; margin: 0 auto; padding: var(--pad-large); }
 
 /* ─── Header ───────────────────────────────────── */
 .pv-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--pad-large); }
-.pv-title { margin: 0; font-size: 24px; font-weight: 700; color: var(--fleet-black); }
-.pv-subtitle { font-size: var(--font-size-base); color: var(--fleet-black-75); margin-top: 3px; }
+.pv-title { margin: 0; font-size: 26px; font-weight: 700; color: var(--fleet-black); }
+.pv-subtitle { font-size: var(--font-size-base); color: var(--fleet-black-75); margin-top: 4px; }
 .pv-actions { display: flex; gap: 8px; }
 
 /* ─── Method panel ─────────────────────────────── */
@@ -853,364 +509,181 @@ onMounted(async () => {
 .method-col p, .method-col li { font-size: var(--font-size-sm); color: var(--fleet-black-75); line-height: 1.6; margin: 0 0 6px; }
 .method-col ul { margin: 0; padding-left: 18px; }
 
-/* ─── Measurement contract strip ───────────────── */
-.contract-strip {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 10px 14px;
-  background: var(--fleet-black-5);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius-large);
-}
-.contract-label {
-  font-size: var(--font-size-xxsmall);
-  font-weight: 600;
-  color: var(--fleet-black-50);
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-}
-.contract-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 10px;
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  font-size: var(--font-size-sm);
-  white-space: nowrap;
-}
-.contract-k { color: var(--fleet-black-50); }
-.contract-note {
-  margin-left: auto;
-  font-size: var(--font-size-xxsmall);
-  color: var(--fleet-black-50);
-  text-wrap: pretty;
-}
-.contract-link {
-  border: none;
-  background: none;
-  padding: 0;
-  font: inherit;
-  font-weight: 600;
-  color: var(--fleet-green);
-  cursor: pointer;
-}
-.contract-link:hover { text-decoration: underline; }
-
-/* ─── Hero ─────────────────────────────────────── */
+/* ─── Two-number hero ──────────────────────────── */
 .pv-hero {
   background: var(--fleet-black);
   border-radius: var(--radius-xlarge);
-  padding: var(--pad-xlarge) 32px;
-  display: grid;
-  grid-template-columns: 300px 1fr 320px;
-  gap: 40px;
+  padding: 32px 36px;
+  display: flex;
   align-items: center;
+  gap: 48px;
   color: var(--fleet-white);
 }
-.hero-eyebrow { font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black-50); letter-spacing: 0.4px; text-transform: uppercase; }
-.hero-block { display: flex; flex-direction: column; gap: 8px; }
-.hero-count-row { display: flex; align-items: baseline; gap: 12px; }
-.hero-count { font-size: 60px; font-weight: 700; line-height: 0.9; }
-.hero-count-of { font-size: 15px; color: var(--fleet-black-33); }
-.hero-chip { display: inline-flex; align-self: flex-start; padding: 3px 9px; border-radius: var(--radius); background: rgba(255,255,255,0.1); color: var(--fleet-black-10); font-size: var(--font-size-sm); font-weight: 600; }
-.hero-quantiles { display: flex; gap: 8px; }
-.hero-q {
-  display: inline-flex; align-items: baseline; gap: 5px;
-  padding: 4px 9px; border-radius: var(--radius);
-  background: rgba(255,255,255,0.1); font-size: var(--font-size-sm);
+.hero-numbers { display: flex; gap: 40px; }
+.hero-num { display: flex; flex-direction: column; gap: 6px; }
+.hero-divider { width: 1px; background: var(--fleet-blue); }
+.hero-eyebrow { font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black-50); letter-spacing: 0.4px; text-transform: uppercase; white-space: nowrap; }
+.hero-count-row { display: flex; align-items: baseline; gap: 8px; }
+.hero-count { font-size: 56px; font-weight: 700; line-height: 0.9; }
+.hero-count--good { color: var(--status-good-soft); }
+.hero-count--bad { color: #ff9a9a; }
+.hero-count-of { font-size: 16px; color: var(--fleet-black-33); }
+.hero-headline {
+  margin: 0; font-size: 20px; font-weight: 600; line-height: 1.4; text-wrap: pretty;
+  border-left: 1px solid var(--fleet-blue); padding-left: 40px;
 }
-.hero-q-k { color: var(--fleet-black-50); }
-.hero-q strong { font-family: var(--font-mono); }
-.hero-coverage { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.hero-cov-cell {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 10px 8px; border-radius: var(--radius-medium);
-  background: rgba(255,255,255,0.06);
-}
-.hero-cov-cell--target { background: rgba(0,154,125,0.22); }
-.hero-cov-cell--target .hero-cov-pct { color: var(--status-good-soft); }
-.hero-cov-day { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
-.hero-cov-pct { font-family: var(--font-mono); font-size: 16px; font-weight: 700; }
-
-/* ─── Adoption curve ───────────────────────────── */
-.curve-card {
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius-large);
-  padding: var(--pad-large) var(--pad-xlarge);
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 32px;
-  align-items: center;
-}
-.curve-svg { width: 100%; height: auto; overflow: visible; }
-.curve-tick { font-family: var(--font-family, Inter), sans-serif; font-size: 11px; fill: var(--fleet-black-50); }
-.curve-target { font-size: 11px; font-weight: 600; fill: var(--fleet-green); }
-.curve-rail { display: flex; flex-direction: column; gap: 14px; }
-.curve-legend { display: flex; flex-direction: column; gap: 8px; }
-.curve-legend-row { display: flex; align-items: center; gap: 8px; }
-.curve-swatch { width: 14px; height: 3px; border-radius: 2px; }
-.curve-legend-name { font-size: var(--font-size-base); font-weight: 600; color: var(--fleet-black); }
-.curve-legend-n { margin-left: auto; font-size: var(--font-size-sm); color: var(--fleet-black-50); }
-.curve-note {
-  padding: 12px; background: var(--fleet-off-white); border-radius: var(--radius-medium);
-  font-size: var(--font-size-sm); line-height: 1.55; color: var(--fleet-black-75); text-wrap: pretty;
-}
-.curve-mean {
-  display: flex; align-items: center; justify-content: space-between;
-  padding-top: 12px; border-top: 1px solid var(--fleet-black-10);
-  font-size: var(--font-size-sm); color: var(--fleet-black-50);
-}
-.curve-mean-badge {
-  display: inline-flex; align-items: center; height: 20px; padding: 0 8px;
-  border-radius: 3px; background: var(--fleet-black-5); color: var(--fleet-black-75);
-  font-size: var(--font-size-xxsmall); font-weight: 600;
-}
-.hero-narrative { display: flex; flex-direction: column; gap: 12px; border-left: 1px solid var(--fleet-blue); padding-left: 40px; }
-.hero-headline { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.35; text-wrap: pretty; }
-.hl-good { color: var(--status-good-soft); }
 .hl-fair { color: var(--status-fair); }
-.hl-critical { color: #ff9a9a; }
-.hero-support { margin: 0; font-size: var(--font-size-base); line-height: 1.6; color: var(--fleet-black-33); text-wrap: pretty; }
-.hero-rail { display: flex; flex-direction: column; gap: 10px; }
-.hero-rail-list { display: flex; flex-direction: column; gap: 8px; }
-.hero-rail-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: rgba(255,255,255,0.06); border-radius: var(--radius-medium); font-size: var(--font-size-base); }
-.hero-rail-count { font-family: var(--font-mono); font-weight: 700; }
-.hero-rail-sub { font-weight: 400; color: var(--fleet-black-50); font-size: var(--font-size-xxsmall); }
-.hero-rail-empty { font-size: var(--font-size-sm); color: var(--fleet-black-50); font-style: italic; }
-.hero-rail-note { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
 
-/* ─── Grammar ──────────────────────────────────── */
-.grammar-section { display: flex; flex-direction: column; gap: var(--pad-smedium); }
-.grammar-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
-.grammar-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--fleet-black); }
-.grammar-hint { font-size: var(--font-size-sm); color: var(--fleet-black-50); text-align: right; }
+/* ─── Shared card heads ────────────────────────── */
+.curve-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.curve-head h2 { margin: 0; font-size: 16px; font-weight: 700; color: var(--fleet-black); }
+.curve-sub { font-size: var(--font-size-sm); color: var(--fleet-black-50); text-align: right; }
 
-/* ─── Stages ───────────────────────────────────── */
-.stages-card {
+/* ─── Coverage curve ───────────────────────────── */
+.curve-card, .apps-card, .waiting-card {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
   padding: var(--pad-large) var(--pad-xlarge);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 18px;
 }
-.stage-row { display: grid; grid-template-columns: 250px 130px 1fr 170px; align-items: center; gap: 16px; }
-.stage-row--na { opacity: 0.65; }
-.owner-chip {
-  display: inline-flex; align-items: center; height: 22px; padding: 0 9px;
-  border-radius: 3px; font-size: var(--font-size-xxsmall); font-weight: 700;
-  justify-self: start; white-space: nowrap;
-}
-.owner-chip--neutral { background: var(--fleet-black-5); color: var(--fleet-black-75); }
-.owner-chip--critical { background: var(--status-critical-bg); color: var(--status-critical-text, #c92f2f); }
-.owner-chip--info { background: var(--info-tint); color: var(--fleet-info); }
-.stage-na--bound { font-style: normal; color: var(--fleet-info); }
-.stage-days--bound { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--fleet-info); }
-.stage-label { display: flex; flex-direction: column; }
-.stage-name { font-size: var(--font-size-base); font-weight: 600; color: var(--fleet-black); }
-.stage-sub { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
-.stage-bar { height: 22px; background: var(--fleet-black-5); border-radius: var(--radius); overflow: hidden; display: flex; align-items: center; }
-.stage-fill { height: 100%; transition: width 400ms ease-out; }
-.stage-na { font-size: var(--font-size-sm); color: var(--fleet-black-50); font-style: italic; padding: 0 10px; }
-.stage-value { text-align: right; }
-.stage-days { font-family: var(--font-mono); font-size: 15px; font-weight: 700; }
-.stage-note { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); display: block; }
-.stages-footer { padding-top: 14px; border-top: 1px solid var(--fleet-black-10); }
-.stages-insight { font-size: var(--font-size-sm); color: var(--fleet-black-50); text-wrap: pretty; }
+.coverage-svg, .dots-svg { width: 100%; height: auto; }
+.curve-label { font-size: 12px; font-weight: 600; fill: var(--fleet-black-75); font-family: inherit; }
+.curve-label--bad { fill: var(--status-critical); }
+.curve-tick { font-size: 12px; fill: var(--fleet-black-50); font-family: inherit; }
+.curve-tick--bold { fill: var(--fleet-black); font-weight: 600; }
+.curve-callout-main { font-size: 13px; font-weight: 700; fill: #ffffff; font-family: inherit; }
+.curve-callout-sub { font-size: 11px; fill: var(--fleet-black-33); font-family: inherit; }
 
-/* ─── Impact ───────────────────────────────────── */
-.impact-grid { display: grid; grid-template-columns: 1fr 300px; gap: var(--pad-medium); align-items: start; }
-.impact-card { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); overflow: hidden; }
-.impact-head-row, .impact-row {
-  display: grid;
-  grid-template-columns: 1fr 130px 240px 170px;
-  gap: 16px;
-  padding: 14px var(--pad-large);
-  align-items: center;
+/* ─── App dots + split lists ───────────────────── */
+.dot-legend { display: flex; align-items: center; gap: 16px; }
+.dot-legend-item { display: inline-flex; align-items: center; gap: 8px; font-size: var(--font-size-base); font-weight: 600; color: var(--fleet-black-75); }
+.dot-legend-item--good { color: var(--status-good-text); }
+.dot-swatch { width: 10px; height: 10px; border-radius: 50%; }
+.apps-split { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; padding-top: 20px; border-top: 1px solid var(--fleet-black-10); }
+.apps-col { display: flex; flex-direction: column; gap: 10px; }
+.apps-col-title { margin: 0; font-size: var(--font-size-md); font-weight: 700; }
+.apps-col-title--good { color: var(--status-good-text); }
+.apps-col-title--bad { color: var(--status-critical-text); }
+.apps-rows { display: flex; flex-direction: column; gap: 8px; }
+.app-row {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px;
+  padding: 11px 14px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius-medium);
 }
-.impact-head-row {
-  padding: 10px var(--pad-large);
-  background: var(--fleet-off-white);
-  border-bottom: 1px solid var(--fleet-black-10);
-  font-size: var(--font-size-xxsmall);
-  font-weight: 600;
-  color: var(--fleet-black-50);
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-}
-.impact-head-row .center { text-align: center; }
-.impact-head-row .right { text-align: right; }
-.impact-row { border-bottom: 1px solid var(--fleet-black-5); }
-.impact-row:last-child { border-bottom: 0; }
-.impact-row--na { background: var(--fleet-off-white); }
-.impact-loading { padding: 24px; text-align: center; color: var(--fleet-black-50); font-style: italic; }
-.impact-change { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.impact-name { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); }
-.impact-sub { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
-.impact-cohorts { display: flex; flex-direction: column; gap: 2px; font-size: var(--font-size-sm); color: var(--fleet-black); }
-.cohort-zero { color: var(--status-elevated); }
-.dim { color: var(--fleet-black-50); }
+.app-row--bad { border-color: var(--status-critical); }
+.app-row-label { display: flex; flex-direction: column; min-width: 0; }
+.app-row-name { font-size: var(--font-size-base); font-weight: 600; color: var(--fleet-black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.app-row-sub { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
+.app-row-value { font-size: 16px; font-weight: 700; white-space: nowrap; }
+.apps-col-foot { font-size: var(--font-size-sm); color: var(--fleet-black-50); line-height: 1.5; text-wrap: pretty; }
 .mono { font-family: var(--font-mono); }
-.impact-ci { display: flex; flex-direction: column; gap: 6px; }
-.ci-track { position: relative; height: 22px; }
-.ci-track::before { content: ''; position: absolute; left: 0; right: 0; top: 10px; height: 2px; background: var(--fleet-black-5); }
-.ci-zero { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--fleet-black-25); }
-.ci-range { position: absolute; top: 8px; height: 6px; border-radius: 3px; }
-.ci-dot { position: absolute; top: 5px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; }
-.ci-text { text-align: center; font-family: var(--font-mono); font-size: var(--font-size-base); font-weight: 700; }
-.ci-empty {
-  display: flex; align-items: center; justify-content: center; height: 40px;
-  border: 1px dashed var(--fleet-black-25); border-radius: var(--radius-medium);
-  font-size: var(--font-size-sm); color: var(--fleet-black-50);
+
+/* ─── Waiting rows ─────────────────────────────── */
+.waiting-rows { display: flex; flex-direction: column; gap: 14px; }
+.waiting-row { display: grid; grid-template-columns: 260px 1fr 72px; align-items: center; gap: 20px; }
+.waiting-row--na { opacity: 0.7; }
+.waiting-label { font-size: 15px; font-weight: 700; color: var(--fleet-black); }
+.waiting-row--na .waiting-label { font-weight: 500; color: var(--fleet-black-75); }
+.waiting-meter { height: 26px; background: var(--fleet-black-5); border-radius: var(--radius); overflow: hidden; display: flex; align-items: center; }
+.waiting-fill { height: 100%; transition: width 400ms ease-out; }
+.waiting-na { font-size: var(--font-size-sm); color: var(--fleet-black-50); font-style: italic; padding: 0 12px; }
+.waiting-value { font-size: 17px; font-weight: 700; text-align: right; }
+.waiting-foot { padding-top: 16px; border-top: 1px solid var(--fleet-black-10); font-size: var(--font-size-base); color: var(--fleet-black-75); line-height: 1.55; text-wrap: pretty; }
+
+/* ─── Blind-spot callout ───────────────────────── */
+.blind-card {
+  background: var(--fleet-white);
+  border: 1px solid var(--status-elevated);
+  border-radius: var(--radius-large);
+  padding: var(--pad-large) var(--pad-xlarge);
+  display: flex;
+  align-items: center;
+  gap: 28px;
 }
-.impact-reading { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.blind-count { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 96px; }
+.blind-count-num { font-family: var(--font-mono); font-size: 40px; font-weight: 700; line-height: 1; color: var(--status-elevated); }
+.blind-count-sub { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
+.blind-body { display: flex; flex-direction: column; gap: 5px; }
+.blind-body h2 { margin: 0; font-size: 16px; font-weight: 700; color: var(--fleet-black); }
+.blind-body p { margin: 0; font-size: var(--font-size-base); line-height: 1.55; color: var(--fleet-black-75); text-wrap: pretty; }
+
+/* ─── Grammar sections (impact + levers) ───────── */
+.grammar-section { display: flex; flex-direction: column; gap: var(--pad-smedium); }
+.grammar-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.grammar-title { margin: 0; font-size: 16px; font-weight: 700; color: var(--fleet-black); }
+.grammar-hint { font-size: var(--font-size-sm); color: var(--fleet-black-50); text-align: right; }
+
+.impact-card {
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+  overflow: hidden;
+}
+.impact-loading { padding: 24px; text-align: center; color: var(--fleet-black-50); font-style: italic; }
+.impact-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  padding: 14px var(--pad-large);
+  border-bottom: 1px solid var(--fleet-black-5);
+}
+.impact-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.impact-name { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); }
+.impact-reading-text { font-size: var(--font-size-sm); color: var(--fleet-black-75); line-height: 1.5; text-wrap: pretty; }
+.impact-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; white-space: nowrap; }
+.impact-counts { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
 .verdict-badge { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 3px; font-size: var(--font-size-xxsmall); font-weight: 700; }
 .verdict--likely { background: var(--status-good-bg); color: var(--status-good-text); }
 .verdict--wide { background: var(--status-fair-bg); color: var(--status-fair-text); }
 .verdict--none { background: var(--fleet-black-5); color: var(--fleet-black-75); }
 .verdict--not-measurable { background: var(--fleet-black-10); color: var(--fleet-black-75); }
-.verdict-note { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
+.impact-foot { padding: 12px var(--pad-large); background: var(--fleet-off-white); font-size: var(--font-size-sm); color: var(--fleet-black-50); }
 
-.engine-card {
-  background: var(--fleet-black);
+/* ─── Lever rows ───────────────────────────────── */
+.lever-rows { display: flex; flex-direction: column; gap: 10px; }
+.lever-row {
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
-  padding: var(--pad-large);
+  padding: 18px var(--pad-xlarge);
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  color: var(--fleet-white);
+  align-items: center;
+  gap: 24px;
 }
-.engine-card h3 { margin: 0; font-size: var(--font-size-base); font-weight: 700; }
-.engine-card p { margin: 0; font-size: var(--font-size-sm); line-height: 1.5; color: var(--fleet-black-33); text-wrap: pretty; }
-.engine-card pre {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xxsmall);
-  line-height: 1.7;
-  color: #e8eaf0;
-  white-space: pre-wrap;
-}
-.engine-rules { padding-top: 12px; border-top: 1px solid var(--fleet-blue); display: flex; flex-direction: column; gap: 6px; }
-.engine-rules-label { font-size: var(--font-size-xxsmall); font-weight: 600; color: var(--fleet-black-50); letter-spacing: 0.4px; text-transform: uppercase; }
-.engine-rules span:not(.engine-rules-label) { font-size: var(--font-size-sm); color: var(--fleet-black-33); line-height: 1.5; }
+.lever-main { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.lever-name { font-size: 15px; font-weight: 700; color: var(--fleet-black); }
+.lever-sub { font-size: var(--font-size-sm); color: var(--fleet-black-75); }
+.lever-effect-block { text-align: right; min-width: 150px; }
+.lever-effect-num { font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--status-good); display: block; }
+.lever-effect-num--meta { font-family: inherit; font-size: var(--font-size-base); color: var(--fleet-black-75); }
+.lever-effect-sub { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); display: block; }
 
-/* ─── Who ──────────────────────────────────────── */
-.who-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pad-medium); align-items: start; }
-.who-card {
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius-large);
-  padding: var(--pad-large);
+/* ─── Footer ───────────────────────────────────── */
+.pv-footer {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.who-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.who-head h3 { margin: 0; font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); }
-.who-rows { display: flex; flex-direction: column; gap: 11px; }
-.who-row { display: grid; grid-template-columns: 170px 1fr 60px; align-items: center; gap: 14px; }
-.who-row--click { cursor: pointer; }
-.who-row--click:hover .who-name { color: var(--fleet-green-down); }
-.who-row-label { display: flex; flex-direction: column; min-width: 0; }
-.who-name { font-size: var(--font-size-base); font-weight: 500; color: var(--fleet-black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.who-sub { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
-.who-single { color: var(--fleet-black-33); font-style: italic; }
-.who-meter { height: 8px; background: var(--fleet-black-5); border-radius: var(--radius-full); overflow: hidden; }
-.who-fill { height: 100%; transition: width 400ms ease-out; }
-.who-value { font-size: var(--font-size-base); font-weight: 700; text-align: right; }
-.who-footer { padding-top: 12px; border-top: 1px solid var(--fleet-black-10); font-size: var(--font-size-sm); color: var(--fleet-black-50); text-wrap: pretty; }
-
-/* ─── Act ──────────────────────────────────────── */
-.act-card { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); overflow: hidden; }
-.act-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-base); }
-.act-table th {
-  text-align: left; font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black-75);
-  background: var(--fleet-off-white); padding: 10px 13px; border-bottom: 1px solid var(--fleet-black-10); white-space: nowrap;
-}
-.act-table th:first-child { padding-left: var(--pad-large); }
-.act-table th:last-child { padding-right: var(--pad-large); }
-.act-table td { padding: 12px 13px; border-bottom: 1px solid var(--fleet-black-5); color: var(--fleet-black-75); vertical-align: middle; }
-.act-table td:first-child { padding-left: var(--pad-large); }
-.act-table td:last-child { padding-right: var(--pad-large); }
-.act-table tbody tr:last-child td { border-bottom: 0; }
-.act-muted { color: var(--fleet-black-75); }
-.num { text-align: right; }
-.lever-name { font-weight: 700; color: var(--fleet-black); }
-.lever-sub { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
-.lever-effect { font-family: var(--font-mono); font-weight: 700; color: var(--status-good); }
-.lever-effect--meta { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
-
-/* ─── The two missing-fact cards ───────────────── */
-.pv-cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pad-medium); align-items: stretch; }
-.fact-card {
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--fleet-black-5);
   border-radius: var(--radius-large);
-  padding: var(--pad-large);
-  display: flex; flex-direction: column; gap: 14px;
+  font-size: var(--font-size-sm);
+  color: var(--fleet-black-75);
+  line-height: 1.55;
 }
-.fact-card--warn { border-color: var(--status-elevated); }
-.fact-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.fact-head h3 { margin: 0; font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); }
-.fact-badge--na {
-  display: inline-flex; align-items: center; height: 20px; padding: 0 8px;
-  border-radius: 3px; background: var(--status-elevated-bg); color: var(--status-elevated-text, #b34a24);
-  font-size: var(--font-size-xxsmall); font-weight: 700; white-space: nowrap;
+.pv-footer span { flex: 1; text-wrap: pretty; }
+.pv-footer-link {
+  border: none; background: none; padding: 0;
+  font: inherit; font-weight: 600; color: var(--fleet-green);
+  cursor: pointer; white-space: nowrap;
 }
-.fact-n { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
-.fact-body { margin: 0; font-size: var(--font-size-base); line-height: 1.55; color: var(--fleet-black-75); text-wrap: pretty; }
-.fact-code {
-  margin: 0; padding: 12px; background: var(--fleet-off-white); border-radius: var(--radius-medium);
-  font-family: var(--font-mono); font-size: var(--font-size-sm); line-height: 1.6;
-  color: var(--fleet-black-75); white-space: pre-wrap;
-}
-.fact-foot {
-  margin-top: auto; padding-top: 12px; border-top: 1px solid var(--fleet-black-10);
-  font-size: var(--font-size-sm); color: var(--fleet-black-50); text-wrap: pretty;
-}
-.evidence-rows { display: flex; flex-direction: column; gap: 11px; }
-.evidence-row { display: grid; grid-template-columns: 168px 1fr 150px; align-items: center; gap: 14px; }
-.evidence-row--na { opacity: 0.6; }
-.evidence-label { display: flex; flex-direction: column; }
-.evidence-name { font-size: var(--font-size-base); font-weight: 600; color: var(--fleet-black); }
-.evidence-sub { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
-.evidence-meter { height: 8px; background: var(--fleet-black-5); border-radius: var(--radius-full); overflow: hidden; }
-.evidence-fill { height: 100%; }
-.evidence-pct { font-size: var(--font-size-sm); text-align: right; white-space: nowrap; }
-
-/* ─── Denominator ──────────────────────────────── */
-.denom-card {
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius-large);
-  padding: var(--pad-large);
-  display: flex; flex-direction: column; gap: 8px;
-}
-.denom-row {
-  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px;
-  padding: 11px 12px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius-medium);
-}
-.denom-row--current { border-color: var(--fleet-green); background: rgba(0, 154, 125, 0.06); }
-.denom-row--gap { border-style: dashed; }
-.denom-label { display: flex; flex-direction: column; }
-.denom-name { font-size: var(--font-size-base); font-weight: 600; color: var(--fleet-black); }
-.denom-row--current .denom-name { font-weight: 700; }
-.denom-sub { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
-.denom-count { font-size: 16px; font-weight: 700; color: var(--fleet-green); }
-.denom-count.dim { font-size: var(--font-size-sm); color: var(--fleet-black-50); font-weight: 600; }
-.denom-foot { padding-top: 10px; font-size: var(--font-size-sm); color: var(--fleet-black-50); text-wrap: pretty; }
+.pv-footer-link:hover { text-decoration: underline; }
 
 @media (max-width: 1100px) {
-  .pv-hero { grid-template-columns: 1fr; gap: 20px; }
-  .hero-narrative { border-left: none; padding-left: 0; }
-  .impact-grid, .who-grid { grid-template-columns: 1fr; }
+  .pv-hero { flex-direction: column; align-items: flex-start; gap: 24px; }
+  .hero-headline { border-left: none; padding-left: 0; }
+  .apps-split { grid-template-columns: 1fr; }
   .method-panel { grid-template-columns: 1fr; }
+  .waiting-row { grid-template-columns: 1fr 72px; }
+  .waiting-row .waiting-meter { display: none; }
 }
 </style>
