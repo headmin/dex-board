@@ -46,7 +46,7 @@
 <script setup>
 import { gradeColor as sharedGradeColor } from '../composables/gradeColors'
 import { computed } from 'vue'
-import SkeletonLoader from './SkeletonLoader.vue'
+import SkeletonLoader from './base/SkeletonLoader.vue'
 import SparklineChart from './SparklineChart.vue'
 
 const props = defineProps({

@@ -22,7 +22,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import SkeletonLoader from './SkeletonLoader.vue'
+import SkeletonLoader from './base/SkeletonLoader.vue'
 
 const props = defineProps({
   label: { type: String, required: true },

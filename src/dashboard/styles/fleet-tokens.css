@@ -53,9 +53,11 @@
 
   --status-elevated: #eb6743;                 /* orange (grade D / mid pressure) */
   --status-elevated-alt: #ec9545;             /* amber-orange variant */
+  --status-elevated-text: #c14e2e;            /* darkened orange — readable on tint */
 
   --status-critical: #eb4343;                 /* clean red (grade F / severe) */
   --status-critical-soft: #ef6969;            /* softer red text */
+  --status-critical-text: #c92f2f;            /* darkened red — readable on tint */
   --status-critical-bg: #fde8e8;              /* red badge tint */
   --status-elevated-bg: #fdeee8;              /* orange badge tint (grade D) */
 

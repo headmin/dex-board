@@ -7,7 +7,7 @@
     <!-- Compare Mode Overlay -->
     <div v-if="compareMode" class="compare-overlay" @click.self="compareMode = false">
       <div class="compare-panel">
-        <DeviceCompare
+        <HostCompare
           :initialHostId="compareInitialId"
           :devices="compareDevices"
           @close="compareMode = false"
@@ -57,7 +57,7 @@
             ({{ devicePressure.pct }}%)
           </span>
         </div>
-        <GaugeBar :value="devicePressure.pct" />
+        <MeterBar :value="devicePressure.pct" />
         <div class="ram-bar-footer">
           <span>{{ devicePressure.free_gb }} GB free</span>
           <span v-if="devicePressure.pct < 30" class="ram-verdict good">Healthy headroom</span>
@@ -350,14 +350,14 @@ import { useFleetFilter } from '../composables/useFleetFilter'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
 import ScoreDriverPanel from '../components/ScoreDriverPanel.vue'
-import DeviceCompare from '../components/DeviceCompare.vue'
+import HostCompare from '../components/HostCompare.vue'
 import PageHeader from '../components/base/PageHeader.vue'
 import SectionHeader from '../components/base/SectionHeader.vue'
 import Drawer from '../components/base/Drawer.vue'
 import BaseButton from '../components/base/BaseButton.vue'
 import Badge from '../components/base/Badge.vue'
 import Chip from '../components/base/Chip.vue'
-import GaugeBar from '../components/base/GaugeBar.vue'
+import MeterBar from '../components/base/MeterBar.vue'
 import { buildSignalDrivers } from '../composables/scoreFormulas'
 import { displayHost } from '../composables/displayName'
 import { humanizeToken } from '../composables/humanize'
@@ -563,10 +563,10 @@ const staleness = computed(() => {
   return                         { tier: 'offline',  label: `Offline · ${ago}`,  title: `Last seen ${lastSeenStr}` }
 })
 
-// Compare overlay — opens DeviceCompare seeded with the selected host on the left side.
-// DeviceCompare expects each device row to expose a `host_identifier` key (it was
-// originally fed from the score queries that use that name); FirehoseDevices' list
-// uses `host_id`. Alias the field so the lookup in DeviceCompare resolves.
+// Compare overlay — opens HostCompare seeded with the selected host on the left side.
+// HostCompare expects each device row to expose a `host_identifier` key (it was
+// originally fed from the score queries that use that name); Hosts' list
+// uses `host_id`. Alias the field so the lookup in HostCompare resolves.
 const compareMode = ref(false)
 const compareInitialId = ref('')
 const compareDevices = computed(() =>
@@ -724,7 +724,7 @@ async function selectDevice(device) {
       query('firehose.crashes.per_device', { hostId: device.host_id }).catch(() => []),
       query('firehose.processes.per_device', { hostId: device.host_id }).catch(() => []),
       query('firehose.adoption.per_device', { hostId: device.host_id }).catch(() => []),
-      query('scores.device_top_patches', { hostIdentifier: device.host_id, limit: 10 }).catch(() => []),
+      query('firehose.scores.device_top_patches', { hostIdentifier: device.host_id, limit: 10 }).catch(() => []),
       query('firehose.scores.device_signals_compare', { hostId: device.host_id }).catch(() => []),
       query('firehose.scores.device_mttp', { hostIdentifier: device.host_id }).catch(() => []),
     ])
@@ -766,7 +766,7 @@ function closeDevice() {
   deviceApps.value = []
   // Clear the deep-link query so the all-hosts list re-shows naturally.
   if (route.query.hostId || route.query.focus) {
-    router.replace({ path: '/devices' })
+    router.replace({ path: '/hosts' })
   }
 }
 

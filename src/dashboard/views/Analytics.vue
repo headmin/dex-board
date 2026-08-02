@@ -1,16 +1,19 @@
 <template>
   <div class="dashboard page-stack">
-    <PageHeader title="Firehose reports" />
+    <PageHeader title="Analytics" subtitle="Fleet telemetry — cross-domain overview and per-dataset deep dives" />
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
     <!-- Tabs -->
     <Tabs
       :model-value="activeTab"
-      :tabs="tabItems"
+      :options="tabItems"
       variant="underline"
       @update:model-value="switchTab"
     />
+
+    <!-- ═══ Overview Tab (cross-domain summary) ═════ -->
+    <OverviewPane v-if="activeTab === 'overview'" />
 
     <!-- ═══ Wi-Fi Tab ═══════════════════════════════ -->
     <div v-if="activeTab === 'wifi'" class="page-stack">
@@ -263,6 +266,7 @@ import DataTable from '../components/DataTable.vue'
 import PageHeader from '../components/base/PageHeader.vue'
 import SectionHeader from '../components/base/SectionHeader.vue'
 import Tabs from '../components/base/Tabs.vue'
+import OverviewPane from '../components/analytics/OverviewPane.vue'
 import { palette } from '../composables/uiPalette'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { displayHost } from '../composables/displayName'
@@ -295,11 +299,12 @@ const { filterParams } = useFleetFilter()
 const fp = () => ({ ...filterParams.value })
 
 const error = ref(null)
-const activeTab = ref('wifi')
+const activeTab = ref('overview')
 const fetchedTabs = ref(new Set())
 const loading = ref({ wifi: false, apps: false, hw: false, fleetd: false, health: false, vpn: false, crashes: false, adoption: false })
 
 const tabs = [
+  { id: 'overview', label: 'Overview' },
   { id: 'wifi', label: 'Wi-Fi' },
   { id: 'apps', label: 'Applications' },
   { id: 'hardware', label: 'Hardware' },
@@ -444,6 +449,8 @@ async function switchTab(tab) {
 }
 
 async function fetchTab(tab) {
+  // The overview pane owns its own fetching/refetching.
+  if (tab === 'overview') return
   error.value = null
   try {
     if (tab === 'wifi') {
@@ -579,8 +586,7 @@ async function fetchTab(tab) {
 }
 
 onMounted(() => {
-  fetchTab('wifi')
-  fetchedTabs.value.add('wifi')
+  fetchedTabs.value.add('overview')
 })
 
 // When the top filter changes, invalidate the per-tab cache and re-fetch

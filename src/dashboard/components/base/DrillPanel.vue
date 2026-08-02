@@ -1,4 +1,6 @@
 <script setup>
+import IconButton from './IconButton.vue'
+
 defineProps({
   title: { type: String, required: true },
 })
@@ -17,16 +19,11 @@ const emit = defineEmits(['close'])
       <h3 class="drill-panel-title">{{ title }}</h3>
       <div class="drill-panel-actions">
         <slot name="actions" />
-        <button
-          class="drill-panel-close"
-          type="button"
-          aria-label="Close"
-          @click="emit('close')"
-        >
+        <IconButton label="Close" size="small" @click="emit('close')">
           <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
             <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-        </button>
+        </IconButton>
       </div>
     </div>
     <slot />
@@ -64,25 +61,4 @@ const emit = defineEmits(['close'])
   flex-shrink: 0;
 }
 
-.drill-panel-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--fleet-black-75);
-  cursor: pointer;
-  transition: background-color var(--transition-base);
-}
-.drill-panel-close:hover {
-  background: var(--fleet-black-5);
-}
-.drill-panel-close:focus-visible {
-  outline: 1px solid var(--fleet-focused-outline);
-  outline-offset: 1px;
-}
 </style>

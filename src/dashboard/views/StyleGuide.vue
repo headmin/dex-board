@@ -36,8 +36,8 @@
     <ChartCard title="Segmented control & tabs">
       <div class="demo-col">
         <SegmentedControl v-model="segVal" :options="['CPU', 'Model', 'RAM', 'Swap']" />
-        <Tabs v-model="tabVal" :tabs="[{ value: 'hosts', label: 'Hosts', count: 78 }, { value: 'software', label: 'Software', count: 141 }, { value: 'reports', label: 'Reports' }]" />
-        <Tabs v-model="tabVal" variant="underline" :tabs="[{ value: 'hosts', label: 'Hosts' }, { value: 'software', label: 'Software' }, { value: 'reports', label: 'Reports' }]" />
+        <Tabs v-model="tabVal" :options="[{ value: 'hosts', label: 'Hosts', count: 78 }, { value: 'software', label: 'Software', count: 141 }, { value: 'reports', label: 'Reports' }]" />
+        <Tabs v-model="tabVal" variant="underline" :options="[{ value: 'hosts', label: 'Hosts' }, { value: 'software', label: 'Software' }, { value: 'reports', label: 'Reports' }]" />
       </div>
     </ChartCard>
 
@@ -65,18 +65,18 @@
     </ChartCard>
 
     <!-- Bars -->
-    <ChartCard title="Bars — ScoreBar (comparative, trackless) vs GaugeBar (utilization, tracked)">
+    <ChartCard title='MeterBar — semantics="score" (higher = better) vs "utilization" (higher = worse)'>
       <div class="bar-demo" v-for="row in scoreRows" :key="row.name">
         <span class="bar-demo__label">{{ row.name }}</span>
-        <ScoreBar :value="row.score" :color="gradeColor(row.grade)" />
+        <MeterBar semantics="score" :value="row.score" :color="gradeColor(row.grade)" />
         <GradeBadge :grade="row.grade" />
         <span class="bar-demo__score">{{ row.score }}</span>
       </div>
       <div style="margin-top: 18px; max-width: 560px">
         <div class="gauge-caption"><span>RAM utilization</span><span class="gauge-caption__val">3.2 GB used of 24 GB (13.5%)</span></div>
-        <GaugeBar :value="13.5" :marker="56.7" />
+        <MeterBar :value="13.5" :marker="56.7" />
         <div class="gauge-caption" style="margin-top: 14px"><span>High pressure host</span><span class="gauge-caption__val" style="color: var(--status-critical)">21.9 GB used of 24 GB (91%)</span></div>
-        <GaugeBar :value="91" />
+        <MeterBar :value="91" />
       </div>
     </ChartCard>
 
@@ -165,8 +165,7 @@ import SegmentedControl from '../components/base/SegmentedControl.vue'
 import Tabs from '../components/base/Tabs.vue'
 import Chip from '../components/base/Chip.vue'
 import Badge from '../components/base/Badge.vue'
-import ScoreBar from '../components/base/ScoreBar.vue'
-import GaugeBar from '../components/base/GaugeBar.vue'
+import MeterBar from '../components/base/MeterBar.vue'
 import EmptyState from '../components/base/EmptyState.vue'
 import Drawer from '../components/base/Drawer.vue'
 import DrillPanel from '../components/base/DrillPanel.vue'

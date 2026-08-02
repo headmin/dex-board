@@ -28,7 +28,7 @@
       </div>
 
       <div v-if="mode === 'device'" class="selector-vs">
-        <button class="swap-btn" @click="swapDevices" title="Swap devices">⇄</button>
+        <button class="swap-btn" @click="swapDevices" title="Swap hosts">⇄</button>
       </div>
 
       <template v-if="mode === 'device'">
@@ -56,13 +56,13 @@
             <div class="cohort-item"><span class="cohort-key">Model</span> {{ leftDeviceMeta.hardware_model }}</div>
             <div class="cohort-item"><span class="cohort-key">RAM</span> {{ leftDeviceMeta.ram_tier }}</div>
           </div>
-          <div v-else class="cohort-meta-empty">Select a device to see cohort info</div>
+          <div v-else class="cohort-meta-empty">Select a host to see cohort info</div>
         </div>
       </template>
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="compare-loading">Loading device data...</div>
+    <div v-if="loading" class="compare-loading">Loading host data...</div>
 
     <!-- Platform Benchmark mode -->
     <template v-if="mode === 'platform' && leftData">

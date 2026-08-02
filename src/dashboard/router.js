@@ -1,42 +1,44 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ExperienceScore from './views/ExperienceScore.vue'
-import FirehoseExperience from './views/FirehoseExperience.vue'
-import FirehoseDevices from './views/FirehoseDevices.vue'
-import FirehoseReports from './views/FirehoseReports.vue'
-import FirehoseTimeline from './views/FirehoseTimeline.vue'
-import FirehoseChangeboard from './views/FirehoseChangeboard.vue'
-import FirehoseInsights from './views/FirehoseInsights.vue'
-import Firehose from './views/Firehose.vue'
-import DexOverview from './views/DexOverview.vue'
+import Analytics from './views/Analytics.vue'
+import Hosts from './views/Hosts.vue'
+import Insights from './views/Insights.vue'
+import GitOps from './views/GitOps.vue'
 import AuditLogs from './views/AuditLogs.vue'
 import StyleGuide from './views/StyleGuide.vue'
 import Lifecycle from './views/Lifecycle.vue'
 import SoftwareWaste from './views/SoftwareWaste.vue'
 import Connectivity from './views/Connectivity.vue'
 
+// Nav order tells the decision-maker story:
+// score → why → which hosts → what to do → cost → operations → governance.
 const routes = [
-  { path: '/', name: 'Experience', component: ExperienceScore },
-  { path: '/experience-details', name: 'Experience Details', component: FirehoseExperience },
-  { path: '/devices', name: 'Devices', component: FirehoseDevices },
-  { path: '/insights', name: 'Insights', component: FirehoseInsights },
-  { path: '/reports', name: 'Reports', component: FirehoseReports },
-  { path: '/timeline', name: 'Timeline', component: FirehoseTimeline },
-  { path: '/changeboard', name: 'Changeboard', component: FirehoseChangeboard },
-  { path: '/connectivity', name: 'Connectivity', component: Connectivity },
+  { path: '/', name: 'Experience score', component: ExperienceScore },
+  { path: '/analytics', name: 'Analytics', component: Analytics },
+  { path: '/hosts', name: 'Hosts', component: Hosts },
+  { path: '/insights', name: 'Insights', component: Insights },
   { path: '/lifecycle', name: 'Lifecycle', component: Lifecycle },
   { path: '/software-waste', name: 'Software waste', component: SoftwareWaste },
-  { path: '/overview', name: 'Overview', component: DexOverview },
-  { path: '/audit', name: 'Audit', component: AuditLogs },
+  { path: '/gitops', name: 'GitOps timeline', component: GitOps },
+  { path: '/connectivity', name: 'Connectivity', component: Connectivity },
+  { path: '/audit', name: 'Audit log', component: AuditLogs },
   { path: '/styleguide', name: 'Style guide', component: StyleGuide },
-  { path: '/raw', name: 'Raw', component: Firehose },
-  // Legacy redirects
-  { path: '/firehose', redirect: '/raw' },
-  { path: '/firehose/experience', redirect: '/experience-details' },
-  { path: '/firehose/devices', redirect: '/devices' },
-  { path: '/firehose/reports', redirect: '/reports' },
+
+  // Redirects — every pre-restructure path lands somewhere sensible.
+  { path: '/experience-details', redirect: '/analytics' },
+  { path: '/reports', redirect: '/analytics' },
+  { path: '/devices', redirect: to => ({ path: '/hosts', query: to.query }) },
+  { path: '/timeline', redirect: '/gitops' },
+  { path: '/changeboard', redirect: '/gitops' },
+  { path: '/overview', redirect: '/' },
+  { path: '/raw', redirect: '/' },
+  { path: '/firehose', redirect: '/' },
+  { path: '/firehose/experience', redirect: '/analytics' },
+  { path: '/firehose/devices', redirect: '/hosts' },
+  { path: '/firehose/reports', redirect: '/analytics' },
   { path: '/firehose/insights', redirect: '/insights' },
-  { path: '/firehose/timeline', redirect: '/timeline' },
-  { path: '/firehose/changeboard', redirect: '/changeboard' },
+  { path: '/firehose/timeline', redirect: '/gitops' },
+  { path: '/firehose/changeboard', redirect: '/gitops' },
 ]
 
 export default createRouter({

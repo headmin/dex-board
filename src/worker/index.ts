@@ -7,14 +7,7 @@ import { pingClickHouse } from './clickhouse-client'
 import { cfAccessAuth } from './auth'
 
 // ─── Register query domains ──────────────────────────────
-import { healthQueries } from './queries/health'
-import { deviceQueries } from './queries/devices'
-import { securityQueries } from './queries/security'
-import { processQueries } from './queries/processes'
-import { networkQueries } from './queries/network'
 import { auditQueries } from './queries/audit'
-import { softwareQueries } from './queries/software'
-import { scoreQueries } from './queries/scores'
 import { firehoseWifiQueries } from './queries/core-wifi'
 import { firehoseAppsQueries } from './queries/core-apps'
 import { firehoseHardwareQueries } from './queries/core-hardware'
@@ -30,14 +23,7 @@ import { firehoseScoreQueries } from './queries/core-scores'
 import { firehoseSecurityQueries } from './queries/core-security'
 import { firehoseLifecycleQueries } from './queries/core-lifecycle'
 
-registry.registerAll(healthQueries)
-registry.registerAll(deviceQueries)
-registry.registerAll(securityQueries)
-registry.registerAll(processQueries)
-registry.registerAll(networkQueries)
 registry.registerAll(auditQueries)
-registry.registerAll(softwareQueries)
-registry.registerAll(scoreQueries)
 registry.registerAll(firehoseWifiQueries)
 registry.registerAll(firehoseAppsQueries)
 registry.registerAll(firehoseHardwareQueries)

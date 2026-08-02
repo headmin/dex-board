@@ -49,12 +49,21 @@ export function verdictFor(weak, gensBehind, persistence = null) {
   // Trend-aware when 30d history is supplied: a verdict must be EARNED by
   // sustained weakness, not one bad day. Sustained = weak on >=50% of
   // reporting days, with at least 5 days of history.
+  //
+  // Weakness is score-based OR pressure-based: sustained SEVERE swap counts
+  // as weak on its own. The refresh score folds the pressure points into the
+  // same number (a healthy-battery modern machine maxes out at 25 < the 30
+  // "weak" threshold), so without this a new-but-drowning host could never
+  // reach the "Investigate" verdict that exists exactly for it.
   if (persistence) {
-    const { weakDays = 0, reportDays = 0 } = persistence
-    const sustained = reportDays >= 5 && weakDays >= Math.max(3, reportDays * 0.5)
-    if (old && weak && sustained) return { key: 'refresh', label: 'Refresh candidate', tone: 'critical' }
-    if (!old && weak && sustained) return { key: 'investigate', label: 'Investigate', tone: 'fair' }
-    if (weak || (sustained && !weak)) return { key: 'watch', label: 'Watch', tone: 'fair' }
+    const { weakDays = 0, reportDays = 0, severeDays = 0 } = persistence
+    const enough = reportDays >= 5
+    const sustained = enough && weakDays >= Math.max(3, reportDays * 0.5)
+    const sustainedSevere = enough && severeDays >= Math.max(3, reportDays * 0.5)
+    const isWeak = weak || sustainedSevere
+    if (old && isWeak && sustained) return { key: 'refresh', label: 'Refresh candidate', tone: 'critical' }
+    if (!old && isWeak && sustained) return { key: 'investigate', label: 'Investigate', tone: 'fair' }
+    if (isWeak || sustained) return { key: 'watch', label: 'Watch', tone: 'fair' }
     if (old) return { key: 'defer', label: 'Defer OK', tone: 'good' }
     return { key: 'healthy', label: 'Healthy', tone: 'neutral' }
   }

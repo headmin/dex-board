@@ -60,7 +60,8 @@ export const firehoseLifecycleQueries: QueryConfig[] = [
       press AS (
         SELECT host_id,
           uniqExact(toDate(timestamp)) AS days_reporting_30d,
-          uniqExactIf(toDate(timestamp), swap_pressure IN ('severe', 'elevated')) AS days_pressured_30d
+          uniqExactIf(toDate(timestamp), swap_pressure IN ('severe', 'elevated')) AS days_pressured_30d,
+          uniqExactIf(toDate(timestamp), swap_pressure = 'severe') AS days_severe_30d
         FROM device_health
         WHERE host_id IN (SELECT host_id FROM filtered_hosts)
           AND timestamp >= now() - INTERVAL 30 DAY
@@ -81,7 +82,8 @@ export const firehoseLifecycleQueries: QueryConfig[] = [
         swap_pressure,
         ${REFRESH_SCORE} AS refresh_score,
         ifNull(press.days_reporting_30d, 0) AS days_reporting_30d,
-        ifNull(press.days_pressured_30d, 0) AS days_pressured_30d
+        ifNull(press.days_pressured_30d, 0) AS days_pressured_30d,
+        ifNull(press.days_severe_30d, 0) AS days_severe_30d
       FROM dh
       LEFT JOIN press ON dh.host_id = press.host_id
       LEFT JOIN (

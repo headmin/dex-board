@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard page-stack">
-    <PageHeader title="DEX insights" subtitle="Memory pressure, agent overhead, risk signals" />
+    <PageHeader title="Insights" subtitle="Memory pressure, agent overhead, risk signals" />
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
@@ -24,7 +24,7 @@
           <div class="arch-stat-row">
             <div class="arch-stat">
               <span class="stat-value">{{ a.device_count }}</span>
-              <span class="stat-label">devices</span>
+              <span class="stat-label">hosts</span>
             </div>
             <div class="arch-stat">
               <span class="stat-value">{{ a.avg_ram_gb }}</span>
@@ -46,22 +46,22 @@
     <!-- RAM Utilization -->
     <section class="section">
       <SectionHeader title="RAM utilization by tier" />
-      <p class="section-caption">Devices with more RAM show higher pressure — not because they're struggling, but because they run heavier workloads (VMs, IDEs). The real risk is <strong>headroom</strong>: 8 GB devices at 8% have only ~0.6 GB of app memory — one heavy app away from swap. 128 GB at 28% has 92 GB free.</p>
+      <p class="section-caption">Hosts with more RAM show higher pressure — not because they're struggling, but because they run heavier workloads (VMs, IDEs). The real risk is <strong>headroom</strong>: 8 GB hosts at 8% have only ~0.6 GB of app memory — one heavy app away from swap. 128 GB at 28% has 92 GB free.</p>
       <div class="ram-tiers">
         <div v-for="t in ramTierData" :key="t.ram_tier" class="ram-tier-row">
           <div class="ram-tier-label">
             <span class="ram-tier-name">{{ t.ram_tier }}</span>
-            <span class="ram-tier-count">{{ t.device_count }} device{{ t.device_count !== 1 ? 's' : '' }}</span>
+            <span class="ram-tier-count">{{ t.device_count }} host{{ t.device_count !== 1 ? 's' : '' }}</span>
           </div>
           <div class="ram-bar-container">
-            <GaugeBar height="var(--bar-height)" :value="t.avg_mem_pressure_pct" :marker="t.max_mem_pressure_pct" />
+            <MeterBar height="var(--bar-height)" :value="t.avg_mem_pressure_pct" :marker="t.max_mem_pressure_pct" />
             <div class="ram-bar-labels">
               <span class="ram-used-label">{{ t.avg_used_gb }} GB used</span>
               <span class="ram-free-label">{{ Math.round((t.avg_total_ram_gb - t.avg_used_gb) * 10) / 10 }} GB free</span>
               <span class="ram-pct-label" :class="pressureClass(t.avg_mem_pressure_pct)">{{ t.avg_mem_pressure_pct }}%</span>
             </div>
           </div>
-          <div class="ram-total-label">of {{ t.avg_total_ram_gb }} GB<br/><span class="ram-device-count">{{ t.device_count }} device{{ t.device_count !== 1 ? 's' : '' }}</span></div>
+          <div class="ram-total-label">of {{ t.avg_total_ram_gb }} GB<br/><span class="ram-device-count">{{ t.device_count }} host{{ t.device_count !== 1 ? 's' : '' }}</span></div>
         </div>
       </div>
     </section>
@@ -83,7 +83,7 @@
       <Drawer :title="displayHost(selectedDevice)" @close="selectedDevice = null; deviceApps = []">
         <template #subtitle>{{ selectedDevice.cpu_brand }} · {{ selectedDevice.hardware_model }} · {{ selectedDevice.memory_gb }} GB RAM · {{ selectedDevice.avg_mem_pressure_pct }}% pressure</template>
         <div class="pressure-bar-wrap">
-          <GaugeBar :value="selectedDevice.peak_mem_pressure_pct" />
+          <MeterBar :value="selectedDevice.peak_mem_pressure_pct" />
           <span class="pressure-label">Peak: {{ selectedDevice.peak_mem_pressure_pct }}% of {{ selectedDevice.memory_gb }} GB</span>
         </div>
         <DataTable
@@ -154,7 +154,7 @@
 
     <!-- Top User Apps -->
     <section class="section">
-      <SectionHeader title="Top user applications by total RAM footprint" caption="Non-system apps ranked by avg memory × device count. Apps with high total RAM footprint across the fleet are candidates for optimization or license review." />
+      <SectionHeader title="Top user applications by total RAM footprint" caption="Non-system apps ranked by avg memory × host count. Apps with high total RAM footprint across the fleet are candidates for optimization or license review." />
       <div class="table-wrap">
         <table class="data-table">
           <thead><tr>
@@ -179,7 +179,7 @@
 
     <!-- Risk Assessment -->
     <section class="section">
-      <SectionHeader title="Risk assessment" caption="Devices scored on: Intel architecture (+1), RAM ≤ 8 GB (+1), memory pressure > 50% (+1). Score 2+ = likely poor DEX." />
+      <SectionHeader title="Risk assessment" caption="Hosts scored on: Intel architecture (+1), RAM ≤ 8 GB (+1), memory pressure > 50% (+1). Score 2+ = likely poor DEX." />
       <div class="risk-summary">
         <Chip tone="good">{{ riskCounts[0] || 0 }} healthy</Chip>
         <Chip tone="fair">{{ riskCounts[1] || 0 }} low risk</Chip>
@@ -193,7 +193,7 @@
             <tr v-for="d in riskyDevices" :key="d.host_id">
               <td class="hostname">
                 <router-link
-                  :to="{ path: '/devices', query: { hostId: d.host_id, focus: 'movers' } }"
+                  :to="{ path: '/hosts', query: { hostId: d.host_id, focus: 'movers' } }"
                   class="host-link"
                   :title="`Inspect ${displayHost(d)} →`"
                 >{{ displayHost(d) }}</router-link>
@@ -207,7 +207,7 @@
           </tbody>
         </table>
       </div>
-      <EmptyState v-else small title="No high-risk devices" info="All devices scored 0 — no high-risk devices detected." />
+      <EmptyState v-else small title="No high-risk hosts" info="All hosts scored 0 — no high-risk hosts detected." />
     </section>
   </div>
 </template>
@@ -223,7 +223,7 @@ import DataTable from '../components/DataTable.vue'
 import PageHeader from '../components/base/PageHeader.vue'
 import SectionHeader from '../components/base/SectionHeader.vue'
 import Drawer from '../components/base/Drawer.vue'
-import GaugeBar from '../components/base/GaugeBar.vue'
+import MeterBar from '../components/base/MeterBar.vue'
 import Chip from '../components/base/Chip.vue'
 import Badge from '../components/base/Badge.vue'
 import EmptyState from '../components/base/EmptyState.vue'

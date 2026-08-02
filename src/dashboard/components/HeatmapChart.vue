@@ -12,7 +12,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import SkeletonLoader from './SkeletonLoader.vue'
+import SkeletonLoader from './base/SkeletonLoader.vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { HeatmapChart as EChartsHeatmap } from 'echarts/charts'

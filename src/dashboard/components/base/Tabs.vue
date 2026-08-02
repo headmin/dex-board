@@ -4,7 +4,8 @@ defineProps({
     type: [String, Number],
     default: '',
   },
-  tabs: {
+  /** [{ value, label, count? }] — same prop name as BaseSelect/SegmentedControl. */
+  options: {
     type: Array,
     default: () => [],
   },
@@ -21,7 +22,7 @@ defineEmits(['update:modelValue'])
 <template>
   <div class="tabs" :class="`variant--${variant}`" role="tablist">
     <button
-      v-for="tab in tabs"
+      v-for="tab in options"
       :key="tab.value"
       class="tabs__tab"
       :class="{ 'is-selected': tab.value === modelValue }"

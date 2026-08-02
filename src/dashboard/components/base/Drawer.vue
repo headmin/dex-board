@@ -1,4 +1,6 @@
 <script setup>
+import IconButton from './IconButton.vue'
+
 defineProps({
   title: { type: String, default: '' },
 })
@@ -24,16 +26,11 @@ const emit = defineEmits(['close'])
       </div>
       <div class="drawer-header-right">
         <slot name="actions" />
-        <button
-          class="drawer-close"
-          type="button"
-          aria-label="Close"
-          @click="emit('close')"
-        >
+        <IconButton label="Close" size="small" @click="emit('close')">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
             <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-        </button>
+        </IconButton>
       </div>
     </div>
     <slot />
@@ -84,25 +81,4 @@ const emit = defineEmits(['close'])
   flex-shrink: 0;
 }
 
-.drawer-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--fleet-black-75);
-  cursor: pointer;
-  transition: background-color var(--transition-base);
-}
-.drawer-close:hover {
-  background: var(--fleet-black-5);
-}
-.drawer-close:focus-visible {
-  outline: 1px solid var(--fleet-focused-outline);
-  outline-offset: 1px;
-}
 </style>

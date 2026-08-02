@@ -16,7 +16,7 @@
     <section v-if="fmaReleases.length" class="fma-section">
       <SectionHeader title="App releases" :caption="fmaCaption" />
       <div class="fma-controls">
-        <Tabs v-model="osFilter" :tabs="osTabs" variant="pill" />
+        <Tabs v-model="osFilter" :options="osTabs" variant="pill" />
         <label class="fma-toggle">
           <input type="checkbox" v-model="onlyWithData" />
           <span>Only show releases with patch data</span>
@@ -294,13 +294,13 @@ import BaseButton from '../components/base/BaseButton.vue'
 import BaseSelect from '../components/base/BaseSelect.vue'
 import SearchInput from '../components/base/SearchInput.vue'
 import EmptyState from '../components/base/EmptyState.vue'
-import FmaReleaseCard from '../components/base/FmaReleaseCard.vue'
+import FmaReleaseCard from '../components/FmaReleaseCard.vue'
 import {
   useFmaReleases,
   totalDevicesForRelease as sharedTotalDevicesForRelease,
   loadFmaReleaseDevices as sharedLoadFmaReleaseDevices,
 } from '../composables/useFmaReleases'
-import { useTimelineEvents } from '../composables/useTimelineEvents'
+import { usePatchEvents } from '../composables/usePatchEvents'
 import { query } from '../services/api'
 import dayjs from 'dayjs'
 
@@ -353,7 +353,7 @@ const groupedCommits = computed(() => {
 })
 
 // ─── Endpoint patch events (bucketed) + filters ─────
-const { fetchPatchSummaryBucketed, fetchSoftwareDayPatches } = useTimelineEvents()
+const { fetchPatchSummaryBucketed, fetchSoftwareDayPatches } = usePatchEvents()
 const patchBuckets = ref([])
 const expandedBuckets = ref({})         // { 'YYYY-MM-DD::software_name': true }
 const bucketDrilldowns = ref({})        // { key: rows[] }

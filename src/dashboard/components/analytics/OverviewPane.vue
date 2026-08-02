@@ -1,7 +1,10 @@
+<!--
+  "Overview" pane of /analytics — the cross-domain fleet health summary
+  (formerly the standalone Exp. Details page). Dataset deep dives live in
+  the sibling tabs owned by views/Analytics.vue.
+-->
 <template>
-  <div class="dashboard page-stack">
-    <PageHeader title="Firehose experience" subtitle="Fleet health overview from osquery result logs" />
-
+  <div class="overview-pane page-stack">
     <div v-if="error" class="error-banner">{{ error }}</div>
 
     <!-- ═══ FLEET OVERVIEW ═══════════════════════════════════ -->
@@ -356,23 +359,22 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { query } from '../services/api'
-import { useFleetFilter } from '../composables/useFleetFilter'
-import MetricCard from '../components/MetricCard.vue'
-import TimeSeriesChart from '../components/TimeSeriesChart.vue'
-import BarChart from '../components/BarChart.vue'
-import ChartCard from '../components/base/ChartCard.vue'
-import DistributionStrip from '../components/base/DistributionStrip.vue'
-import BarList from '../components/base/BarList.vue'
-import HostTile from '../components/HostTile.vue'
-import MttpTable from '../components/MttpTable.vue'
-import PageHeader from '../components/base/PageHeader.vue'
-import SectionHeader from '../components/base/SectionHeader.vue'
-import DrillPanel from '../components/base/DrillPanel.vue'
-import EmptyState from '../components/base/EmptyState.vue'
-import { palette } from '../composables/uiPalette'
-import { displayHost } from '../composables/displayName'
-import { useAppConfig } from '../composables/useAppConfig'
+import { query } from '../../services/api'
+import { useFleetFilter } from '../../composables/useFleetFilter'
+import MetricCard from '../MetricCard.vue'
+import TimeSeriesChart from '../TimeSeriesChart.vue'
+import BarChart from '../BarChart.vue'
+import ChartCard from '../base/ChartCard.vue'
+import DistributionStrip from '../base/DistributionStrip.vue'
+import BarList from '../base/BarList.vue'
+import HostTile from '../HostTile.vue'
+import MttpTable from '../MttpTable.vue'
+import SectionHeader from '../base/SectionHeader.vue'
+import DrillPanel from '../base/DrillPanel.vue'
+import EmptyState from '../base/EmptyState.vue'
+import { palette } from '../../composables/uiPalette'
+import { displayHost } from '../../composables/displayName'
+import { useAppConfig } from '../../composables/useAppConfig'
 
 const SIGNAL_ORDER = ['excellent', 'good', 'fair', 'weak', 'poor', 'very_weak', 'unknown']
 const SIGNAL_TONES = { excellent: 'good', good: 'soft', fair: 'fair', weak: 'elevated', poor: 'critical', very_weak: 'critical', unknown: 'neutral' }
@@ -643,7 +645,7 @@ async function fetchAll() {
 }
 
 // Top patch movers — MTTP aggregate from dex_patch_events on ALT.
-// Pulls the same scores.timeline_patches_summary feeding the /timeline page,
+// Pulls the same firehose.scores.timeline_patches_summary feeding the /timeline page,
 // collapsed across the window so each (software_name) shows up once with
 // summed hosts, mean lag, range and distinct-lag count.
 const topPatchMoversWindowDays = 7
@@ -654,7 +656,7 @@ async function fetchTopPatchMovers() {
     const end = new Date()
     const start = new Date(end.getTime() - topPatchMoversWindowDays * 24 * 3600 * 1000)
     const fmt = (d) => d.toISOString().slice(0, 19).replace('T', ' ')
-    const rows = await query('scores.timeline_patches_summary', {
+    const rows = await query('firehose.scores.timeline_patches_summary', {
       startDate: fmt(start), endDate: fmt(end), minHosts: 1,
     })
     // Collapse per-day rows into per-software rows for the table.
@@ -708,8 +710,6 @@ watch(filterParams, () => {
 </script>
 
 <style scoped>
-.dashboard { max-width: 1280px; margin: 0 auto; padding: var(--pad-xlarge); }
-
 /* Sections stack their own blocks; the page-stack global handles inter-section gaps */
 .section {
   display: flex;

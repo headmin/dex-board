@@ -1,5 +1,5 @@
 <template>
-  <div class="fleet-filter-bar">
+  <div v-if="!hideBar" class="fleet-filter-bar">
     <div class="filter-content">
       <div class="search-group">
         <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -22,7 +22,7 @@
 
       <div class="filters-group">
         <div class="field field--inline">
-          <label class="field__label field__label--inline">{{ isFirehose ? 'Platform' : 'OS' }}</label>
+          <label class="field__label field__label--inline">Platform</label>
           <select v-model="selectedOS" class="field__input">
             <option value="">All</option>
             <option v-for="os in osOptions" :key="os" :value="os">{{ os }}</option>
@@ -45,7 +45,7 @@
           </select>
         </div>
 
-        <div v-if="isFirehose && teamOptions.length" class="field field--inline">
+        <div v-if="teamOptions.length" class="field field--inline">
           <label class="field__label field__label--inline" title="Filter to hosts in a specific Fleet (extracted from osquery event name; data layer ships as 'team-XXX')">Fleet</label>
           <select v-model="selectedTeam" class="field__input">
             <option value="">All fleets</option>
@@ -53,14 +53,6 @@
           </select>
         </div>
 
-        <div v-if="!isFirehose" class="field field--inline">
-          <label class="field__label field__label--inline">Encryption</label>
-          <select v-model="selectedEncryption" class="field__input">
-            <option value="">All</option>
-            <option value="encrypted">Encrypted</option>
-            <option value="not-encrypted">Not Encrypted</option>
-          </select>
-        </div>
       </div>
 
       <button v-if="isFleetFiltered" class="button button--inverse button--small" @click="clearFleetFilter">
@@ -97,14 +89,15 @@ const route = useRoute()
 
 const {
   searchText, selectedOS, selectedModel, selectedEncryption, selectedRAMTier, selectedTeam,
-  osOptions, modelOptions, teamOptions, ramTierOptions, deviceCount, firehoseMode,
+  osOptions, modelOptions, teamOptions, ramTierOptions, deviceCount,
   isFleetFiltered, clearFleetFilter,
-  loadFilterOptions, fetchDeviceCount, setFirehoseMode
+  loadFilterOptions, fetchDeviceCount
 } = useFleetFilter()
 
 const { wcMode, toggleWcMode } = useWorkersCouncil()
 
-const isFirehose = computed(() => !route.path.startsWith('/overview') && !route.path.startsWith('/audit'))
+// Fleet filters only make sense on host-telemetry pages.
+const hideBar = computed(() => route.path.startsWith('/audit') || route.path.startsWith('/styleguide'))
 
 const localSearch = ref(searchText.value)
 let debounceTimer = null
@@ -127,24 +120,13 @@ watch(searchText, (val) => {
   }
 })
 
-// Order matters: firehose mode must be set BEFORE the first count fetch,
-// and a mode flip must refetch — otherwise the badge shows the legacy
-// devices.count (a single stale row) against a full firehose fleet.
-watch(isFirehose, (val) => {
-  setFirehoseMode(val)
-  fetchDeviceCount()
-}, { immediate: true })
-
 watch([searchText, selectedOS, selectedModel, selectedEncryption, selectedRAMTier], () => {
   fetchDeviceCount()
 })
 
 onMounted(() => {
-  if (isFirehose.value) {
-    setFirehoseMode(true)
-  } else {
-    loadFilterOptions()
-  }
+  loadFilterOptions()
+  fetchDeviceCount()
 })
 </script>
 

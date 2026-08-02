@@ -22,6 +22,7 @@
 <script setup>
 import { computed } from 'vue'
 import { humanizeToken } from '../../composables/humanize'
+import { TONE_SOLID, BAR_TONES } from '../../composables/statusTones'
 
 /**
  * Ordered distribution strip — replaces donut charts for ORDERED
@@ -34,20 +35,14 @@ const props = defineProps({
   valueKey: { type: String, default: 'value' },
   /** Segment order, best -> worst. Names not listed sort after, by value. */
   order: { type: Array, default: () => [] },
-  /** name -> tone ('good'|'soft'|'fair'|'elevated'|'critical'|'neutral'|'info') */
-  tones: { type: Object, default: () => ({}) },
+  /** name -> tone; solid-fill vocabulary (BAR_TONES — includes 'soft') */
+  tones: {
+    type: Object,
+    default: () => ({}),
+    validator: obj => Object.values(obj).every(t => BAR_TONES.includes(t)),
+  },
   humanize: { type: Boolean, default: true },
 })
-
-const TONE_COLOR = {
-  good: 'var(--status-good)',
-  soft: 'var(--status-good-soft)',
-  fair: 'var(--status-fair)',
-  elevated: 'var(--status-elevated)',
-  critical: 'var(--status-critical)',
-  neutral: 'var(--fleet-black-25)',
-  info: 'var(--fleet-vibrant-blue)',
-}
 
 const segments = computed(() => {
   const rows = props.data
@@ -63,7 +58,7 @@ const segments = computed(() => {
     ...r,
     label: props.humanize ? humanizeToken(r.name, { capitalize: false }) : r.name,
     pct: Math.max(1.5, (r.value / total) * 100),
-    color: TONE_COLOR[props.tones[r.name]] || TONE_COLOR.neutral,
+    color: TONE_SOLID[props.tones[r.name]] || TONE_SOLID.neutral,
   }))
 })
 

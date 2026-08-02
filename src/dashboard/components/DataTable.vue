@@ -51,7 +51,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import dayjs from 'dayjs'
-import SkeletonLoader from './SkeletonLoader.vue'
+import SkeletonLoader from './base/SkeletonLoader.vue'
 
 const props = defineProps({
   title: { type: String, default: '' },

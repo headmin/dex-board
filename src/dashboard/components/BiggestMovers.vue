@@ -20,7 +20,7 @@
               {{ mover.delta > 0 ? '+' : '' }}{{ mover.delta.toFixed(0) }}pt
             </span>
             <router-link
-              :to="{ path: '/devices', query: { hostId: mover.host_identifier, focus: 'movers' } }"
+              :to="{ path: '/hosts', query: { hostId: mover.host_identifier, focus: 'movers' } }"
               class="mover-inspect-link"
               :title="`Open ${displayHost(mover)} in host details`"
               @click.stop
@@ -55,7 +55,7 @@
                  give them an obvious "now take me to that host" exit. -->
             <div class="mover-detail-footer">
               <router-link
-                :to="{ path: '/devices', query: { hostId: expandedId, focus: 'movers' } }"
+                :to="{ path: '/hosts', query: { hostId: expandedId, focus: 'movers' } }"
                 custom
                 v-slot="{ navigate }"
               >
@@ -71,7 +71,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import SkeletonLoader from './SkeletonLoader.vue'
+import SkeletonLoader from './base/SkeletonLoader.vue'
 import GradeBadge from './GradeBadge.vue'
 import Badge from './base/Badge.vue'
 import BaseButton from './base/BaseButton.vue'

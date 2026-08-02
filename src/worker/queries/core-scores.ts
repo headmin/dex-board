@@ -925,4 +925,125 @@ export const firehoseScoreQueries: QueryConfig[] = [
       UNION ALL SELECT 'security_posture', count() FROM security_posture
     `,
   },
+
+  // ─── Patch events (ported from the retired legacy scores.ts lane) ───
+  {
+    name: 'firehose.scores.timeline_patches',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'Patch events in a time window for timeline (optionally filtered by software/day for drill-down)',
+    params: [
+      { name: 'startDate', type: 'string' as const, required: true },
+      { name: 'endDate', type: 'string' as const, required: true },
+      { name: 'softwareName', type: 'string' as const, required: false, default: '' },
+      { name: 'day', type: 'string' as const, required: false, default: '' },
+    ],
+    sql: `
+      SELECT
+        toStartOfHour(event_time) AS hour,
+        software_name,
+        patch_type,
+        old_version,
+        new_version,
+        count() AS device_count,
+        round(avg(days_to_patch), 1) AS avg_lag,
+        round(max(days_to_patch), 1) AS max_lag,
+        min(event_time) AS first_applied,
+        max(event_time) AS last_applied
+      FROM dex_patch_events
+      WHERE event_time >= {startDate:String} AND event_time <= {endDate:String}
+        AND ({softwareName:String} = '' OR software_name = {softwareName:String})
+        AND ({day:String} = '' OR toDate(event_time) = toDate({day:String}))
+      GROUP BY hour, software_name, patch_type, old_version, new_version
+      ORDER BY hour DESC
+    `,
+  },
+  {
+    name: 'firehose.scores.timeline_patches_summary',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'Per-day, per-software aggregate of patch events for the bucketed timeline',
+    params: [
+      { name: 'startDate', type: 'string' as const, required: true },
+      { name: 'endDate', type: 'string' as const, required: true },
+      { name: 'minHosts', type: 'number' as const, required: false, min: 1, max: 10000, default: 1 },
+    ],
+    sql: `
+      SELECT
+        toDate(event_time) AS day,
+        software_name,
+        patch_type,
+        countDistinct(host_identifier) AS hosts,
+        countDistinct(concat(old_version, '|', new_version)) AS transitions,
+        argMin(old_version, event_time) AS earliest_from,
+        argMax(new_version, event_time) AS latest_to,
+        round(avg(days_to_patch), 2) AS avg_lag,
+        round(max(days_to_patch), 2) AS max_lag,
+        round(min(days_to_patch), 2) AS min_lag,
+        countDistinct(days_to_patch) AS distinct_lags,
+        min(event_time) AS first_applied,
+        max(event_time) AS last_applied
+      FROM dex_patch_events
+      WHERE event_time >= {startDate:String} AND event_time <= {endDate:String}
+      GROUP BY day, software_name, patch_type
+      HAVING hosts >= {minHosts:UInt32}
+      ORDER BY day DESC, hosts DESC
+    `,
+  },
+  {
+    name: 'firehose.scores.fma_release_devices',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'Devices that applied a specific FMA app release (exact version_to match)',
+    params: [
+      { name: 'softwarePattern', type: 'string' as const, required: true },
+      { name: 'versionTo', type: 'string' as const, required: true },
+      { name: 'releaseTime', type: 'string' as const, required: true },
+      { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 180, default: 30 },
+    ],
+    sql: `
+      SELECT
+        software_name,
+        patch_type,
+        old_version,
+        new_version,
+        count(DISTINCT host_identifier) AS device_count,
+        round(avg(days_to_patch), 1) AS avg_lag,
+        round(max(days_to_patch), 1) AS max_lag,
+        min(event_time) AS first_applied,
+        max(event_time) AS last_applied,
+        dateDiff('hour', parseDateTimeBestEffort({releaseTime:String}), min(event_time)) AS hours_to_first_patch,
+        dateDiff('hour', parseDateTimeBestEffort({releaseTime:String}), max(event_time)) AS hours_to_last_patch
+      FROM dex_patch_events
+      WHERE positionCaseInsensitive(software_name, {softwarePattern:String}) > 0
+        AND new_version = {versionTo:String}
+        AND event_time >= parseDateTimeBestEffort({releaseTime:String})
+        AND event_time <= parseDateTimeBestEffort({releaseTime:String}) + INTERVAL {windowDays:UInt32} DAY
+      GROUP BY software_name, patch_type, old_version, new_version
+      ORDER BY device_count DESC
+    `,
+  },
+  {
+    name: 'firehose.scores.device_top_patches',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'Top-N recent patch transitions for one host (sorted by event_time desc)',
+    params: [
+      { name: 'hostIdentifier', type: 'string' as const, required: true },
+      { name: 'limit', type: 'number' as const, required: false, min: 1, max: 100, default: 10 },
+    ],
+    sql: `
+      SELECT
+        event_time,
+        patch_type,
+        software_name,
+        old_version,
+        new_version,
+        days_to_patch
+      FROM dex_patch_events FINAL
+      WHERE host_identifier = {hostIdentifier:String}
+      ORDER BY event_time DESC
+      {{LIMIT}}
+    `,
+  },
 ]

@@ -26,7 +26,7 @@
           {{ showInfo ? 'Hide scoring details' : 'How is this scored?' }}
         </BaseButton>
         <div v-if="showInfo" class="dist-info">
-          <p>The composite score (0–100) is a weighted average of four categories computed hourly from device telemetry:</p>
+          <p>The composite score (0–100) is a weighted average of four categories computed hourly from host telemetry:</p>
           <div class="category-row">
             <span class="cat-pill" style="background:var(--rainbow-blue)">Performance 35%</span>
             <span class="cat-pill" style="background:var(--fleet-success)">Device Health 25%</span>
@@ -48,7 +48,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import SkeletonLoader from './SkeletonLoader.vue'
+import SkeletonLoader from './base/SkeletonLoader.vue'
 import GradeBadge from './GradeBadge.vue'
 import BaseButton from './base/BaseButton.vue'
 import { gradeColor } from '../composables/gradeColors'

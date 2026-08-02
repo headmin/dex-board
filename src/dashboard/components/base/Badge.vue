@@ -5,11 +5,13 @@
 </template>
 
 <script setup>
+import { TINT_TONES } from '../../composables/statusTones'
+
 defineProps({
   tone: {
     type: String,
     default: 'neutral',
-    validator: v => ['neutral', 'good', 'fair', 'elevated', 'critical', 'info'].includes(v)
+    validator: v => TINT_TONES.includes(v)
   },
   label: { type: String, default: '' }
 })
@@ -45,12 +47,12 @@ defineProps({
 
 .badge--elevated {
   background: var(--status-elevated-bg);
-  color: var(--status-elevated);
+  color: var(--status-elevated-text);
 }
 
 .badge--critical {
   background: var(--status-critical-bg);
-  color: var(--status-critical);
+  color: var(--status-critical-text);
 }
 
 .badge--info {

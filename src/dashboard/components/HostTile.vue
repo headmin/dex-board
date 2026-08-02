@@ -30,7 +30,7 @@
     </div>
 
     <div class="tile-actions">
-      <button class="tile-action" @click="openInDex" title="Open this host in the DEX Devices view">
+      <button class="tile-action" @click="openInDex" title="Open this host in Fleet">
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path d="M2 3h12v10H2zM2 6h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -74,7 +74,7 @@ const fleetBase = computed(() => props.fleetServerUrl || config.value.fleetUrl)
 // to the same host, keeping the view visually coherent.
 function openInDex() {
   searchText.value = displayHost(props.host) || props.host.host_id || ''
-  router.push({ path: '/devices', query: { hostId: props.host.host_id } })
+  router.push({ path: '/hosts', query: { hostId: props.host.host_id } })
 }
 
 // Fleet deep-link: /hosts/manage/labels/7 is Fleet's "All hosts" label

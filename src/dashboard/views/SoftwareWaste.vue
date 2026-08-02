@@ -47,7 +47,7 @@
               <td class="num"><strong>{{ a.unused_hosts }}</strong></td>
               <td class="sw-bar-col">
                 <div class="sw-bar-row">
-                  <GaugeBar class="sw-bar" height="var(--bar-height)" :value="a.pct_unused" :color="shareColor(a.pct_unused)" />
+                  <MeterBar class="sw-bar" height="var(--bar-height)" :value="a.pct_unused" :color="shareColor(a.pct_unused)" />
                   <span class="sw-bar-label">{{ a.pct_unused }}%</span>
                 </div>
               </td>
@@ -65,7 +65,7 @@ import { query } from '../services/api'
 import MetricCard from '../components/MetricCard.vue'
 import PageHeader from '../components/base/PageHeader.vue'
 import SectionHeader from '../components/base/SectionHeader.vue'
-import GaugeBar from '../components/base/GaugeBar.vue'
+import MeterBar from '../components/base/MeterBar.vue'
 import EmptyState from '../components/base/EmptyState.vue'
 import { useFleetFilter } from '../composables/useFleetFilter'
 

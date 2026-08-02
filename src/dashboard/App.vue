@@ -7,12 +7,6 @@
           <div class="top-nav__logo-mark">D</div>
           <span class="top-nav__logo-text">DEX<span class="top-nav__logo-accent">Board</span></span>
         </div>
-        <nav class="top-nav__links">
-          <router-link to="/" class="top-nav__link" exact-active-class="top-nav__link--active">Dashboard</router-link>
-          <router-link to="/devices" class="top-nav__link" active-class="top-nav__link--active">Hosts</router-link>
-          <router-link to="/reports" class="top-nav__link" active-class="top-nav__link--active">Reports</router-link>
-          <router-link to="/insights" class="top-nav__link" active-class="top-nav__link--active">Insights</router-link>
-        </nav>
         <div class="top-nav__account">
           <div class="top-nav__avatar">A</div>
           <span class="top-nav__user">admin@fleet.co</span>
@@ -24,7 +18,7 @@
       <aside class="sidebar">
         <nav class="sidebar-nav">
           <div class="nav-section">
-            <span class="nav-section-label">Analytics</span>
+            <span class="nav-section-label">Experience</span>
             <router-link to="/" class="nav-item" exact-active-class="active">
               <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
                 <rect x="3" y="3" width="6" height="6" rx="1"/>
@@ -32,15 +26,16 @@
                 <rect x="3" y="11" width="6" height="6" rx="1"/>
                 <rect x="11" y="11" width="6" height="6" rx="1"/>
               </svg>
-              Experience
+              Experience score
             </router-link>
-            <router-link to="/experience-details" class="nav-item" active-class="active">
+            <router-link to="/analytics" class="nav-item" active-class="active">
               <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M3 10h14M3 6h8M3 14h11"/>
+                <path d="M4 4v12h12"/>
+                <path d="M7 12l3-3 2 2 4-4"/>
               </svg>
-              Exp. Details
+              Analytics
             </router-link>
-            <router-link to="/devices" class="nav-item" active-class="active">
+            <router-link to="/hosts" class="nav-item" active-class="active">
               <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
                 <rect x="4" y="3" width="12" height="14" rx="2"/>
                 <path d="M8 17h4"/>
@@ -53,37 +48,6 @@
                 <path d="M10 6v4l2.5 2.5"/>
               </svg>
               Insights
-            </router-link>
-            <router-link to="/reports" class="nav-item" active-class="active">
-              <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M4 4v12h12"/>
-                <path d="M7 12l3-3 2 2 4-4"/>
-              </svg>
-              Reports
-            </router-link>
-          </div>
-
-          <div class="nav-section">
-            <span class="nav-section-label">Operations</span>
-            <router-link to="/timeline" class="nav-item" active-class="active">
-              <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                <circle cx="10" cy="10" r="7"/>
-                <path d="M10 6v4h3"/>
-              </svg>
-              Timeline
-            </router-link>
-            <router-link to="/changeboard" class="nav-item" active-class="active">
-              <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M4 6h12M4 10h8M4 14h10"/>
-              </svg>
-              Changeboard
-            </router-link>
-            <router-link to="/connectivity" class="nav-item" active-class="active">
-              <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M10 14v.01"/>
-                <path d="M6.5 11a5 5 0 017 0M3.5 8a9 9 0 0113 0"/>
-              </svg>
-              Connectivity
             </router-link>
           </div>
 
@@ -106,14 +70,25 @@
           </div>
 
           <div class="nav-section">
-            <span class="nav-section-label">Admin</span>
-            <router-link to="/overview" class="nav-item" active-class="active">
+            <span class="nav-section-label">Operations</span>
+            <router-link to="/gitops" class="nav-item" active-class="active">
               <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
                 <circle cx="10" cy="10" r="7"/>
-                <path d="M10 7v3M10 13v.01"/>
+                <path d="M10 6v4h3"/>
               </svg>
-              Overview
+              GitOps timeline
             </router-link>
+            <router-link to="/connectivity" class="nav-item" active-class="active">
+              <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M10 14v.01"/>
+                <path d="M6.5 11a5 5 0 017 0M3.5 8a9 9 0 0113 0"/>
+              </svg>
+              Connectivity
+            </router-link>
+          </div>
+
+          <div class="nav-section">
+            <span class="nav-section-label">Governance</span>
             <router-link to="/audit" class="nav-item" active-class="active">
               <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M5 4h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/>
@@ -121,16 +96,11 @@
               </svg>
               Audit log
             </router-link>
-            <router-link to="/raw" class="nav-item" active-class="active">
-              <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M4 6h12M4 10h12M4 14h12"/>
-              </svg>
-              Raw data
-            </router-link>
           </div>
         </nav>
 
         <div class="sidebar-footer">
+          <router-link to="/styleguide" class="sidebar-footer-link">Style guide</router-link>
           <div class="version-badge">v1.0.0</div>
         </div>
       </aside>
@@ -398,8 +368,21 @@ a:not([class]):hover { color: var(--link-color-hover); }
 }
 
 .sidebar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   padding: var(--pad-medium) var(--pad-large);
   border-top: 1px solid var(--fleet-black-10);
+}
+
+.sidebar-footer-link {
+  font-size: var(--font-size-xxsmall);
+  color: var(--fleet-black-50);
+  text-decoration: none;
+}
+.sidebar-footer-link:hover {
+  color: var(--fleet-black);
 }
 
 .version-badge {

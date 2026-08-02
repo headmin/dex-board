@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard page-stack">
     <PageHeader
-      title="Hardware lifecycle"
+      title="Lifecycle"
       subtitle="Refresh & upgrade candidates from endpoint telemetry — plan smarter investments"
     />
 
@@ -11,18 +11,19 @@
     <section class="section">
       <div class="metrics-row four-col">
         <MetricCard label="Hosts assessed" :value="summary.total_hosts" :loading="loading" />
-        <MetricCard label="Refresh now" :value="summary.high_priority" :loading="loading"
-          subtitle="score ≥ 40" />
-        <MetricCard label="Watch" :value="summary.watch" :loading="loading"
-          subtitle="score 20–39" />
-        <MetricCard label="Severe swap strain" :value="summary.swap_strain" :loading="loading"
-          subtitle="under-powered for workload" />
+        <MetricCard label="Refresh candidates" :value="groupCount('refresh')" :loading="loading"
+          subtitle="old silicon + sustained strain" />
+        <MetricCard label="Investigate" :value="groupCount('investigate')" :loading="loading"
+          subtitle="current silicon, sustained strain" />
+        <MetricCard label="Watch" :value="groupCount('watch')" :loading="loading"
+          subtitle="signals, not sustained" />
       </div>
       <div class="metrics-row four-col">
         <MetricCard label="Battery: replace" :value="summary.battery_replace" :loading="loading" />
         <MetricCard label="8GB RAM" :value="summary.low_ram" :loading="loading" />
         <MetricCard label="Aging CPU (Intel)" :value="summary.aging_cpu" :loading="loading" />
-        <MetricCard label="Apple-silicon hosts" :value="appleHosts" :loading="loading" />
+        <MetricCard label="Severe swap strain" :value="summary.swap_strain" :loading="loading"
+          subtitle="under-powered for workload" />
       </div>
     </section>
 
@@ -34,7 +35,7 @@
       />
 
       <div v-if="loading" class="lc-loading">Loading…</div>
-      <EmptyState v-else-if="!candidates.length" small title="No hosts match the current filter." />
+      <EmptyState v-else-if="!visibleCount" small title="No hosts with refresh signals match the current filter." />
       <div v-else class="lc-table-wrapper">
         <table class="lc-table">
           <thead>
@@ -50,14 +51,21 @@
               <th>Verdict</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="h in candidates" :key="h.host_id">
+          <tbody v-for="g in verdictGroups" :key="g.key">
+            <tr class="lc-group-row">
+              <td colspan="9">
+                <span class="lc-group-label" :class="`lc-group-label--${g.tone}`">{{ g.label }}</span>
+                <span class="lc-group-count">{{ g.rows.length }} host{{ g.rows.length === 1 ? '' : 's' }}</span>
+                <span class="lc-group-hint">{{ g.hint }}</span>
+              </td>
+            </tr>
+            <tr v-for="h in g.rows" :key="h.host_id">
               <td class="lc-host">{{ displayHost(h) }}</td>
               <td class="mono">{{ h.hardware_model }}</td>
               <td>{{ cpuLabel(h.cpu_class) }}</td>
               <td>
                 <span v-if="chipInfo(h.cpu_class)" class="lc-age" :class="`lc-age--${ageTone(chipInfo(h.cpu_class).gensBehind)}`"
-                  :title="`${chipInfo(h.cpu_class).gensBehind} generation(s) behind current — device is at least ${new Date().getFullYear() - chipInfo(h.cpu_class).year} years old`">
+                  :title="`${chipInfo(h.cpu_class).gensBehind} generation(s) behind current — host is at least ${new Date().getFullYear() - chipInfo(h.cpu_class).year} years old`">
                   {{ chipInfo(h.cpu_class).year }} · {{ chipInfo(h.cpu_class).gensBehind }} gens
                 </span>
                 <span v-else class="lc-none">—</span>
@@ -87,6 +95,9 @@
           </tbody>
         </table>
       </div>
+      <p v-if="!loading && hiddenHealthy > 0" class="lc-hidden-note">
+        {{ hiddenHealthy }} host{{ hiddenHealthy === 1 ? '' : 's' }} healthy — no refresh signals (hidden)
+      </p>
     </section>
   </div>
 </template>
@@ -111,12 +122,6 @@ const loading = ref(false)
 const summary = ref({})
 const candidates = ref([])
 
-const appleHosts = computed(() => {
-  const t = Number(summary.value.total_hosts) || 0
-  const intel = Number(summary.value.aging_cpu) || 0
-  return Math.max(0, t - intel)
-})
-
 function cpuLabel(c) {
   if (!c) return '—'
   return c.replace('apple_', 'Apple ').replace('intel_', 'Intel ').toUpperCase().replace('APPLE ', 'Apple ').replace('INTEL ', 'Intel ')
@@ -127,16 +132,48 @@ function hostVerdict(h) {
   const info = chipInfo(h.cpu_class)
   // refresh_score is inverted (higher = more refresh-worthy); the 30d
   // pressure persistence keeps one bad day from nominating a device.
+  // Sustained SEVERE swap counts as weakness on its own — a new machine
+  // can be drowning while its score sits below the 30 threshold.
   return verdictFor(Number(h.refresh_score) >= 30, info?.gensBehind ?? null, {
     weakDays: Number(h.days_pressured_30d) || 0,
     reportDays: Number(h.days_reporting_30d) || 0,
+    severeDays: Number(h.days_severe_30d) || 0,
   })
 }
 
 function verdictTitle(h) {
   const d = Number(h.days_pressured_30d) || 0
+  const s = Number(h.days_severe_30d) || 0
   const r = Number(h.days_reporting_30d) || 0
-  return `Memory-pressured on ${d} of ${r} reporting days (30d)`
+  return `Memory-pressured on ${d} of ${r} reporting days (${s} severe) — 30d window`
+}
+
+// ─── Verdict-grouped shortlist ────────────────────────────────
+// The ranked list reads as "everything here should be replaced" unless the
+// verdict does the grouping: refresh candidates first, then new-but-strained
+// (investigate), then watch, then old-but-fine. Healthy hosts with no
+// signals are hidden entirely (count shown below the table).
+const GROUP_META = [
+  { key: 'refresh', label: 'Refresh candidates', tone: 'critical', hint: 'old silicon + sustained strain — replacement is the fix' },
+  { key: 'investigate', label: 'Investigate', tone: 'fair', hint: 'current silicon under sustained strain — fix the workload or spec, not the device age' },
+  { key: 'watch', label: 'Watch', tone: 'fair', hint: 'signals present but not sustained — recheck next cycle' },
+  { key: 'defer', label: 'Defer OK', tone: 'good', hint: 'aging silicon holding up fine — no action needed yet' },
+]
+
+const verdictGroups = computed(() => {
+  const byKey = new Map(GROUP_META.map(g => [g.key, { ...g, rows: [] }]))
+  for (const h of candidates.value) {
+    const v = hostVerdict(h)
+    byKey.get(v.key)?.rows.push(h)
+  }
+  return GROUP_META.map(g => byKey.get(g.key)).filter(g => g.rows.length)
+})
+
+const visibleCount = computed(() => verdictGroups.value.reduce((s, g) => s + g.rows.length, 0))
+const hiddenHealthy = computed(() => candidates.value.length - visibleCount.value)
+
+function groupCount(key) {
+  return verdictGroups.value.find(g => g.key === key)?.rows.length || 0
 }
 
 // Internal severity keys ('high'/'mid'/'ok') → Badge tones.
@@ -236,6 +273,38 @@ watch(filterParams, load, { deep: true })
 .lc-age--critical { color: var(--status-critical); }
 
 .lc-none { color: var(--fleet-black-25); }
+
+/* ─── Verdict group header rows ───────────────── */
+.lc-group-row td {
+  background: var(--fleet-off-white);
+  padding: 8px var(--table-cell-pad-x);
+}
+.lc-group-label {
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+}
+.lc-group-label--critical { color: var(--status-critical-text); }
+.lc-group-label--fair { color: var(--status-fair-text); }
+.lc-group-label--good { color: var(--status-good-text); }
+.lc-group-count {
+  margin-left: 8px;
+  font-size: var(--font-size-sm);
+  color: var(--fleet-black-75);
+  font-variant-numeric: tabular-nums;
+}
+.lc-group-hint {
+  margin-left: 12px;
+  font-size: var(--font-size-xs);
+  color: var(--fleet-black-50);
+  font-style: italic;
+}
+
+.lc-hidden-note {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--fleet-black-50);
+  font-style: italic;
+}
 
 .lc-score { font-family: var(--font-mono); font-weight: 700; }
 .lc-score--good { color: var(--status-good); }

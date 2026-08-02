@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard page-stack">
     <PageHeader
-      title="Connectivity & check-in"
+      title="Connectivity"
       subtitle="Is the fleet reporting, and how's the network underneath it"
     />
 
@@ -11,7 +11,7 @@
     <section class="section">
       <SectionHeader
         title="Reporting status"
-        :caption="`Telemetry freshness, anchored to device-health reporting (the schedule confirmed flowing). Freshest report ${checkin.freshest_lag_hours != null ? checkin.freshest_lag_hours + 'h ago' : '—'}.`"
+        :caption="`Telemetry freshness, anchored to host-health reporting (the schedule confirmed flowing). Freshest report ${checkin.freshest_lag_hours != null ? checkin.freshest_lag_hours + 'h ago' : '—'}.`"
       />
       <div class="metrics-row four-col">
         <MetricCard label="Reporting < 1h" :value="checkin.within_1h" :loading="loading"

@@ -36,7 +36,7 @@ function releasesInRange(startTime, endTime) {
 
 async function fetchReleaseDevices(release, windowDays = 30) {
   if (!release || !release.app || !release.version_to) return []
-  return await query('scores.fma_release_devices', {
+  return await query('firehose.scores.fma_release_devices', {
     softwarePattern: release.app,
     versionTo: release.version_to,
     releaseTime: dayjs(release.timestamp).format('YYYY-MM-DD HH:mm:ss'),
@@ -59,7 +59,7 @@ function releasesByDay() {
 }
 
 // ─── Shared helpers (previously duplicated in GitOpsTimeline.vue and
-// FirehoseTimeline.vue) ─────────────────────────────────────────────
+// GitOps.vue) ─────────────────────────────────────────────
 
 // Format a lag expressed in hours as "Nh" under a day, "Nd" above.
 export function formatHours(h) {
@@ -87,14 +87,14 @@ export function totalDevicesForRelease(counts, releaseId) {
 //   deviceLoading: ref({ [release.id]: boolean })
 //   windowDays:    number (default 30)
 // Preserves the exact query name/params the views use today
-// (scores.fma_release_devices via fetchReleaseDevices).
+// (firehose.scores.fma_release_devices via fetchReleaseDevices).
 export async function loadFmaReleaseDevices(queryFn, release, state) {
   const { deviceCounts, deviceLoading, windowDays = 30 } = state
   if (!release || !release.app || !release.version_to) return
   if (deviceLoading.value[release.id]) return
   deviceLoading.value = { ...deviceLoading.value, [release.id]: true }
   try {
-    const rows = await queryFn('scores.fma_release_devices', {
+    const rows = await queryFn('firehose.scores.fma_release_devices', {
       softwarePattern: release.app,
       versionTo: release.version_to,
       releaseTime: dayjs(release.timestamp).format('YYYY-MM-DD HH:mm:ss'),

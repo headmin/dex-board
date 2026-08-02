@@ -18,10 +18,6 @@ const ramTierOptions = ['8GB', '16GB', '18GB', '24GB', '32GB', '36GB', '48GB', '
 const deviceCount = ref(0)
 const optionsLoaded = ref(false)
 
-// Firehose mode
-const firehoseMode = ref(false)
-const firehoseOptionsLoaded = ref(false)
-
 export function useFleetFilter() {
 
   const isFleetFiltered = computed(() => {
@@ -51,57 +47,27 @@ export function useFleetFilter() {
     return parts.join(' + ')
   })
 
-  // ─── Load dropdown options (original) ─────────────────
+  // ─── Load dropdown options ────────────────────────────
   async function loadFilterOptions() {
     if (optionsLoaded.value) return
     try {
-      const rows = await query('devices.filter_options')
-      osOptions.value = rows.filter(r => r.type === 'os').map(r => r.value)
+      const rows = await query('firehose.devices.filter_options')
       modelOptions.value = rows.filter(r => r.type === 'model').map(r => r.value)
+      osOptions.value = rows.filter(r => r.type === 'platform').map(r => r.value)
+      teamOptions.value = rows.filter(r => r.type === 'team').map(r => r.value)
       optionsLoaded.value = true
     } catch (e) {
       console.error('Failed to load fleet filter options:', e)
     }
   }
 
-  // ─── Load dropdown options (firehose) ─────────────────
-  async function loadFirehoseFilterOptions() {
-    if (firehoseOptionsLoaded.value) return
-    try {
-      const rows = await query('firehose.devices.filter_options')
-      modelOptions.value = rows.filter(r => r.type === 'model').map(r => r.value)
-      osOptions.value = rows.filter(r => r.type === 'platform').map(r => r.value)
-      teamOptions.value = rows.filter(r => r.type === 'team').map(r => r.value)
-      firehoseOptionsLoaded.value = true
-    } catch (e) {
-      console.error('Failed to load firehose filter options:', e)
-    }
-  }
-
-  // ─── Fetch filtered device count ──────────────────────
+  // ─── Fetch filtered host count ────────────────────────
   async function fetchDeviceCount() {
     try {
-      if (firehoseMode.value) {
-        const rows = await query('firehose.devices.filtered_count', filterParams.value)
-        deviceCount.value = rows[0]?.cnt || 0
-      } else {
-        const rows = await query('devices.count', filterParams.value)
-        deviceCount.value = rows[0]?.cnt || 0
-      }
+      const rows = await query('firehose.devices.filtered_count', filterParams.value)
+      deviceCount.value = rows[0]?.cnt || 0
     } catch (e) {
-      console.error('Failed to fetch device count:', e)
-    }
-  }
-
-  // ─── Set firehose mode ────────────────────────────────
-  function setFirehoseMode(enabled) {
-    firehoseMode.value = enabled
-    if (enabled) {
-      // Reset filters that don't apply to firehose
-      selectedEncryption.value = ''
-      loadFirehoseFilterOptions()
-    } else {
-      loadFilterOptions()
+      console.error('Failed to fetch host count:', e)
     }
   }
 
@@ -129,7 +95,6 @@ export function useFleetFilter() {
     selectedRAMTier,
     selectedTeam,
     heatmapMode,
-    firehoseMode,
 
     // Dropdown data
     osOptions,
@@ -145,10 +110,8 @@ export function useFleetFilter() {
 
     // Actions
     loadFilterOptions,
-    loadFirehoseFilterOptions,
     fetchDeviceCount,
     clearFleetFilter,
-    setFirehoseMode,
     setOSFilter,
     setModelFilter,
     setRAMFilter,

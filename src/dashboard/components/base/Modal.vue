@@ -1,5 +1,7 @@
 <script setup>
-import { onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, toRef } from 'vue'
+import IconButton from './IconButton.vue'
+import { useFocusTrap } from '../../composables/useFocusTrap'
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -10,6 +12,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close'])
+
+const panelRef = ref(null)
+useFocusTrap(panelRef, toRef(props, 'open'))
 
 function onKeydown(e) {
   if (e.key === 'Escape' && props.open) emit('close')
@@ -23,6 +28,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
   <Teleport to="body">
     <div v-if="open" class="modal-overlay" @click.self="emit('close')">
       <div
+        ref="panelRef"
         class="modal-panel"
         :style="{ width: width + 'px' }"
         role="dialog"
@@ -30,16 +36,11 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
       >
         <div class="modal-header">
           <h2 class="modal-title">{{ title }}</h2>
-          <button
-            class="modal-close"
-            type="button"
-            aria-label="Close"
-            @click="emit('close')"
-          >
+          <IconButton label="Close" size="small" class="modal-close" @click="emit('close')">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
               <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-          </button>
+          </IconButton>
         </div>
         <div class="modal-body">
           <slot />
@@ -94,25 +95,6 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
 .modal-close {
   flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--fleet-black-75);
-  cursor: pointer;
-  transition: background-color var(--transition-base);
-}
-.modal-close:hover {
-  background: var(--fleet-black-5);
-}
-.modal-close:focus-visible {
-  outline: 1px solid var(--fleet-focused-outline);
-  outline-offset: 1px;
 }
 
 .modal-body {
