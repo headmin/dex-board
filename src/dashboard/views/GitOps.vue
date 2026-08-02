@@ -39,6 +39,49 @@
           <div v-if="outcome.tooRecent" class="hero-rail-row"><span>Too recent to judge</span><span class="hero-rail-count">{{ outcome.tooRecent }}</span></div>
           <div v-if="outcome.outsideWindow" class="hero-rail-row hero-rail-row--dim"><span>Before the 30d score window</span><span class="hero-rail-count">{{ outcome.outsideWindow }}</span></div>
         </div>
+        <span class="hero-rail-tiers mono" title="Evidence tiers: verified = commit linked by software name to a real patch rollout ≤7 days after it; policy = policy/profile/script commits judged on their category; temporal = date proximity only">
+          {{ tierCounts.verified }} verified · {{ tierCounts.policy }} policy · {{ tierCounts.temporal }} temporal
+        </span>
+      </div>
+      <div class="hero-mttp-strip">
+        <span class="mono">
+          <template v-if="mttp7 && mttp7.avg_lag != null">MTTP {{ Number(mttp7.avg_lag).toFixed(1) }}d · 7d window</template>
+          <template v-else>MTTP — · no patch events in 7d</template>
+          <template v-if="mttpTrend"> · {{ mttpTrend.delta }}d {{ mttpTrend.faster ? 'faster' : 'slower' }} than prior 7d</template>
+          <template v-if="vendorLagMedian"> · vendor→first-patch median {{ vendorLagMedian.hours < 48 ? Math.round(vendorLagMedian.hours) + 'h' : (vendorLagMedian.hours / 24).toFixed(1) + 'd' }} (for the {{ vendorLagMedian.n }} loaded release{{ vendorLagMedian.n === 1 ? '' : 's' }} with patch data)</template>
+        </span>
+        <router-link to="/patch-velocity" class="hero-mttp-link">Patch velocity →</router-link>
+      </div>
+    </section>
+
+    <!-- ─── Why — what moved the score (verified chains) ────── -->
+    <section class="why-section">
+      <div class="why-head">
+        <h2 class="why-title">Why — what moved the score</h2>
+        <span class="why-hint">Verified chains only (commit name-linked to a real rollout) · Δ7d is correlation, not attribution</span>
+      </div>
+      <div v-if="whyChains.best.length || whyChains.worst.length" class="why-grid">
+        <div v-for="(group, gi) in [whyChains.best, whyChains.worst]" :key="gi" class="why-col">
+          <span class="why-col-label">{{ gi === 0 ? 'Score rose after' : 'Score fell after' }}</span>
+          <template v-if="group.length">
+            <div v-for="ch in group" :key="ch.id" class="why-chain" @click="jumpToBucket(ch.bucketKeys[0])">
+              <div class="why-chain-main">
+                <span class="why-chain-sw">{{ ch.software }}</span>
+                <span class="why-chain-delta mono" :class="ch.delta7d > 0 ? 'hero-up' : 'hero-down'">Δ7d {{ ch.delta7d > 0 ? '+' : '−' }}{{ Math.abs(ch.delta7d).toFixed(1) }}</span>
+              </div>
+              <div class="why-chain-sub">
+                <template v-if="ch.release">{{ ch.release.app }} {{ ch.release.version_to }} released → </template>
+                <template v-else>no vendor release matched → </template>
+                <span class="mono">{{ ch.commits[0].short_sha }}</span> committed → {{ ch.totalHosts }} host{{ ch.totalHosts === 1 ? '' : 's' }} patched · see in timeline →
+              </div>
+            </div>
+          </template>
+          <span v-else class="why-empty">No verified chain was followed by a score {{ gi === 0 ? 'rise' : 'drop' }}.</span>
+        </div>
+      </div>
+      <div v-else class="why-empty-block">
+        <template v-if="whyChains.chainCount === 0">No verified release→commit→rollout chains in the current windows (rollouts kept 14d) — commits below still carry their evidence tier.</template>
+        <template v-else>{{ whyChains.chainCount }} verified chain{{ whyChains.chainCount === 1 ? '' : 's' }} found, but none has a closed 7-day score window yet.</template>
       </div>
     </section>
 
@@ -187,6 +230,27 @@
                 <span class="commit-author">{{ c.author }}</span>
                 <span class="commit-files-count">{{ c.files.length }} file{{ c.files.length > 1 ? 's' : '' }}</span>
                 <span v-for="tag in fileTags(c.files)" :key="tag" class="file-tag" :class="tag">{{ tag }}</span>
+                <template v-if="commitTier(c)">
+                  <span
+                    v-if="commitTier(c).tier === 'verified'"
+                    class="tier-chip tier-chip--verified"
+                    :title="`Name-linked to a real ${commitTier(c).linkedSoftware} rollout within 7 days of this commit`"
+                  >verified · {{ commitTier(c).linkedSoftware }}</span>
+                  <span
+                    v-else-if="commitTier(c).tier === 'policy'"
+                    class="tier-chip tier-chip--policy"
+                    :title="`Judged on the ${commitTier(c).judgedOn} score — correlation, not attribution`"
+                  >policy · {{ commitTier(c).judgedOn }}<template v-if="commitTier(c).categoryDelta7d != null"> Δ7d {{ commitTier(c).categoryDelta7d > 0 ? '+' : '−' }}{{ Math.abs(commitTier(c).categoryDelta7d).toFixed(1) }}</template></span>
+                  <span v-else class="tier-chip tier-chip--temporal" title="Date proximity only — no rollout or category evidence links this commit to a score move">temporal — unverified</span>
+                </template>
+              </div>
+
+              <div
+                v-if="commitTier(c)?.tier === 'verified' && commitTier(c).linkedBucketKeys?.length"
+                class="chain-connector"
+                @click.stop="jumpToBucket(commitTier(c).linkedBucketKeys[0])"
+              >
+                ⛓ rollout evidence: {{ commitTier(c).linkedSoftware }} patched on {{ commitTier(c).linkedBucketKeys.length }} day{{ commitTier(c).linkedBucketKeys.length === 1 ? '' : 's' }}<template v-if="commitTier(c).linkedReleaseId == null"> · no vendor release matched</template> — see in timeline →
               </div>
 
               <div v-if="commitRegression(c)" class="commit-regression">
@@ -320,48 +384,25 @@ import {
   loadFmaReleaseDevices as sharedLoadFmaReleaseDevices,
 } from '../composables/useFmaReleases'
 import { usePatchEvents } from '../composables/usePatchEvents'
+import { useChangelog, fileTags } from '../composables/useChangelog'
+import { useDailyScoreSeries } from '../composables/useDailyScoreSeries'
+import { buildChangeImpact } from '../composables/useChangeImpact'
+import { useAppConfig } from '../composables/useAppConfig'
 import { query } from '../services/api'
 import dayjs from 'dayjs'
 
-const CHANGELOG_URL = 'https://raw.githubusercontent.com/headmin/fleet-gitops-changelog/refs/heads/main/changelog.json'
-
 const loading = ref(true)
 const error = ref(null)
-const commits = ref([])
+const { config } = useAppConfig()
 
-// ─── Daily fleet-composite series (asOfDaysAgo 0..29, same pattern as the
-// home hero). Powers the per-change "score after 7d" reading: the composite
-// on day+7 minus the composite on the change day. Correlation, not
-// attribution — the labels say so wherever a delta is shown.
-const dailyScore = ref({})   // 'YYYY-MM-DD' -> avg composite
-const seriesLoaded = ref(false)
+// Shared session-cached changelog (also used by Patch velocity).
+const { commits, changelogError, fetchChangelog: fetchSharedChangelog } = useChangelog()
 
-async function fetchDailySeries() {
-  const calls = Array.from({ length: 30 }, (_, i) =>
-    query('firehose.scores.fleet_summary', { asOfDaysAgo: i })
-      .then(rows => ({ i, score: rows?.[0]?.avg_score != null ? Number(rows[0].avg_score) : null }))
-      .catch(() => ({ i, score: null }))
-  )
-  const rows = await Promise.all(calls)
-  const map = {}
-  for (const { i, score } of rows) {
-    if (score == null) continue
-    map[dayjs().subtract(i, 'day').format('YYYY-MM-DD')] = score
-  }
-  dailyScore.value = map
-  seriesLoaded.value = true
-}
-
-/** Composite move over the 7 days AFTER the given date; null when the
- *  window isn't complete yet or either endpoint is missing. */
-function deltaAfter(dateStr) {
-  const start = dailyScore.value[dateStr]
-  const endDate = dayjs(dateStr).add(7, 'day')
-  if (endDate.isAfter(dayjs(), 'day')) return null
-  const end = dailyScore.value[endDate.format('YYYY-MM-DD')]
-  if (start == null || end == null) return null
-  return Math.round((end - start) * 10) / 10
-}
+// ─── Daily fleet score series (shared singleton; composite + categories).
+// Powers the per-change "score after 7d" reading: the composite on day+7
+// minus the composite on the change day. Correlation, not attribution —
+// the labels say so wherever a delta is shown.
+const { fetchDailySeries, deltaAfter, judgementFor, netMove } = useDailyScoreSeries()
 
 function dayDeltaClass(dateStr) {
   const d = deltaAfter(dateStr)
@@ -375,15 +416,6 @@ function commitRegression(c) {
   const d = deltaAfter(String(c.timestamp).split('T')[0])
   return d != null && d <= -1 ? d.toFixed(1) : null
 }
-
-// Net 30d move = newest series point minus oldest available point.
-const netMove = computed(() => {
-  const dates = Object.keys(dailyScore.value).sort()
-  if (dates.length < 2) return null
-  const first = dailyScore.value[dates[0]]
-  const last = dailyScore.value[dates[dates.length - 1]]
-  return Math.round((last - first) * 10) / 10
-})
 
 // Outcome buckets across commits (each judged by its 7d-after window).
 // "Too recent" = the 7-day window hasn't closed; "outside window" = the
@@ -638,14 +670,13 @@ const typeStats = computed(() => {
 function formatDate(dateStr) { return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) }
 function formatTime(ts) { return new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) }
 function toggleExpand(sha) { expandedSha.value = expandedSha.value === sha ? null : sha }
-function fileTags(files) { const tags = new Set(); for (const f of files) { if (f.includes('/policies/')) tags.add('policies'); else if (f.includes('/scripts/')) tags.add('scripts'); else if (f.includes('/profiles/')) tags.add('profiles'); else if (f.includes('/queries/')) tags.add('queries') }; return [...tags] }
 function fileIcon(f) { if (f.endsWith('.yml') || f.endsWith('.yaml')) return '⚙'; if (f.endsWith('.sh')) return '▶'; if (f.endsWith('.mobileconfig') || f.endsWith('.xml')) return '☰'; return '◦' }
 
 async function fetchChangelog() {
   loading.value = true; error.value = null
-  try { const res = await fetch(CHANGELOG_URL); if (!res.ok) throw new Error(`Failed: ${res.status}`); commits.value = await res.json() }
-  catch (e) { error.value = e.message }
-  finally { loading.value = false }
+  await fetchSharedChangelog()
+  error.value = changelogError.value
+  loading.value = false
 }
 
 // ─── FMA upstream app releases ──────────────────────
@@ -925,10 +956,91 @@ async function copyMarkdownExport() {
   }
 }
 
+// ─── Change-impact engine — evidence-tiered chains ──────────
+// verified = commit name-linked to a real rollout ≤7d after it (optionally
+// completed by a vendor release ≤7d before); policy = policy/profile/script
+// commits judged on their category; temporal = date proximity only.
+const impact = computed(() => buildChangeImpact({
+  commits: commits.value,
+  releases: fmaReleases.value,
+  patchBuckets: patchBuckets.value,
+  fileTags,
+  deltaAfter,
+  judgementFor,
+}))
+
+function commitTier(c) { return impact.value.byCommitSha.get(c.sha) || null }
+
+const tierCounts = computed(() => {
+  const t = { verified: 0, policy: 0, temporal: 0 }
+  for (const c of commits.value) {
+    const e = impact.value.byCommitSha.get(c.sha)
+    t[e?.tier || 'temporal']++
+  }
+  return t
+})
+
+// Top judged verified chains, best and worst by |Δ7d| — the "Why" section.
+const whyChains = computed(() => {
+  const judged = impact.value.chains.filter(ch => ch.judgement === 'better' || ch.judgement === 'worse')
+  const best = judged.filter(ch => ch.delta7d > 0).sort((a, b) => b.delta7d - a.delta7d).slice(0, 3)
+  const worst = judged.filter(ch => ch.delta7d < 0).sort((a, b) => a.delta7d - b.delta7d).slice(0, 3)
+  return { best, worst, judgedCount: judged.length, chainCount: impact.value.chains.length }
+})
+
+// Jump to a rollout bucket from a chain connector (reuses the hash receiver).
+function jumpToBucket(key) {
+  const [day, sw] = String(key).split('::')
+  if (!day || !sw) return
+  window.location.hash = `#patch/${day}/${encodeURIComponent(sw)}`
+  applyHash()
+}
+
+// ─── Hero MTTP strip → /patch-velocity ──────────────────────
+// Fleet-internal clock (days). Vendor lag (hours) is computed client-side
+// from the already-loaded release patch waves and labeled with its count.
+const mttp7 = ref(null)
+const mttpPrior7 = ref(null)
+
+async function fetchMttpStrip() {
+  const sla = Number(config.value.patchSlaDays) || 14
+  const one = (params) =>
+    query('firehose.scores.mttp_summary', { slaDays: sla, ...params })
+      .then(rows => rows?.[0] || null)
+      .catch(() => null)
+  ;[mttp7.value, mttpPrior7.value] = await Promise.all([
+    one({ windowDays: 7 }),
+    one({ windowDays: 7, offsetDays: 7 }),
+  ])
+}
+
+const mttpTrend = computed(() => {
+  const c = mttp7.value?.avg_lag
+  const p = mttpPrior7.value?.avg_lag
+  if (c == null || p == null) return null
+  const d = Number(c) - Number(p)
+  return { delta: Math.abs(d).toFixed(1), faster: d < 0 }
+})
+
+const vendorLagMedian = computed(() => {
+  const firsts = []
+  for (const rows of Object.values(fmaDeviceCounts.value)) {
+    if (!rows?.length) continue
+    const f = Math.min(...rows.map(x => Number(x.hours_to_first_patch)).filter(isFinite))
+    if (isFinite(f)) firsts.push(f)
+  }
+  if (!firsts.length) return null
+  const a = firsts.sort((x, y) => x - y)
+  const m = Math.floor(a.length / 2)
+  const med = a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2
+  return { hours: med, n: firsts.length }
+})
+
 onMounted(async () => {
   fetchChangelog()
   fetchDailySeries()
   loadPatchBuckets()
+  fetchMttpStrip()
   await fetchFmaReleases()
   // fmaReleases now populated → eager-load counts for the top slice
   eagerLoadFmaCounts()
@@ -1150,6 +1262,92 @@ onMounted(async () => {
 .hero-rail-row--bad { background: rgba(235, 67, 67, 0.16); }
 .hero-rail-row--dim { opacity: 0.6; }
 .hero-rail-count { font-family: var(--font-mono); font-weight: 700; }
+.hero-rail-tiers { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); cursor: help; }
+
+/* ─── Hero MTTP strip → /patch-velocity ─────────── */
+.hero-mttp-strip {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--fleet-blue);
+  font-size: var(--font-size-sm);
+  color: var(--fleet-black-33);
+}
+.hero-mttp-link {
+  color: var(--status-good-soft);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.hero-mttp-link:hover { text-decoration: underline; }
+
+/* ─── Why — what moved the score ────────────────── */
+.why-section {
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+  padding: var(--pad-large) var(--pad-xlarge);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.why-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.why-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--fleet-black); }
+.why-hint { font-size: var(--font-size-sm); color: var(--fleet-black-50); text-align: right; }
+.why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pad-large); align-items: start; }
+.why-col { display: flex; flex-direction: column; gap: 8px; }
+.why-col-label {
+  font-size: var(--font-size-xxsmall);
+  font-weight: 600;
+  color: var(--fleet-black-50);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.why-chain {
+  padding: 10px 12px;
+  background: var(--fleet-off-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-medium);
+  cursor: pointer;
+  transition: border-color 120ms ease;
+}
+.why-chain:hover { border-color: var(--fleet-green); }
+.why-chain-main { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.why-chain-sw { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); }
+.why-chain-delta { font-size: var(--font-size-base); font-weight: 700; }
+.why-chain .hero-up { color: var(--status-good); }
+.why-chain .hero-down { color: var(--status-critical); }
+.why-chain-sub { margin-top: 3px; font-size: var(--font-size-sm); color: var(--fleet-black-50); }
+.why-empty { font-size: var(--font-size-sm); color: var(--fleet-black-50); font-style: italic; }
+.why-empty-block { font-size: var(--font-size-base); color: var(--fleet-black-50); }
+
+/* ─── Evidence tier chips + chain connectors ────── */
+.tier-chip {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: help;
+}
+.tier-chip--verified { background: var(--status-good-bg); color: var(--status-good-text); }
+.tier-chip--policy { background: var(--info-tint); color: var(--fleet-info); }
+.tier-chip--temporal { background: none; color: var(--fleet-black-50); opacity: 0.75; font-weight: 500; }
+.chain-connector {
+  margin-top: 8px;
+  padding: 7px 12px;
+  border-left: 2px solid var(--status-good);
+  background: var(--status-good-bg);
+  border-radius: 0 var(--radius-medium) var(--radius-medium) 0;
+  font-size: var(--font-size-sm);
+  color: var(--status-good-text);
+  cursor: pointer;
+}
+.chain-connector:hover { text-decoration: underline; }
 
 /* ─── Per-day / per-commit score deltas ────────── */
 .day-delta {

@@ -283,6 +283,115 @@ const DEVICE_SCORES_CTE = buildScoresCTE('')
 // drill-downs: distributions, dimensions, biggest movers, device list).
 const DEVICE_SCORES_CTE_WINDOWED = buildScoresCTE(WINDOW_WHERE)
 
+// Prior-period (7d-ago) per-host scores + composite — shared by
+// biggest_movers and host_deltas so the two can never disagree.
+const PRIOR_SCORES_CTES = `      -- Prior period: scores from data before 7 days ago
+      prior_device_scores AS (
+        SELECT
+          h.host_id AS host_id,
+          h.hostname AS hostname,
+
+          round(
+            0.30 * (CASE h.cpu_class
+              WHEN 'apple_m5' THEN 100 WHEN 'apple_m4' THEN 95 WHEN 'apple_m3' THEN 90
+              WHEN 'apple_m2' THEN 85  WHEN 'apple_m1' THEN 80
+              WHEN 'intel_i9' THEN 75  WHEN 'intel_i7' THEN 70 WHEN 'intel_i5' THEN 60
+              ELSE 50 END)
+          + 0.25 * (CASE h.ram_tier
+              WHEN '32gb_plus' THEN 100 WHEN '16gb' THEN 80 WHEN '8gb' THEN 50 ELSE 30 END)
+          + 0.25 * (CASE ifNull(h.battery_health_score, 'good')
+              WHEN 'good' THEN 100 WHEN 'degraded' THEN 60 WHEN 'replace' THEN 20 ELSE 80 END)
+          + 0.20 * (CASE h.swap_pressure
+              WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 WHEN 'severe' THEN 30 ELSE 75 END)
+          ) AS device_health_score,
+
+          round(
+            0.35 * (CASE h.swap_pressure
+              WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 WHEN 'severe' THEN 30 ELSE 75 END)
+          + 0.30 * (CASE h.compression_pressure
+              WHEN 'low' THEN 100 WHEN 'moderate' THEN 85 WHEN 'high' THEN 65 ELSE 75 END)
+          + 0.20 * (CASE
+              WHEN ifNull(p.max_rss_mb, 0) < 2048 THEN 100
+              WHEN p.max_rss_mb < 4096 THEN 80
+              WHEN p.max_rss_mb < 8192 THEN 60
+              ELSE 30 END)
+          + 0.15 * (CASE ifNull(o.uptime_risk, 'normal')
+              WHEN 'just_rebooted' THEN 100 WHEN 'fresh' THEN 100
+              WHEN 'normal' THEN 90 WHEN 'stale_7d' THEN 60 WHEN 'stale_14d' THEN 30 ELSE 80 END)
+          ) AS performance_score,
+
+          round(
+            0.50 * (CASE ifNull(o.os_currency, 'current')
+              WHEN 'current' THEN 100 WHEN 'n_minus_1' THEN 70
+              WHEN 'n_minus_2' THEN 40 WHEN 'legacy' THEN 20 ELSE 80 END)
+          + 0.50 * (CASE ifNull(o.dex_os_health, 'acceptable')
+              WHEN 'healthy' THEN 100 WHEN 'acceptable' THEN 70 WHEN 'degraded' THEN 30 ELSE 70 END)
+          ) AS security_score,
+
+          round(
+            0.40 * (CASE
+              WHEN ifNull(c.total_crashes, 0) = 0 THEN 100 WHEN c.total_crashes = 1 THEN 85
+              WHEN c.total_crashes <= 4 THEN 65  WHEN c.total_crashes <= 9 THEN 40 ELSE 20 END)
+          + 0.35 * (CASE
+              WHEN ifNull(a.active_pct, 70) >= 80 THEN 100 WHEN a.active_pct >= 60 THEN 80
+              WHEN a.active_pct >= 40 THEN 60 ELSE 40 END)
+          + 0.25 * (CASE
+              WHEN ifNull(a.app_count, 50) < 80 THEN 100 WHEN a.app_count < 120 THEN 80
+              WHEN a.app_count < 160 THEN 60 ELSE 40 END)
+          ) AS software_score
+
+        FROM (
+          SELECT host_id, argMax(hostname, timestamp) AS hostname,
+            argMax(cpu_class, timestamp) AS cpu_class,
+            argMax(ram_tier, timestamp) AS ram_tier,
+            argMax(battery_health_score, timestamp) AS battery_health_score,
+            argMax(swap_pressure, timestamp) AS swap_pressure,
+            argMax(compression_pressure, timestamp) AS compression_pressure
+          FROM device_health
+          WHERE timestamp < now() - INTERVAL 7 DAY
+            AND host_id IN (SELECT host_id FROM filtered_hosts)
+          GROUP BY host_id
+        ) h
+        LEFT JOIN (
+          SELECT host_id,
+            argMax(os_currency, timestamp) AS os_currency,
+            argMax(uptime_risk, timestamp) AS uptime_risk,
+            argMax(dex_os_health, timestamp) AS dex_os_health
+          FROM os_health WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
+        ) o ON h.host_id = o.host_id
+        LEFT JOIN (
+          SELECT host_id, max(rss_mb) AS max_rss_mb
+          FROM process_health WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
+        ) p ON h.host_id = p.host_id
+        LEFT JOIN (
+          SELECT host_id, sum(crash_count_7d) AS total_crashes
+          FROM crash_summary
+          WHERE timestamp < now() - INTERVAL 7 DAY
+            AND (host_id, timestamp) IN (
+              SELECT host_id, max(timestamp) FROM crash_summary
+              WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
+            )
+          GROUP BY host_id
+        ) c ON h.host_id = c.host_id
+        LEFT JOIN (
+          SELECT host_id,
+            count() AS app_count,
+            countIf(usage_tier IN ('active_today', 'active_week')) * 100.0 / count() AS active_pct
+          FROM adoption_gap
+          WHERE timestamp < now() - INTERVAL 7 DAY
+            AND (host_id, timestamp) IN (
+              SELECT host_id, max(timestamp) FROM adoption_gap
+              WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
+            )
+          GROUP BY host_id
+        ) a ON h.host_id = a.host_id
+      ),
+      prior_scored AS (
+        SELECT *,
+          round(0.25 * device_health_score + 0.35 * performance_score + 0.20 * security_score + 0.20 * software_score) AS composite_score
+        FROM prior_device_scores
+      )`
+
 export const firehoseScoreQueries: QueryConfig[] = [
   {
     name: 'firehose.scores.fleet_summary',
@@ -633,112 +742,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     ],
     sql: `
       ${DEVICE_SCORES_CTE_WINDOWED},
-      -- Prior period: scores from data before 7 days ago
-      prior_device_scores AS (
-        SELECT
-          h.host_id AS host_id,
-          h.hostname AS hostname,
-
-          round(
-            0.30 * (CASE h.cpu_class
-              WHEN 'apple_m5' THEN 100 WHEN 'apple_m4' THEN 95 WHEN 'apple_m3' THEN 90
-              WHEN 'apple_m2' THEN 85  WHEN 'apple_m1' THEN 80
-              WHEN 'intel_i9' THEN 75  WHEN 'intel_i7' THEN 70 WHEN 'intel_i5' THEN 60
-              ELSE 50 END)
-          + 0.25 * (CASE h.ram_tier
-              WHEN '32gb_plus' THEN 100 WHEN '16gb' THEN 80 WHEN '8gb' THEN 50 ELSE 30 END)
-          + 0.25 * (CASE ifNull(h.battery_health_score, 'good')
-              WHEN 'good' THEN 100 WHEN 'degraded' THEN 60 WHEN 'replace' THEN 20 ELSE 80 END)
-          + 0.20 * (CASE h.swap_pressure
-              WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 WHEN 'severe' THEN 30 ELSE 75 END)
-          ) AS device_health_score,
-
-          round(
-            0.35 * (CASE h.swap_pressure
-              WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 WHEN 'severe' THEN 30 ELSE 75 END)
-          + 0.30 * (CASE h.compression_pressure
-              WHEN 'low' THEN 100 WHEN 'moderate' THEN 85 WHEN 'high' THEN 65 ELSE 75 END)
-          + 0.20 * (CASE
-              WHEN ifNull(p.max_rss_mb, 0) < 2048 THEN 100
-              WHEN p.max_rss_mb < 4096 THEN 80
-              WHEN p.max_rss_mb < 8192 THEN 60
-              ELSE 30 END)
-          + 0.15 * (CASE ifNull(o.uptime_risk, 'normal')
-              WHEN 'just_rebooted' THEN 100 WHEN 'fresh' THEN 100
-              WHEN 'normal' THEN 90 WHEN 'stale_7d' THEN 60 WHEN 'stale_14d' THEN 30 ELSE 80 END)
-          ) AS performance_score,
-
-          round(
-            0.50 * (CASE ifNull(o.os_currency, 'current')
-              WHEN 'current' THEN 100 WHEN 'n_minus_1' THEN 70
-              WHEN 'n_minus_2' THEN 40 WHEN 'legacy' THEN 20 ELSE 80 END)
-          + 0.50 * (CASE ifNull(o.dex_os_health, 'acceptable')
-              WHEN 'healthy' THEN 100 WHEN 'acceptable' THEN 70 WHEN 'degraded' THEN 30 ELSE 70 END)
-          ) AS security_score,
-
-          round(
-            0.40 * (CASE
-              WHEN ifNull(c.total_crashes, 0) = 0 THEN 100 WHEN c.total_crashes = 1 THEN 85
-              WHEN c.total_crashes <= 4 THEN 65  WHEN c.total_crashes <= 9 THEN 40 ELSE 20 END)
-          + 0.35 * (CASE
-              WHEN ifNull(a.active_pct, 70) >= 80 THEN 100 WHEN a.active_pct >= 60 THEN 80
-              WHEN a.active_pct >= 40 THEN 60 ELSE 40 END)
-          + 0.25 * (CASE
-              WHEN ifNull(a.app_count, 50) < 80 THEN 100 WHEN a.app_count < 120 THEN 80
-              WHEN a.app_count < 160 THEN 60 ELSE 40 END)
-          ) AS software_score
-
-        FROM (
-          SELECT host_id, argMax(hostname, timestamp) AS hostname,
-            argMax(cpu_class, timestamp) AS cpu_class,
-            argMax(ram_tier, timestamp) AS ram_tier,
-            argMax(battery_health_score, timestamp) AS battery_health_score,
-            argMax(swap_pressure, timestamp) AS swap_pressure,
-            argMax(compression_pressure, timestamp) AS compression_pressure
-          FROM device_health
-          WHERE timestamp < now() - INTERVAL 7 DAY
-            AND host_id IN (SELECT host_id FROM filtered_hosts)
-          GROUP BY host_id
-        ) h
-        LEFT JOIN (
-          SELECT host_id,
-            argMax(os_currency, timestamp) AS os_currency,
-            argMax(uptime_risk, timestamp) AS uptime_risk,
-            argMax(dex_os_health, timestamp) AS dex_os_health
-          FROM os_health WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
-        ) o ON h.host_id = o.host_id
-        LEFT JOIN (
-          SELECT host_id, max(rss_mb) AS max_rss_mb
-          FROM process_health WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
-        ) p ON h.host_id = p.host_id
-        LEFT JOIN (
-          SELECT host_id, sum(crash_count_7d) AS total_crashes
-          FROM crash_summary
-          WHERE timestamp < now() - INTERVAL 7 DAY
-            AND (host_id, timestamp) IN (
-              SELECT host_id, max(timestamp) FROM crash_summary
-              WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
-            )
-          GROUP BY host_id
-        ) c ON h.host_id = c.host_id
-        LEFT JOIN (
-          SELECT host_id,
-            count() AS app_count,
-            countIf(usage_tier IN ('active_today', 'active_week')) * 100.0 / count() AS active_pct
-          FROM adoption_gap
-          WHERE timestamp < now() - INTERVAL 7 DAY
-            AND (host_id, timestamp) IN (
-              SELECT host_id, max(timestamp) FROM adoption_gap
-              WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
-            )
-          GROUP BY host_id
-        ) a ON h.host_id = a.host_id
-      ),
-      prior_scored AS (
-        SELECT *,
-          round(0.25 * device_health_score + 0.35 * performance_score + 0.20 * security_score + 0.20 * software_score) AS composite_score
-        FROM prior_device_scores
-      )
+      ${PRIOR_SCORES_CTES}
       SELECT
         -- Alias explicitly so the JOINed hardware_inventory's own host_id
         -- column doesn't shadow curr's value when JSON-serialized.
@@ -1021,6 +1025,130 @@ export const firehoseScoreQueries: QueryConfig[] = [
         AND event_time <= parseDateTimeBestEffort({releaseTime:String}) + INTERVAL {windowDays:UInt32} DAY
       GROUP BY software_name, patch_type, old_version, new_version
       ORDER BY device_count DESC
+    `,
+  },
+  // ─── Patch velocity (MTTP) — fleet-level aggregates ─────────
+  // Clock: days_to_patch = fleet-first sighting of a version → this host
+  // applies it. NOT vendor-disclosure-to-patched (that clock lives in
+  // fma_release_devices.hours_to_first_patch and is measured in hours).
+  {
+    name: 'firehose.scores.mttp_summary',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'Fleet-level mean/median time to patch over a trailing window — event-weighted over dex_patch_events',
+    params: [
+      { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 365, default: 7 },
+      { name: 'offsetDays', type: 'number' as const, required: false, min: 0, max: 365, default: 0 },
+      { name: 'slaDays', type: 'number' as const, required: false, min: 1, max: 365, default: 14 },
+    ],
+    sql: `
+      SELECT
+        count()                                        AS n_events,
+        countDistinct(host_identifier)                 AS n_hosts,
+        countDistinct(software_name)                   AS n_apps,
+        round(avg(days_to_patch), 2)                   AS avg_lag,
+        round(quantile(0.5)(days_to_patch), 2)         AS p50_lag,
+        round(quantile(0.9)(days_to_patch), 2)         AS p90_lag,
+        round(100.0 * countIf(days_to_patch <= {slaDays:UInt32}) / nullIf(count(), 0), 1) AS pct_within_sla
+      FROM dex_patch_events FINAL
+      WHERE event_time >= now() - toIntervalDay({windowDays:UInt32} + {offsetDays:UInt32})
+        AND event_time <  now() - toIntervalDay({offsetDays:UInt32})
+    `,
+  },
+  {
+    name: 'firehose.scores.mttp_summary_by_type',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'MTTP split by patch_type (app vs os) over a trailing window',
+    params: [
+      { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 365, default: 30 },
+    ],
+    sql: `
+      SELECT
+        patch_type,
+        count()                                AS n_events,
+        countDistinct(host_identifier)         AS n_hosts,
+        round(avg(days_to_patch), 2)           AS avg_lag,
+        round(quantile(0.5)(days_to_patch), 2) AS p50_lag
+      FROM dex_patch_events FINAL
+      WHERE event_time >= now() - toIntervalDay({windowDays:UInt32})
+      GROUP BY patch_type
+      ORDER BY p50_lag DESC
+    `,
+  },
+  {
+    name: 'firehose.scores.mttp_by_host',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'Per-host MTTP leaderboard over a trailing window — hosts dragging the fleet mean',
+    params: [
+      { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 365, default: 30 },
+      { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 15 },
+    ],
+    sql: `
+      SELECT
+        e.host_identifier                  AS host_identifier,
+        hi.hostname                        AS hostname,
+        hi.computer_name                   AS computer_name,
+        hi.hardware_model                  AS hardware_model,
+        count()                            AS n_patches,
+        countDistinct(e.software_name)     AS n_apps,
+        round(avg(e.days_to_patch), 1)     AS avg_lag,
+        round(max(e.days_to_patch), 1)     AS max_lag
+      FROM dex_patch_events AS e FINAL
+      LEFT JOIN (
+        SELECT host_id,
+          argMax(hostname, timestamp)       AS hostname,
+          argMax(computer_name, timestamp)  AS computer_name,
+          argMax(hardware_model, timestamp) AS hardware_model
+        FROM hardware_inventory GROUP BY host_id
+      ) hi ON e.host_identifier = hi.host_id
+      WHERE e.event_time >= now() - toIntervalDay({windowDays:UInt32})
+      GROUP BY e.host_identifier, hi.hostname, hi.computer_name, hi.hardware_model
+      ORDER BY avg_lag DESC
+      {{LIMIT}}
+    `,
+  },
+  // Per-host composite now vs 7d ago for EVERY host (no movement filter) —
+  // the raw material for cohort comparisons on the Patch velocity page:
+  // exposed (patched) vs control (not yet) mean score change.
+  {
+    name: 'firehose.scores.host_deltas',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'Per-host composite score now vs 7 days ago for all scored hosts (cohort-comparison raw material)',
+    params: [
+      ...WINDOWED_SCORE_PARAMS,
+      { name: 'limit', type: 'number' as const, required: false, min: 1, max: 1000, default: 500 },
+    ],
+    sql: `
+      ${DEVICE_SCORES_CTE_WINDOWED},
+      ${PRIOR_SCORES_CTES}
+      SELECT
+        curr.host_id         AS host_id,
+        curr.composite_score AS curr_score,
+        prev.composite_score AS prev_score,
+        curr.composite_score - prev.composite_score AS delta
+      FROM scored curr
+      INNER JOIN prior_scored prev ON curr.host_id = prev.host_id
+      {{LIMIT}}
+    `,
+  },
+  // Which hosts applied a given software's patch in a window (exposed cohort).
+  {
+    name: 'firehose.scores.patched_hosts',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'Distinct hosts that applied a patch for a software within a trailing window',
+    params: [
+      { name: 'softwareName', type: 'string' as const, required: true },
+      { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 90, default: 14 },
+    ],
+    sql: `
+      SELECT DISTINCT host_identifier
+      FROM dex_patch_events FINAL
+      WHERE positionCaseInsensitive(software_name, {softwareName:String}) > 0
+        AND event_time >= now() - toIntervalDay({windowDays:UInt32})
     `,
   },
   {

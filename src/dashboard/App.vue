@@ -78,6 +78,12 @@
               </svg>
               GitOps timeline
             </router-link>
+            <router-link to="/patch-velocity" class="nav-item" active-class="active">
+              <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3 16l4-8 4 5 3-9 3 12"/>
+              </svg>
+              Patch velocity
+            </router-link>
             <router-link to="/connectivity" class="nav-item" active-class="active">
               <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M10 14v.01"/>

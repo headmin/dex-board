@@ -10,6 +10,7 @@ import StyleGuide from './views/StyleGuide.vue'
 import Lifecycle from './views/Lifecycle.vue'
 import SoftwareUsage from './views/SoftwareUsage.vue'
 import Connectivity from './views/Connectivity.vue'
+import PatchVelocity from './views/PatchVelocity.vue'
 
 // Nav order tells the decision-maker story:
 // score → why → which hosts → what to do → cost → operations → governance.
@@ -23,6 +24,7 @@ const routes = [
   { path: '/software-usage', name: 'Software usage', component: SoftwareUsage },
   { path: '/software-waste', redirect: '/software-usage' },
   { path: '/gitops', name: 'GitOps timeline', component: GitOps },
+  { path: '/patch-velocity', name: 'Patch velocity', component: PatchVelocity },
   { path: '/connectivity', name: 'Connectivity', component: Connectivity },
   { path: '/audit', name: 'Audit log', component: AuditLogs },
   { path: '/styleguide', name: 'Style guide', component: StyleGuide },
