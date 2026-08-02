@@ -1,19 +1,19 @@
 <template>
-  <div class="chart-container">
-    <h3>{{ title }}</h3>
-    <SkeletonLoader v-if="loading" variant="chart" height="300px" />
-    <v-chart v-else class="chart" :option="chartOption" autoresize />
-  </div>
+  <ChartCard :title="title" :loading="loading">
+    <v-chart class="chart" :option="chartOption" autoresize />
+  </ChartCard>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import SkeletonLoader from './SkeletonLoader.vue'
+import ChartCard from './base/ChartCard.vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { PieChart as EChartsPie } from 'echarts/charts'
 import { TooltipComponent, LegendComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { baseTooltip } from '../composables/echartsTheme'
+import { palette, categorical } from '../composables/uiPalette'
 
 use([CanvasRenderer, EChartsPie, TooltipComponent, LegendComponent])
 
@@ -26,20 +26,17 @@ const props = defineProps({
 })
 
 const chartOption = computed(() => ({
-  color: ['#6a67fe', '#009a7d', '#ae6ddf', '#ecc767', '#5cabdf', '#ff5c83'],
+  color: categorical,
   tooltip: {
+    ...baseTooltip,
     trigger: 'item',
-    formatter: '{b}: {c} ({d}%)',
-    backgroundColor: '#3e4771',
-    borderColor: '#3e4771',
-    textStyle: { color: '#fff', fontSize: 11 },
-    borderRadius: 4
+    formatter: '{b}: {c} ({d}%)'
   },
   legend: {
     orient: 'vertical',
     right: 10,
     top: 'center',
-    textStyle: { color: '#515774', fontSize: 11 }
+    textStyle: { color: palette.ink75, fontSize: 11 }
   },
   series: [{
     type: 'pie',
@@ -48,7 +45,7 @@ const chartOption = computed(() => ({
     avoidLabelOverlap: false,
     itemStyle: {
       borderRadius: 4,
-      borderColor: '#fff',
+      borderColor: palette.white,
       borderWidth: 2
     },
     label: {
@@ -70,24 +67,8 @@ const chartOption = computed(() => ({
 </script>
 
 <style scoped>
-.chart-container {
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  padding: var(--pad-large);
-  box-shadow: var(--box-shadow);
-}
-
-h3 {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--fleet-black);
-  margin-bottom: var(--pad-medium);
-}
-
 .chart {
   width: 100%;
   height: 300px;
 }
-
 </style>

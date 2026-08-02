@@ -1,15 +1,12 @@
 <template>
-  <div class="chart-container">
-    <h3>{{ title }}</h3>
-    <SkeletonLoader v-if="loading" variant="chart" height="200px" />
-    <div v-else-if="!data.length" class="no-data">No data</div>
-    <v-chart v-else class="chart" :style="{ height: chartHeight }" :option="chartOption" autoresize />
-  </div>
+  <ChartCard :title="title" :loading="loading" :empty="!data.length" empty-text="No data">
+    <v-chart class="chart" :style="{ height: chartHeight }" :option="chartOption" autoresize />
+  </ChartCard>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import SkeletonLoader from './SkeletonLoader.vue'
+import ChartCard from './base/ChartCard.vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { BarChart } from 'echarts/charts'
@@ -19,6 +16,13 @@ import {
   DataZoomComponent
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import {
+  baseTooltip,
+  baseAxisLabel,
+  baseSplitLine,
+  baseDataZoom
+} from '../composables/echartsTheme'
+import { palette, categorical } from '../composables/uiPalette'
 
 use([CanvasRenderer, BarChart, GridComponent, TooltipComponent, DataZoomComponent])
 
@@ -33,9 +37,12 @@ const props = defineProps({
   zoomable: { type: Boolean, default: true },
   colors: {
     type: Array,
+    // Categorical identity palette first (fair/purple swapped to keep the
+    // historical ordering), then status/neutral extras.
     default: () => [
-      '#6a67fe', '#009a7d', '#ecc767', '#ae6ddf',
-      '#5cabdf', '#ff5c83', '#009a7d', '#eb4343', '#b3b6c1', '#515774'
+      palette.info, palette.good, palette.fair, palette.purple,
+      categorical[4], categorical[5], palette.good, palette.critical,
+      palette.ink33, palette.ink75
     ]
   }
 })
@@ -117,11 +124,8 @@ const chartOption = computed(() => {
 
   const option = {
     tooltip: {
-      trigger: 'item',
-      backgroundColor: '#3e4771',
-      borderColor: '#3e4771',
-      textStyle: { color: '#fff', fontSize: 11 },
-      borderRadius: 4
+      ...baseTooltip,
+      trigger: 'item'
     },
     grid: {
       left: '140px',
@@ -134,8 +138,8 @@ const chartOption = computed(() => {
       min: 0,
       max: props.timeLabels.length,
       axisLabel: {
+        ...baseAxisLabel,
         fontSize: 9,
-        color: '#8b8fa2',
         formatter(val) {
           const idx = Math.round(val)
           return props.timeLabels[idx] || ''
@@ -144,16 +148,16 @@ const chartOption = computed(() => {
       },
       // Show a label every few ticks
       splitNumber: Math.min(props.timeLabels.length, 12),
-      splitLine: { show: true, lineStyle: { color: '#f0f1f4', type: 'dashed' } }
+      splitLine: { show: true, lineStyle: { ...baseSplitLine.lineStyle, type: 'dashed' } }
     },
     yAxis: {
       type: 'category',
       data: props.categories,
       inverse: true,
-      axisLabel: { fontSize: 11, color: '#515774', width: 120, overflow: 'truncate' },
+      axisLabel: { fontSize: 11, color: palette.ink75, width: 120, overflow: 'truncate' },
       axisTick: { show: false },
       axisLine: { show: false },
-      splitLine: { show: true, lineStyle: { color: '#f0f1f4' } }
+      splitLine: { show: true, ...baseSplitLine }
     },
     series
   }
@@ -161,13 +165,12 @@ const chartOption = computed(() => {
   if (props.zoomable) {
     option.dataZoom = [
       {
+        ...baseDataZoom,
         type: 'slider',
         xAxisIndex: 0,
         bottom: 10,
         height: 24,
-        borderColor: '#e2e4ea',
-        fillerColor: 'rgba(106, 103, 254, 0.15)',
-        handleStyle: { color: '#6a67fe' }
+        borderColor: palette.ink10
       },
       { type: 'inside', xAxisIndex: 0, filterMode: 'weakFilter' }
     ]
@@ -178,31 +181,8 @@ const chartOption = computed(() => {
 </script>
 
 <style scoped>
-.chart-container {
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  padding: var(--pad-large);
-  box-shadow: var(--box-shadow);
-}
-
-h3 {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--fleet-black);
-  margin-bottom: var(--pad-medium);
-}
-
 .chart {
   width: 100%;
   min-height: 200px;
-}
-
-.no-data {
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #8b8fa2;
 }
 </style>

@@ -1,15 +1,16 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>DEX overview</h1>
-      <TimeRangeFilter />
-    </header>
+  <div class="dashboard page-stack">
+    <PageHeader title="DEX overview">
+      <template #actions>
+        <TimeRangeFilter />
+      </template>
+    </PageHeader>
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
     <!-- Fleet Summary -->
     <section class="section">
-      <h2>Fleet summary</h2>
+      <SectionHeader title="Fleet summary" />
       <div class="metrics-row five-col">
         <MetricCard label="Hosts" :value="summary.devices" :loading="loading.summary" />
         <MetricCard label="Avg memory %" :value="summary.avgMemory" :loading="loading.summary" />
@@ -21,26 +22,22 @@
 
     <!-- Device Health Cards -->
     <section class="section">
-      <h2>Host health</h2>
+      <SectionHeader title="Host health" />
       <div v-if="loading.devices" class="loading-row">Loading devices...</div>
       <div v-else class="device-grid">
         <div v-for="device in devices" :key="device.host_identifier" class="device-card" @click="openDevice(device)">
           <div class="device-header">
             <span class="device-name">{{ displayHost(device) }}</span>
-            <span class="device-badge" :class="healthClass(device)">{{ healthLabel(device) }}</span>
+            <Badge :tone="healthTone(device)" :label="healthLabel(device)" />
           </div>
           <div class="device-model">{{ device.hardware_model }} &middot; {{ device.os_name }} {{ device.os_version }}</div>
           <div class="device-stats">
             <div class="stat">
-              <div class="stat-bar">
-                <div class="stat-fill memory" :style="{ width: clamp(device.memory_percent) + '%' }"></div>
-              </div>
+              <GaugeBar :value="clamp(device.memory_percent)" />
               <span class="stat-label">Mem {{ device.memory_percent }}%</span>
             </div>
             <div class="stat">
-              <div class="stat-bar">
-                <div class="stat-fill disk" :style="{ width: clamp(device.disk_percent) + '%' }"></div>
-              </div>
+              <GaugeBar :value="clamp(device.disk_percent)" />
               <span class="stat-label">Disk {{ device.disk_percent }}%</span>
             </div>
             <div class="stat-row-bottom">
@@ -56,7 +53,7 @@
     <div class="split-row">
       <!-- Security Posture -->
       <section class="section split-half">
-        <h2>Security posture</h2>
+        <SectionHeader title="Security posture" />
         <div v-if="loading.security" class="loading-row">Loading...</div>
         <div v-else class="posture-grid">
           <div v-for="item in securityItems" :key="item.label" class="posture-item">
@@ -70,14 +67,14 @@
 
       <!-- Network Quality -->
       <section class="section split-half">
-        <h2>Network quality</h2>
+        <SectionHeader title="Network quality" />
         <div v-if="loading.network" class="loading-row">Loading...</div>
-        <div v-else-if="networkDevices.length === 0" class="empty-state">No WiFi data yet</div>
+        <EmptyState v-else-if="networkDevices.length === 0" small title="No WiFi data yet" />
         <div v-else class="network-list">
           <div v-for="n in networkDevices" :key="n.host_identifier" class="network-row">
             <span class="network-host">{{ displayHost(n) }}</span>
             <span class="network-ssid">{{ n.ssid }}</span>
-            <span class="signal-badge" :class="n.quality">{{ n.rssi }} dBm</span>
+            <Badge :tone="signalTone(n.quality)"><span class="signal-value">{{ n.rssi }} dBm</span></Badge>
             <span class="quality-label">{{ n.quality }}</span>
           </div>
         </div>
@@ -86,13 +83,13 @@
 
     <!-- Memory Usage Heatmap -->
     <section class="section">
-      <h2>Memory usage heatmap</h2>
+      <SectionHeader title="Memory usage heatmap" />
       <HeatmapChart
         :data="memHeatmapData"
         :xLabels="memHeatmapHours"
         :yLabels="memHeatmapHosts"
         :loading="loading.heatmap"
-        :colorRange="['#e2e4ea','#c5ddf8','#7bb8f0','#3e8ed8','#1a5fb4']"
+        :colorRange="statusRamp"
         :minValue="0"
         :maxValue="100"
         tooltipLabel="Memory %"
@@ -105,21 +102,15 @@
         title="Software usage"
         :data="softwareGridData"
         :loading="loading.software"
-        :colorScale="['#f0f1f4', '#c5ddf8', '#7bb8f0', '#3e8ed8', '#1a5fb4']"
+        :colorScale="[palette.ink5, palette.goodBg, palette.greenSoft, palette.good, palette.greenOver]"
         valueLabel="apps seen"
         :valueFormatter="d => `${d.value} apps active (${d.hosts} hosts)`"
         legendLow="Low"
         legendHigh="High"
       >
         <template #controls>
-          <div class="select-wrapper">
-            <select v-model="softwareFilter" class="filter-select">
-              <option value="">All apps</option>
-              <option v-for="app in topApps" :key="app" :value="app">{{ app }}</option>
-            </select>
-            <svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none">
-              <path d="M1 1l4 4 4-4" stroke="#515774" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+          <div class="software-filter">
+            <BaseSelect v-model="softwareFilter" :options="softwareFilterOptions" />
           </div>
         </template>
       </ContributionGrid>
@@ -127,7 +118,7 @@
 
     <!-- Top Resource Consumers -->
     <section class="section">
-      <h2>Top resource consumers</h2>
+      <SectionHeader title="Top resource consumers" />
       <div class="charts-row two-col">
         <BarChart
           title="Heaviest processes (avg memory MB)"
@@ -179,6 +170,13 @@ import BarChart from '../components/BarChart.vue'
 import HeatmapChart from '../components/HeatmapChart.vue'
 import ContributionGrid from '../components/ContributionGrid.vue'
 import DeviceDetail from '../components/DeviceDetail.vue'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
+import Badge from '../components/base/Badge.vue'
+import GaugeBar from '../components/base/GaugeBar.vue'
+import BaseSelect from '../components/base/BaseSelect.vue'
+import EmptyState from '../components/base/EmptyState.vue'
+import { palette, statusRamp } from '../composables/uiPalette'
 import { displayHost } from '../composables/displayName'
 import DeviceCompare from '../components/DeviceCompare.vue'
 
@@ -247,6 +245,23 @@ function healthLabel(d) {
   const cls = healthClass(d)
   return cls === 'critical' ? 'Critical' : cls === 'warning' ? 'Warning' : 'Healthy'
 }
+
+// Map the health/quality classes onto Badge tones.
+const HEALTH_TONES = { healthy: 'good', warning: 'fair', critical: 'critical' }
+function healthTone(d) {
+  return HEALTH_TONES[healthClass(d)] || 'neutral'
+}
+
+const SIGNAL_TONES = { excellent: 'good', good: 'good', fair: 'fair', poor: 'critical' }
+function signalTone(quality) {
+  return SIGNAL_TONES[quality] || 'neutral'
+}
+
+// "All apps" sentinel ('') plus the top apps for the software-usage filter.
+const softwareFilterOptions = computed(() => [
+  { value: '', label: 'All apps' },
+  ...topApps.value.map(a => ({ value: a, label: a })),
+])
 
 async function fetchAll() {
   error.value = null
@@ -375,27 +390,17 @@ onMounted(fetchAll)
 .dashboard {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 29px;
+  padding: var(--pad-xlarge);
 }
 
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 22px;
-}
-
-h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black); }
-h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--fleet-black-10); }
-
-.error-banner { background: var(--fleet-white); color: var(--fleet-error); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--fleet-black-10); border-left: 3px solid var(--fleet-error); margin-bottom: 24px; font-size: 14px; }
 .loading-row { color: var(--fleet-black-50); padding: 24px; text-align: center; font-size: 14px; }
-.empty-state { color: var(--fleet-black-50); padding: 32px; text-align: center; }
 
-.section { margin-bottom: 24px; }
-
-.metrics-row { display: grid; gap: 16px; margin-bottom: 24px; }
-.metrics-row.five-col { grid-template-columns: repeat(5, 1fr); }
+/* Sections stack their own blocks; the page-stack global handles inter-section gaps */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-medium);
+}
 
 /* Device Health Cards */
 .device-grid {
@@ -405,16 +410,16 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
 }
 
 .device-card {
-  background: #fff;
+  background: var(--fleet-white);
   border-radius: var(--radius-large);
-  border: 1px solid #e2e4ea;
+  border: 1px solid var(--fleet-black-10);
   padding: 14px;
-  box-shadow: 0px 3px 0px rgba(226, 228, 234, 0.4);
-  transition: box-shadow 150ms ease-in-out;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base);
+  cursor: pointer;
 }
 
-.device-card { cursor: pointer; }
-.device-card:hover { box-shadow: 0 4px 10px rgba(52, 59, 96, 0.15); }
+.device-card:hover { box-shadow: var(--shadow-md); }
 
 .device-header {
   display: flex;
@@ -423,32 +428,18 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
   margin-bottom: 4px;
 }
 
-.device-name { font-weight: 600; font-size: 14px; color: #192147; }
-.device-model { font-size: 12px; color: #8b8fa2; margin-bottom: 12px; }
-
-.device-badge {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
-}
-
-.device-badge.healthy { background: var(--status-good-bg); color: var(--status-good); }
-.device-badge.warning { background: var(--status-fair-bg); color: var(--status-fair-text); }
-.device-badge.critical { background: var(--status-critical-bg); color: var(--status-critical); }
+.device-name { font-weight: 600; font-size: 14px; color: var(--fleet-black); }
+.device-model { font-size: 12px; color: var(--fleet-black-50); margin-bottom: 12px; }
 
 .stat { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-.stat-bar { flex: 1; height: 6px; background: #f4f4f6; border-radius: 3px; overflow: hidden; }
-.stat-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
-.stat-fill.memory { background: #6a67fe; }
-.stat-fill.disk { background: var(--status-fair); }
+.stat > :first-child { flex: 1; min-width: 0; }
 .stat-label { font-size: 13px; font-weight: 500; color: var(--fleet-black-75); min-width: 70px; text-align: right; }
 
 .stat-row-bottom {
   display: flex;
   justify-content: space-between;
   font-size: 11px;
-  color: #8b8fa2;
+  color: var(--fleet-black-50);
   margin-top: 4px;
 }
 
@@ -456,13 +447,12 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
 .split-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .split-half {
   min-width: 0;
-  background: #fff;
+  background: var(--fleet-white);
   border-radius: var(--radius-large);
-  border: 1px solid #e2e4ea;
+  border: 1px solid var(--fleet-black-10);
   padding: 22px;
-  box-shadow: 0px 3px 0px rgba(226, 228, 234, 0.4);
+  box-shadow: var(--shadow-sm);
 }
-.split-half h2 { border-bottom: none; margin-bottom: 12px; padding-bottom: 0; }
 
 /* Security Posture Rings */
 .posture-grid {
@@ -485,7 +475,7 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
 
 .posture-ring.good { border-color: var(--fleet-success); background: var(--status-good-bg); }
 .posture-ring.bad { border-color: var(--fleet-error); background: var(--status-critical-bg); }
-.posture-pct { font-size: 18px; font-weight: 600; color: #192147; }
+.posture-pct { font-size: 18px; font-weight: 600; color: var(--fleet-black); }
 .posture-label { font-size: 13px; font-weight: 500; color: var(--fleet-black-75); }
 
 /* Network Quality */
@@ -497,80 +487,29 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
   gap: 11px;
   align-items: center;
   padding: 7px 11px;
-  background: #f9fafc;
-  border-radius: 4px;
-  border: 1px solid #f0f1f4;
+  background: var(--fleet-off-white);
+  border-radius: var(--radius);
+  border: 1px solid var(--fleet-black-5-down);
   font-size: 12px;
 }
 
-.network-host { font-weight: 500; color: #192147; }
-.network-ssid { color: #515774; }
+.network-host { font-weight: 500; color: var(--fleet-black); }
+.network-ssid { color: var(--fleet-black-75); }
+.signal-value { font-variant-numeric: tabular-nums; }
 
-.signal-badge {
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.signal-badge.excellent { background: var(--status-good-bg); color: var(--status-good); }
-.signal-badge.good { background: rgba(106, 103, 254, 0.12); color: #4b4ab4; }
-.signal-badge.fair { background: var(--status-fair-bg); color: var(--status-fair-text); }
-.signal-badge.poor { background: var(--status-critical-bg); color: var(--status-critical); }
-
-.quality-label { font-size: 12px; color: #8b8fa2; text-transform: capitalize; min-width: 60px; }
+.quality-label { font-size: 12px; color: var(--fleet-black-50); text-transform: capitalize; min-width: 60px; }
 
 /* Software grid filter */
-.select-wrapper {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-
-.filter-select {
-  border: 1px solid #e2e4ea;
-  border-radius: 4px;
-  padding: 4px 25px 4px 9px;
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  color: #515774;
-  background: #fff;
-  cursor: pointer;
-  outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-  transition: border-color 150ms;
-}
-
-.filter-select:hover { border-color: #c5c7d1; }
-.filter-select:focus { border-color: #192147; }
-
-.select-arrow {
-  position: absolute;
-  right: 10px;
-  pointer-events: none;
-}
-
-/* Charts */
-.charts-row.two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.software-filter { width: 160px; }
 
 @media (max-width: 1024px) {
-  .metrics-row.five-col { grid-template-columns: repeat(3, 1fr); }
   .split-row { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 768px) {
-  .metrics-row.five-col { grid-template-columns: repeat(2, 1fr); }
-  .charts-row.two-col { grid-template-columns: 1fr; }
-  .device-grid { grid-template-columns: 1fr; }
-  .dashboard-header { flex-direction: column; align-items: flex-start; gap: 16px; }
 }
 
 /* ─── Compare overlay ─────────────────────────── */
 .compare-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  inset: 0;
   background: rgba(25, 33, 71, 0.4);
   display: flex;
   justify-content: center;
@@ -586,6 +525,6 @@ h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black)
   background: var(--fleet-off-white);
   border-radius: var(--radius-large);
   padding: var(--pad-large);
-  box-shadow: 0 8px 32px rgba(25, 33, 71, 0.2);
+  box-shadow: var(--shadow-lg);
 }
 </style>

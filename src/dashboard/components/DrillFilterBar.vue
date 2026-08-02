@@ -6,13 +6,14 @@
         <span class="drill-label">
           Filtered: <strong>{{ filterLabel }}</strong>
         </span>
-        <button class="clear-btn" @click="clearDrill">Clear &times;</button>
+        <BaseButton size="small" variant="subdued" @click="clearDrill">Clear &times;</BaseButton>
       </div>
     </div>
   </transition>
 </template>
 
 <script setup>
+import BaseButton from './base/BaseButton.vue'
 import { useDrillFilter } from '../composables/useDrillFilter'
 
 const { isFiltered, filterLabel, clearDrill } = useDrillFilter()
@@ -20,17 +21,17 @@ const { isFiltered, filterLabel, clearDrill } = useDrillFilter()
 
 <style scoped>
 .drill-bar {
-  background: var(--sidebar-active-bg);
-  border: 1px solid #bfdbfe;
-  border-radius: 8px;
-  padding: 9px 14px;
-  margin-bottom: 18px;
+  background: var(--info-tint);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+  padding: var(--pad-small) var(--pad-medium);
+  margin-bottom: var(--pad-large);
 }
 
 .drill-content {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: var(--pad-small);
 }
 
 .drill-icon {
@@ -39,23 +40,8 @@ const { isFiltered, filterLabel, clearDrill } = useDrillFilter()
 
 .drill-label {
   font-size: 13px;
-  color: #1e40af;
+  color: var(--fleet-status-info);
   flex: 1;
-}
-
-.clear-btn {
-  background: white;
-  border: 1px solid #93c5fd;
-  border-radius: 6px;
-  padding: 4px 11px;
-  font-size: 12px;
-  color: #1e40af;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.clear-btn:hover {
-  background: var(--fleet-accent-blue-light);
 }
 
 .slide-enter-active,

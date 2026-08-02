@@ -1,7 +1,7 @@
 <template>
   <div class="host-tile">
     <div class="tile-header">
-      <div class="tile-avatar" :class="`platform-${avatarColor}`">
+      <div class="tile-avatar" :style="avatarStyle">
         {{ avatarLetter }}
       </div>
       <div class="tile-title">
@@ -101,10 +101,22 @@ const avatarLetter = computed(() =>
   (displayHost(props.host) || '?').charAt(0).toUpperCase()
 )
 
-const avatarColor = computed(() => {
+// Deterministic per-first-letter identity palette — saturated enough to read
+// on white, muted enough not to shout. Identity colors, not status: kept as
+// literal hexes in one const (amber gets dark text for contrast).
+const AVATAR_PALETTE = [
+  { bg: '#5cabdf', fg: '#ffffff' }, // blue
+  { bg: '#009a7d', fg: '#ffffff' }, // green
+  { bg: '#ecc767', fg: '#3a2e00' }, // amber
+  { bg: '#9b6bd9', fg: '#ffffff' }, // purple
+  { bg: '#e07b6b', fg: '#ffffff' }, // coral
+  { bg: '#515774', fg: '#ffffff' }, // slate
+]
+
+const avatarStyle = computed(() => {
   const char = avatarLetter.value.charCodeAt(0) || 65
-  const palette = ['a', 'b', 'c', 'd', 'e', 'f']
-  return palette[char % palette.length]
+  const c = AVATAR_PALETTE[char % AVATAR_PALETTE.length]
+  return { backgroundColor: c.bg, color: c.fg }
 })
 
 // The "primary" metric is whatever condition the user drilled into.
@@ -193,7 +205,7 @@ function relativeTime(ts) {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
-  padding: 14px 16px 11px;
+  padding: var(--pad-medium) var(--pad-medium) var(--pad-smedium);
   color: var(--fleet-black);
   display: flex;
   flex-direction: column;
@@ -207,8 +219,8 @@ function relativeTime(ts) {
 }
 
 .host-tile:hover {
-  border-color: var(--fleet-vibrant-blue, var(--rainbow-blue));
-  box-shadow: 0 2px 8px rgba(106, 103, 254, 0.08);
+  border-color: var(--fleet-black-25);
+  box-shadow: var(--shadow-md);
 }
 
 .tile-header {
@@ -226,18 +238,8 @@ function relativeTime(ts) {
   justify-content: center;
   font-weight: 700;
   font-size: 13px;
-  color: #fff;
   flex-shrink: 0;
 }
-
-/* Deterministic per-first-letter palette — saturated enough to read on white,
-   muted enough not to shout. Matches Fleet's existing accent palette. */
-.platform-a { background: var(--rainbow-blue); }  /* blue */
-.platform-b { background: var(--fleet-success); }  /* green */
-.platform-c { background: var(--status-fair); color: #3a2e00; }  /* amber — dark text for contrast */
-.platform-d { background: #9b6bd9; }  /* purple */
-.platform-e { background: #e07b6b; }  /* coral */
-.platform-f { background: #515774; }  /* slate */
 
 .tile-title {
   min-width: 0;
@@ -355,15 +357,16 @@ function relativeTime(ts) {
   flex-shrink: 0;
 }
 
-/* Primary action gets the Fleet vibrant-blue accent to stand out in the row */
+/* Primary action gets the Fleet brand-green accent to stand out in the row */
 .tile-action.primary {
-  background: rgba(106, 103, 254, 0.08);
-  border-color: rgba(106, 103, 254, 0.25);
-  color: var(--fleet-vibrant-blue);
+  background: var(--fleet-accent-green-light);
+  border-color: var(--status-good-bg);
+  color: var(--fleet-green);
 }
 
 .tile-action.primary:hover {
-  background: rgba(106, 103, 254, 0.15);
-  border-color: var(--fleet-vibrant-blue);
+  background: var(--status-good-bg);
+  border-color: var(--fleet-green);
+  color: var(--fleet-green-over);
 }
 </style>

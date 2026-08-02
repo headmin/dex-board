@@ -1,8 +1,6 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>Hosts</h1>
-    </header>
+  <div class="dashboard page-stack">
+    <PageHeader title="Hosts" />
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
@@ -18,24 +16,21 @@
     </div>
 
     <!-- Host Detail Drawer -->
-    <section v-if="selected" class="device-drawer">
-      <a
-        v-if="focusedHost"
-        class="back-link"
-        href="#"
-        @click.prevent="closeDevice"
-      >← All hosts</a>
-      <div class="drawer-header">
-        <div>
-          <div class="drawer-title">
-            <h2>{{ displayHost(detail) || displayHost(selected) }}</h2>
-            <span v-if="staleness" class="staleness-badge" :class="'stale-' + staleness.tier" :title="staleness.title">
-              <span class="stale-dot"></span>{{ staleness.label }}
-            </span>
-          </div>
-          <span class="drawer-sub">{{ detail.hardware_model }} &middot; {{ detail.cpu_brand }} &middot; {{ detail.memory_gb }} GB RAM</span>
-        </div>
-        <div class="drawer-actions">
+    <template v-if="selected">
+      <div v-if="focusedHost">
+        <BaseButton variant="link" @click="closeDevice">← All hosts</BaseButton>
+      </div>
+      <Drawer :title="displayHost(detail) || displayHost(selected)" @close="closeDevice">
+        <template #meta>
+          <Badge
+            v-if="staleness"
+            :tone="stalenessTone[staleness.tier] || 'neutral'"
+            :label="staleness.label"
+            :title="staleness.title"
+          />
+        </template>
+        <template #subtitle>{{ detail.hardware_model }} &middot; {{ detail.cpu_brand }} &middot; {{ detail.memory_gb }} GB RAM</template>
+        <template #actions>
           <a
             class="open-fleet-btn"
             :href="openInFleetUrl"
@@ -48,12 +43,10 @@
               <path d="M6 3h7v7M13 3L6 10M10 2H3v11h11v-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </a>
-          <button class="compare-btn" @click="openCompare(selected.host_id)" title="Compare this host with another">
+          <BaseButton size="small" title="Compare this host with another" @click="openCompare(selected.host_id)">
             Compare with…
-          </button>
-          <button class="close-btn" @click="closeDevice">&times;</button>
-        </div>
-      </div>
+          </BaseButton>
+        </template>
 
       <!-- RAM utilization bar -->
       <div v-if="devicePressure.ram_gb" class="device-ram-section">
@@ -64,13 +57,7 @@
             ({{ devicePressure.pct }}%)
           </span>
         </div>
-        <div class="ram-bar-track">
-          <div
-            class="ram-bar-used"
-            :class="pressureColorClass(devicePressure.pct)"
-            :style="{ width: Math.min(devicePressure.pct, 100) + '%' }"
-          ></div>
-        </div>
+        <GaugeBar :value="devicePressure.pct" />
         <div class="ram-bar-footer">
           <span>{{ devicePressure.free_gb }} GB free</span>
           <span v-if="devicePressure.pct < 30" class="ram-verdict good">Healthy headroom</span>
@@ -90,35 +77,47 @@
         <MetricCard label="Uptime" :value="formatUptime(detail.uptime_seconds)" :loading="loading.detail" />
       </div>
 
-      <!-- Health, OS & VPN badges — colored dot + label : value -->
+      <!-- Health, OS & VPN fact chips -->
       <div v-if="deviceHealth.cpu_class || deviceOS.os_version || deviceVPN.network_confidence" class="detail-badges">
-        <span v-if="deviceHealth.cpu_class" class="badge">
-          <span class="badge-key">CPU</span><span class="badge-val">{{ deviceHealth.cpu_class }}</span>
-        </span>
-        <span v-if="deviceHealth.ram_tier" class="badge">
-          <span class="badge-key">RAM</span><span class="badge-val">{{ deviceHealth.ram_tier }}</span>
-        </span>
-        <span v-if="deviceHealth.swap_pressure" class="badge" :class="'swap-' + deviceHealth.swap_pressure">
-          <span class="badge-key">Swap</span><span class="badge-val">{{ deviceHealth.swap_pressure }}</span>
-        </span>
-        <span v-if="deviceHealth.battery_health_score" class="badge" :class="'batt-' + deviceHealth.battery_health_score">
-          <span class="badge-key">Battery</span><span class="badge-val">{{ deviceHealth.battery_health_score }} ({{ deviceHealth.battery_percent }}%)</span>
-        </span>
-        <span v-if="deviceOS.os_version" class="badge">
-          <span class="badge-key">macOS</span><span class="badge-val">{{ deviceOS.os_version }}</span>
-        </span>
-        <span v-if="deviceOS.os_currency" class="badge" :class="'os-' + deviceOS.os_currency">
-          <span class="badge-key">OS currency</span><span class="badge-val">{{ deviceOS.os_currency }}</span>
-        </span>
-        <span v-if="deviceOS.uptime_risk" class="badge" :class="'uptime-' + deviceOS.uptime_risk">
-          <span class="badge-key">Uptime</span><span class="badge-val">{{ deviceOS.uptime_days }}d ({{ deviceOS.uptime_risk }})</span>
-        </span>
-        <span v-if="deviceOS.dex_os_health" class="badge" :class="'dex-' + deviceOS.dex_os_health">
-          <span class="badge-key">OS health</span><span class="badge-val">{{ deviceOS.dex_os_health }}</span>
-        </span>
-        <span v-if="deviceVPN.network_confidence" class="badge" :class="'vpn-' + deviceVPN.network_confidence">
-          <span class="badge-key">Network</span><span class="badge-val">{{ deviceVPN.network_confidence }}</span>
-        </span>
+        <Chip v-if="deviceHealth.cpu_class" label="CPU" :value="String(deviceHealth.cpu_class)" />
+        <Chip v-if="deviceHealth.ram_tier" label="RAM" :value="String(deviceHealth.ram_tier)" />
+        <Chip
+          v-if="deviceHealth.swap_pressure"
+          :tone="chipTone('swap', deviceHealth.swap_pressure)"
+          label="Swap"
+          :value="String(deviceHealth.swap_pressure)"
+        />
+        <Chip
+          v-if="deviceHealth.battery_health_score"
+          :tone="chipTone('battery', deviceHealth.battery_health_score)"
+          label="Battery"
+          :value="`${deviceHealth.battery_health_score} (${deviceHealth.battery_percent}%)`"
+        />
+        <Chip v-if="deviceOS.os_version" label="macOS" :value="String(deviceOS.os_version)" />
+        <Chip
+          v-if="deviceOS.os_currency"
+          :tone="chipTone('os', deviceOS.os_currency)"
+          label="OS currency"
+          :value="String(deviceOS.os_currency)"
+        />
+        <Chip
+          v-if="deviceOS.uptime_risk"
+          :tone="chipTone('uptime', deviceOS.uptime_risk)"
+          label="Uptime"
+          :value="`${deviceOS.uptime_days}d (${deviceOS.uptime_risk})`"
+        />
+        <Chip
+          v-if="deviceOS.dex_os_health"
+          :tone="chipTone('dex', deviceOS.dex_os_health)"
+          label="OS health"
+          :value="String(deviceOS.dex_os_health)"
+        />
+        <Chip
+          v-if="deviceVPN.network_confidence"
+          :tone="chipTone('vpn', deviceVPN.network_confidence)"
+          label="Network"
+          :value="String(deviceVPN.network_confidence)"
+        />
       </div>
 
       <!-- Crashes -->
@@ -131,7 +130,7 @@
               <tr v-for="c in deviceCrashes" :key="c.crashed_identifier">
                 <td class="hostname">{{ c.crashed_identifier }}</td>
                 <td>{{ c.crash_count_7d }}</td>
-                <td><span class="quality-badge" :class="c.crash_severity">{{ c.crash_severity }}</span></td>
+                <td><Badge :tone="badgeTone(c.crash_severity)" :label="c.crash_severity" /></td>
                 <td class="muted">{{ c.last_crash_at }}</td>
               </tr>
             </tbody>
@@ -147,7 +146,7 @@
           :loading="loading.deviceWifi"
           xKey="hour"
           yKey="avg_rssi"
-          color="#6a67fe"
+          :color="palette.info"
         />
       </section>
 
@@ -207,10 +206,10 @@
             <tbody>
               <tr v-for="p in deviceProcesses" :key="p.pid">
                 <td class="hostname">{{ p.process_name }}</td>
-                <td><span class="quality-badge" :class="p.process_class">{{ p.process_class }}</span></td>
+                <td><Badge :tone="badgeTone(p.process_class)" :label="p.process_class" /></td>
                 <td :class="memClass(p.rss_mb)">{{ p.rss_mb }}</td>
                 <td>{{ p.threads }}</td>
-                <td><span class="quality-badge" :class="p.mem_pressure">{{ p.mem_pressure }}</span></td>
+                <td><Badge :tone="badgeTone(p.mem_pressure)" :label="p.mem_pressure" /></td>
               </tr>
             </tbody>
           </table>
@@ -230,7 +229,7 @@
                 <td class="hostname">{{ a.app_name }}</td>
                 <td class="muted">{{ a.version }}</td>
                 <td>{{ a.days_since_opened || '—' }}</td>
-                <td><span class="quality-badge" :class="a.usage_tier">{{ a.usage_tier }}</span></td>
+                <td><Badge :tone="badgeTone(a.usage_tier)" :label="a.usage_tier" /></td>
               </tr>
             </tbody>
           </table>
@@ -260,16 +259,17 @@
         <div class="error-box-head">
           <strong>Last fleetd error</strong>
           <span v-if="fleetdErrorRelative" class="error-box-time">{{ fleetdErrorRelative }}</span>
-          <span v-if="fleetdErrorIsStale" class="error-box-stale-tag">stale — not a current incident</span>
+          <Badge v-if="fleetdErrorIsStale" tone="fair">Stale — not a current incident</Badge>
         </div>
         <pre>{{ detail.last_error }}</pre>
       </div>
-    </section>
+      </Drawer>
+    </template>
 
     <!-- All-hosts list. Hidden when arriving via deep-link with a hostId
          set — that flow is "inspect one host," not "browse the fleet." -->
     <section class="section" v-if="!focusedHost">
-      <h2>All hosts ({{ filteredDevices.length }})</h2>
+      <SectionHeader :title="`All hosts (${filteredDevices.length})`" />
       <div class="table-wrap">
         <table class="data-table">
           <thead>
@@ -307,7 +307,7 @@
               </td>
               <td :class="rssiClass(d.rssi)">{{ d.rssi ? `${d.rssi} dBm` : '—' }}</td>
               <td>
-                <span v-if="d.signal_quality" class="quality-badge" :class="d.signal_quality">{{ d.signal_quality }}</span>
+                <Badge v-if="d.signal_quality" :tone="badgeTone(d.signal_quality)" :label="d.signal_quality" />
                 <span v-else>—</span>
               </td>
               <td>{{ d.app_count || '—' }}</td>
@@ -328,8 +328,17 @@ import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
 import ScoreDriverPanel from '../components/ScoreDriverPanel.vue'
 import DeviceCompare from '../components/DeviceCompare.vue'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
+import Drawer from '../components/base/Drawer.vue'
+import BaseButton from '../components/base/BaseButton.vue'
+import Badge from '../components/base/Badge.vue'
+import Chip from '../components/base/Chip.vue'
+import GaugeBar from '../components/base/GaugeBar.vue'
 import { buildSignalDrivers } from '../composables/scoreFormulas'
 import { displayHost } from '../composables/displayName'
+import { useSort } from '../composables/useSort'
+import { palette } from '../composables/uiPalette'
 import dayjs from 'dayjs'
 import { useAppConfig } from '../composables/useAppConfig'
 import { useNow } from '../composables/useNow'
@@ -369,10 +378,9 @@ const error = ref(null)
 const loading = ref({ list: false, detail: false, deviceWifi: false, deviceApps: false })
 
 const devices = ref([])
-const sortCol = ref('hostname')
-const sortAsc = ref(true)
-const appSortCol = ref('memory_mb')
-const appSortAsc = ref(false)  // memory desc by default — biggest hogs at the top
+const { sortKey: sortCol, sortAsc, toggleSort: sortBy, sortRows: sortDeviceRows } = useSort('hostname', true)
+// memory desc by default — biggest hogs at the top
+const { sortKey: appSortCol, sortAsc: appSortAsc, toggleSort: toggleAppSort, sortRows: sortAppRows } = useSort('memory_mb', false)
 
 // Fleetd's last_error field starts with an ISO timestamp ("2026-02-17T21:02:22Z: …").
 // Parse that out so we can show how old the error is and grey out anything older
@@ -413,24 +421,42 @@ const deviceMttp = ref(null)
 const deviceDrivers = ref(null)
 const driversFlash = ref(false)
 
-const sortedDeviceApps = computed(() => {
-  const rows = deviceApps.value.slice()
-  const col = appSortCol.value
-  const asc = appSortAsc.value
-  rows.sort((a, b) => {
-    const av = a[col]
-    const bv = b[col]
-    const aNum = Number(av), bNum = Number(bv)
-    let cmp
-    if (isFinite(aNum) && isFinite(bNum) && !(typeof av === 'string' && av && isNaN(Number(av)))) {
-      cmp = aNum - bNum
-    } else {
-      cmp = String(av ?? '').localeCompare(String(bv ?? ''))
-    }
-    return asc ? cmp : -cmp
-  })
-  return rows
-})
+const sortedDeviceApps = computed(() => sortAppRows(deviceApps.value))
+
+// ── Status tones for primitives ─────────────────────
+// Staleness tier → Badge tone.
+const stalenessTone = { active: 'good', stale: 'fair', inactive: 'critical', offline: 'neutral' }
+
+// Detail fact chips: classifier value → Chip tone, per fact family.
+// Unlisted values (and neutral facts like CPU class / RAM tier) stay neutral.
+const CHIP_TONES = {
+  swap:    { severe: 'critical', elevated: 'elevated', light: 'good', none: 'good' },
+  battery: { good: 'good', degraded: 'fair', replace: 'critical' },
+  os:      { current: 'good', n_minus_1: 'fair', n_minus_2: 'critical', legacy: 'critical' },
+  uptime:  { fresh: 'good', just_rebooted: 'good', stale_7d: 'fair', stale_14d: 'elevated' },
+  dex:     { healthy: 'good', acceptable: 'fair', degraded: 'critical' },
+  vpn:     { tunnel_active: 'info', direct_connected: 'good', disconnected: 'critical' },
+}
+function chipTone(group, value) {
+  return CHIP_TONES[group]?.[value] || 'neutral'
+}
+
+// Table status badges: raw classifier value → Badge tone.
+const BADGE_TONES = {
+  // Wi-Fi signal quality
+  excellent: 'good', good: 'good', fair: 'fair', weak: 'critical', poor: 'critical', very_weak: 'critical',
+  // crash severity
+  single: 'neutral', recurring: 'fair', elevated: 'elevated', critical: 'critical',
+  // process class
+  user_app: 'info', mgmt_agent: 'info', system: 'neutral', other: 'neutral',
+  // memory pressure
+  normal: 'good', elevated_500mb: 'fair', high_1gb: 'elevated', critical_2gb: 'critical',
+  // app adoption tier
+  active_today: 'good', active_week: 'good', stale_30d: 'fair', stale_90d: 'elevated', stale_90d_plus: 'critical', never_opened: 'neutral',
+}
+function badgeTone(value) {
+  return BADGE_TONES[value] || 'neutral'
+}
 
 // Staleness — bucket the time since last check-in into Active / Stale / Inactive.
 // last_seen = max(timestamp) across every firehose table this host writes to,
@@ -512,12 +538,7 @@ const filteredDevices = computed(() => {
       return target && gb >= target && gb < target * 2
     })
   }
-  return [...list].sort((a, b) => {
-    const av = a[sortCol.value] ?? ''
-    const bv = b[sortCol.value] ?? ''
-    const cmp = typeof av === 'number' ? av - bv : String(av).localeCompare(String(bv))
-    return sortAsc.value ? cmp : -cmp
-  })
+  return sortDeviceRows(list)
 })
 
 const devicePressure = computed(() => {
@@ -577,20 +598,14 @@ function formatUptime(seconds) {
 }
 
 function sortAppsBy(col) {
-  if (appSortCol.value === col) { appSortAsc.value = !appSortAsc.value }
   // First click on a numeric column defaults to descending (high → low,
   // which is what you usually want for "Memory" and "Threads").
-  else { appSortCol.value = col; appSortAsc.value = !['memory_mb', 'threads'].includes(col) }
+  toggleAppSort(col, ['memory_mb', 'threads'].includes(col))
 }
 
 function appSortIcon(col) {
   if (appSortCol.value !== col) return ''
   return appSortAsc.value ? '▲' : '▼'
-}
-
-function sortBy(col) {
-  if (sortCol.value === col) { sortAsc.value = !sortAsc.value }
-  else { sortCol.value = col; sortAsc.value = true }
 }
 
 function sortIcon(col) {
@@ -718,108 +733,30 @@ watch(() => route.query.hostId, (newId, oldId) => {
 
 <style scoped>
 .dashboard { max-width: 1400px; margin: 0 auto; padding: var(--pad-xlarge); }
-.dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black); }
-h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--fleet-black-10); }
 h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black); margin: 16px 0 8px; }
-.error-banner { background: var(--fleet-white); color: var(--fleet-error); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--fleet-black-10); border-left: 3px solid var(--fleet-error); margin-bottom: 24px; }
 .section { margin-bottom: 32px; }
-.metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
-.metrics-row.six-col { grid-template-columns: repeat(6, 1fr); }
-
-.search-input { font-size: var(--font-size-sm); padding: 8px 14px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); width: 260px; background: var(--fleet-white); }
-.search-input:focus { outline: none; border-color: var(--fleet-vibrant-blue); box-shadow: 0 0 0 2px rgba(106, 103, 254, 0.15); }
 
 /* ── Device Drawer ───────────────────────── */
-.device-drawer { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); padding: 20px 24px; margin-bottom: 32px; box-shadow: var(--shadow-sm); }
-.drawer-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 12px; }
-.drawer-header h2 { margin: 0; padding: 0; border: none; }
-.drawer-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.drawer-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-
-.staleness-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: var(--radius-full);
-  border: 1px solid;
-}
-.staleness-badge .stale-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: currentColor;
-  position: relative;
-  flex-shrink: 0;
-}
-.staleness-badge.stale-active   { color: var(--fleet-status-success); background: var(--fleet-status-success-light); border-color: var(--fleet-status-success-border); }
-.staleness-badge.stale-stale    { color: var(--fleet-status-warning-dark); background: var(--fleet-status-warning-light); border-color: var(--fleet-status-warning-border); }
-.staleness-badge.stale-inactive { color: var(--fleet-status-error); background: var(--fleet-status-error-light); border-color: var(--fleet-status-error-border); }
-.staleness-badge.stale-offline  { color: var(--fleet-black-50); background: var(--fleet-black-5); border-color: var(--fleet-black-10); }
-
-/* Heartbeat: only the Active tier pulses — a quiet halo expanding off the
-   dot every ~1.6s says "this host is alive right now". Stale / Inactive /
-   Offline stay static so the visual distinction reinforces the label. */
-.staleness-badge.stale-active .stale-dot::before,
-.staleness-badge.stale-active .stale-dot::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.6;
-  animation: heartbeat 1.6s ease-out infinite;
-}
-.staleness-badge.stale-active .stale-dot::after {
-  animation-delay: 0.8s;
-}
-@keyframes heartbeat {
-  0%   { transform: scale(1);   opacity: 0.6; }
-  80%  { transform: scale(2.6); opacity: 0; }
-  100% { transform: scale(2.6); opacity: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .staleness-badge.stale-active .stale-dot::before,
-  .staleness-badge.stale-active .stale-dot::after {
-    animation: none;
-  }
-}
-.compare-btn {
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  padding: 5px 11px;
-  color: var(--fleet-vibrant-blue);
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all 100ms;
-}
-.compare-btn:hover {
-  border-color: var(--fleet-vibrant-blue);
-  background: var(--fleet-vibrant-blue-10);
-}
-
-/* Mirrors .compare-btn so the two drawer-action buttons read as a pair. */
+/* Mirrors BaseButton secondary/small so the two drawer actions read as a
+   pair while staying a real anchor (target=_blank). */
 .open-fleet-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: var(--font-size-xs);
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  font-size: 13px;
   font-weight: 600;
-  padding: 5px 11px;
-  color: var(--fleet-vibrant-blue);
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
+  line-height: 1;
+  color: var(--fleet-black-75);
+  background: var(--fleet-off-white);
+  border: 1px solid var(--fleet-black-25);
   border-radius: var(--radius);
-  cursor: pointer;
   text-decoration: none;
-  transition: all 100ms;
+  transition: background-color var(--transition-base);
 }
-.open-fleet-btn:hover {
-  border-color: var(--fleet-vibrant-blue);
-  background: var(--fleet-vibrant-blue-10);
-}
+.open-fleet-btn:hover { background: var(--fleet-black-5); }
 .open-fleet-btn svg { stroke: currentColor; }
 
 .compare-overlay {
@@ -839,24 +776,10 @@ h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black)
   max-height: calc(100vh - 64px);
   overflow-y: auto;
 }
-.drawer-sub { font-size: var(--font-size-xs); color: var(--fleet-black-50); }
-.close-btn { background: none; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); font-size: 20px; cursor: pointer; color: var(--fleet-black-50); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-.close-btn:hover { background: var(--fleet-off-white); color: var(--fleet-black); }
-
-.back-link {
-  display: inline-block;
-  margin-bottom: var(--pad-small);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--fleet-vibrant-blue);
-  text-decoration: none;
-}
-.back-link:hover { text-decoration: underline; }
 .error-box { background: var(--fleet-status-error-light); border: 1px solid var(--status-critical-bg); border-radius: var(--radius); padding: 12px 16px; margin-top: 16px; }
 .error-box pre { font-size: var(--font-size-xs); white-space: pre-wrap; word-break: break-all; margin: 8px 0 0; color: var(--fleet-status-error); }
 .error-box-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .error-box-time { font-family: var(--font-mono); font-size: 11px; color: var(--fleet-black-50); }
-.error-box-stale-tag { display: inline-block; padding: 1px 6px; font-size: 10px; font-weight: 500; letter-spacing: 0.3px; text-transform: uppercase; border-radius: var(--radius-full); background: rgba(245, 158, 11, 0.15); color: #b45309; }
 .error-box--stale { background: var(--fleet-black-5); border-color: var(--fleet-black-10); }
 .error-box--stale pre { color: var(--fleet-black-50); }
 .error-box--stale strong { color: var(--fleet-black-50); }
@@ -887,25 +810,12 @@ h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black)
 .rssi-poor { color: var(--fleet-status-error); font-weight: 600; }
 .mem-high { color: var(--fleet-status-error); font-weight: 600; }
 .mem-med { color: var(--status-fair-text); }
-.quality-badge { display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); font-size: var(--font-size-xs); font-weight: 600; }
-.quality-badge.excellent { background: var(--fleet-status-success-light); color: var(--fleet-status-success); }
-.quality-badge.good { background: var(--status-good-bg); color: var(--status-good); }
-.quality-badge.fair { background: var(--status-fair-bg); color: var(--status-fair-text); }
-.quality-badge.weak, .quality-badge.poor { background: var(--fleet-status-error-light); color: var(--fleet-status-error); }
-.quality-badge.very_weak { background: var(--status-critical-bg); color: var(--status-critical); }
 
-@media (max-width: 1024px) { .metrics-row.six-col { grid-template-columns: repeat(3, 1fr); } }
 /* RAM utilization bar — device drawer */
 .device-ram-section { margin-bottom: 16px; padding: 12px 16px; background: var(--fleet-off-white); border-radius: var(--radius); }
 .ram-bar-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
 .ram-bar-title { font-family: var(--font-body); font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black-75); }
 .ram-bar-numbers { font-size: var(--font-size-sm); font-weight: 600; }
-.ram-bar-track { height: var(--gauge-track-height); background: var(--fleet-black-10); border-radius: var(--radius-full); overflow: hidden; }
-.ram-bar-used { height: 100%; border-radius: 4px; transition: width 400ms ease; }
-.ram-bar-used.pressure-ok { background: linear-gradient(90deg, var(--fleet-green), var(--fleet-green)); }
-.ram-bar-used.pressure-moderate { background: linear-gradient(90deg, var(--status-fair-bg), var(--status-fair-text)); }
-.ram-bar-used.pressure-high { background: linear-gradient(90deg, var(--fleet-ui-orange), var(--fleet-ui-orange)); }
-.ram-bar-used.pressure-critical { background: linear-gradient(90deg, var(--status-critical-bg), var(--fleet-status-error)); }
 .ram-bar-footer { display: flex; justify-content: space-between; margin-top: 6px; font-size: var(--font-size-xs); color: var(--fleet-black-50); }
 .ram-verdict { font-weight: 600; }
 .ram-verdict.good { color: var(--status-good); }
@@ -917,10 +827,10 @@ h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black)
 .mini-ram { display: flex; align-items: center; gap: 6px; min-width: 90px; }
 .mini-ram-bar { flex: 1; height: 6px; background: var(--fleet-black-5); border-radius: 3px; overflow: hidden; min-width: 50px; }
 .mini-ram-fill { height: 100%; border-radius: 3px; }
-.mini-ram-fill.pressure-ok { background: var(--fleet-green); }
-.mini-ram-fill.pressure-moderate { background: var(--status-fair-text); }
-.mini-ram-fill.pressure-high { background: var(--fleet-ui-orange); }
-.mini-ram-fill.pressure-critical { background: var(--fleet-status-error); }
+.mini-ram-fill.pressure-ok { background: var(--status-good); }
+.mini-ram-fill.pressure-moderate { background: var(--status-fair); }
+.mini-ram-fill.pressure-high { background: var(--status-elevated); }
+.mini-ram-fill.pressure-critical { background: var(--status-critical); }
 .mini-ram-pct { font-family: var(--font-mono); font-size: 11px; font-weight: 600; min-width: 32px; }
 
 /* Pressure colors */
@@ -929,54 +839,8 @@ h3 { font-size: var(--font-size-sm); font-weight: 700; color: var(--fleet-black)
 .pressure-high { color: var(--fleet-ui-orange); }
 .pressure-critical { color: var(--fleet-status-error); }
 
-/* Detail badges */
+/* Detail fact chips */
 .detail-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
-.badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: var(--radius-full); font-size: var(--font-size-xs); font-weight: 500; background: var(--fleet-off-white); color: var(--fleet-black-75); border: 1px solid var(--fleet-black-10); line-height: 1.5; }
-.badge::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.55; flex-shrink: 0; }
-.badge-key { color: var(--fleet-black-50); font-weight: 500; text-transform: lowercase; }
-.badge-val { color: inherit; font-weight: 600; }
-.swap-severe { background: var(--fleet-status-error-light); color: var(--fleet-status-error); border-color: var(--status-critical-bg); }
-.swap-elevated { background: #fffbeb; color: var(--fleet-status-warning-dark); border-color: var(--status-fair-bg); }
-.swap-light { background: #f0fdf4; color: var(--fleet-status-success); border-color: var(--status-good-bg); }
-.swap-none { background: #f0fdf4; color: var(--fleet-status-success); border-color: var(--status-good-bg); }
-.batt-good { background: #f0fdf4; color: var(--fleet-status-success); border-color: var(--status-good-bg); }
-.batt-degraded { background: #fffbeb; color: var(--fleet-status-warning-dark); border-color: var(--status-fair-bg); }
-.batt-replace { background: var(--fleet-status-error-light); color: var(--fleet-status-error); border-color: var(--status-critical-bg); }
-.os-current { background: #f0fdf4; color: var(--fleet-status-success); border-color: var(--status-good-bg); }
-.os-n_minus_1 { background: #fffbeb; color: var(--fleet-status-warning-dark); border-color: var(--status-fair-bg); }
-.os-n_minus_2, .os-legacy { background: var(--fleet-status-error-light); color: var(--fleet-status-error); border-color: var(--status-critical-bg); }
-.dex-healthy { background: #f0fdf4; color: var(--fleet-status-success); border-color: var(--status-good-bg); }
-.dex-acceptable { background: #fffbeb; color: var(--fleet-status-warning-dark); border-color: var(--status-fair-bg); }
-.dex-degraded { background: var(--fleet-status-error-light); color: var(--fleet-status-error); border-color: var(--status-critical-bg); }
-.vpn-tunnel_active { background: var(--sidebar-active-bg); color: #1e40af; border-color: #bfdbfe; }
-.vpn-direct_connected { background: #f0fdf4; color: var(--fleet-status-success); border-color: var(--status-good-bg); }
-.vpn-disconnected { background: var(--fleet-status-error-light); color: var(--fleet-status-error); border-color: var(--status-critical-bg); }
-.uptime-fresh, .uptime-just_rebooted { background: #f0fdf4; color: var(--fleet-status-success); border-color: var(--status-good-bg); }
-.uptime-normal { background: var(--fleet-off-white); color: var(--fleet-black-75); }
-.uptime-stale_7d { background: #fffbeb; color: var(--fleet-status-warning-dark); border-color: var(--status-fair-bg); }
-.uptime-stale_14d { background: var(--fleet-status-error-light); color: var(--fleet-status-error); border-color: var(--status-critical-bg); }
 
 .crash-section { margin-bottom: 16px; }
-
-/* Badge color mapping for process classes & tiers */
-.quality-badge.user_app { background: var(--sidebar-active-bg); color: #1e40af; }
-.quality-badge.mgmt_agent { background: #faf5ff; color: #6b21a8; }
-.quality-badge.system { background: var(--fleet-off-white); color: var(--fleet-black-75); }
-.quality-badge.other { background: var(--fleet-off-white); color: var(--fleet-black-50); }
-.quality-badge.normal { background: #f0fdf4; color: var(--fleet-status-success); }
-.quality-badge.elevated_500mb { background: #fffbeb; color: var(--fleet-status-warning-dark); }
-.quality-badge.high_1gb { background: #fff7ed; color: #9a3412; }
-.quality-badge.critical_2gb { background: var(--fleet-status-error-light); color: var(--fleet-status-error); }
-.quality-badge.single { background: var(--fleet-off-white); color: var(--fleet-black-75); }
-.quality-badge.recurring { background: #fffbeb; color: var(--fleet-status-warning-dark); }
-.quality-badge.elevated { background: #fff7ed; color: #9a3412; }
-.quality-badge.critical { background: var(--fleet-status-error-light); color: var(--fleet-status-error); }
-.quality-badge.active_today { background: #f0fdf4; color: var(--fleet-status-success); }
-.quality-badge.active_week { background: var(--status-good-bg); color: var(--status-good); }
-.quality-badge.stale_30d { background: #fffbeb; color: var(--fleet-status-warning-dark); }
-.quality-badge.stale_90d { background: #fff7ed; color: #9a3412; }
-.quality-badge.stale_90d_plus { background: var(--fleet-status-error-light); color: var(--fleet-status-error); }
-.quality-badge.never_opened { background: var(--fleet-off-white); color: var(--fleet-black-50); }
-
-@media (max-width: 768px) { .metrics-row, .metrics-row.six-col { grid-template-columns: 1fr; } .dashboard-header { flex-direction: column; gap: 12px; align-items: flex-start; } .search-input { width: 100%; } }
 </style>

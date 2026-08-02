@@ -1,9 +1,9 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>Hardware lifecycle</h1>
-      <span class="subtitle">Refresh &amp; upgrade candidates from endpoint telemetry — plan smarter investments</span>
-    </header>
+  <div class="dashboard page-stack">
+    <PageHeader
+      title="Hardware lifecycle"
+      subtitle="Refresh & upgrade candidates from endpoint telemetry — plan smarter investments"
+    />
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
@@ -18,7 +18,7 @@
         <MetricCard label="Severe swap strain" :value="summary.swap_strain" :loading="loading"
           subtitle="under-powered for workload" />
       </div>
-      <div class="metrics-row four-col reason-row">
+      <div class="metrics-row four-col">
         <MetricCard label="Battery: replace" :value="summary.battery_replace" :loading="loading" />
         <MetricCard label="8GB RAM" :value="summary.low_ram" :loading="loading" />
         <MetricCard label="Aging CPU (Intel)" :value="summary.aging_cpu" :loading="loading" />
@@ -28,49 +28,50 @@
 
     <!-- Candidate list -->
     <section class="section">
-      <div class="section-header-with-caption">
-        <h2>Refresh shortlist</h2>
-        <span class="section-caption">
-          Ranked by refresh score — battery health, CPU age, RAM tier and sustained swap pressure.
-          Procurement, warranty and cost live outside this view.
-        </span>
-      </div>
+      <SectionHeader
+        title="Refresh shortlist"
+        caption="Ranked by refresh score — battery health, CPU age, RAM tier and sustained swap pressure. Procurement, warranty and cost live outside this view."
+      />
 
-      <div v-if="loading" class="lc-empty">Loading…</div>
-      <div v-else-if="!candidates.length" class="lc-empty">No hosts match the current filter.</div>
-      <table v-else class="lc-table">
-        <thead>
-          <tr>
-            <th>Host</th>
-            <th>Model</th>
-            <th>CPU</th>
-            <th class="num">RAM</th>
-            <th>Battery</th>
-            <th>Signals</th>
-            <th class="num">Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="h in candidates" :key="h.host_id">
-            <td class="lc-host">{{ displayHost(h) }}</td>
-            <td class="mono">{{ h.hardware_model }}</td>
-            <td class="mono">{{ cpuLabel(h.cpu_class) }}</td>
-            <td class="num mono">{{ h.ram_gb }}GB</td>
-            <td>
-              <span class="lc-badge" :class="batteryClass(h.battery_health_score)">
-                {{ h.battery_health_score || '—' }}<template v-if="h.battery_health_pct"> · {{ Math.round(h.battery_health_pct) }}%</template>
-              </span>
-            </td>
-            <td>
-              <span v-for="r in reasons(h)" :key="r.label" class="lc-badge" :class="`sev-${r.sev}`">{{ r.label }}</span>
-              <span v-if="!reasons(h).length" class="lc-none">—</span>
-            </td>
-            <td class="num">
-              <span class="lc-score" :class="scoreClass(h.refresh_score)">{{ h.refresh_score }}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div v-if="loading" class="lc-loading">Loading…</div>
+      <EmptyState v-else-if="!candidates.length" small title="No hosts match the current filter." />
+      <div v-else class="lc-table-wrapper">
+        <table class="lc-table">
+          <thead>
+            <tr>
+              <th>Host</th>
+              <th>Model</th>
+              <th>CPU</th>
+              <th class="num">RAM</th>
+              <th>Battery</th>
+              <th>Signals</th>
+              <th class="num">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="h in candidates" :key="h.host_id">
+              <td class="lc-host">{{ displayHost(h) }}</td>
+              <td class="mono">{{ h.hardware_model }}</td>
+              <td>{{ cpuLabel(h.cpu_class) }}</td>
+              <td class="num">{{ h.ram_gb }}GB</td>
+              <td>
+                <Badge :tone="batteryTone(h.battery_health_score)">
+                  {{ h.battery_health_score || '—' }}<template v-if="h.battery_health_pct"> · {{ Math.round(h.battery_health_pct) }}%</template>
+                </Badge>
+              </td>
+              <td>
+                <span class="lc-signals">
+                  <Badge v-for="r in reasons(h)" :key="r.label" :tone="sevTone[r.sev]" :label="r.label" />
+                  <span v-if="!reasons(h).length" class="lc-none">—</span>
+                </span>
+              </td>
+              <td class="num">
+                <span class="lc-score" :class="`lc-score--${scoreTone(h.refresh_score)}`">{{ h.refresh_score }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
   </div>
 </template>
@@ -79,6 +80,10 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { query } from '../services/api'
 import MetricCard from '../components/MetricCard.vue'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
+import Badge from '../components/base/Badge.vue'
+import EmptyState from '../components/base/EmptyState.vue'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { displayHost } from '../composables/displayName'
 
@@ -100,11 +105,13 @@ function cpuLabel(c) {
   if (!c) return '—'
   return c.replace('apple_', 'Apple ').replace('intel_', 'Intel ').toUpperCase().replace('APPLE ', 'Apple ').replace('INTEL ', 'Intel ')
 }
-function batteryClass(s) {
-  return s === 'replace' ? 'sev-high' : s === 'degraded' ? 'sev-mid' : 'sev-ok'
+// Internal severity keys ('high'/'mid'/'ok') → Badge tones.
+const sevTone = { high: 'critical', mid: 'fair', ok: 'good' }
+function batteryTone(s) {
+  return s === 'replace' ? 'critical' : s === 'degraded' ? 'fair' : 'good'
 }
-function scoreClass(n) {
-  return n >= 40 ? 'sev-high' : n >= 20 ? 'sev-mid' : 'sev-ok'
+function scoreTone(n) {
+  return n >= 40 ? 'critical' : n >= 20 ? 'fair' : 'good'
 }
 // Reasons mirror the worker's REFRESH_SCORE contributions.
 function reasons(h) {
@@ -142,25 +149,63 @@ watch(filterParams, load, { deep: true })
 </script>
 
 <style scoped>
-.reason-row { margin-top: var(--pad-medium); }
-.section-header-with-caption { margin-bottom: var(--pad-medium); }
-.section-caption { display: block; font-size: var(--font-size-sm); color: var(--fleet-black-50); margin-top: 2px; }
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-medium);
+}
 
-.lc-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); overflow: hidden; }
-.lc-table th { text-align: left; padding: 10px 14px; font-size: var(--font-size-sm); color: var(--fleet-black-75); font-weight: 600; border-bottom: 1px solid var(--fleet-black-10); background: var(--fleet-off-white); }
-.lc-table td { padding: 8px 14px; color: var(--fleet-black-75); border-bottom: 1px solid var(--fleet-black-5); vertical-align: middle; }
+/* ─── Refresh shortlist table (kept hand-rolled: multi-badge cells) ─── */
+.lc-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+}
+.lc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: var(--table-font-size);
+}
+.lc-table th {
+  text-align: left;
+  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
+  font-size: var(--table-header-font-size);
+  color: var(--fleet-black);
+  font-weight: 700;
+  border-bottom: 1px solid var(--fleet-black-10);
+  background: var(--fleet-off-white);
+  white-space: nowrap;
+}
+.lc-table td {
+  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
+  color: var(--fleet-black-75);
+  border-bottom: 1px solid var(--fleet-black-10);
+  vertical-align: middle;
+}
 .lc-table tr:last-child td { border-bottom: none; }
-.lc-table tr:hover td { background: var(--fleet-off-white); }
-.lc-host { font-weight: 500; color: var(--fleet-black); }
+.lc-table tbody tr:hover td { background: var(--fleet-off-white); }
+.lc-host { font-weight: 700; color: var(--fleet-black); }
 .num { text-align: right; }
 .mono { font-family: var(--font-mono); }
 
-.lc-badge { display: inline-block; font-size: var(--font-size-xs); font-weight: 600; padding: 1px 7px; border-radius: var(--radius-full); margin-right: 4px; }
-.sev-ok { background: var(--status-good-bg); color: var(--status-good); }
-.sev-mid { background: var(--status-fair-bg); color: var(--status-fair-text); }
-.sev-high { background: var(--status-critical-bg); color: var(--status-critical); }
+.lc-signals { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 .lc-none { color: var(--fleet-black-25); }
 
-.lc-score { font-weight: 700; padding: 1px 8px; border-radius: var(--radius-full); }
-.lc-empty { text-align: center; color: var(--fleet-black-50); font-style: italic; padding: 28px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); }
+.lc-score { font-family: var(--font-mono); font-weight: 700; }
+.lc-score--good { color: var(--status-good); }
+.lc-score--fair { color: var(--status-fair-text); }
+.lc-score--critical { color: var(--status-critical); }
+
+.lc-loading {
+  text-align: center;
+  color: var(--fleet-black-50);
+  font-style: italic;
+  padding: 28px;
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+}
 </style>

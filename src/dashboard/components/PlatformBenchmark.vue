@@ -1,20 +1,17 @@
 <template>
   <div class="benchmark-container">
     <!-- Lifecycle Badge -->
-    <div v-if="lifecycleLabel" class="lifecycle-badge" :class="lifecycleClass">
+    <Badge v-if="lifecycleLabel" class="lifecycle-badge" :tone="lifecycleTone">
       {{ lifecycleLabel }}
-    </div>
+    </Badge>
 
     <!-- Cohort Tabs -->
-    <div class="cohort-tabs">
-      <button
-        v-for="tab in cohortTabs"
-        :key="tab.key"
-        class="cohort-tab"
-        :class="{ active: activeCohort === tab.key }"
-        @click="$emit('update:activeCohort', tab.key)"
-      >{{ tab.label }}</button>
-    </div>
+    <SegmentedControl
+      class="cohort-tabs"
+      :model-value="activeCohort"
+      :options="cohortTabs"
+      @update:model-value="$emit('update:activeCohort', $event)"
+    />
 
     <!-- Small cohort warning -->
     <div v-if="activeCohortData && activeCohortData.device_count >= 3 && activeCohortData.device_count < 5" class="cohort-warning">
@@ -31,11 +28,12 @@
         Need at least 3 hosts; this cohort has {{ activeCohortData.device_count }}.
         <template v-if="siblingCohortsWithData.length">
           Try
-          <button
+          <BaseButton
             v-for="(s, i) in siblingCohortsWithData" :key="s.key"
+            variant="link"
             class="cohort-suggest"
             @click="$emit('update:activeCohort', s.key)"
-          >{{ s.label }} ({{ s.count }})</button><template v-if="i < siblingCohortsWithData.length - 1">, </template>.
+          >{{ s.label }} ({{ s.count }})</BaseButton><template v-if="i < siblingCohortsWithData.length - 1">, </template>.
         </template>
       </p>
     </div>
@@ -46,7 +44,7 @@
         <span class="bench-label">{{ row.label }}</span>
         <div class="bench-bar-wrapper">
           <div class="bench-bar-track">
-            <div class="bench-bar-fill" :style="{ width: clamp(row.deviceScore) + '%', backgroundColor: barColor(row.deviceScore) }"></div>
+            <div class="bench-bar-fill" :style="{ width: clamp(row.deviceScore) + '%', backgroundColor: scoreBandColor(row.deviceScore) }"></div>
             <!-- Marker lines -->
             <div class="bench-marker marker-avg" :style="{ left: clamp(row.avg) + '%' }" title="Cohort average">
               <span class="marker-label">avg</span>
@@ -70,7 +68,7 @@
             </span>
           </div>
         </div>
-        <span class="bench-position" :class="positionClass(row)">{{ positionLabel(row) }}</span>
+        <Badge class="bench-position" :tone="positionTone(row)" :label="positionLabel(row)" />
         <span class="bench-value">{{ formatScore(row.deviceScore) }}</span>
       </div>
 
@@ -85,23 +83,12 @@
     <div v-else class="benchmark-empty">No benchmark data available.</div>
   </div>
 </template>
-<style scoped>
-.cohort-suggest {
-  display: inline;
-  padding: 2px 7px;
-  margin: 0 2px;
-  font-size: var(--font-size-xs);
-  color: var(--fleet-vibrant-blue);
-  background: var(--fleet-vibrant-blue-10);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  cursor: pointer;
-}
-.cohort-suggest:hover { border-color: var(--fleet-vibrant-blue); }
-</style>
-
 <script setup>
 import { computed } from 'vue'
+import Badge from './base/Badge.vue'
+import BaseButton from './base/BaseButton.vue'
+import SegmentedControl from './base/SegmentedControl.vue'
+import { scoreBandColor } from '../composables/gradeColors'
 
 const props = defineProps({
   deviceScores: { type: Object, default: null },
@@ -113,25 +100,25 @@ const props = defineProps({
 
 defineEmits(['update:activeCohort'])
 
-const lifecycleClass = computed(() => {
+const lifecycleTone = computed(() => {
   const map = {
-    'Top performer': 'lifecycle-top',
-    'Healthy': 'lifecycle-healthy',
-    'Needs attention': 'lifecycle-attention',
-    'Underperforming': 'lifecycle-under',
-    'End of life candidate': 'lifecycle-eol'
+    'Top performer': 'good',
+    'Healthy': 'good',
+    'Needs attention': 'fair',
+    'Underperforming': 'elevated',
+    'End of life candidate': 'critical'
   }
-  return map[props.lifecycleLabel] || ''
+  return map[props.lifecycleLabel] || 'neutral'
 })
 
 const cohortTabs = computed(() => {
   const bd = props.benchmarkData
   if (!bd) return []
   return [
-    { key: 'fleet', label: `Fleet (${bd.fleet?.device_count || 0})` },
-    { key: 'os', label: `Same OS (${bd.os?.device_count || 0})` },
-    { key: 'model', label: `Same Model (${bd.model?.device_count || 0})` },
-    { key: 'ram', label: `Same RAM (${bd.ram?.device_count || 0})` }
+    { value: 'fleet', label: `Fleet (${bd.fleet?.device_count || 0})` },
+    { value: 'os', label: `Same OS (${bd.os?.device_count || 0})` },
+    { value: 'model', label: `Same Model (${bd.model?.device_count || 0})` },
+    { value: 'ram', label: `Same RAM (${bd.ram?.device_count || 0})` }
   ]
 })
 
@@ -187,15 +174,6 @@ function clamp(v) {
   return Math.min(100, Math.max(0, v))
 }
 
-function barColor(v) {
-  if (v < 0) return '#8b8fa2'
-  if (v >= 90) return '#009a7d'
-  if (v >= 75) return '#4bb79b'
-  if (v >= 60) return '#ecc767'
-  if (v >= 40) return '#eb6743'
-  return '#eb4343'
-}
-
 function formatScore(v) {
   if (v === null || v === undefined || v < 0) return '—'
   return Math.round(v).toString()
@@ -209,12 +187,11 @@ function positionLabel(row) {
   return 'Below avg'
 }
 
-function positionClass(row) {
-  if (row.deviceScore < 0) return ''
-  if (row.deviceScore >= row.p90) return 'pos-top'
-  if (row.deviceScore >= row.p75) return 'pos-above'
-  if (row.deviceScore >= row.avg) return 'pos-avg'
-  return 'pos-below'
+function positionTone(row) {
+  if (row.deviceScore < 0) return 'neutral'
+  if (row.deviceScore >= row.p75) return 'good'
+  if (row.deviceScore >= row.avg) return 'neutral'
+  return 'elevated'
 }
 
 function deltaLabel(row) {
@@ -240,65 +217,28 @@ function diffClass(row) {
 
 /* ─── Lifecycle Badge ────────────────────────── */
 .lifecycle-badge {
-  display: inline-flex;
   align-self: flex-start;
-  padding: 5px 14px;
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  letter-spacing: 0.2px;
 }
-
-.lifecycle-top { background: #e8f8f0; color: var(--fleet-status-success); }
-.lifecycle-healthy { background: #e8f0fe; color: #2d5fba; }
-.lifecycle-attention { background: #fef9e8; color: var(--status-fair-text); }
-.lifecycle-under { background: #fef0e8; color: var(--fleet-ui-orange); }
-.lifecycle-eol { background: #fee8ec; color: var(--fleet-status-error); }
 
 /* ─── Cohort Tabs ────────────────────────────── */
 .cohort-tabs {
-  display: flex;
-  gap: 2px;
-  padding: 3px;
-  background: #f0f0f0;
-  border-radius: 8px;
   align-self: flex-start;
 }
 
-.cohort-tab {
-  padding: 5px 13px;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #666;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-  font-family: var(--font-body);
-}
-
-.cohort-tab:hover {
-  color: var(--fleet-black-75);
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.cohort-tab.active {
-  color: var(--fleet-black);
-  background: var(--fleet-white);
-  box-shadow: var(--box-shadow);
-  font-weight: 600;
+/* ─── Cohort suggestions (small-cohort empty state) ── */
+.cohort-suggest {
+  margin: 0 2px;
+  font-size: var(--font-size-xs);
 }
 
 /* ─── Cohort Warning ─────────────────────────── */
 .cohort-warning {
   font-size: var(--font-size-xs);
   color: var(--status-fair-text);
-  background: #fef9e8;
-  padding: 5px 11px;
+  background: var(--status-fair-bg);
+  padding: var(--pad-xsmall) var(--pad-smedium);
   border-radius: var(--radius);
-  border: 1px solid #f5e6a3;
+  border: 1px solid var(--fleet-yellow-banner-outline);
 }
 
 /* ─── Benchmark Rows ─────────────────────────── */
@@ -315,7 +255,6 @@ function diffClass(row) {
 }
 
 .bench-label,
-.bench-position,
 .bench-value {
   /* Align with the bar (which is positioned at the top of the wrapper, before
      the cohort-stats line) — without this, the row's vertical centering
@@ -344,7 +283,7 @@ function diffClass(row) {
 
 .bench-bar-fill {
   height: 100%;
-  border-radius: var(--radius);
+  border-radius: var(--radius-full);
   transition: width 400ms ease-out;
   position: relative;
   z-index: 1;
@@ -401,19 +340,10 @@ function diffClass(row) {
 
 /* ─── Position Labels ────────────────────────── */
 .bench-position {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
+  margin-top: 2px;
   min-width: 72px;
-  text-align: center;
-  white-space: nowrap;
+  justify-content: center;
 }
-
-.pos-top { background: #e8f8f0; color: var(--fleet-status-success); }
-.pos-above { background: #e8f0fe; color: #2d5fba; }
-.pos-avg { background: var(--fleet-black-5); color: var(--fleet-black-75); }
-.pos-below { background: #fef0e8; color: var(--fleet-ui-orange); }
 
 .bench-value {
   font-size: var(--font-size-sm);
@@ -465,8 +395,6 @@ function diffClass(row) {
 .bench-stat-key {
   font-weight: 600;
   color: var(--fleet-black-50);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
   margin-right: 4px;
   font-family: var(--font-body);
 }

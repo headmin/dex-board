@@ -2,7 +2,7 @@
   <div class="chart-container">
     <h3>{{ title }}</h3>
     <SkeletonLoader v-if="loading" variant="table" :rows="4" :columns="4" />
-    <div v-else-if="!data.length" class="empty-state">No week-over-week data yet</div>
+    <EmptyState v-else-if="!data.length" small title="No week-over-week data yet" />
     <div v-else class="movers-list">
       <div v-for="mover in data" :key="mover.host_identifier">
         <div class="mover-row" :class="{ clickable: true, expanded: expandedId === mover.host_identifier }" @click="toggle(mover)">
@@ -42,7 +42,7 @@
             <div v-for="cat in detailCategories" :key="cat.key" class="detail-row" :class="{ 'is-driver': cat.isDriver }">
               <span class="cat-name">
                 {{ cat.label }}
-                <span v-if="cat.isDriver" class="driver-tag">primary driver</span>
+                <Badge v-if="cat.isDriver" tone="info" label="Primary driver" />
               </span>
               <span class="cat-score right">{{ cat.prev !== null ? cat.prev.toFixed(0) : '—' }}</span>
               <span class="cat-score right">{{ cat.curr !== null ? cat.curr.toFixed(0) : '—' }}</span>
@@ -56,9 +56,11 @@
             <div class="mover-detail-footer">
               <router-link
                 :to="{ path: '/devices', query: { hostId: expandedId, focus: 'movers' } }"
-                class="inspect-cta"
-                @click.stop
-              >Inspect host detail →</router-link>
+                custom
+                v-slot="{ navigate }"
+              >
+                <BaseButton variant="primary" size="small" @click.stop="navigate">Inspect host detail →</BaseButton>
+              </router-link>
             </div>
           </template>
         </div>
@@ -71,6 +73,9 @@
 import { ref } from 'vue'
 import SkeletonLoader from './SkeletonLoader.vue'
 import GradeBadge from './GradeBadge.vue'
+import Badge from './base/Badge.vue'
+import BaseButton from './base/BaseButton.vue'
+import EmptyState from './base/EmptyState.vue'
 import { displayHost } from '../composables/displayName'
 
 const props = defineProps({
@@ -135,9 +140,9 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 9px 4px;
+  padding: var(--pad-small) var(--pad-xsmall);
   border-bottom: 1px solid var(--fleet-black-5);
-  margin: 0 -4px;
+  margin: 0 calc(-1 * var(--pad-xsmall));
   border-radius: var(--radius);
   transition: background 150ms ease-in-out;
 }
@@ -175,7 +180,7 @@ h3 {
 .mover-change {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: var(--pad-smedium);
 }
 
 .grade-transition {
@@ -227,9 +232,9 @@ h3 {
 }
 
 .mover-inspect-link:hover {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: var(--fleet-vibrant-blue);
-  color: var(--fleet-vibrant-blue);
+  background: var(--fleet-black-5);
+  border-color: var(--fleet-black-25);
+  color: var(--fleet-black);
   transform: translateX(1px);
 }
 
@@ -238,7 +243,7 @@ h3 {
   background: var(--fleet-off-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
-  margin: 0 -4px 7px -4px;
+  margin: 0 calc(-1 * var(--pad-xsmall)) var(--pad-small);
   padding: var(--pad-medium);
 }
 
@@ -280,9 +285,9 @@ h3 {
 }
 
 .detail-row.is-driver {
-  background: rgba(106, 103, 254, 0.05);
-  margin: 0 -7px;
-  padding: 5px 7px;
+  background: var(--info-tint-soft);
+  margin: 0 calc(-1 * var(--pad-small));
+  padding: var(--pad-xsmall) var(--pad-small);
   border-radius: var(--radius);
 }
 
@@ -292,17 +297,6 @@ h3 {
   display: flex;
   align-items: center;
   gap: 7px;
-}
-
-.driver-tag {
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--fleet-vibrant-blue);
-  background: rgba(106, 103, 254, 0.1);
-  padding: 1px 5px;
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
 }
 
 .cat-score {
@@ -328,13 +322,6 @@ h3 {
   line-height: 1.5;
 }
 
-.empty-state {
-  text-align: center;
-  padding: var(--pad-xlarge);
-  color: var(--fleet-black-50);
-  font-size: var(--font-size-sm);
-}
-
 .mover-detail-actions {
   display: flex; justify-content: flex-end;
   margin-bottom: var(--pad-small);
@@ -345,18 +332,4 @@ h3 {
   padding-top: var(--pad-small);
   border-top: 1px solid var(--fleet-black-10);
 }
-.inspect-cta {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 11px;
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  color: var(--fleet-white);
-  background: var(--fleet-vibrant-blue);
-  border: 1px solid var(--fleet-vibrant-blue);
-  border-radius: var(--radius);
-  text-decoration: none;
-  transition: filter 100ms;
-}
-.inspect-cta:hover { filter: brightness(1.08); }
 </style>

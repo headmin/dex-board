@@ -1,14 +1,12 @@
 <template>
-  <div class="chart-container">
-    <h3>{{ title }}</h3>
-    <SkeletonLoader v-if="loading" variant="chart" height="340px" />
-    <v-chart v-else class="chart" :option="chartOption" autoresize />
-  </div>
+  <ChartCard :title="title" :loading="loading">
+    <v-chart class="chart" :option="chartOption" autoresize />
+  </ChartCard>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import SkeletonLoader from './SkeletonLoader.vue'
+import ChartCard from './base/ChartCard.vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart } from 'echarts/charts'
@@ -22,6 +20,15 @@ import {
   ToolboxComponent
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import {
+  baseTooltip,
+  baseAxisLabel,
+  baseAxisLine,
+  baseSplitLine,
+  baseDataZoom,
+  resolveColor
+} from '../composables/echartsTheme'
+import { palette } from '../composables/uiPalette'
 
 use([
   CanvasRenderer, LineChart, GridComponent, TooltipComponent,
@@ -49,20 +56,21 @@ const chartOption = computed(() => {
     max: axis.max ?? null,
     position: i === 0 ? 'left' : 'right',
     axisLine: { show: props.yAxes.length > 1 },
-    axisLabel: { color: '#8b8fa2', fontSize: 11 },
-    splitLine: { lineStyle: { color: '#f0f1f4' } },
-    nameTextStyle: { fontSize: 10, color: '#8b8fa2' }
+    axisLabel: { ...baseAxisLabel, fontSize: 11 },
+    splitLine: { ...baseSplitLine },
+    nameTextStyle: { fontSize: 10, color: palette.ink50 }
   }))
 
   const seriesConfigs = props.series.map((s, i) => {
+    const seriesColor = resolveColor(s.color)
     const config = {
       name: s.name,
       type: 'line',
       smooth: true,
       yAxisIndex: s.yAxisIndex || 0,
-      lineStyle: { width: 2, color: s.color || undefined },
-      itemStyle: { color: s.color || undefined },
-      areaStyle: { opacity: 0.1, color: s.color || undefined },
+      lineStyle: { width: 2, color: seriesColor || undefined },
+      itemStyle: { color: seriesColor || undefined },
+      areaStyle: { opacity: 0.1, color: seriesColor || undefined },
       data: s.data,
       symbol: 'circle',
       symbolSize: 4
@@ -76,7 +84,7 @@ const chartOption = computed(() => {
         data: props.thresholds.map(t => ({
           yAxis: t.value,
           lineStyle: {
-            color: t.color || '#eb4343',
+            color: resolveColor(t.color) || palette.critical,
             type: 'dashed',
             width: 2
           },
@@ -84,7 +92,7 @@ const chartOption = computed(() => {
             formatter: `${t.label || ''} (${t.value})`,
             position: 'insideEndTop',
             fontSize: 10,
-            color: t.color || '#eb4343'
+            color: resolveColor(t.color) || palette.critical
           }
         }))
       }
@@ -95,7 +103,7 @@ const chartOption = computed(() => {
       config.markPoint = {
         symbol: 'triangle',
         symbolSize: 12,
-        itemStyle: { color: '#eb4343' },
+        itemStyle: { color: palette.critical },
         label: { show: false },
         data: props.anomalies.map(a => ({
           coord: [a.xIndex, a.value],
@@ -109,14 +117,15 @@ const chartOption = computed(() => {
       if (!config.markLine) config.markLine = { silent: false, symbol: 'none', data: [] }
       config.markLine.silent = false
       for (const evt of props.events) {
+        const evtColor = resolveColor(evt.color) || palette.info
         config.markLine.data.push({
           xAxis: evt.xIndex,
-          lineStyle: { color: evt.color || '#6a67fe', type: 'solid', width: 1.5 },
+          lineStyle: { color: evtColor, type: 'solid', width: 1.5 },
           label: {
             formatter: evt.label,
             position: 'insideStartTop',
             fontSize: 9,
-            color: evt.color || '#6a67fe',
+            color: evtColor,
             rotate: 90,
             offset: [0, 6]
           }
@@ -129,12 +138,8 @@ const chartOption = computed(() => {
 
   const option = {
     tooltip: {
-      trigger: 'axis',
+      ...baseTooltip,
       axisPointer: { type: 'cross' },
-      backgroundColor: '#3e4771',
-      borderColor: '#3e4771',
-      textStyle: { color: '#fff', fontSize: 11 },
-      borderRadius: 4,
       formatter: props.events.length > 0 ? (params) => {
         const idx = Array.isArray(params) ? params[0]?.dataIndex : params?.dataIndex
         let html = Array.isArray(params)
@@ -144,7 +149,7 @@ const chartOption = computed(() => {
         if (matchingEvents.length > 0) {
           html += '<br/><hr style="border-color:rgba(255,255,255,0.2);margin:4px 0"/>'
           for (const evt of matchingEvents) {
-            html += `<span style="color:#6a67fe">&#9646;</span> Deploy <b>${evt.hash}</b>: ${evt.message}<br/>`
+            html += `<span style="color:${palette.info}">&#9646;</span> Deploy <b>${evt.hash}</b>: ${evt.message}<br/>`
           }
         }
         return html
@@ -153,7 +158,7 @@ const chartOption = computed(() => {
     legend: {
       top: 0,
       data: props.series.map(s => s.name),
-      textStyle: { fontSize: 11, color: '#515774' }
+      textStyle: { fontSize: 11, color: palette.ink75 }
     },
     toolbox: {
       right: 16,
@@ -162,7 +167,7 @@ const chartOption = computed(() => {
         saveAsImage: { title: 'Save', pixelRatio: 2 },
         dataZoom: { title: { zoom: 'Zoom', back: 'Reset' } }
       },
-      iconStyle: { borderColor: '#8b8fa2' }
+      iconStyle: { borderColor: palette.ink50 }
     },
     grid: {
       left: '3%',
@@ -175,8 +180,8 @@ const chartOption = computed(() => {
       type: 'category',
       boundaryGap: false,
       data: props.xLabels,
-      axisLabel: { fontSize: 11, color: '#8b8fa2' },
-      axisLine: { lineStyle: { color: '#e2e4ea' } }
+      axisLabel: { ...baseAxisLabel, fontSize: 11 },
+      axisLine: { ...baseAxisLine }
     },
     yAxis: yAxisConfigs,
     series: seriesConfigs
@@ -185,12 +190,11 @@ const chartOption = computed(() => {
   if (props.zoomable) {
     option.dataZoom = [
       {
+        ...baseDataZoom,
         type: 'slider',
         bottom: 10,
         height: 24,
-        borderColor: '#e2e4ea',
-        fillerColor: 'rgba(106, 103, 254, 0.15)',
-        handleStyle: { color: '#6a67fe' }
+        borderColor: palette.ink10
       },
       {
         type: 'inside',
@@ -204,24 +208,8 @@ const chartOption = computed(() => {
 </script>
 
 <style scoped>
-.chart-container {
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  padding: var(--pad-large);
-  box-shadow: var(--box-shadow);
-}
-
-h3 {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--fleet-black);
-  margin-bottom: var(--pad-medium);
-}
-
 .chart {
   width: 100%;
   height: 340px;
 }
-
 </style>

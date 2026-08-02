@@ -1,15 +1,12 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>DEX insights</h1>
-      <span class="subtitle">Memory pressure, agent overhead, risk signals</span>
-    </header>
+  <div class="dashboard page-stack">
+    <PageHeader title="DEX insights" subtitle="Memory pressure, agent overhead, risk signals" />
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
     <!-- Fleet Summary -->
     <section class="section">
-      <h2>Fleet summary</h2>
+      <SectionHeader title="Fleet summary" />
       <div class="metrics-row four-col">
         <MetricCard label="Hosts" :value="summary.total_devices" :loading="loading" />
         <MetricCard label="Avg memory pressure" :value="summary.avg_mem_pressure_pct" unit="%" :loading="loading" />
@@ -20,7 +17,7 @@
 
     <!-- Architecture Comparison -->
     <section class="section">
-      <h2>Architecture comparison</h2>
+      <SectionHeader title="Architecture comparison" />
       <div class="arch-cards">
         <div v-for="a in archData" :key="a.arch" class="arch-card">
           <div class="arch-name">{{ a.arch }}</div>
@@ -48,8 +45,8 @@
 
     <!-- RAM Utilization -->
     <section class="section">
-      <h2>RAM utilization by tier</h2>
-      <p class="section-desc">Devices with more RAM show higher pressure — not because they're struggling, but because they run heavier workloads (VMs, IDEs). The real risk is <strong>headroom</strong>: 8 GB devices at 8% have only ~0.6 GB of app memory — one heavy app away from swap. 128 GB at 28% has 92 GB free.</p>
+      <SectionHeader title="RAM utilization by tier" />
+      <p class="section-caption">Devices with more RAM show higher pressure — not because they're struggling, but because they run heavier workloads (VMs, IDEs). The real risk is <strong>headroom</strong>: 8 GB devices at 8% have only ~0.6 GB of app memory — one heavy app away from swap. 128 GB at 28% has 92 GB free.</p>
       <div class="ram-tiers">
         <div v-for="t in ramTierData" :key="t.ram_tier" class="ram-tier-row">
           <div class="ram-tier-label">
@@ -57,17 +54,7 @@
             <span class="ram-tier-count">{{ t.device_count }} device{{ t.device_count !== 1 ? 's' : '' }}</span>
           </div>
           <div class="ram-bar-container">
-            <div class="ram-bar-track">
-              <div
-                class="ram-bar-used"
-                :class="pressureClass(t.avg_mem_pressure_pct)"
-                :style="{ width: Math.min(t.avg_mem_pressure_pct, 100) + '%' }"
-              ></div>
-              <div
-                class="ram-bar-peak"
-                :style="{ left: Math.min(t.max_mem_pressure_pct, 100) + '%' }"
-              ></div>
-            </div>
+            <GaugeBar :value="t.avg_mem_pressure_pct" :marker="t.max_mem_pressure_pct" />
             <div class="ram-bar-labels">
               <span class="ram-used-label">{{ t.avg_used_gb }} GB used</span>
               <span class="ram-free-label">{{ Math.round((t.avg_total_ram_gb - t.avg_used_gb) * 10) / 10 }} GB free</span>
@@ -88,42 +75,29 @@
         nameKey="cpu_brand"
         valueKey="avg_mem_pressure_pct"
       />
-      <p class="chart-desc"><strong>Higher bar = worse.</strong> Compares CPU generations on memory pressure. Older chips (M1) with less RAM may show lower absolute pressure but be closer to their ceiling. Newer chips with more RAM absorb heavier workloads.</p>
+      <p class="section-caption"><strong>Higher bar = worse.</strong> Compares CPU generations on memory pressure. Older chips (M1) with less RAM may show lower absolute pressure but be closer to their ceiling. Newer chips with more RAM absorb heavier workloads.</p>
     </section>
 
     <!-- Device Drill-Down -->
-    <section v-if="selectedDevice" class="device-drawer" ref="drawerRef">
-      <div class="drawer-header">
-        <div>
-          <h2>{{ displayHost(selectedDevice) }}</h2>
-          <span class="drawer-sub">{{ selectedDevice.cpu_brand }} · {{ selectedDevice.hardware_model }} · {{ selectedDevice.memory_gb }} GB RAM · {{ selectedDevice.avg_mem_pressure_pct }}% pressure</span>
+    <section v-if="selectedDevice" ref="drawerRef">
+      <Drawer :title="displayHost(selectedDevice)" @close="selectedDevice = null; deviceApps = []">
+        <template #subtitle>{{ selectedDevice.cpu_brand }} · {{ selectedDevice.hardware_model }} · {{ selectedDevice.memory_gb }} GB RAM · {{ selectedDevice.avg_mem_pressure_pct }}% pressure</template>
+        <div class="pressure-bar-wrap">
+          <GaugeBar :value="selectedDevice.peak_mem_pressure_pct" />
+          <span class="pressure-label">Peak: {{ selectedDevice.peak_mem_pressure_pct }}% of {{ selectedDevice.memory_gb }} GB</span>
         </div>
-        <button class="close-btn" @click="selectedDevice = null; deviceApps = []">&times;</button>
-      </div>
-      <div class="pressure-bar-wrap">
-        <div class="pressure-bar">
-          <div class="pressure-fill" :style="{ width: Math.min(selectedDevice.peak_mem_pressure_pct, 100) + '%' }" :class="pressureClass(selectedDevice.peak_mem_pressure_pct)"></div>
-        </div>
-        <span class="pressure-label">Peak: {{ selectedDevice.peak_mem_pressure_pct }}% of {{ selectedDevice.memory_gb }} GB</span>
-      </div>
-      <div v-if="deviceApps.length" class="table-wrap">
-        <table class="data-table compact">
-          <thead><tr><th>App</th><th>Memory (MB)</th><th>Threads</th><th>Bundle ID</th></tr></thead>
-          <tbody>
-            <tr v-for="a in deviceApps" :key="a.pid">
-              <td class="hostname">{{ a.app_name }}</td>
-              <td :class="memClass(a.memory_mb)">{{ a.memory_mb }}</td>
-              <td>{{ a.threads }}</td>
-              <td class="muted">{{ a.bundle_identifier }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <DataTable
+          v-if="deviceApps.length"
+          :data="deviceApps"
+          :columns="deviceAppColumns"
+          density="compact"
+        />
+      </Drawer>
     </section>
 
     <!-- Devices Under Pressure -->
     <section class="section">
-      <h2>Hosts by memory pressure</h2>
+      <SectionHeader title="Hosts by memory pressure" />
       <div class="table-wrap">
         <table class="data-table">
           <thead>
@@ -154,8 +128,7 @@
 
     <!-- Agent Overhead -->
     <section class="section">
-      <h2>Management agent overhead</h2>
-      <p class="section-desc">Memory cost of security and management agents across the fleet.</p>
+      <SectionHeader title="Management agent overhead" caption="Memory cost of security and management agents across the fleet." />
       <div class="table-wrap">
         <table class="data-table">
           <thead><tr><th>Agent</th><th>Avg MB</th><th>P95 MB</th><th>Peak MB</th><th>Hosts</th><th>Total RAM</th></tr></thead>
@@ -181,8 +154,7 @@
 
     <!-- Top User Apps -->
     <section class="section">
-      <h2>Top user applications by total RAM footprint</h2>
-      <p class="section-desc">Non-system apps ranked by avg memory × device count. Apps with high total RAM footprint across the fleet are candidates for optimization or license review.</p>
+      <SectionHeader title="Top user applications by total RAM footprint" caption="Non-system apps ranked by avg memory × device count. Apps with high total RAM footprint across the fleet are candidates for optimization or license review." />
       <div class="table-wrap">
         <table class="data-table">
           <thead><tr>
@@ -207,13 +179,12 @@
 
     <!-- Risk Assessment -->
     <section class="section">
-      <h2>Risk assessment</h2>
-      <p class="section-desc">Devices scored on: Intel architecture (+1), RAM ≤ 8 GB (+1), memory pressure > 50% (+1). Score 2+ = likely poor DEX.</p>
+      <SectionHeader title="Risk assessment" caption="Devices scored on: Intel architecture (+1), RAM ≤ 8 GB (+1), memory pressure > 50% (+1). Score 2+ = likely poor DEX." />
       <div class="risk-summary">
-        <span class="risk-badge risk-0">{{ riskCounts[0] || 0 }} healthy</span>
-        <span class="risk-badge risk-1">{{ riskCounts[1] || 0 }} low risk</span>
-        <span class="risk-badge risk-2">{{ riskCounts[2] || 0 }} moderate</span>
-        <span class="risk-badge risk-3">{{ riskCounts[3] || 0 }} high risk</span>
+        <Chip tone="good">{{ riskCounts[0] || 0 }} healthy</Chip>
+        <Chip tone="fair">{{ riskCounts[1] || 0 }} low risk</Chip>
+        <Chip tone="elevated">{{ riskCounts[2] || 0 }} moderate</Chip>
+        <Chip tone="critical">{{ riskCounts[3] || 0 }} high risk</Chip>
       </div>
       <div v-if="riskyDevices.length" class="table-wrap">
         <table class="data-table">
@@ -230,13 +201,13 @@
               <td>{{ d.cpu_brand }}</td>
               <td>{{ d.memory_gb }} GB</td>
               <td :class="pressureClass(d.avg_mem_pressure_pct)">{{ d.avg_mem_pressure_pct }}%</td>
-              <td><span class="risk-badge" :class="'risk-' + d.risk_score">{{ d.risk_score }}/3</span></td>
+              <td><Badge :tone="riskTone(d.risk_score)" :label="d.risk_score + '/3'" /></td>
               <td class="muted">{{ riskFactors(d) }}</td>
             </tr>
           </tbody>
         </table>
       </div>
-      <div v-else class="good-news">All devices scored 0 — no high-risk devices detected.</div>
+      <EmptyState v-else small title="No high-risk devices" info="All devices scored 0 — no high-risk devices detected." />
     </section>
   </div>
 </template>
@@ -245,8 +216,17 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { query } from '../services/api'
 import { useFleetFilter } from '../composables/useFleetFilter'
+import { useSort } from '../composables/useSort'
 import MetricCard from '../components/MetricCard.vue'
 import BarChart from '../components/BarChart.vue'
+import DataTable from '../components/DataTable.vue'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
+import Drawer from '../components/base/Drawer.vue'
+import GaugeBar from '../components/base/GaugeBar.vue'
+import Chip from '../components/base/Chip.vue'
+import Badge from '../components/base/Badge.vue'
+import EmptyState from '../components/base/EmptyState.vue'
 import { displayHost } from '../composables/displayName'
 
 const { searchText: globalSearch, selectedModel, selectedRAMTier } = useFleetFilter()
@@ -266,10 +246,6 @@ const riskData = ref([])
 const selectedDevice = ref(null)
 const deviceApps = ref([])
 const drawerRef = ref(null)
-const appSortCol = ref('fleet_cost_mb')
-const appSortAsc = ref(false)
-const devSortCol = ref('avg_mem_pressure_pct')
-const devSortAsc = ref(false)
 
 const totalAgentOverhead = computed(() => agentData.value.reduce((s, a) => s + (Number(a.fleet_cost_mb) || 0), 0))
 
@@ -308,42 +284,37 @@ function applyGlobalFilter(list) {
 
 const riskyDevices = computed(() => applyGlobalFilter(riskData.value.filter(d => d.risk_score > 0)))
 
-const sortedPressureDevices = computed(() => {
-  return [...applyGlobalFilter(pressureDevices.value)].sort((a, b) => {
-    const av = a[devSortCol.value] ?? ''
-    const bv = b[devSortCol.value] ?? ''
-    const cmp = typeof av === 'number' ? av - bv : String(av).localeCompare(String(bv))
-    return devSortAsc.value ? cmp : -cmp
-  })
-})
+/* ─── Table sorting (shared composable) ─────────────────── */
+const DEV_NUMERIC_COLS = new Set(['memory_gb', 'avg_mem_pressure_pct', 'peak_mem_pressure_pct', 'avg_total_app_mem_mb'])
+const devSort = useSort('avg_mem_pressure_pct', false)
+
+const sortedPressureDevices = computed(() =>
+  devSort.sortRows(applyGlobalFilter(pressureDevices.value), k => DEV_NUMERIC_COLS.has(k))
+)
 
 function sortDevBy(col) {
-  if (devSortCol.value === col) devSortAsc.value = !devSortAsc.value
-  else { devSortCol.value = col; devSortAsc.value = col === 'hostname' }
+  devSort.toggleSort(col, DEV_NUMERIC_COLS.has(col))
 }
 
 function devSortIcon(col) {
-  if (devSortCol.value !== col) return ''
-  return devSortAsc.value ? '\u25B2' : '\u25BC'
+  if (devSort.sortKey.value !== col) return ''
+  return devSort.sortAsc.value ? '▲' : '▼'
 }
 
-const sortedTopApps = computed(() => {
-  return [...topApps.value].sort((a, b) => {
-    const av = a[appSortCol.value] ?? ''
-    const bv = b[appSortCol.value] ?? ''
-    const cmp = typeof av === 'number' ? av - bv : String(av).localeCompare(String(bv))
-    return appSortAsc.value ? cmp : -cmp
-  })
-})
+const APP_NUMERIC_COLS = new Set(['device_count', 'avg_mem_mb', 'peak_mem_mb', 'fleet_cost_mb'])
+const appSort = useSort('fleet_cost_mb', false)
+
+const sortedTopApps = computed(() =>
+  appSort.sortRows(topApps.value, k => APP_NUMERIC_COLS.has(k))
+)
 
 function sortAppsBy(col) {
-  if (appSortCol.value === col) appSortAsc.value = !appSortAsc.value
-  else { appSortCol.value = col; appSortAsc.value = col === 'app_name' }
+  appSort.toggleSort(col, APP_NUMERIC_COLS.has(col))
 }
 
 function appSortIcon(col) {
-  if (appSortCol.value !== col) return ''
-  return appSortAsc.value ? '\u25B2' : '\u25BC'
+  if (appSort.sortKey.value !== col) return ''
+  return appSort.sortAsc.value ? '▲' : '▼'
 }
 
 function pressureClass(pct) {
@@ -357,6 +328,23 @@ function memClass(mb) {
   if (mb > 1000) return 'pressure-critical'
   if (mb > 500) return 'pressure-high'
   return ''
+}
+
+function memTone(mb) {
+  if (mb > 1000) return 'critical'
+  if (mb > 500) return 'elevated'
+  return null
+}
+
+const deviceAppColumns = [
+  { key: 'app_name', label: 'App' },
+  { key: 'memory_mb', label: 'Memory (MB)', type: 'number', tone: memTone },
+  { key: 'threads', label: 'Threads', type: 'number' },
+  { key: 'bundle_identifier', label: 'Bundle ID' },
+]
+
+function riskTone(score) {
+  return ['good', 'fair', 'elevated', 'critical'][Math.min(Number(score) || 0, 3)]
 }
 
 function formatMB(mb) {
@@ -421,86 +409,15 @@ onMounted(() => fetchAll())
   max-width: 1400px;
 }
 
-.dashboard-header {
-  display: flex;
-  align-items: baseline;
-  gap: var(--pad-medium);
-  margin-bottom: var(--pad-xlarge);
-}
-
-.subtitle {
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  color: var(--fleet-black-50);
-}
-
-h1 {
-  font-family: var(--font-body);
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--fleet-black);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-h2 {
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  color: var(--fleet-black);
-  margin-bottom: var(--pad-medium);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.section-desc {
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  color: var(--fleet-black-50);
-  margin: -7px 0 var(--pad-medium);
-  line-height: var(--line-height-relaxed);
-}
-
-.chart-desc {
-  font-family: var(--font-body);
-  font-size: var(--font-size-xs);
-  color: var(--fleet-black-50);
-  margin-top: var(--pad-small);
-  line-height: var(--line-height-relaxed);
-}
-
-.error-banner {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  background: var(--fleet-status-error-light);
-  color: var(--fleet-status-error);
-  padding: 11px 14px;
-  border-radius: var(--radius-medium);
-  border: 1px solid var(--fleet-status-error-border);
-  margin-bottom: var(--pad-large);
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-}
-
 .section {
-  margin-bottom: var(--pad-xxl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-medium);
 }
 
-.metrics-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--pad-large);
-  margin-bottom: var(--pad-large);
-}
-
-.metrics-row.four-col {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.charts-row.two-col {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--pad-large);
-  margin-bottom: var(--pad-large);
+.section-caption {
+  margin: 0;
+  line-height: var(--line-height-relaxed);
 }
 
 /* ─── Architecture Cards ──────────────────────────────── */
@@ -513,8 +430,8 @@ h2 {
 .arch-card {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius-medium);
-  padding: var(--pad-large);
+  border-radius: var(--radius-large);
+  padding: var(--card-pad);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
@@ -543,104 +460,34 @@ h2 {
 }
 
 .stat-value {
-  font-size: var(--font-size-lg);
+  font-size: var(--metric-value-size);
   font-weight: 600;
   color: var(--fleet-black);
 }
 
 .stat-label {
   font-family: var(--font-body);
-  font-size: var(--font-size-sm);
+  font-size: var(--metric-label-size);
   font-weight: 500;
   color: var(--fleet-black-75);
 }
 
 /* ─── Pressure Colors ─────────────────────────────────── */
-.pressure-ok { color: var(--fleet-status-success); }
-.pressure-moderate { color: var(--fleet-status-warning); font-weight: 600; }
-.pressure-high { color: var(--fleet-ui-orange); font-weight: 600; }
-.pressure-critical { color: var(--fleet-status-error); font-weight: 700; }
+.pressure-ok { color: var(--status-good); }
+.pressure-moderate { color: var(--status-fair-text); font-weight: 600; }
+.pressure-high { color: var(--status-elevated); font-weight: 600; }
+.pressure-critical { color: var(--status-critical); font-weight: 700; }
 
-/* ─── Pressure Bar ────────────────────────────────────── */
+/* ─── Drawer pressure gauge ───────────────────────────── */
 .pressure-bar-wrap {
   margin: var(--pad-medium) 0;
 }
-
-.pressure-bar {
-  height: 6px;
-  background: var(--fleet-black-5);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-
-.pressure-fill {
-  height: 100%;
-  border-radius: var(--radius-full);
-  transition: width 300ms ease;
-}
-
-.pressure-fill.pressure-ok { background: var(--fleet-status-success); }
-.pressure-fill.pressure-moderate { background: var(--fleet-status-warning); }
-.pressure-fill.pressure-high { background: var(--fleet-ui-orange); }
-.pressure-fill.pressure-critical { background: var(--fleet-status-error); }
 
 .pressure-label {
   font-size: var(--font-size-xs);
   color: var(--fleet-black-50);
   margin-top: var(--pad-xs);
   display: block;
-}
-
-/* ─── Device Drawer ───────────────────────────────────── */
-.device-drawer {
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius-medium);
-  padding: var(--pad-large);
-  margin-bottom: var(--pad-xlarge);
-  box-shadow: var(--shadow-sm);
-}
-
-.drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--pad-medium);
-}
-
-.drawer-header h2 {
-  margin: 0;
-  padding: 0;
-  border: none;
-  color: var(--fleet-core-blue);
-}
-
-.drawer-sub {
-  font-family: var(--font-body);
-  font-size: var(--font-size-xs);
-  color: var(--fleet-black-50);
-  margin-top: 4px;
-}
-
-.close-btn {
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  font-size: 16px;
-  cursor: pointer;
-  color: var(--fleet-black-50);
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.close-btn:hover {
-  background: var(--fleet-black-5);
-  border-color: var(--fleet-black-25);
-  color: var(--fleet-black);
 }
 
 /* ─── Tables ──────────────────────────────────────────── */
@@ -655,21 +502,17 @@ h2 {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-}
-
-.data-table.compact {
-  font-size: var(--font-size-sm);
+  font-size: var(--table-font-size);
 }
 
 .data-table th {
   text-align: left;
-  padding: 9px 13px;
+  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
   font-weight: 700;
   color: var(--fleet-black);
   background: var(--fleet-off-white);
   border-bottom: 1px solid var(--fleet-black-10);
-  font-size: var(--font-size-sm);
+  font-size: var(--table-header-font-size);
   white-space: nowrap;
 }
 .data-table th:first-child { border-top-left-radius: var(--radius-large); }
@@ -686,7 +529,7 @@ h2 {
 }
 
 .data-table td {
-  padding: 9px 13px;
+  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
   border-bottom: 1px solid var(--fleet-black-10);
   color: var(--fleet-black-75);
 }
@@ -696,7 +539,7 @@ h2 {
 }
 
 .data-table tfoot td {
-  padding: 11px 14px;
+  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
   border-top: 1px solid var(--fleet-black-10);
   border-bottom: none;
   background: var(--fleet-black-3);
@@ -740,42 +583,11 @@ h2 {
   font-size: var(--font-size-xs);
 }
 
-/* ─── Risk Badges ─────────────────────────────────────── */
+/* ─── Risk summary chips ──────────────────────────────── */
 .risk-summary {
   display: flex;
-  gap: var(--pad-medium);
-  margin-bottom: var(--pad-medium);
+  gap: var(--pad-small);
   flex-wrap: wrap;
-}
-
-.risk-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 13px;
-  border-radius: var(--radius-full);
-  font-family: var(--font-body);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-}
-
-.risk-0 {
-  background: var(--fleet-status-success-light);
-  color: var(--fleet-status-success);
-}
-
-.risk-1 {
-  background: var(--fleet-status-warning-light);
-  color: var(--fleet-status-warning-dark);
-}
-
-.risk-2 {
-  background: var(--fleet-ui-orange-light);
-  color: var(--fleet-ui-orange-dark);
-}
-
-.risk-3 {
-  background: var(--fleet-status-error-light);
-  color: var(--fleet-status-error);
 }
 
 /* ─── RAM Tier Utilization ────────────────────────────── */
@@ -814,46 +626,6 @@ h2 {
   flex: 1;
 }
 
-.ram-bar-track {
-  height: var(--gauge-track-height);
-  background: var(--fleet-black-10);
-  border-radius: var(--radius-full);
-  position: relative;
-  overflow: visible;
-}
-
-.ram-bar-used {
-  height: 100%;
-  border-radius: var(--radius-full);
-  transition: width 500ms ease;
-  min-width: 2px;
-}
-
-.ram-bar-used.pressure-ok {
-  background: linear-gradient(90deg, var(--fleet-green), var(--fleet-status-success));
-}
-
-.ram-bar-used.pressure-moderate {
-  background: linear-gradient(90deg, var(--status-fair-bg), var(--fleet-status-warning));
-}
-
-.ram-bar-used.pressure-high {
-  background: linear-gradient(90deg, var(--fleet-ui-orange), var(--fleet-ui-orange));
-}
-
-.ram-bar-used.pressure-critical {
-  background: linear-gradient(90deg, var(--status-critical-bg), var(--fleet-status-error));
-}
-
-.ram-bar-peak {
-  position: absolute;
-  top: -3px;
-  bottom: -3px;
-  width: 2px;
-  background: var(--fleet-black-50);
-  border-radius: 1px;
-}
-
 .ram-bar-labels {
   display: flex;
   justify-content: space-between;
@@ -888,42 +660,12 @@ h2 {
   color: var(--fleet-black-50);
 }
 
-.good-news {
-  background: var(--fleet-status-success-light);
-  color: var(--fleet-status-success);
-  padding: var(--pad-medium) var(--pad-large);
-  border-radius: var(--radius-medium);
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  border: 1px solid var(--fleet-status-success-border);
-}
-
 /* ─── Responsive ──────────────────────────────────────── */
-@media (max-width: 1024px) {
-  .metrics-row.four-col {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
 @media (max-width: 768px) {
-  .metrics-row,
-  .metrics-row.four-col {
-    grid-template-columns: 1fr;
-  }
-  
-  .charts-row.two-col {
-    grid-template-columns: 1fr;
-  }
-  
-  .dashboard-header {
-    flex-direction: column;
-    gap: var(--pad-small);
-  }
-  
   .arch-stat-row {
     flex-wrap: wrap;
   }
-  
+
   .ram-tier-row {
     grid-template-columns: 1fr;
     gap: var(--pad-small);

@@ -1,21 +1,18 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>Connectivity &amp; check-in</h1>
-      <span class="subtitle">Is the fleet reporting, and how's the network underneath it</span>
-    </header>
+  <div class="dashboard page-stack">
+    <PageHeader
+      title="Connectivity & check-in"
+      subtitle="Is the fleet reporting, and how's the network underneath it"
+    />
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
     <!-- ─── Check-in pulse ─── -->
     <section class="section">
-      <div class="section-header-with-caption">
-        <h2>Reporting status</h2>
-        <span class="section-caption">
-          Telemetry freshness, anchored to device-health reporting (the schedule confirmed flowing).
-          Freshest report {{ checkin.freshest_lag_hours != null ? checkin.freshest_lag_hours + 'h ago' : '—' }}.
-        </span>
-      </div>
+      <SectionHeader
+        title="Reporting status"
+        :caption="`Telemetry freshness, anchored to device-health reporting (the schedule confirmed flowing). Freshest report ${checkin.freshest_lag_hours != null ? checkin.freshest_lag_hours + 'h ago' : '—'}.`"
+      />
       <div class="metrics-row four-col">
         <MetricCard label="Reporting < 1h" :value="checkin.within_1h" :loading="loading"
           :subtitle="pct(checkin.within_1h)" />
@@ -29,7 +26,7 @@
 
     <!-- ─── Wi-Fi ─── -->
     <section class="section">
-      <h2>Wi-Fi signal</h2>
+      <SectionHeader title="Wi-Fi signal" />
       <div class="metrics-row four-col">
         <MetricCard label="Hosts on Wi-Fi" :value="wifi.unique_hosts" :loading="loading" />
         <MetricCard label="Avg RSSI" :value="wifi.avg_rssi" unit="dBm" :loading="loading" />
@@ -53,7 +50,7 @@
 
     <!-- ─── VPN / network confidence ─── -->
     <section class="section">
-      <h2>VPN &amp; network confidence</h2>
+      <SectionHeader title="VPN & network confidence" />
       <div class="metrics-row four-col">
         <MetricCard label="Tunnel active" :value="vpn.vpn_active" :loading="loading" />
         <MetricCard label="Direct connected" :value="vpn.direct_connected" :loading="loading" />
@@ -75,6 +72,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { query } from '../services/api'
 import MetricCard from '../components/MetricCard.vue'
 import PieChart from '../components/PieChart.vue'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
 import { useFleetFilter } from '../composables/useFleetFilter'
 
 const { filterParams } = useFleetFilter()
@@ -129,8 +128,12 @@ watch(filterParams, load, { deep: true })
 </script>
 
 <style scoped>
-.section-header-with-caption { margin-bottom: var(--pad-medium); }
-.section-caption { display: block; font-size: var(--font-size-sm); color: var(--fleet-black-50); margin-top: 2px; }
-.connectivity-note h3 { font-size: var(--font-size-md); margin-bottom: 6px; color: var(--fleet-black); font-weight: 700; }
-.connectivity-note p { font-size: var(--font-size-sm); color: var(--fleet-black-50); line-height: 1.5; }
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-medium);
+}
+.connectivity-note { gap: 6px; }
+.connectivity-note h3 { font-size: var(--font-size-md); margin: 0; color: var(--fleet-black); font-weight: 700; }
+.connectivity-note p { font-size: var(--font-size-sm); color: var(--fleet-black-50); line-height: 1.5; margin: 0; }
 </style>

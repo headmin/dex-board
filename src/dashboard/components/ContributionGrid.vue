@@ -1,15 +1,11 @@
 <template>
-  <div class="grid-container">
-    <div class="grid-header">
-      <h3>{{ title }}</h3>
-      <div class="grid-controls">
-        <slot name="controls" />
-      </div>
-    </div>
+  <ChartCard :title="title" :loading="loading" :empty="weeks.length === 0" empty-text="No data yet">
+    <template #actions>
+      <slot name="controls" />
+    </template>
 
-    <div v-if="loading" class="grid-loading">Loading...</div>
-    <div v-else-if="weeks.length === 0" class="grid-empty">No data yet</div>
-    <template v-else>
+    <!-- position:relative anchor for the absolute tooltip -->
+    <div class="grid-container">
       <div class="grid-scroll">
         <!-- Month labels -->
         <div class="month-row">
@@ -54,19 +50,20 @@
         </div>
         <span class="legend-label">{{ legendHigh }}</span>
       </div>
-    </template>
 
-    <!-- Tooltip -->
-    <div v-if="tooltip.visible" class="grid-tooltip" :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
-      <div class="tooltip-date">{{ tooltip.date }}</div>
-      <div class="tooltip-value">{{ tooltip.text }}</div>
+      <!-- Tooltip -->
+      <div v-if="tooltip.visible" class="grid-tooltip" :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
+        <div class="tooltip-date">{{ tooltip.date }}</div>
+        <div class="tooltip-value">{{ tooltip.text }}</div>
+      </div>
     </div>
-  </div>
+  </ChartCard>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import dayjs from 'dayjs'
+import ChartCard from './base/ChartCard.vue'
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -200,39 +197,7 @@ function hideTooltip() {
 
 <style scoped>
 .grid-container {
-  background: var(--fleet-white);
-  border-radius: var(--radius);
-  border: 1px solid var(--fleet-black-10);
-  padding: var(--pad-large);
-  box-shadow: var(--box-shadow);
   position: relative;
-}
-
-.grid-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-
-h3 {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--fleet-black);
-  margin: 0;
-}
-
-.grid-controls {
-  display: flex;
-  gap: 7px;
-  align-items: center;
-}
-
-.grid-loading, .grid-empty {
-  text-align: center;
-  padding: 36px;
-  color: #8b8fa2;
-  font-size: 12px;
 }
 
 .grid-scroll {
@@ -254,7 +219,7 @@ h3 {
   flex: 1;
   display: grid;
   font-size: 10px;
-  color: #8b8fa2;
+  color: var(--fleet-black-50);
   font-weight: 500;
 }
 
@@ -277,7 +242,7 @@ h3 {
 
 .day-label {
   font-size: 10px;
-  color: #8b8fa2;
+  color: var(--fleet-black-50);
   display: flex;
   align-items: center;
   height: 14px;
@@ -295,13 +260,13 @@ h3 {
   width: 14px;
   height: 14px;
   border-radius: 3px;
-  background: #f0f1f4;
+  background: var(--fleet-black-5-down);
   cursor: pointer;
   transition: outline 100ms;
 }
 
 .cell:hover:not(.empty) {
-  outline: 2px solid #192147;
+  outline: 2px solid var(--fleet-black);
   outline-offset: -1px;
 }
 
@@ -321,7 +286,7 @@ h3 {
 
 .legend-label {
   font-size: 10px;
-  color: #8b8fa2;
+  color: var(--fleet-black-50);
 }
 
 .legend-cells {
@@ -347,7 +312,7 @@ h3 {
   white-space: nowrap;
   pointer-events: none;
   z-index: 10;
-  box-shadow: 0 4px 12px rgba(62, 71, 113, 0.4);
+  box-shadow: var(--shadow-md);
 }
 
 .grid-tooltip::after {
@@ -366,6 +331,6 @@ h3 {
 }
 
 .tooltip-value {
-  color: #c5c7d1;
+  color: var(--fleet-black-25);
 }
 </style>

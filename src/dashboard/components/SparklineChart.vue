@@ -11,12 +11,13 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { palette } from '../composables/uiPalette'
 
 use([CanvasRenderer, LineChart, GridComponent, TooltipComponent])
 
 const props = defineProps({
   data: { type: Array, default: () => [] },
-  color: { type: String, default: '#6a67fe' },
+  color: { type: String, default: palette.info },
   width: { type: String, default: '120px' },
   height: { type: String, default: '32px' },
   showTooltip: { type: Boolean, default: false },

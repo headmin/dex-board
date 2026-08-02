@@ -1,15 +1,16 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>DEX query pack</h1>
-      <TimeRangeFilter />
-    </header>
+  <div class="dashboard page-stack">
+    <PageHeader title="DEX query pack">
+      <template #actions>
+        <TimeRangeFilter />
+      </template>
+    </PageHeader>
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
     <!-- Overview Metrics -->
     <section class="section">
-      <h2>Overview</h2>
+      <SectionHeader title="Overview" />
       <div class="metrics-row four-col">
         <MetricCard label="Active hosts" :value="overview.deviceCount" :loading="loading.overview" />
         <MetricCard label="Health events" :value="overview.healthEvents" :loading="loading.overview" />
@@ -19,20 +20,12 @@
     </section>
 
     <!-- Category Tabs -->
-    <div class="tabs">
-      <button
-        v-for="tab in tabs"
-        :key="tab.key"
-        class="tab"
-        :class="{ active: activeTab === tab.key }"
-        @click="activeTab = tab.key"
-      >{{ tab.label }}</button>
-    </div>
+    <Tabs v-model="activeTab" :tabs="tabItems" variant="pill" />
 
     <!-- System Performance -->
     <template v-if="activeTab === 'performance'">
       <section class="section">
-        <h2>System performance</h2>
+        <SectionHeader title="System performance" />
         <div class="charts-row two-col">
           <TimeSeriesChart
             title="Average memory usage %"
@@ -42,7 +35,7 @@
             yKey="avg_memory"
             :threshold="85"
             thresholdLabel="Warning"
-            color="#5cabdf"
+            :color="categorical[4]"
           />
           <TimeSeriesChart
             title="Average disk usage %"
@@ -52,7 +45,7 @@
             yKey="avg_disk"
             :threshold="90"
             thresholdLabel="Critical"
-            color="#f59e0b"
+            :color="palette.elevatedAlt"
           />
         </div>
         <div class="charts-row two-col">
@@ -85,7 +78,7 @@
     <!-- Top Processes -->
     <template v-if="activeTab === 'processes'">
       <section class="section">
-        <h2>Process analysis</h2>
+        <SectionHeader title="Process analysis" />
         <div class="metrics-row four-col">
           <MetricCard label="Unique processes" :value="proc.uniqueCount" :loading="loading.processes" />
           <MetricCard label="Avg threads (top 5)" :value="proc.avgThreads" :loading="loading.processes" />
@@ -138,7 +131,7 @@
     <!-- Hardware Inventory -->
     <template v-if="activeTab === 'hardware'">
       <section class="section">
-        <h2>Hardware inventory</h2>
+        <SectionHeader title="Hardware inventory" />
         <div class="metrics-row four-col">
           <MetricCard label="Total hosts" :value="hw.deviceCount" :loading="loading.hardware" />
           <MetricCard label="Avg RAM (GB)" :value="hw.avgRam" :loading="loading.hardware" />
@@ -175,7 +168,7 @@
     <!-- Security & Compliance -->
     <template v-if="activeTab === 'security'">
       <section class="section">
-        <h2>Security & compliance</h2>
+        <SectionHeader title="Security & compliance" />
         <div class="metrics-row four-col">
           <MetricCard label="Encrypted" :value="sec.encryptedPct + '%'" :loading="loading.security" />
           <MetricCard label="Firewall on" :value="sec.firewallPct + '%'" :loading="loading.security" />
@@ -244,6 +237,10 @@ import BarChart from '../components/BarChart.vue'
 import DataTable from '../components/DataTable.vue'
 import DeviceDetail from '../components/DeviceDetail.vue'
 import DeviceCompare from '../components/DeviceCompare.vue'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
+import Tabs from '../components/base/Tabs.vue'
+import { palette, categorical } from '../composables/uiPalette'
 
 const { timeRangeHours } = useTimeRange()
 const { filterParams } = useFleetFilter()
@@ -256,6 +253,8 @@ const tabs = [
   { key: 'hardware', label: 'Hardware' },
   { key: 'security', label: 'Security' }
 ]
+// Shape the existing tab list for the Tabs primitive ({value,label}).
+const tabItems = tabs.map(t => ({ value: t.key, label: t.label }))
 
 const loading = ref({
   overview: false,
@@ -542,131 +541,17 @@ onMounted(() => {
   padding: var(--pad-xlarge);
 }
 
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 22px;
-}
-
-h1 {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--fleet-black);
-}
-
-h2 {
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  color: var(--fleet-black);
-  margin-bottom: 14px;
-  padding-bottom: 7px;
-  border-bottom: 1px solid var(--fleet-black-10);
-}
-
-.error-banner {
-  background: var(--fleet-white);
-  color: var(--fleet-error);
-  padding: 11px 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--fleet-black-10);
-  border-left: 3px solid var(--fleet-error);
-  margin-bottom: 22px;
-}
-
-.tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 22px;
-  padding: 4px;
-  background: var(--fleet-black-5);
-  border-radius: var(--radius-large);
-  overflow-x: auto;
-}
-
-.tab {
-  padding: 9px 18px;
-  border: none;
-  background: transparent;
-  border-radius: var(--radius-medium);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--fleet-black-50);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 150ms;
-}
-
-.tab:hover {
-  color: var(--fleet-black-75);
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.tab.active {
-  color: var(--fleet-black);
-  background: var(--fleet-white);
-  box-shadow: var(--box-shadow);
-  font-weight: 600;
-}
-
 .section {
-  margin-bottom: 29px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-medium);
 }
 
-.metrics-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-  margin-bottom: 22px;
-}
-
-.metrics-row.four-col {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.charts-row {
-  margin-bottom: 22px;
-}
-
-.charts-row.two-col {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 22px;
-}
-
-@media (max-width: 1024px) {
-  .metrics-row.four-col {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .metrics-row {
-    grid-template-columns: 1fr;
-  }
-
-  .metrics-row.four-col {
-    grid-template-columns: 1fr;
-  }
-
-  .charts-row.two-col {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-  }
-
-  .tabs {
-    flex-wrap: wrap;
-  }
-}
-
+/* Kept as a bespoke overlay: it hosts DeviceCompare, which brings its own
+   panel chrome — the Modal primitive's header/body shell doesn't apply. */
 .compare-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  inset: 0;
   background: rgba(25, 33, 71, 0.4);
   display: flex;
   justify-content: center;
@@ -682,6 +567,6 @@ h2 {
   background: var(--fleet-off-white);
   border-radius: var(--radius-large);
   padding: var(--pad-large);
-  box-shadow: 0 8px 32px rgba(25, 33, 71, 0.2);
+  box-shadow: var(--shadow-lg);
 }
 </style>

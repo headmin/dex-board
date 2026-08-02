@@ -1,22 +1,19 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>Firehose reports</h1>
-    </header>
+  <div class="dashboard page-stack">
+    <PageHeader title="Firehose reports" />
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
     <!-- Tabs -->
-    <div class="tabs">
-      <button
-        v-for="tab in tabs" :key="tab.id"
-        class="tab" :class="{ active: activeTab === tab.id }"
-        @click="switchTab(tab.id)"
-      >{{ tab.label }}</button>
-    </div>
+    <Tabs
+      :model-value="activeTab"
+      :tabs="tabItems"
+      variant="underline"
+      @update:model-value="switchTab"
+    />
 
     <!-- ═══ Wi-Fi Tab ═══════════════════════════════ -->
-    <div v-if="activeTab === 'wifi'">
+    <div v-if="activeTab === 'wifi'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Hosts" :value="wifiSummary.unique_hosts" :loading="loading.wifi" />
@@ -31,7 +28,7 @@
           <PieChart title="Signal quality" :data="wifiDist" :loading="loading.wifi" nameKey="signal_quality" valueKey="cnt" />
         </section>
         <section class="section">
-          <TimeSeriesChart title="Fleet RSSI trend" :data="wifiTs" :loading="loading.wifi" xKey="hour" yKey="avg_rssi" color="#6a67fe" />
+          <TimeSeriesChart title="Fleet RSSI trend" :data="wifiTs" :loading="loading.wifi" xKey="hour" yKey="avg_rssi" :color="palette.info" />
         </section>
       </div>
 
@@ -41,7 +38,7 @@
     </div>
 
     <!-- ═══ Apps Tab ════════════════════════════════ -->
-    <div v-if="activeTab === 'apps'">
+    <div v-if="activeTab === 'apps'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Unique apps" :value="appSummary.unique_apps" :loading="loading.apps" />
@@ -66,7 +63,7 @@
     </div>
 
     <!-- ═══ Hardware Tab ════════════════════════════ -->
-    <div v-if="activeTab === 'hardware'">
+    <div v-if="activeTab === 'hardware'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Hosts" :value="hwDeviceCount" :loading="loading.hw" />
@@ -91,7 +88,7 @@
     </div>
 
     <!-- ═══ Fleetd Tab ═════════════════════════════ -->
-    <div v-if="activeTab === 'fleetd'">
+    <div v-if="activeTab === 'fleetd'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Total hosts" :value="fleetdSummary.total_hosts" :loading="loading.fleetd" />
@@ -116,9 +113,9 @@
     </div>
 
     <!-- ═══ Host Health Tab ══════════════════════ -->
-    <div v-if="activeTab === 'health'">
+    <div v-if="activeTab === 'health'" class="page-stack">
       <section class="section">
-        <h2>Host health</h2>
+        <SectionHeader title="Host health" />
         <div class="metrics-row four-col">
           <MetricCard label="Hosts" :value="healthSummary.total_devices" :loading="loading.health" />
           <MetricCard label="Severe swap" :value="healthSummary.severe_swap" :loading="loading.health" />
@@ -150,7 +147,7 @@
       </section>
 
       <section class="section">
-        <h2>OS health</h2>
+        <SectionHeader title="OS health" />
         <div class="metrics-row four-col">
           <MetricCard label="Hosts" :value="osSummary.total_devices" :loading="loading.health" />
           <MetricCard label="Healthy" :value="osSummary.healthy" :loading="loading.health" />
@@ -174,7 +171,7 @@
     </div>
 
     <!-- ═══ VPN Tab ════════════════════════════════ -->
-    <div v-if="activeTab === 'vpn'">
+    <div v-if="activeTab === 'vpn'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Total hosts" :value="vpnSummary.total_devices" :loading="loading.vpn" />
@@ -188,7 +185,6 @@
         <section class="section">
           <PieChart title="Network confidence" :data="vpnConfDist" :loading="loading.vpn" nameKey="network_confidence" valueKey="device_count" />
         </section>
-        <section class="section">&nbsp;</section>
       </div>
 
       <section class="section">
@@ -197,7 +193,7 @@
     </div>
 
     <!-- ═══ Crashes Tab ════════════════════════════ -->
-    <div v-if="activeTab === 'crashes'">
+    <div v-if="activeTab === 'crashes'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Hosts w/ crashes" :value="crashSummary.devices_with_crashes" :loading="loading.crashes" />
@@ -211,7 +207,6 @@
         <section class="section">
           <PieChart title="Crash severity" :data="crashSevDist" :loading="loading.crashes" nameKey="crash_severity" valueKey="crash_count" />
         </section>
-        <section class="section">&nbsp;</section>
       </div>
 
       <section class="section">
@@ -220,7 +215,7 @@
     </div>
 
     <!-- ═══ Adoption Tab ═══════════════════════════ -->
-    <div v-if="activeTab === 'adoption'">
+    <div v-if="activeTab === 'adoption'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Hosts" :value="adoptionSummary.total_devices" :loading="loading.adoption" />
@@ -234,7 +229,6 @@
         <section class="section">
           <PieChart title="Usage tier distribution" :data="adoptionTierDist" :loading="loading.adoption" nameKey="usage_tier" valueKey="app_count" />
         </section>
-        <section class="section">&nbsp;</section>
       </div>
 
       <section class="section">
@@ -252,6 +246,10 @@ import TimeSeriesChart from '../components/TimeSeriesChart.vue'
 import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
 import DataTable from '../components/DataTable.vue'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
+import Tabs from '../components/base/Tabs.vue'
+import { palette } from '../composables/uiPalette'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { displayHost } from '../composables/displayName'
 
@@ -285,6 +283,8 @@ const tabs = [
   { id: 'crashes', label: 'Crashes' },
   { id: 'adoption', label: 'Adoption' },
 ]
+// Shape the existing tab list for the Tabs primitive ({value,label}).
+const tabItems = tabs.map(t => ({ value: t.id, label: t.label }))
 
 // ── Wi-Fi data ──────────────────────────────────────
 const wifiSummary = ref({})
@@ -569,21 +569,10 @@ watch(filterParams, () => {
 
 <style scoped>
 .dashboard { max-width: 1280px; margin: 0 auto; padding: var(--pad-xlarge); }
-.dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black); }
-h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--fleet-black-10); }
-.error-banner { background: var(--fleet-white); color: var(--fleet-error); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--fleet-black-10); border-left: 3px solid var(--fleet-error); margin-bottom: 24px; }
-.section { margin-bottom: 32px; }
-.metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
-.metrics-row.four-col { grid-template-columns: repeat(4, 1fr); }
-.charts-row.two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 24px; }
 
-/* Tabs */
-.tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 2px solid var(--fleet-black-10); }
-.tab { font-family: var(--font-body); font-size: var(--font-size-sm); font-weight: 500; padding: 10px 20px; border: none; background: none; color: var(--fleet-black-50); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 150ms, border-color 150ms; }
-.tab:hover { color: var(--fleet-black-75); }
-.tab.active { color: var(--fleet-black); font-weight: 600; border-bottom-color: var(--fleet-vibrant-blue); }
-
-@media (max-width: 1024px) { .metrics-row.four-col { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 768px) { .metrics-row, .metrics-row.four-col { grid-template-columns: 1fr; } .charts-row.two-col { grid-template-columns: 1fr; } .tabs { overflow-x: auto; } }
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-medium);
+}
 </style>

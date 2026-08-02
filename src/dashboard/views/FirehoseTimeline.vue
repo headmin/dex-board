@@ -1,40 +1,22 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>GitOps timeline</h1>
-      <span class="subtitle">Changes to fleetdm/fleet → it-and-security/</span>
-    </header>
+  <div class="firehose-timeline page-stack">
+    <PageHeader title="GitOps timeline" subtitle="Changes to fleetdm/fleet → it-and-security/" />
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
     <!-- Summary -->
-    <section class="section">
-      <div class="metrics-row four-col">
-        <MetricCard label="Total commits" :value="commits.length" :loading="loading" />
-        <MetricCard label="Authors" :value="uniqueAuthors" :loading="loading" />
-        <MetricCard label="Files changed" :value="uniqueFiles" :loading="loading" />
-        <MetricCard label="Latest" :value="latestDate" :loading="loading" />
-      </div>
-    </section>
+    <div class="metrics-row four-col">
+      <MetricCard label="Total commits" :value="commits.length" :loading="loading" />
+      <MetricCard label="Authors" :value="uniqueAuthors" :loading="loading" />
+      <MetricCard label="Files changed" :value="uniqueFiles" :loading="loading" />
+      <MetricCard label="Latest" :value="latestDate" :loading="loading" />
+    </div>
 
     <!-- Upstream Fleet-maintained app releases (from fmalibrary.com) -->
-    <section v-if="fmaReleases.length" class="section">
-      <div class="fma-header-row">
-        <h2>App releases</h2>
-        <span class="fma-meta">
-          Vendor-published Fleet-maintained app versions ·
-          showing {{ visibleFmaReleases.length }} of {{ fmaReleases.length }} ·
-          {{ fmaWindowDays }}d patch window
-        </span>
-      </div>
+    <section v-if="fmaReleases.length" class="fma-section">
+      <SectionHeader title="App releases" :caption="fmaCaption" />
       <div class="fma-controls">
-        <div class="fma-chip-group">
-          <button
-            v-for="opt in osOptions" :key="opt.value"
-            class="fma-chip" :class="{ active: osFilter === opt.value }"
-            @click="osFilter = opt.value"
-          >{{ opt.label }} <span class="fma-chip-count">{{ osCounts[opt.value] || 0 }}</span></button>
-        </div>
+        <Tabs v-model="osFilter" :tabs="osTabs" variant="pill" />
         <label class="fma-toggle">
           <input type="checkbox" v-model="onlyWithData" />
           <span>Only show releases with patch data</span>
@@ -42,90 +24,69 @@
         </label>
       </div>
       <div v-if="!fmaEagerLoaded" class="fma-loading">Loading patch matches for {{ fmaTopReleases.length }} releases…</div>
-      <div v-else-if="!visibleFmaReleases.length" class="fma-empty">
-        No releases match the current filter. Try a different OS or untick "Only show releases with patch data".
-      </div>
+      <EmptyState
+        v-else-if="!visibleFmaReleases.length"
+        small
+        title="No releases match the current filter"
+        info='Try a different OS or untick "Only show releases with patch data".'
+      />
       <div class="fma-grid">
-        <div v-for="r in visibleFmaReleases" :key="r.id" class="fma-card">
-          <div class="fma-head">
-            <span class="fma-app">{{ r.app }}</span>
-            <span class="fma-platform" :class="'platform-' + r.platform">{{ r.platform }}</span>
-            <span v-if="r.event_type === 'added'" class="fma-badge added">new app</span>
-          </div>
-          <div class="fma-version">
-            <template v-if="r.version_from">{{ r.version_from }} → </template>
-            <strong>{{ r.version_to }}</strong>
-          </div>
-          <div class="fma-time">{{ formatTime(r.timestamp) }}</div>
-          <div v-if="fmaDeviceLoading[r.id]" class="fma-stats fma-stats-loading">Loading…</div>
-          <template v-else-if="fmaDeviceCounts[r.id]">
-            <div class="fma-stats">
-              <div class="fma-headline">
-                <strong>{{ totalDevicesForRelease(r.id) || 0 }}</strong>
-                <span class="fma-headline-label">{{ totalDevicesForRelease(r.id) === 1 ? 'host patched' : 'hosts patched' }}</span>
-              </div>
-              <div v-if="totalDevicesForRelease(r.id) > 0" class="fma-caption">
-                avg {{ aggregateLag(r.id).avg }}d · max {{ aggregateLag(r.id).max }}d · via osquery
-              </div>
-              <div v-else class="fma-caption fma-caption-empty">
-                no matching transitions in {{ fmaWindowDays }}d window
-              </div>
-            </div>
-            <a
-              v-if="totalDevicesForRelease(r.id) > 0"
-              class="fma-cta"
-              :href="ctaHref(r)"
-              @click.prevent="jumpToTimeline(r)"
-            >See in timeline →</a>
-            <button v-else class="fma-cta fma-cta-secondary" @click="loadFmaReleaseDevices(r)">Refresh</button>
-          </template>
-          <button v-else class="fma-load-btn" @click="loadFmaReleaseDevices(r)">Show hosts patched</button>
-        </div>
+        <FmaReleaseCard
+          v-for="r in visibleFmaReleases"
+          :key="r.id"
+          :release="r"
+          :rows="fmaDeviceCounts[r.id] || null"
+          :loading="!!fmaDeviceLoading[r.id]"
+          :window-days="fmaWindowDays"
+          @load-devices="loadFmaReleaseDevices"
+        >
+          <a
+            v-if="totalDevicesForRelease(r.id) > 0"
+            class="fma-cta"
+            :href="ctaHref(r)"
+            @click.prevent="jumpToTimeline(r)"
+          >See in timeline →</a>
+        </FmaReleaseCard>
       </div>
-      <button v-if="fmaTopReleases.length < fmaReleases.length" class="fma-more-btn" @click="fmaLimit += 12">
+      <BaseButton v-if="fmaTopReleases.length < fmaReleases.length" class="fma-more-btn" @click="fmaLimit += 12">
         Show 12 more releases
-      </button>
+      </BaseButton>
     </section>
 
     <!-- Filter bar -->
-    <section class="filter-bar">
-      <input v-model="search" class="search-input" placeholder="Search commits, authors, files, releases, patched apps..." />
-      <select v-model="authorFilter" class="filter-select">
-        <option value="">All authors</option>
-        <option v-for="a in authors" :key="a" :value="a">{{ a }}</option>
-      </select>
-      <select v-model="fileTypeFilter" class="filter-select">
-        <option value="">All file types</option>
-        <option value="policies">Policies</option>
-        <option value="scripts">Scripts</option>
-        <option value="profiles">Profiles</option>
-        <option value="queries">Queries</option>
-      </select>
-      <button
+    <div class="filter-bar">
+      <SearchInput v-model="search" class="filter-search" placeholder="Search commits, authors, files, releases, patched apps..." />
+      <BaseSelect v-model="authorFilter" class="filter-select" :options="authorOptions" />
+      <BaseSelect v-model="fileTypeFilter" class="filter-select" :options="fileTypeOptions" />
+      <BaseButton
         class="copy-md-btn"
         :class="{ 'copy-md-btn--copied': copied }"
         :disabled="!hasExportableEntries"
         :title="hasExportableEntries ? 'Copy the currently visible timeline as Markdown' : 'Nothing to copy'"
         @click="copyMarkdownExport"
       >
-        <span v-if="copied">✓ Copied</span>
-        <span v-else>📋 Copy as MD</span>
-      </button>
-    </section>
+        <template #icon>
+          <svg v-if="copied" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M2 6.5L4.8 9.2L10 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <svg v-else width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="4" y="4" width="6.5" height="6.5" rx="1" stroke="currentColor" stroke-width="1.2" />
+            <path d="M8 2H2.8A0.8 0.8 0 0 0 2 2.8V8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+          </svg>
+        </template>
+        {{ copied ? 'Copied' : 'Copy as MD' }}
+      </BaseButton>
+    </div>
 
     <!-- Background apps & daemons (running across fleet but not in adoption_gap) -->
-    <section v-if="daemons.length" class="section daemons-section">
-      <div class="daemons-header">
-        <h2>Background apps &amp; daemons</h2>
-        <span class="daemons-meta">
-          System services, helpers, security agents — running on the fleet but not tracked by app-adoption ·
-          showing {{ filteredDaemons.length }} of {{ daemons.length }}
-          <span v-if="search" class="daemons-search-hint">(filter: "{{ search }}")</span>
-        </span>
-      </div>
-      <div v-if="!filteredDaemons.length" class="daemons-empty">
-        No background apps match "{{ search }}". Clear the search to see all daemons.
-      </div>
+    <section v-if="daemons.length" class="daemons-section">
+      <SectionHeader title="Background apps &amp; daemons" :caption="daemonsCaption" />
+      <EmptyState
+        v-if="!filteredDaemons.length"
+        small
+        :title="`No background apps match &quot;${search}&quot;`"
+        info="Clear the search to see all daemons."
+      />
       <div v-else class="daemons-grid">
         <div v-for="d in filteredDaemons" :key="d.bundle_identifier" class="daemon-card">
           <div class="daemon-head">
@@ -139,17 +100,21 @@
     </section>
 
     <!-- Timeline -->
-    <section class="section" id="deployment-timeline">
+    <section class="timeline-section" id="deployment-timeline">
       <div class="timeline-controls">
-        <div class="event-chip-group">
+        <div class="legend-toggles">
           <button
             v-for="t in eventTypes" :key="t.key"
-            class="event-chip" :class="{ active: eventTypeFilter[t.key] }"
+            type="button"
+            class="legend-toggle"
+            :aria-pressed="eventTypeFilter[t.key]"
             @click="toggleEventType(t.key)"
           >
-            <span class="event-chip-dot" :style="{ background: t.color }"></span>
-            {{ t.label }}
-            <span class="event-chip-count">{{ eventTypeCounts[t.key] || 0 }}</span>
+            <Chip
+              :tone="eventTypeFilter[t.key] ? t.tone : 'neutral'"
+              :label="t.label"
+              :value="String(eventTypeCounts[t.key] || 0)"
+            />
           </button>
         </div>
         <label class="hosts-slider-label">
@@ -177,9 +142,9 @@
               v-for="rel in day.releases" :key="day.date + '-rel-' + rel.id"
               class="release-card"
             >
-              <span class="release-badge">RELEASE</span>
+              <Badge tone="good" label="Release" />
               <span class="release-name">{{ rel.app }}</span>
-              <span class="release-platform" :class="'platform-' + rel.platform">{{ rel.platform }}</span>
+              <span class="platform-tag" :class="'platform-' + rel.platform">{{ rel.platform }}</span>
               <span class="release-versions mono">
                 <template v-if="rel.version_from">{{ rel.version_from }}</template>
                 <template v-else>new</template>
@@ -233,7 +198,7 @@
             >
               <div class="patch-bucket-row" @click="toggleBucket(day.date, bucket.software_name)">
                 <span class="patch-bucket-caret">{{ isBucketExpanded(day.date, bucket.software_name) ? '▼' : '▶' }}</span>
-                <span class="patch-badge">PATCH</span>
+                <Badge tone="info" label="Patch" />
                 <span class="patch-bucket-name">{{ bucket.software_name }}</span>
                 <span class="patch-bucket-versions mono">
                   {{ bucket.earliest_from || '—' }}
@@ -256,64 +221,64 @@
                   </span>
                 </div>
                 <div v-if="isBucketLoading(day.date, bucket.software_name)" class="patch-bucket-loading">Loading transitions…</div>
-                <table v-else-if="drilldownRowsSorted(day.date, bucket.software_name).length" class="drilldown-table">
-                  <thead>
-                    <tr>
-                      <th>Target</th>
-                      <th>From</th>
-                      <th>Hosts</th>
-                      <th>Avg lag</th>
-                      <th>Max lag</th>
-                      <th>Hour</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(w, wi) in drilldownRowsSorted(day.date, bucket.software_name)"
-                      :key="wi"
-                      :class="{ 'target-group-start': isNewTargetGroup(drilldownRowsSorted(day.date, bucket.software_name), wi) }"
-                    >
-                      <td class="mono target-cell">{{ w.new_version }}</td>
-                      <td class="mono from-cell">{{ w.old_version || '—' }}</td>
-                      <td><strong>{{ w.device_count }}</strong></td>
-                      <td>{{ w.avg_lag }}d</td>
-                      <td>{{ w.max_lag }}d</td>
-                      <td>{{ formatTime(w.hour) }}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div v-else-if="drilldownRowsSorted(day.date, bucket.software_name).length" class="drilldown-table-wrap">
+                  <table class="drilldown-table">
+                    <thead>
+                      <tr>
+                        <th>Target</th>
+                        <th>From</th>
+                        <th>Hosts</th>
+                        <th>Avg lag</th>
+                        <th>Max lag</th>
+                        <th>Hour</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="(w, wi) in drilldownRowsSorted(day.date, bucket.software_name)"
+                        :key="wi"
+                        :class="{ 'target-group-start': isNewTargetGroup(drilldownRowsSorted(day.date, bucket.software_name), wi) }"
+                      >
+                        <td class="mono target-cell">{{ w.new_version }}</td>
+                        <td class="mono from-cell">{{ w.old_version || '—' }}</td>
+                        <td><strong>{{ w.device_count }}</strong></td>
+                        <td>{{ w.avg_lag }}d</td>
+                        <td>{{ w.max_lag }}d</td>
+                        <td>{{ formatTime(w.hour) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
                 <div v-else class="patch-bucket-loading">No transitions returned.</div>
               </div>
             </div>
           </template>
         </div>
 
-        <div v-if="!loading && filteredCommits.length === 0 && !patchBuckets.length" class="empty-state">
-          No activity matches your filters.
-        </div>
+        <EmptyState
+          v-if="!loading && filteredCommits.length === 0 && !patchBuckets.length"
+          small
+          title="No activity matches your filters."
+        />
       </div>
     </section>
 
     <!-- Author breakdown -->
     <div class="charts-row two-col">
-      <section class="section">
-        <BarChart
-          title="Commits by author"
-          :data="authorStats"
-          :loading="loading"
-          nameKey="author"
-          valueKey="count"
-        />
-      </section>
-      <section class="section">
-        <PieChart
-          title="Changes by type"
-          :data="typeStats"
-          :loading="loading"
-          nameKey="type"
-          valueKey="count"
-        />
-      </section>
+      <BarChart
+        title="Commits by author"
+        :data="authorStats"
+        :loading="loading"
+        nameKey="author"
+        valueKey="count"
+      />
+      <PieChart
+        title="Changes by type"
+        :data="typeStats"
+        :loading="loading"
+        nameKey="type"
+        valueKey="count"
+      />
     </div>
   </div>
 </template>
@@ -323,7 +288,21 @@ import { ref, computed, onMounted, watch } from 'vue'
 import MetricCard from '../components/MetricCard.vue'
 import BarChart from '../components/BarChart.vue'
 import PieChart from '../components/PieChart.vue'
-import { useFmaReleases } from '../composables/useFmaReleases'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
+import Tabs from '../components/base/Tabs.vue'
+import Chip from '../components/base/Chip.vue'
+import Badge from '../components/base/Badge.vue'
+import BaseButton from '../components/base/BaseButton.vue'
+import BaseSelect from '../components/base/BaseSelect.vue'
+import SearchInput from '../components/base/SearchInput.vue'
+import EmptyState from '../components/base/EmptyState.vue'
+import FmaReleaseCard from '../components/base/FmaReleaseCard.vue'
+import {
+  useFmaReleases,
+  totalDevicesForRelease as sharedTotalDevicesForRelease,
+  loadFmaReleaseDevices as sharedLoadFmaReleaseDevices,
+} from '../composables/useFmaReleases'
 import { useTimelineEvents } from '../composables/useTimelineEvents'
 import { query } from '../services/api'
 import dayjs from 'dayjs'
@@ -345,6 +324,19 @@ const latestDate = computed(() => {
   if (!commits.value.length) return '—'
   return new Date(commits.value[0].timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 })
+
+const authorOptions = computed(() => [
+  { value: '', label: 'All authors' },
+  ...authors.value.map(a => ({ value: a, label: a })),
+])
+
+const fileTypeOptions = [
+  { value: '', label: 'All file types' },
+  { value: 'policies', label: 'Policies' },
+  { value: 'scripts', label: 'Scripts' },
+  { value: 'profiles', label: 'Profiles' },
+  { value: 'queries', label: 'Queries' },
+]
 
 const filteredCommits = computed(() => {
   let list = commits.value
@@ -387,9 +379,9 @@ function toggleEventType(key) {
 }
 
 const eventTypes = [
-  { key: 'commits',  label: 'Commits',          color: '#6a67fe' },
-  { key: 'releases', label: 'Releases (RSS)',   color: '#009a7d' },
-  { key: 'patches',  label: 'Endpoint patches', color: '#6a67fe' },
+  { key: 'commits',  label: 'Commits',          tone: 'info' },
+  { key: 'releases', label: 'Releases (RSS)',   tone: 'good' },
+  { key: 'patches',  label: 'Endpoint patches', tone: 'info' },
 ]
 
 // Min-hosts slider with light debouncing
@@ -555,7 +547,7 @@ function formatDate(dateStr) { return new Date(dateStr + 'T00:00:00').toLocaleDa
 function formatTime(ts) { return new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) }
 function toggleExpand(sha) { expandedSha.value = expandedSha.value === sha ? null : sha }
 function fileTags(files) { const tags = new Set(); for (const f of files) { if (f.includes('/policies/')) tags.add('policies'); else if (f.includes('/scripts/')) tags.add('scripts'); else if (f.includes('/profiles/')) tags.add('profiles'); else if (f.includes('/queries/')) tags.add('queries') }; return [...tags] }
-function fileIcon(f) { if (f.endsWith('.yml') || f.endsWith('.yaml')) return '\u2699'; if (f.endsWith('.sh')) return '\u25B6'; if (f.endsWith('.mobileconfig') || f.endsWith('.xml')) return '\u2630'; return '\u25E6' }
+function fileIcon(f) { if (f.endsWith('.yml') || f.endsWith('.yaml')) return '⚙'; if (f.endsWith('.sh')) return '▶'; if (f.endsWith('.mobileconfig') || f.endsWith('.xml')) return '☰'; return '◦' }
 
 async function fetchChangelog() {
   loading.value = true; error.value = null
@@ -565,14 +557,14 @@ async function fetchChangelog() {
 }
 
 // ─── FMA upstream app releases ──────────────────────
-const { releases: fmaReleases, fetchFmaReleases, fetchReleaseDevices, releasesByDay: fmaReleasesByDay } = useFmaReleases()
+const { releases: fmaReleases, fetchFmaReleases } = useFmaReleases()
 const fmaWindowDays = 30
 const fmaLimit = ref(24)
 const fmaDeviceCounts = ref({})
 const fmaDeviceLoading = ref({})
 const fmaEagerLoaded = ref(false)
 
-// OS filter — chips at the top of the section.
+// OS filter — pill tabs at the top of the section.
 // FMA records use 'mac' and 'darwin' for macOS; merge them under one label.
 const osFilter = ref('all')
 const osOptions = [
@@ -597,12 +589,20 @@ const osCounts = computed(() => {
   return c
 })
 
+const osTabs = computed(() =>
+  osOptions.map(o => ({ value: o.value, label: o.label, count: osCounts.value[o.value] || 0 }))
+)
+
+const fmaCaption = computed(() =>
+  `Vendor-published Fleet-maintained app versions · showing ${visibleFmaReleases.value.length} of ${fmaReleases.value.length} · ${fmaWindowDays}d patch window`
+)
+
 // Toggle: hide cards where the worker came back with zero matches.
 const onlyWithData = ref(true)
 
 const fmaTopReleases = computed(() => {
   let list = fmaReleases.value
-  // Layer 1: OS chip filter
+  // Layer 1: OS tab filter
   if (osFilter.value !== 'all') {
     list = list.filter(r => platformBucket(r.platform) === osFilter.value)
   }
@@ -630,39 +630,17 @@ const releasesWithData = computed(() =>
   fmaTopReleases.value.filter(r => (totalDevicesForRelease(r.id) || 0) > 0).length
 )
 
-async function loadFmaReleaseDevices(release) {
-  if (fmaDeviceLoading.value[release.id]) return
-  fmaDeviceLoading.value = { ...fmaDeviceLoading.value, [release.id]: true }
-  try {
-    const rows = await fetchReleaseDevices(release, fmaWindowDays)
-    fmaDeviceCounts.value = { ...fmaDeviceCounts.value, [release.id]: rows || [] }
-  } finally {
-    fmaDeviceLoading.value = { ...fmaDeviceLoading.value, [release.id]: false }
-  }
+// Shared helpers from useFmaReleases, bound to this view's state.
+function loadFmaReleaseDevices(release) {
+  return sharedLoadFmaReleaseDevices(query, release, {
+    deviceCounts: fmaDeviceCounts,
+    deviceLoading: fmaDeviceLoading,
+    windowDays: fmaWindowDays,
+  })
 }
 
 function totalDevicesForRelease(id) {
-  const rows = fmaDeviceCounts.value[id]
-  if (!rows) return null
-  return rows.reduce((sum, r) => sum + Number(r.device_count || 0), 0)
-}
-
-// Weighted-by-host avg lag, plus max-of-max. Used by the slim FMA card.
-function aggregateLag(id) {
-  const rows = fmaDeviceCounts.value[id] || []
-  let totalHosts = 0
-  let weightedSum = 0
-  let maxLag = 0
-  for (const r of rows) {
-    const hosts = Number(r.device_count || 0)
-    const avg = Number(r.avg_lag || 0)
-    const max = Number(r.max_lag || 0)
-    weightedSum += hosts * avg
-    totalHosts += hosts
-    if (max > maxLag) maxLag = max
-  }
-  const avg = totalHosts > 0 ? +(weightedSum / totalHosts).toFixed(1) : 0
-  return { avg, max: +maxLag.toFixed(1) }
+  return sharedTotalDevicesForRelease(fmaDeviceCounts, id)
 }
 
 // Pick the most-patched software name from a release's matched rows.
@@ -701,13 +679,6 @@ function jumpToTimeline(release) {
   // The timeline section will pick up the hash via its watcher.
   const el = document.getElementById('deployment-timeline')
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
-
-function formatHours(h) {
-  const n = Number(h)
-  if (!isFinite(n)) return '?'
-  if (n < 24) return `${Math.round(n)}h`
-  return `${Math.round(n / 24)}d`
 }
 
 // Eager-load patch counts so we can hide cards with zero matches.
@@ -768,6 +739,12 @@ const filteredDaemons = computed(() => {
     (d.bundle_identifier || '').toLowerCase().includes(s) ||
     (d.path || '').toLowerCase().includes(s)
   )
+})
+
+const daemonsCaption = computed(() => {
+  let cap = `System services, helpers, security agents — running on the fleet but not tracked by app-adoption · showing ${filteredDaemons.value.length} of ${daemons.value.length}`
+  if (search.value) cap += ` (filter: "${search.value}")`
+  return cap
 })
 
 // ─── Copy current view as Markdown ─────────────────────────
@@ -899,38 +876,34 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.dashboard { max-width: 1280px; margin: 0 auto; padding: var(--pad-xlarge); }
-.dashboard-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 24px; }
-.subtitle { font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black-50); }
-h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black); }
-.error-banner { background: var(--fleet-white); color: var(--fleet-error); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--fleet-black-10); border-left: 3px solid var(--fleet-error); margin-bottom: 24px; }
-.section { margin-bottom: 32px; }
-.metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
-.metrics-row.four-col { grid-template-columns: repeat(4, 1fr); }
-.charts-row.two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 24px; }
-.filter-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-.search-input { font-size: var(--font-size-sm); padding: 8px 14px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); flex: 1; min-width: 200px; background: var(--fleet-white); }
-.search-input:focus { outline: none; border-color: var(--fleet-vibrant-blue); box-shadow: 0 0 0 2px rgba(106, 103, 254, 0.15); }
-.filter-select { font-size: var(--font-size-sm); padding: 8px 12px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); background: var(--fleet-white); color: var(--fleet-black); }
-.copy-md-btn { margin-left: auto; font-family: var(--font-body); font-size: 13px; font-weight: 500; padding: 8px 14px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); background: var(--fleet-white); color: var(--fleet-black); cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; }
-.copy-md-btn:hover:not(:disabled) { border-color: var(--fleet-vibrant-blue); color: var(--fleet-vibrant-blue); }
-.copy-md-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.copy-md-btn--copied { background: #ecfdf5; border-color: #10b981; color: #065f46; }
-.copy-md-btn--copied:hover { border-color: #10b981; color: #065f46; }
-.daemons-section { margin-top: 24px; }
-.daemons-header { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
-.daemons-header h2 { margin: 0; font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black); }
-.daemons-meta { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
-.daemons-search-hint { color: var(--fleet-vibrant-blue); margin-left: 6px; }
-.daemons-empty { padding: 24px; text-align: center; color: var(--fleet-black-50); background: var(--fleet-black-5); border-radius: var(--radius); }
+/* Column layout + gap between top-level blocks come from .page-stack */
+.firehose-timeline { max-width: 1280px; margin: 0 auto; padding: var(--pad-xlarge); }
+
+/* Sections stack their own children */
+.fma-section, .daemons-section, .timeline-section { display: flex; flex-direction: column; gap: 12px; }
+
+/* ── Filter bar ── */
+.filter-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.filter-search { flex: 1; min-width: 200px; width: auto; }
+.filter-select { width: 170px; }
+.copy-md-btn { margin-left: auto; }
+.copy-md-btn.copy-md-btn--copied {
+  background: var(--status-good-bg);
+  border-color: var(--status-good);
+  color: var(--status-good-text);
+}
+
+/* ── Background apps & daemons ── */
 .daemons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
 .daemon-card { padding: 10px 12px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); background: var(--fleet-white); transition: border-color var(--transition-fast); }
-.daemon-card:hover { border-color: var(--fleet-vibrant-blue); }
+.daemon-card:hover { border-color: var(--fleet-black-50); }
 .daemon-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .daemon-name { font-weight: 600; color: var(--fleet-black); font-size: var(--font-size-sm); }
-.daemon-hosts { font-size: var(--font-size-sm); color: var(--fleet-vibrant-blue); white-space: nowrap; }
+.daemon-hosts { font-size: var(--font-size-sm); color: var(--fleet-black-75); white-space: nowrap; }
 .daemon-bundle { font-size: 11px; color: var(--fleet-black-50); margin-top: 4px; word-break: break-all; }
 .daemon-path { font-size: 10px; color: var(--fleet-black-33); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Timeline rail (day dots keep the blue chart-identity accent) ── */
 .timeline { position: relative; padding-left: 24px; }
 .timeline::before { content: ''; position: absolute; left: 7px; top: 0; bottom: 0; width: 2px; background: var(--fleet-black-10); }
 .timeline-day { margin-bottom: 24px; }
@@ -938,97 +911,52 @@ h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black)
 .day-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--fleet-vibrant-blue); border: 2px solid var(--fleet-white); position: absolute; left: -22px; z-index: 1; }
 .day-label { font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black); }
 .day-count { font-size: var(--font-size-xs); color: var(--fleet-black-50); }
-.commit-card { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); padding: 12px 16px; margin-bottom: 8px; cursor: pointer; transition: border-color 150ms, box-shadow 150ms; }
-.commit-card:hover { border-color: var(--fleet-vibrant-blue); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-.commit-card.expanded { border-color: var(--fleet-vibrant-blue); border-left: 3px solid var(--fleet-vibrant-blue); }
+
+/* ── Commit cards ── */
+.commit-card { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); padding: 12px 16px; margin-bottom: 8px; cursor: pointer; transition: border-color 150ms, box-shadow 150ms, background-color 150ms; }
+.commit-card:hover { border-color: var(--fleet-black-50); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.commit-card.expanded { border-color: var(--fleet-black-10); background: var(--info-tint-soft); }
 .commit-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
-.commit-sha { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-vibrant-blue); font-weight: 600; flex-shrink: 0; }
+.commit-sha { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-75); font-weight: 600; flex-shrink: 0; }
 .commit-message { font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black); font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .commit-card.expanded .commit-message { white-space: normal; }
 .commit-time { font-size: var(--font-size-xs); color: var(--fleet-black-50); flex-shrink: 0; }
 .commit-meta { display: flex; align-items: center; gap: 10px; }
 .commit-author { font-size: var(--font-size-xs); color: var(--fleet-black-50); }
 .commit-files-count { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); }
-.file-tag { display: inline-block; padding: 1px 6px; border-radius: var(--radius-full); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-.file-tag.policies { background: var(--fleet-accent-blue-light); color: #1e40af; }
-.file-tag.scripts { background: var(--fleet-status-success-light); color: var(--fleet-status-success); }
-.file-tag.profiles { background: var(--fleet-status-warning-light); color: var(--fleet-status-warning-dark); }
-.file-tag.queries { background: #f3e8ff; color: #6b21a8; }
+.file-tag { display: inline-block; padding: 1px 6px; border-radius: var(--radius-full); font-size: 10px; font-weight: 600; text-transform: capitalize; letter-spacing: 0.5px; }
+.file-tag.policies { background: var(--fleet-accent-blue-light); color: var(--fleet-accent-blue); }
+.file-tag.scripts { background: var(--status-good-bg); color: var(--status-good-text); }
+.file-tag.profiles { background: var(--status-fair-bg); color: var(--status-fair-text); }
+.file-tag.queries { background: var(--fleet-accent-purple-light); color: var(--fleet-accent-purple); }
 .commit-detail { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--fleet-black-5); }
 .file-list { margin-bottom: 8px; }
 .file-entry { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: var(--font-size-xs); color: var(--fleet-black-75); }
 .file-icon { width: 16px; text-align: center; }
 .file-path { word-break: break-all; }
-.github-link { display: inline-block; font-size: var(--font-size-xs); color: var(--fleet-vibrant-blue); text-decoration: none; font-weight: 600; margin-top: 4px; }
-.github-link:hover { text-decoration: underline; }
-.empty-state { text-align: center; padding: 40px; color: var(--fleet-black-50); }
-@media (max-width: 1024px) { .metrics-row.four-col { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 768px) { .metrics-row, .metrics-row.four-col { grid-template-columns: 1fr; } .charts-row.two-col { grid-template-columns: 1fr; } .filter-bar { flex-direction: column; } .dashboard-header { flex-direction: column; gap: 8px; } .commit-header { flex-wrap: wrap; } }
+.github-link { display: inline-block; font-size: var(--font-size-xs); color: var(--link-color); text-decoration: none; font-weight: 600; margin-top: 4px; }
+.github-link:hover { color: var(--link-color-hover); text-decoration: underline; }
+@media (max-width: 768px) { .filter-bar { flex-direction: column; align-items: stretch; } .copy-md-btn { margin-left: 0; } .commit-header { flex-wrap: wrap; } }
 
-/* FMA upstream releases */
-.fma-header-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.fma-header-row h2 { font-family: var(--font-body); font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); margin: 0; }
-.fma-meta { font-size: var(--font-size-xs); color: var(--fleet-black-50); }
+/* ── FMA upstream releases ── */
 .fma-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-.fma-card { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); padding: 12px; display: flex; flex-direction: column; gap: 6px; }
-.fma-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.fma-app { font-weight: 600; font-size: 13px; color: var(--fleet-black); }
-.fma-platform { font-size: 10px; text-transform: uppercase; padding: 1px 6px; border-radius: var(--radius-full); background: var(--fleet-off-white); color: var(--fleet-black-75); }
-.fma-platform.platform-mac, .fma-platform.platform-darwin { background: #e0e7ff; color: #3730a3; }
-.fma-platform.platform-windows { background: var(--fleet-accent-blue-light); color: #1e40af; }
-.fma-platform.platform-linux { background: var(--fleet-status-success-light); color: var(--fleet-status-success); }
-.fma-badge.added { font-size: 10px; padding: 1px 6px; border-radius: var(--radius-full); background: var(--fleet-status-warning-light); color: var(--fleet-status-warning-dark); text-transform: uppercase; font-weight: 700; }
-.fma-version { font-family: var(--font-mono); font-size: 12px; color: var(--fleet-black-75); }
-.fma-time { font-size: 11px; color: var(--fleet-black-50); }
-.fma-load-btn { align-self: flex-start; font-size: var(--font-size-xs); padding: 6px 12px; border: 1px solid #6a67fe; background: var(--fleet-white); color: #6a67fe; border-radius: var(--radius); cursor: pointer; transition: background 150ms; }
-.fma-load-btn:hover:not(:disabled) { background: #f8f7ff; }
-.fma-load-btn:disabled { opacity: 0.6; cursor: wait; }
-
-/* Slim summary stats inside an FMA card */
-.fma-stats { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--fleet-black-5); display: flex; flex-direction: column; gap: 4px; }
-.fma-stats-loading { color: var(--fleet-black-50); font-size: var(--font-size-xs); }
-.fma-headline { display: flex; align-items: baseline; gap: 6px; }
-.fma-headline strong { font-size: 22px; font-weight: 700; color: #6a67fe; line-height: 1; }
-.fma-headline-label { font-size: var(--font-size-xs); color: var(--fleet-black-75); }
-.fma-caption { font-size: 11px; color: var(--fleet-black-50); }
-.fma-caption-empty { font-style: italic; }
-.fma-cta { display: inline-block; align-self: flex-start; margin-top: 4px; padding: 4px 0; font-size: var(--font-size-xs); color: #6a67fe; text-decoration: none; font-weight: 600; cursor: pointer; }
-.fma-cta:hover { text-decoration: underline; }
-.fma-cta-secondary { align-self: flex-start; background: none; border: 1px solid var(--fleet-black-10); padding: 4px 10px; border-radius: var(--radius); color: var(--fleet-black-75); cursor: pointer; }
-.fma-cta-secondary:hover { border-color: #6a67fe; color: #6a67fe; }
-
-/* FMA control strip */
-.fma-controls { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
-.fma-chip-group { display: flex; gap: 4px; }
-.fma-chip {
-  font-size: var(--font-size-xs);
-  padding: 4px 9px; border: 1px solid var(--fleet-black-10); background: var(--fleet-white);
-  color: var(--fleet-black-75); border-radius: var(--radius-full); cursor: pointer; transition: border-color 100ms;
-}
-.fma-chip:hover { border-color: #6a67fe; color: var(--fleet-black); }
-.fma-chip.active { background: #6a67fe; border-color: #6a67fe; color: var(--fleet-white); }
-.fma-chip-count { font-size: 10px; opacity: 0.7; margin-left: 4px; }
+.fma-cta { align-self: flex-start; font-size: var(--font-size-xs); color: var(--link-color); text-decoration: none; font-weight: 600; cursor: pointer; }
+.fma-cta:hover { color: var(--link-color-hover); text-decoration: underline; }
+.fma-controls { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .fma-toggle { display: flex; align-items: center; gap: 6px; font-size: var(--font-size-xs); color: var(--fleet-black-75); cursor: pointer; }
 .fma-toggle input { cursor: pointer; }
 .fma-toggle-meta { color: var(--fleet-black-50); }
-.fma-loading, .fma-empty { font-size: var(--font-size-xs); color: var(--fleet-black-50); padding: 16px 0; }
+.fma-loading { font-size: var(--font-size-xs); color: var(--fleet-black-50); padding: 16px 0; }
+.fma-more-btn { align-self: flex-start; }
 
 /* ── Timeline control strip ── */
 .timeline-controls {
-  display: flex; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
   padding: 9px 11px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large);
 }
-.event-chip-group { display: flex; gap: 4px; }
-.event-chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: var(--font-size-xs);
-  padding: 4px 9px; border: 1px solid var(--fleet-black-10); background: var(--fleet-white);
-  color: var(--fleet-black-50); border-radius: var(--radius-full); cursor: pointer; transition: all 100ms;
-}
-.event-chip:hover { color: var(--fleet-black); border-color: var(--fleet-black-50); }
-.event-chip.active { color: var(--fleet-black); border-color: var(--fleet-black); background: var(--fleet-off-white); }
-.event-chip-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
-.event-chip-count { font-size: 10px; opacity: 0.75; }
+.legend-toggles { display: flex; gap: 6px; }
+.legend-toggle { border: 0; padding: 0; background: none; cursor: pointer; border-radius: var(--radius-full); }
+.legend-toggle:focus-visible { outline: 1px solid var(--fleet-focused-outline); outline-offset: 1px; }
 .hosts-slider-label { display: flex; align-items: center; gap: 8px; font-size: var(--font-size-xs); color: var(--fleet-black-75); margin-left: auto; }
 .hosts-slider { width: 140px; }
 .hosts-slider-value { font-weight: 700; color: var(--fleet-black); min-width: 24px; text-align: right; }
@@ -1036,27 +964,26 @@ h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black)
 /* ── Release (RSS) cards in the timeline ── */
 .release-card {
   display: flex; align-items: baseline; gap: 8px;
-  background: #f0fdfa; border: 1px solid var(--fleet-black-10); border-left: 3px solid var(--fleet-green);
+  background: var(--fleet-off-white); border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large); padding: 8px 14px; margin-bottom: 8px;
   font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black);
   flex-wrap: wrap;
 }
-.release-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.5px; padding: 2px 6px; border-radius: var(--radius-full); background: var(--fleet-green); color: var(--fleet-white); flex-shrink: 0; }
 .release-name { font-weight: 500; }
-.release-platform { font-size: 10px; text-transform: uppercase; padding: 1px 6px; border-radius: var(--radius-full); background: var(--fleet-off-white); color: var(--fleet-black-75); }
-.release-platform.platform-mac, .release-platform.platform-darwin { background: #e0e7ff; color: #3730a3; }
-.release-platform.platform-windows { background: var(--fleet-accent-blue-light); color: #1e40af; }
-.release-platform.platform-linux { background: var(--fleet-status-success-light); color: var(--fleet-status-success); }
+.platform-tag { font-size: 10px; text-transform: uppercase; padding: 1px 6px; border-radius: var(--radius-full); background: var(--fleet-off-white); color: var(--fleet-black-75); }
+.platform-tag.platform-mac, .platform-tag.platform-darwin { background: var(--fleet-accent-indigo-light); color: var(--fleet-accent-indigo); }
+.platform-tag.platform-windows { background: var(--fleet-accent-blue-light); color: var(--fleet-accent-blue); }
+.platform-tag.platform-linux { background: var(--status-good-bg); color: var(--status-good-text); }
 .release-versions { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-75); white-space: nowrap; }
 .release-versions .ver-arrow { margin: 0 4px; color: var(--fleet-black-50); }
 .release-time { font-size: var(--font-size-xs); color: var(--fleet-black-50); margin-left: auto; flex-shrink: 0; }
 
 /* ── Endpoint patch buckets (per-software per-day) ── */
 .patch-bucket {
-  background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-left: 3px solid #6a67fe;
-  border-radius: var(--radius-large); margin-bottom: 8px; transition: background 150ms, box-shadow 150ms;
+  background: var(--fleet-white); border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large); margin-bottom: 8px; transition: background 150ms, box-shadow 150ms, border-color 150ms;
 }
-.patch-bucket.highlighted { box-shadow: 0 0 0 3px rgba(106, 103, 254, 0.25); background: #f8f7ff; }
+.patch-bucket.highlighted { box-shadow: 0 0 0 3px var(--info-tint); border-color: var(--fleet-vibrant-blue); background: var(--info-tint-soft); }
 .patch-bucket-row {
   display: grid; align-items: center;
   grid-template-columns: 16px auto 1fr auto auto auto auto;
@@ -1065,41 +992,41 @@ h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black)
   cursor: pointer;
   font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black);
 }
-.patch-bucket-row:hover { background: #fafaff; }
+.patch-bucket-row:hover { background: var(--fleet-off-white); }
 .patch-bucket.expanded .patch-bucket-row { border-bottom: 1px solid var(--fleet-black-5); }
 .patch-bucket-caret { font-size: 10px; color: var(--fleet-black-50); text-align: center; }
-.patch-bucket .patch-badge { /* reuses badge style from bucket bg */
-  font-size: 8px; font-weight: 700; letter-spacing: 0.5px; padding: 2px 6px; border-radius: var(--radius-full); background: #6a67fe; color: var(--fleet-white); flex-shrink: 0;
-}
 .patch-bucket-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .patch-bucket-versions { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
 .patch-bucket-versions .ver-arrow { margin: 0 4px; }
 .patch-bucket-hosts { font-size: var(--font-size-xs); color: var(--fleet-black-75); white-space: nowrap; }
 .patch-bucket-transitions, .patch-bucket-lag { font-size: var(--font-size-xs); color: var(--fleet-black-50); white-space: nowrap; }
-.patch-bucket-drilldown { padding: 10px 14px; background: #fafaff; }
+.patch-bucket-drilldown { padding: 10px 14px; background: var(--info-tint-soft); }
 .patch-bucket-summary {
   display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
   padding: 5px 7px; margin-bottom: 8px;
   background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large);
   font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black);
 }
-.patch-bucket-summary strong { color: #6a67fe; font-weight: 700; }
+.patch-bucket-summary strong { color: var(--fleet-black); font-weight: 700; }
 .patch-bucket-summary-meta { font-size: var(--font-size-xs); color: var(--fleet-black-50); }
 .patch-bucket-distinct { color: var(--fleet-black-50); margin-left: 4px; }
 .patch-bucket-loading { font-size: var(--font-size-xs); color: var(--fleet-black-50); padding: 4px 0; }
-.drilldown-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 11px; }
-.drilldown-table th { text-align: left; padding: 4px 8px 6px; color: var(--fleet-black-50); font-weight: 600; border-bottom: 1px solid var(--fleet-black-10); }
-.drilldown-table td { padding: 4px 8px; color: var(--fleet-black-75); border-bottom: 1px solid var(--fleet-black-5); }
-.drilldown-table td.mono { font-family: var(--font-mono); white-space: nowrap; }
+
+/* Drill-down micro-table — table spec: off-white 12px/700 navy header,
+   14px body, 10px/16px cells, black-10 dividers, rounded bordered wrapper.
+   Mono ONLY on version cells. */
+.drilldown-table-wrap { background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); overflow: hidden; }
+.drilldown-table { width: 100%; border-collapse: collapse; font-family: var(--font-body); font-size: 14px; }
+.drilldown-table th { text-align: left; padding: 10px 16px; background: var(--fleet-off-white); color: var(--fleet-black); font-size: 12px; font-weight: 700; border-bottom: 1px solid var(--fleet-black-10); }
+.drilldown-table td { padding: 10px 16px; color: var(--fleet-black-75); border-bottom: 1px solid var(--fleet-black-10); }
+.drilldown-table tbody tr:last-child td { border-bottom: 0; }
+.drilldown-table td.mono { font-family: var(--font-mono); font-size: 12px; white-space: nowrap; }
 .drilldown-table td.target-cell { font-weight: 600; color: var(--fleet-black); }
 .drilldown-table td.from-cell { color: var(--fleet-black-50); }
-.drilldown-table tr.target-group-start td { border-top: 2px solid var(--fleet-black-10); padding-top: 8px; }
-.drilldown-table .ver-arrow { margin: 0 4px; color: var(--fleet-black-50); }
+.drilldown-table tr.target-group-start td { border-top: 2px solid var(--fleet-black-10); }
 
 @media (max-width: 900px) {
   .patch-bucket-row { grid-template-columns: 16px auto 1fr auto; }
   .patch-bucket-versions, .patch-bucket-transitions, .patch-bucket-lag { display: none; }
 }
-.fma-more-btn { margin-top: 12px; font-size: var(--font-size-xs); padding: 6px 12px; border: 1px solid var(--fleet-black-10); background: var(--fleet-white); color: var(--fleet-black-75); border-radius: var(--radius); cursor: pointer; }
-.fma-more-btn:hover { border-color: var(--fleet-vibrant-blue); color: var(--fleet-black); }
 </style>

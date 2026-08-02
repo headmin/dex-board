@@ -1,9 +1,10 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>DEX dashboard</h1>
-      <TimeRangeFilter />
-    </header>
+  <div class="dashboard page-stack">
+    <PageHeader title="DEX dashboard">
+      <template #actions>
+        <TimeRangeFilter />
+      </template>
+    </PageHeader>
 
     <DrillFilterBar />
 
@@ -13,7 +14,7 @@
 
     <!-- Overview Metrics (always visible) -->
     <section class="section">
-      <h2>Overview</h2>
+      <SectionHeader title="Overview" />
       <div class="metrics-row four-col">
         <MetricCard label="Total events" :value="metrics.totalEvents" :loading="loading.metrics" />
         <MetricCard label="Hosts" :value="metrics.deviceCount" :loading="loading.metrics" />
@@ -24,18 +25,10 @@
 
     <!-- Fleet Health Heatmap (always visible — it's the navigator) -->
     <section class="section">
-      <h2>Fleet health overview</h2>
+      <SectionHeader title="Fleet health overview" />
       <div class="heatmap-controls">
-        <div class="heatmap-mode-toggle">
-          <button
-            v-for="mode in heatmapModes"
-            :key="mode.key"
-            class="mode-btn"
-            :class="{ active: heatmapMode === mode.key }"
-            @click="heatmapMode = mode.key"
-          >{{ mode.label }}</button>
-        </div>
-        <p class="section-hint">
+        <SegmentedControl v-model="heatmapMode" :options="heatmapModes" />
+        <p class="section-caption">
           {{ compareMode ? 'Click a device to set as comparison target'
              : heatmapMode === 'unhealthiest' ? 'Click a cell to drill into a device'
              : heatmapMode === 'by-os' ? 'Click a row to filter by OS'
@@ -47,7 +40,7 @@
         :xLabels="heatmapHours"
         :yLabels="heatmapHosts"
         :loading="loading.heatmap"
-        :colorRange="['#009a7d','#84cc16','#a47f1e','#f97316','#ef4444']"
+        :colorRange="statusRamp"
         tooltipLabel="Health score"
         @cell-click="onHeatmapClick"
       />
@@ -59,35 +52,25 @@
     <template v-if="isFiltered">
 
       <!-- Device Identity + Health Snapshot -->
-      <section class="section device-dive">
+      <section class="section">
         <div class="drill-header">
-          <h2>{{ drill.activeDevice.value }} — Device Overview</h2>
-          <button class="compare-btn" :class="{ active: compareMode }" @click="compareMode = !compareMode">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-            </svg>
-            {{ compareMode ? 'Exit Compare' : 'Compare' }}
-          </button>
+          <SectionHeader :title="drill.activeDevice.value + ' — Device overview'" />
+          <BaseButton :variant="compareMode ? 'primary' : 'secondary'" @click="compareMode = !compareMode">
+            <template #icon>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+            </template>
+            {{ compareMode ? 'Exit compare' : 'Compare' }}
+          </BaseButton>
         </div>
 
-        <!-- Device Info Bar -->
-        <div v-if="drillDeviceInfo" class="device-info-bar">
-          <div class="info-item">
-            <span class="info-label">OS</span>
-            <span class="info-value">{{ drillDeviceInfo.os_name }} {{ drillDeviceInfo.os_version }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Serial</span>
-            <span class="info-value">{{ drillDeviceInfo.serial_number }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Model</span>
-            <span class="info-value">{{ drillDeviceInfo.hardware_model || '-' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Last seen</span>
-            <span class="info-value">{{ drillDeviceInfo.last_seen }}</span>
-          </div>
+        <!-- Device Info Chips -->
+        <div v-if="drillDeviceInfo" class="device-info-chips">
+          <Chip tone="neutral" label="OS" :value="drillDeviceInfo.os_name + ' ' + drillDeviceInfo.os_version" />
+          <Chip tone="neutral" label="Serial" :value="drillDeviceInfo.serial_number" />
+          <Chip tone="neutral" label="Model" :value="drillDeviceInfo.hardware_model || '-'" />
+          <Chip tone="neutral" label="Last seen" :value="drillDeviceInfo.last_seen" />
         </div>
 
         <!-- Health + Security Metric Cards -->
@@ -113,14 +96,14 @@
 
       <!-- Device Health Time Series (hidden in compare mode) -->
       <section v-if="!compareMode" class="section">
-        <h2>Health history</h2>
+        <SectionHeader title="Health history" />
         <div class="charts-row">
           <MultiSeriesChart
             title="Memory & disk usage over time"
             :xLabels="drillHealthLabels"
             :series="drillHealthSeries"
             :yAxes="[{ name: 'Percent', min: 0, max: 100 }]"
-            :thresholds="[{ value: 85, label: 'Warning', color: '#eb4343' }]"
+            :thresholds="[{ value: 85, label: 'Warning', color: palette.critical }]"
             :anomalies="drillAnomalies"
             :events="drillHealthEvents"
             :loading="loading.drill"
@@ -130,7 +113,7 @@
 
       <!-- Device Process Timeline (hidden in WC mode — individual process monitoring) -->
       <section v-if="!compareMode && !wcMode" class="section">
-        <h2>Process activity</h2>
+        <SectionHeader title="Process activity" />
         <div class="charts-row">
           <SequenceChart
             title="Process timeline"
@@ -167,7 +150,7 @@
 
       <!-- Device Security Detail -->
       <section v-if="!compareMode" class="section">
-        <h2>Security posture</h2>
+        <SectionHeader title="Security posture" />
         <div class="security-grid">
           <div class="security-card" :class="drillSec.encrypted === '1' ? 'good' : 'bad'">
             <svg class="sec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -202,7 +185,7 @@
 
       <!-- Device Experience Score -->
       <section v-if="drillScores && !compareMode" class="section">
-        <h2>Experience score</h2>
+        <SectionHeader title="Experience score" />
         <div class="score-overview">
           <div class="score-hero">
             <div class="score-grade" :class="'grade-' + (drillScores.composite_grade || '').toLowerCase()">
@@ -211,24 +194,22 @@
             <div class="score-details">
               <div class="score-number">
                 {{ Math.round(drillScores.composite_score) }} / 100
-                <span v-if="drillLifecycle" class="lifecycle-badge-inline" :class="lifecycleBadgeClass">{{ drillLifecycle }}</span>
+                <Badge v-if="drillLifecycle" class="lifecycle-badge" :tone="lifecycleTone" :label="drillLifecycle" />
               </div>
               <div class="score-meta">
                 <span v-if="drillScores.lowest_category">Weakest: {{ drillScores.lowest_category }}</span>
-                <span v-if="drillScores.categories_with_data < 3" class="incomplete-tag">Incomplete data</span>
+                <Badge v-if="drillScores.categories_with_data < 3" tone="neutral" label="Incomplete data" />
               </div>
             </div>
             <div class="score-sparkline" v-if="drillScoreHistory.length">
-              <SparklineChart :data="drillScoreHistory" width="160px" height="40px" :color="scoreColor(drillScores.composite_grade)" />
+              <SparklineChart :data="drillScoreHistory" width="160px" height="40px" :color="gradeColor(drillScores.composite_grade)" />
               <span class="sparkline-label">30-day trend</span>
             </div>
           </div>
           <div class="score-categories">
             <div v-for="cat in scoreCategories" :key="cat.key" class="score-cat-row">
               <span class="cat-label">{{ cat.label }}</span>
-              <div class="cat-bar-track">
-                <div class="cat-bar-fill" :style="{ width: (cat.value >= 0 ? cat.value : 0) + '%', backgroundColor: catColor(cat.value) }"></div>
-              </div>
+              <ScoreBar class="cat-bar" :value="cat.value >= 0 ? cat.value : 0" :color="scoreBandColor(cat.value)" />
               <GradeBadge :grade="catGrade(cat.value)" />
               <span class="cat-value">{{ cat.value >= 0 ? Math.round(cat.value) : '—' }}</span>
             </div>
@@ -250,7 +231,7 @@
 
       <!-- Device Software & Patch Status -->
       <section v-if="(drillSoftwareApps.length || drillPatchHistory.length) && !compareMode" class="section">
-        <h2>Software & patch status</h2>
+        <SectionHeader title="Software & patch status" />
         <div class="software-patch-grid">
           <!-- Patch History (unchanged in both modes) -->
           <div v-if="drillPatchHistory.length" class="sw-panel">
@@ -259,11 +240,11 @@
               <div v-for="(p, i) in drillPatchHistory" :key="i" class="patch-event">
                 <div class="patch-event-header">
                   <span class="patch-sw-name">{{ p.software_name }}</span>
-                  <span class="patch-type-tag" :class="p.patch_type">{{ p.patch_type }}</span>
+                  <Badge :tone="p.patch_type === 'os' ? 'info' : 'neutral'" :label="p.patch_type === 'os' ? 'OS' : sentenceCase(p.patch_type)" />
                 </div>
                 <div class="patch-event-detail">
                   <span class="patch-versions">{{ p.old_version }} → {{ p.new_version }}</span>
-                  <span class="patch-lag-badge" :class="patchLagClass(p.days_to_patch)">{{ p.days_to_patch.toFixed(0) }}d lag</span>
+                  <Badge :tone="patchLagTone(p.days_to_patch)" :label="p.days_to_patch.toFixed(0) + 'd lag'" />
                 </div>
               </div>
             </div>
@@ -274,28 +255,17 @@
             <div v-if="drillSoftwareApps.length" class="sw-panel">
               <h3>Installed software</h3>
               <div class="usage-summary">
-                <button class="usage-filter-btn" :class="{ active: softwareFilter === 'daily' }" @click="toggleSoftwareFilter('daily')">
-                  <strong>{{ drillSoftwareApps.filter(a => a.usage_category === 'daily').length }}</strong> daily
-                </button>
-                <button class="usage-filter-btn" :class="{ active: softwareFilter === 'weekly' }" @click="toggleSoftwareFilter('weekly')">
-                  <strong>{{ drillSoftwareApps.filter(a => a.usage_category === 'weekly').length }}</strong> weekly
-                </button>
-                <button class="usage-filter-btn" :class="{ active: softwareFilter === 'monthly' }" @click="toggleSoftwareFilter('monthly')">
-                  <strong>{{ drillSoftwareApps.filter(a => a.usage_category === 'monthly').length }}</strong> monthly
-                </button>
-                <button class="usage-filter-btn stale" :class="{ active: softwareFilter === 'unused' }" @click="toggleSoftwareFilter('unused')">
-                  <strong>{{ drillSoftwareApps.filter(a => a.usage_category === 'stale' || a.usage_category === 'never').length }}</strong> unused
-                </button>
+                <SegmentedControl :modelValue="softwareFilter" :options="usageFilterOptions" @update:modelValue="toggleSoftwareFilter" />
               </div>
               <div v-if="softwareFilter" class="filter-active-bar">
                 Showing <strong>{{ filteredSoftwareApps.length }}</strong> {{ softwareFilter }} apps
-                <button class="clear-filter-btn" @click="softwareFilter = ''">Clear</button>
+                <BaseButton variant="link" @click="softwareFilter = ''">Clear</BaseButton>
               </div>
               <div class="app-usage-list">
                 <div v-for="app in filteredSoftwareApps" :key="app.app_name" class="app-usage-row">
                   <span class="app-usage-name">{{ app.app_name }}</span>
                   <span class="app-usage-ver">{{ app.app_version }}</span>
-                  <span class="app-usage-cat" :class="app.usage_category">{{ app.usage_category }}</span>
+                  <Badge :tone="usageTone(app.usage_category)" :label="sentenceCase(app.usage_category)" />
                   <span class="app-usage-days">{{ app.days_since_opened }}d</span>
                 </div>
               </div>
@@ -310,10 +280,10 @@
               <div class="wc-aggregate-card">
                 <div class="wc-aggregate-total">{{ wcSoftwareSummary.total }} apps installed</div>
                 <div class="wc-category-pills">
-                  <span class="wc-pill daily">{{ wcSoftwareSummary.daily }} daily</span>
-                  <span class="wc-pill weekly">{{ wcSoftwareSummary.weekly }} weekly</span>
-                  <span class="wc-pill monthly">{{ wcSoftwareSummary.monthly }} monthly</span>
-                  <span class="wc-pill unused">{{ wcSoftwareSummary.unused }} unused</span>
+                  <Chip tone="good" label="Daily" :value="String(wcSoftwareSummary.daily)" />
+                  <Chip tone="info" label="Weekly" :value="String(wcSoftwareSummary.weekly)" />
+                  <Chip tone="fair" label="Monthly" :value="String(wcSoftwareSummary.monthly)" />
+                  <Chip tone="elevated" label="Unused" :value="String(wcSoftwareSummary.unused)" />
                 </div>
               </div>
 
@@ -327,9 +297,7 @@
                     class="wc-browser-segment"
                     :style="{ width: b.percentage + '%' }"
                     :title="b.name + ' ' + b.percentage + '%'"
-                  >
-                    <span v-if="b.percentage >= 15" class="wc-browser-label">{{ b.name }} {{ b.percentage }}%</span>
-                  </div>
+                  ></div>
                 </div>
                 <div class="wc-browser-legend">
                   <span v-for="b in wcBrowserBreakdown" :key="b.name" class="wc-legend-item">
@@ -344,7 +312,7 @@
                 <div class="wc-license-list">
                   <div v-for="app in wcLicenseWaste" :key="app.app_name" class="wc-license-row">
                     <span class="wc-license-name">{{ app.app_name }}</span>
-                    <span class="app-usage-cat" :class="app.usage_category">{{ app.usage_category }}</span>
+                    <Badge :tone="usageTone(app.usage_category)" :label="sentenceCase(app.usage_category)" />
                     <span class="wc-license-days">{{ app.days_unused }}d unused</span>
                   </div>
                 </div>
@@ -363,8 +331,7 @@
 
       <!-- Devices Section -->
       <section class="section">
-        <h2>Hosts</h2>
-        <p class="section-hint">Click a device to view details</p>
+        <SectionHeader title="Hosts" caption="Click a device to view details" />
         <DataTable
           title=""
           :data="devices"
@@ -386,7 +353,7 @@
 
       <!-- Security Posture Section (high visibility) -->
       <section class="section">
-        <h2>Security posture</h2>
+        <SectionHeader title="Security posture" />
         <div class="metrics-row four-col">
           <MetricCard label="Disk encrypted" :value="securityMetrics.encryptedCount + '/' + securityMetrics.totalDevices" :loading="loading.security" />
           <MetricCard label="Secure boot" :value="securityMetrics.secureBootCount + '/' + securityMetrics.totalDevices" :loading="loading.security" />
@@ -405,14 +372,14 @@
 
       <!-- Device Health Section -->
       <section class="section">
-        <h2>Host health</h2>
+        <SectionHeader title="Host health" />
         <div class="charts-row">
           <MultiSeriesChart
             title="Memory & disk usage"
             :xLabels="healthTimeLabels"
             :series="healthSeries"
             :yAxes="[{ name: 'Percent', min: 0, max: 100 }]"
-            :thresholds="[{ value: 85, label: 'Warning', color: '#eb4343' }]"
+            :thresholds="[{ value: 85, label: 'Warning', color: palette.critical }]"
             :anomalies="memoryAnomalies"
             :events="fleetHealthEvents"
             :loading="loading.deviceHealth"
@@ -422,7 +389,7 @@
         <div v-if="visibleDeployments.length > 0" class="deploy-panel">
           <div class="deploy-panel-header" @click="deployPanelOpen = !deployPanelOpen">
             <span class="deploy-panel-title">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6a67fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="deploy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
               </svg>
               Recent deployments ({{ visibleDeployments.length }} in view)
@@ -452,8 +419,7 @@
 
       <!-- Device Risk Matrix -->
       <section class="section">
-        <h2>Host risk matrix</h2>
-        <p class="section-hint">Combined security posture + health data — sorted by risk</p>
+        <SectionHeader title="Host risk matrix" caption="Combined security posture + health data — sorted by risk" />
         <DataTable
           title=""
           :data="riskMatrix"
@@ -464,8 +430,7 @@
 
       <!-- Process Sequence View -->
       <section class="section">
-        <h2>Process activity timeline</h2>
-        <p class="section-hint">Horizontal bars show when top processes were active</p>
+        <SectionHeader title="Process activity timeline" caption="Horizontal bars show when top processes were active" />
         <SequenceChart
           title="Top process activity"
           :data="sequenceData"
@@ -477,7 +442,7 @@
 
       <!-- Top Processes Section -->
       <section class="section">
-        <h2>Top processes</h2>
+        <SectionHeader title="Top processes" />
         <div class="charts-row two-col">
           <BarChart
             title="Top processes by memory (MB)"
@@ -502,7 +467,7 @@
             xKey="time"
             yKey="avg_mb"
             :zoomable="true"
-            color="#8b5cf6"
+            :color="palette.purple"
           />
           <DataTable
             title="Recent process events"
@@ -515,8 +480,7 @@
 
       <!-- Audit Activity Heatmap -->
       <section class="section">
-        <h2>Admin activity</h2>
-        <p class="section-hint">Audit log activity heatmap — day vs hour</p>
+        <SectionHeader title="Admin activity" caption="Audit log activity heatmap — day vs hour" />
         <HeatmapChart
           title="Audit activity (day x hour)"
           :data="auditHeatmapData"
@@ -525,7 +489,7 @@
           :loading="loading.audit"
           :minValue="0"
           :maxValue="auditMaxActivity"
-          :colorRange="['#ebedf0','#c6e48b','#7bc96f','#239a3b','#196127']"
+          :colorRange="[palette.ink5, palette.goodBg, palette.greenSoft, palette.good, palette.greenOver]"
           tooltipLabel="Activity"
         />
       </section>
@@ -556,6 +520,15 @@ import GradeBadge from '../components/GradeBadge.vue'
 import SparklineChart from '../components/SparklineChart.vue'
 import DeviceCompare from '../components/DeviceCompare.vue'
 import PlatformBenchmark from '../components/PlatformBenchmark.vue'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
+import SegmentedControl from '../components/base/SegmentedControl.vue'
+import BaseButton from '../components/base/BaseButton.vue'
+import Chip from '../components/base/Chip.vue'
+import Badge from '../components/base/Badge.vue'
+import ScoreBar from '../components/base/ScoreBar.vue'
+import { gradeColor, scoreBandColor } from '../composables/gradeColors'
+import { palette, categorical, statusRamp } from '../composables/uiPalette'
 import { usePlatformBenchmark } from '../composables/usePlatformBenchmark'
 import { useWorkersCouncil } from '../composables/useWorkersCouncil'
 import { useGitopsEvents } from '../composables/useGitopsEvents'
@@ -607,9 +580,9 @@ const {
 
 // ─── Heatmap mode controls ──────────────────────────────
 const heatmapModes = [
-  { key: 'unhealthiest', label: 'Top 20 unhealthiest' },
-  { key: 'by-os', label: 'By OS' },
-  { key: 'by-model', label: 'By model' }
+  { value: 'unhealthiest', label: 'Top 20 unhealthiest' },
+  { value: 'by-os', label: 'By OS' },
+  { value: 'by-model', label: 'By model' }
 ]
 
 const error = ref(null)
@@ -683,8 +656,8 @@ const deviceHealthColumns = [
 ]
 
 const healthSeries = computed(() => [
-  { name: 'Memory %', data: memoryValues.value, color: '#4a90d9' },
-  { name: 'Disk %', data: diskValues.value, color: '#f59e0b' }
+  { name: 'Memory %', data: memoryValues.value, color: categorical[4] },
+  { name: 'Disk %', data: diskValues.value, color: categorical[3] }
 ])
 
 // GitOps deployment markers for fleet-wide health chart
@@ -814,8 +787,8 @@ const drillProcessColumns = [
 ]
 
 const drillHealthSeries = computed(() => [
-  { name: 'Memory %', data: drillMemValues.value, color: '#4a90d9' },
-  { name: 'Disk %', data: drillDiskValues.value, color: '#f59e0b' }
+  { name: 'Memory %', data: drillMemValues.value, color: categorical[4] },
+  { name: 'Disk %', data: drillDiskValues.value, color: categorical[3] }
 ])
 
 // GitOps deployment markers for device drill-down health chart
@@ -845,20 +818,6 @@ function catGrade(v) {
   return 'F'
 }
 
-function catColor(v) {
-  if (v < 0) return '#8b8fa2'
-  if (v >= 90) return '#009a7d'
-  if (v >= 75) return '#4bb79b'
-  if (v >= 60) return '#ecc767'
-  if (v >= 40) return '#eb6743'
-  return '#eb4343'
-}
-
-function scoreColor(grade) {
-  const c = { A: '#009a7d', B: '#009a7d', C: '#ecc767', D: '#eb6743', F: '#eb4343' }
-  return c[grade] || '#8b8fa2'
-}
-
 const filteredSoftwareApps = computed(() => {
   const apps = drillSoftwareApps.value
   if (!softwareFilter.value) return apps.slice(0, 20)
@@ -872,27 +831,47 @@ function toggleSoftwareFilter(cat) {
   softwareFilter.value = softwareFilter.value === cat ? '' : cat
 }
 
+// Segmented-control options for the software usage filter (labels carry counts)
+const usageFilterOptions = computed(() => {
+  const apps = drillSoftwareApps.value
+  const count = c => apps.filter(a => a.usage_category === c).length
+  return [
+    { value: 'daily', label: count('daily') + ' daily' },
+    { value: 'weekly', label: count('weekly') + ' weekly' },
+    { value: 'monthly', label: count('monthly') + ' monthly' },
+    { value: 'unused', label: apps.filter(a => a.usage_category === 'stale' || a.usage_category === 'never').length + ' unused' }
+  ]
+})
+
+function sentenceCase(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
+}
+
+function usageTone(cat) {
+  return { daily: 'good', weekly: 'info', monthly: 'fair', stale: 'elevated', never: 'critical' }[cat] || 'neutral'
+}
+
 // ─── Workers Council computed properties ──────────────────────
 const wcSoftwareSummary = computed(() => computeUsageSummary(drillSoftwareApps.value))
 const wcBrowserBreakdown = computed(() => computeBrowserBreakdown(drillSoftwareApps.value))
 const wcLicenseWaste = computed(() => getLicenseWasteApps(drillSoftwareApps.value))
 
-const lifecycleBadgeClass = computed(() => {
+const lifecycleTone = computed(() => {
   const map = {
-    'Top performer': 'lifecycle-top',
-    'Healthy': 'lifecycle-healthy',
-    'Needs attention': 'lifecycle-attention',
-    'Underperforming': 'lifecycle-under',
-    'End of life candidate': 'lifecycle-eol'
+    'Top performer': 'good',
+    'Healthy': 'info',
+    'Needs attention': 'fair',
+    'Underperforming': 'elevated',
+    'End of life candidate': 'critical'
   }
-  return map[drillLifecycle.value] || ''
+  return map[drillLifecycle.value] || 'neutral'
 })
 
-function patchLagClass(days) {
-  if (days <= 3) return 'lag-fast'
-  if (days <= 7) return 'lag-ok'
-  if (days <= 14) return 'lag-slow'
-  return 'lag-critical'
+function patchLagTone(days) {
+  if (days <= 3) return 'good'
+  if (days <= 7) return 'info'
+  if (days <= 14) return 'fair'
+  return 'critical'
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1408,70 +1387,11 @@ onMounted(() => {
   max-width: 1440px;
 }
 
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--pad-xlarge);
-}
-
-h1 {
-  font-family: var(--font-body);
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--fleet-black);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-h2 {
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  color: var(--fleet-black);
-  margin-bottom: var(--pad-medium);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.error-banner {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  background: var(--fleet-error-light);
-  color: var(--fleet-status-error);
-  padding: 11px 14px;
-  border-radius: var(--radius-medium);
-  border: 1px solid var(--status-critical-bg);
-  margin-bottom: var(--pad-large);
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-}
-
+/* Sections stack their own blocks; the page-stack global handles inter-section gaps */
 .section {
-  margin-bottom: var(--pad-xxl);
-}
-
-.section-hint {
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  color: var(--fleet-black-50);
-  margin-bottom: var(--pad-medium);
-}
-
-.metrics-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--pad-large);
-  margin-bottom: var(--pad-large);
-}
-
-.metrics-row.four-col { grid-template-columns: repeat(4, 1fr); }
-.metrics-row.six-col { grid-template-columns: repeat(6, 1fr); }
-
-.charts-row { margin-bottom: var(--pad-large); }
-.charts-row.two-col {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--pad-large);
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-medium);
 }
 
 /* ─── Heatmap Controls ─────────────────────── */
@@ -1479,76 +1399,13 @@ h2 {
   display: flex;
   align-items: center;
   gap: var(--pad-medium);
-  margin-bottom: var(--pad-medium);
-}
-
-.heatmap-mode-toggle {
-  display: flex;
-  gap: 2px;
-  padding: 3px;
-  background: var(--fleet-black-5);
-  border-radius: var(--radius);
-}
-
-.mode-btn {
-  padding: 6px 13px;
-  border: none;
-  background: transparent;
-  border-radius: calc(var(--radius) - 2px);
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--fleet-black-50);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all var(--transition-fast);
-}
-
-.mode-btn:hover {
-  color: var(--fleet-black-75);
-}
-
-.mode-btn.active {
-  color: var(--fleet-black);
-  background: var(--fleet-white);
-  box-shadow: var(--shadow-xs);
-  font-weight: 600;
 }
 
 /* ─── Device Deep Dive ──────────────────────── */
-.device-dive h2 {
-  color: var(--fleet-black);
-}
-
-.device-info-bar {
+.device-info-chips {
   display: flex;
-  gap: var(--pad-xlarge);
-  padding: 14px 18px;
-  background: var(--fleet-info-light);
-  border: 1px solid #bfdbfe;
-  border-radius: var(--radius-large);
-  margin-bottom: var(--pad-large);
+  gap: var(--pad-small);
   flex-wrap: wrap;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.info-label {
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  color: var(--fleet-black-75);
-  font-weight: 600;
-}
-
-.info-value {
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  color: var(--fleet-black);
-  font-weight: 500;
 }
 
 /* ─── Security Cards ────────────────────────── */
@@ -1578,7 +1435,7 @@ h2 {
 }
 
 .security-card.bad {
-  background: var(--fleet-error-light);
+  background: var(--fleet-status-error-light);
   border-color: var(--status-critical-bg);
 }
 
@@ -1612,19 +1469,11 @@ h2 {
 
 /* ─── Responsive ────────────────────────────── */
 @media (max-width: 1024px) {
-  .metrics-row.four-col { grid-template-columns: repeat(2, 1fr); }
-  .metrics-row.six-col { grid-template-columns: repeat(3, 1fr); }
   .security-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
-  .metrics-row { grid-template-columns: 1fr; }
-  .metrics-row.four-col { grid-template-columns: 1fr; }
-  .metrics-row.six-col { grid-template-columns: repeat(2, 1fr); }
-  .charts-row.two-col { grid-template-columns: 1fr; }
   .security-grid { grid-template-columns: 1fr; }
-  .device-info-bar { gap: var(--pad-medium); }
-  .dashboard-header { flex-direction: column; align-items: flex-start; gap: var(--pad-medium); }
   .software-patch-grid { grid-template-columns: 1fr; }
   .score-hero { flex-wrap: wrap; }
 }
@@ -1634,43 +1483,6 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--pad-medium);
-}
-
-.drill-header h2 {
-  margin-bottom: 0;
-}
-
-.compare-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  padding: 7px 14px;
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--fleet-black-75);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.compare-btn:hover {
-  background: var(--fleet-black-5);
-  border-color: var(--fleet-black-25);
-  color: var(--fleet-black);
-}
-
-.compare-btn.active {
-  background: var(--fleet-vibrant-blue);
-  border-color: var(--fleet-vibrant-blue);
-  color: var(--fleet-white);
-}
-
-.compare-btn.active svg {
-  stroke: var(--fleet-white);
 }
 
 /* ─── Experience Score Section ────────────────────── */
@@ -1724,13 +1536,6 @@ h2 {
   gap: 11px;
 }
 
-.incomplete-tag {
-  background: var(--fleet-black-5);
-  padding: 1px 5px;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-}
-
 .score-sparkline {
   margin-left: auto;
   display: flex;
@@ -1763,18 +1568,8 @@ h2 {
   min-width: 120px;
 }
 
-.cat-bar-track {
+.cat-bar {
   flex: 1;
-  height: var(--gauge-track-height);
-  background: var(--fleet-black-10);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-
-.cat-bar-fill {
-  height: 100%;
-  border-radius: var(--radius);
-  transition: width 400ms ease-out;
 }
 
 .cat-value {
@@ -1786,22 +1581,10 @@ h2 {
 }
 
 /* ─── Lifecycle Badge Inline ─────────────────── */
-.lifecycle-badge-inline {
-  display: inline-block;
-  padding: 2px 9px;
-  border-radius: var(--radius-full);
-  font-size: 10px;
-  font-weight: 700;
+.lifecycle-badge {
   margin-left: 9px;
   vertical-align: middle;
-  letter-spacing: 0.2px;
 }
-
-.lifecycle-top { background: #e8f8f0; color: var(--status-good); }
-.lifecycle-healthy { background: #e8f0fe; color: #2d5fba; }
-.lifecycle-attention { background: #fef9e8; color: var(--status-fair-text); }
-.lifecycle-under { background: #fef0e8; color: var(--fleet-ui-orange); }
-.lifecycle-eol { background: #fee8ec; color: var(--status-critical); }
 
 /* ─── Benchmark Section ──────────────────────── */
 .benchmark-section {
@@ -1867,25 +1650,6 @@ h2 {
   color: var(--fleet-black);
 }
 
-.patch-type-tag {
-  font-size: 9px;
-  font-weight: 600;
-  padding: 1px 5px;
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.patch-type-tag.os {
-  background: #e8f0fe;
-  color: #2d5fba;
-}
-
-.patch-type-tag.app {
-  background: #f0e8fe;
-  color: #6b3fba;
-}
-
 .patch-event-detail {
   display: flex;
   align-items: center;
@@ -1898,69 +1662,8 @@ h2 {
   color: var(--fleet-black-50);
 }
 
-.patch-lag-badge {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 1px 5px;
-  border-radius: var(--radius-full);
-}
-
-.lag-fast { background: #e8f8f0; color: var(--status-good); }
-.lag-ok { background: #e8f0fe; color: #2d5fba; }
-.lag-slow { background: #fef9e8; color: var(--status-fair-text); }
-.lag-critical { background: #fee8ec; color: var(--status-critical); }
-
 .usage-summary {
-  display: flex;
-  gap: 7px;
   margin-bottom: var(--pad-medium);
-  flex-wrap: wrap;
-}
-
-.usage-filter-btn {
-  font-size: var(--font-size-xs);
-  color: var(--fleet-black-75);
-  background: var(--fleet-black-5);
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  padding: 4px 9px;
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: all 150ms ease-in-out;
-}
-
-.usage-filter-btn:hover {
-  background: var(--fleet-black-10);
-  border-color: var(--fleet-black-10);
-}
-
-.usage-filter-btn.active {
-  background: #e8f0fe;
-  border-color: #4a90d9;
-  color: #2d5fba;
-}
-
-.usage-filter-btn.stale.active {
-  background: #fee8ec;
-  border-color: var(--fleet-error);
-  color: var(--status-critical);
-}
-
-.usage-filter-btn strong {
-  font-weight: 700;
-  color: var(--fleet-black);
-}
-
-.usage-filter-btn.active strong {
-  color: inherit;
-}
-
-.usage-filter-btn.stale strong {
-  color: var(--fleet-error);
-}
-
-.usage-filter-btn.stale.active strong {
-  color: inherit;
 }
 
 .filter-active-bar {
@@ -1971,21 +1674,6 @@ h2 {
   color: var(--fleet-black-50);
   margin-bottom: 7px;
   padding: 4px 0;
-}
-
-.clear-filter-btn {
-  background: none;
-  border: none;
-  font-size: var(--font-size-xs);
-  color: #4a90d9;
-  cursor: pointer;
-  font-family: var(--font-body);
-  text-decoration: underline;
-  padding: 0;
-}
-
-.clear-filter-btn:hover {
-  color: #2d5fba;
 }
 
 .app-usage-list {
@@ -2017,21 +1705,6 @@ h2 {
   color: var(--fleet-black-50);
 }
 
-.app-usage-cat {
-  font-size: 9px;
-  font-weight: 600;
-  padding: 1px 5px;
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.app-usage-cat.daily { background: #e8f8f0; color: var(--status-good); }
-.app-usage-cat.weekly { background: #e8f0fe; color: #2d5fba; }
-.app-usage-cat.monthly { background: #fef9e8; color: var(--status-fair-text); }
-.app-usage-cat.stale { background: #fef0e8; color: var(--fleet-ui-orange); }
-.app-usage-cat.never { background: #fee8ec; color: var(--status-critical); }
-
 .app-usage-days {
   font-size: var(--font-size-xs);
   color: var(--fleet-black-33);
@@ -2041,8 +1714,8 @@ h2 {
 
 /* ─── Workers Council Mode Styles ────────────── */
 .wc-panel {
-  border-color: #d1fae5;
-  background: #f0fdf4;
+  border-color: var(--status-good-bg);
+  background: var(--fleet-accent-green-light);
 }
 
 .wc-aggregate-card {
@@ -2052,7 +1725,7 @@ h2 {
 .wc-aggregate-total {
   font-size: var(--font-size-lg);
   font-weight: 700;
-  color: #065f46;
+  color: var(--status-good-text);
   margin-bottom: 7px;
 }
 
@@ -2062,62 +1735,38 @@ h2 {
   flex-wrap: wrap;
 }
 
-.wc-pill {
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: var(--radius-full);
-}
-
-.wc-pill.daily { background: #e8f8f0; color: var(--status-good); }
-.wc-pill.weekly { background: #e8f0fe; color: #2d5fba; }
-.wc-pill.monthly { background: #fef9e8; color: var(--status-fair-text); }
-.wc-pill.unused { background: #fef0e8; color: var(--fleet-ui-orange); }
-
 .wc-browser-section, .wc-license-section {
   margin-top: var(--pad-medium);
   padding-top: var(--pad-medium);
-  border-top: 1px solid #d1fae5;
+  border-top: 1px solid var(--status-good-bg);
 }
 
 .wc-browser-section h4, .wc-license-section h4 {
   font-size: var(--font-size-sm);
   font-weight: 700;
-  color: #065f46;
+  color: var(--status-good-text);
   margin: 0 0 7px 0;
 }
 
+/* Slim stacked-distribution strip (mirrors the mini-distribution pattern) */
 .wc-browser-bar {
   display: flex;
-  height: 28px;
-  border-radius: var(--radius);
+  height: 12px;
+  border-radius: var(--radius-full);
   overflow: hidden;
-  background: #d1fae5;
+  background: var(--fleet-black-5);
 }
 
 .wc-browser-segment {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   min-width: 0;
   transition: width 300ms ease-out;
 }
 
 .wc-browser-segment:nth-child(1) { background: var(--status-good); }
-.wc-browser-segment:nth-child(2) { background: #10b981; }
-.wc-browser-segment:nth-child(3) { background: #34d399; }
-.wc-browser-segment:nth-child(4) { background: #6ee7b7; }
-.wc-browser-segment:nth-child(5) { background: #a7f3d0; }
-
-.wc-browser-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 4px;
-}
+.wc-browser-segment:nth-child(2) { background: var(--status-good-soft); }
+.wc-browser-segment:nth-child(3) { background: var(--fleet-status-success-border); }
+.wc-browser-segment:nth-child(4) { background: var(--status-good-bg); }
+.wc-browser-segment:nth-child(5) { background: var(--fleet-black-10); }
 
 .wc-browser-legend {
   display: flex;
@@ -2128,7 +1777,7 @@ h2 {
 
 .wc-legend-item {
   font-size: 10px;
-  color: #065f46;
+  color: var(--status-good-text);
   font-weight: 500;
 }
 
@@ -2143,7 +1792,7 @@ h2 {
   align-items: center;
   gap: 7px;
   padding: 4px 0;
-  border-bottom: 1px solid #d1fae5;
+  border-bottom: 1px solid var(--status-good-bg);
 }
 
 .wc-license-row:last-child { border-bottom: none; }
@@ -2165,26 +1814,26 @@ h2 {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  background: #f0fdf4;
-  border: 1px solid #d1fae5;
-  border-radius: var(--radius);
+  background: var(--fleet-accent-green-light);
+  border: 1px solid var(--status-good-bg);
+  border-radius: var(--radius-large);
   padding: 18px 14px;
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: #065f46;
+  color: var(--status-good-text);
 }
 
 .wc-hidden-section svg {
-  stroke: #065f46;
+  stroke: currentColor;
   flex-shrink: 0;
 }
 
 .wc-no-license-risk {
   font-size: var(--font-size-sm);
-  color: #065f46;
+  color: var(--status-good-text);
   margin-top: var(--pad-medium);
   padding-top: var(--pad-medium);
-  border-top: 1px solid #d1fae5;
+  border-top: 1px solid var(--status-good-bg);
 }
 
 /* ─── Deployment Panel ──────────────────────────── */
@@ -2204,7 +1853,7 @@ h2 {
   padding: var(--pad-small) var(--pad-medium);
   cursor: pointer;
   user-select: none;
-  background: #f8f7ff;
+  background: var(--info-tint-soft);
   border-bottom: 1px solid var(--fleet-black-10);
 }
 
@@ -2214,7 +1863,11 @@ h2 {
   gap: 5px;
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: #515774;
+  color: var(--fleet-black-75);
+}
+
+.deploy-icon {
+  color: var(--fleet-vibrant-blue);
 }
 
 .chevron {
@@ -2246,21 +1899,21 @@ h2 {
 }
 
 .deploy-row:hover {
-  background: #f8f7ff;
+  background: var(--info-tint-soft);
 }
 
 .deploy-hash {
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
-  color: #6a67fe;
-  background: #f0efff;
+  color: var(--fleet-vibrant-blue);
+  background: var(--info-tint);
   padding: 1px 5px;
-  border-radius: 3px;
+  border-radius: var(--radius);
   flex-shrink: 0;
 }
 
 .deploy-time {
-  color: #8b8fa2;
+  color: var(--fleet-black-50);
   flex-shrink: 0;
   min-width: 40px;
 }

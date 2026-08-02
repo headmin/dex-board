@@ -22,16 +22,16 @@
 
       <!-- Inline footnote: what makes up the score -->
       <div class="dist-footnote">
-        <button class="dist-info-btn" @click="showInfo = !showInfo">
+        <BaseButton variant="link" class="dist-info-btn" @click="showInfo = !showInfo">
           {{ showInfo ? 'Hide scoring details' : 'How is this scored?' }}
-        </button>
+        </BaseButton>
         <div v-if="showInfo" class="dist-info">
           <p>The composite score (0–100) is a weighted average of four categories computed hourly from device telemetry:</p>
           <div class="category-row">
             <span class="cat-pill" style="background:var(--rainbow-blue)">Performance 35%</span>
             <span class="cat-pill" style="background:var(--fleet-success)">Device Health 25%</span>
-            <span class="cat-pill" style="background:#8b5cf6">Security 20%</span>
-            <span class="cat-pill" style="background:#ec4899">Software 20%</span>
+            <span class="cat-pill" style="background:var(--fleet-purple)">Security 20%</span>
+            <span class="cat-pill" style="background:var(--fleet-accent-pink)">Software 20%</span>
           </div>
           <div class="cat-details">
             <div><strong>Performance</strong> — memory pressure, disk usage, top-5 process load, days since reboot</div>
@@ -50,6 +50,8 @@
 import { ref, computed } from 'vue'
 import SkeletonLoader from './SkeletonLoader.vue'
 import GradeBadge from './GradeBadge.vue'
+import BaseButton from './base/BaseButton.vue'
+import { gradeColor } from '../composables/gradeColors'
 
 const showInfo = ref(false)
 
@@ -67,11 +69,6 @@ const grades = computed(() => {
     percent: ((props.data[g] || 0) / total) * 100
   }))
 })
-
-function gradeColor(grade) {
-  const colors = { A: '#009a7d', B: '#009a7d', C: '#ecc767', D: '#eb6743', F: '#eb4343' }
-  return colors[grade] || '#8b8fa2'
-}
 
 function thresholdLabel(grade) {
   const labels = { A: '90–100', B: '75–89', C: '60–74', D: '40–59', F: '0–39' }
@@ -121,7 +118,7 @@ h3 {
 .grade-threshold {
   font-size: 10px;
   color: var(--fleet-black-50);
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
 }
 
 .dist-track {
@@ -167,17 +164,8 @@ h3 {
 }
 
 .dist-info-btn {
-  border: none;
-  background: none;
   font-size: 11px;
-  color: #6a67fe;
-  cursor: pointer;
-  font-family: var(--font-body);
-  font-weight: 500;
-  padding: 0;
 }
-
-.dist-info-btn:hover { text-decoration: underline; }
 
 .dist-info {
   margin-top: var(--pad-small);

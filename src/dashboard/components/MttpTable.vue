@@ -87,7 +87,7 @@ const slaSummary = computed(() => {
 .mttp-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--font-size-sm);
+  font-size: var(--table-font-size);
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
@@ -95,23 +95,23 @@ const slaSummary = computed(() => {
 }
 .mttp-table th {
   text-align: left;
-  padding: 9px 13px;
-  font-size: 12px;
-  color: var(--fleet-black-75);
-  font-weight: 600;
+  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
+  font-size: var(--table-header-font-size);
+  color: var(--fleet-black);
+  font-weight: 700;
   border-bottom: 1px solid var(--fleet-black-10);
   background: var(--fleet-off-white);
 }
 .mttp-table td {
-  padding: 7px 13px;
+  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
   color: var(--fleet-black-75);
-  border-bottom: 1px solid var(--fleet-black-5);
+  border-bottom: 1px solid var(--fleet-black-10);
 }
 .mttp-table tr:last-child td { border-bottom: none; }
 .mttp-table tr:hover td { background: var(--fleet-off-white); }
 .mttp-table .mttp-col-app { font-weight: 500; color: var(--fleet-black); }
 .mttp-table .mttp-col-num { text-align: right; font-family: var(--font-mono); white-space: nowrap; }
-.mttp-table .mttp-col-num strong { color: #6a67fe; font-weight: 700; }
+.mttp-table .mttp-col-num strong { color: var(--fleet-black); font-weight: 700; }
 .mttp-table .mttp-col-range { text-align: right; color: var(--fleet-black-50); white-space: nowrap; }
 .mttp-table .mono { font-family: var(--font-mono); }
 .mttp-empty {

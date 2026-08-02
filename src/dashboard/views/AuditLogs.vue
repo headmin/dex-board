@@ -1,9 +1,10 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>Audit log</h1>
-      <TimeRangeFilter />
-    </header>
+  <div class="dashboard page-stack">
+    <PageHeader title="Audit log">
+      <template #actions>
+        <TimeRangeFilter />
+      </template>
+    </PageHeader>
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
@@ -15,7 +16,7 @@
 
     <!-- Overview Metrics -->
     <section class="section">
-      <h2>Activity overview</h2>
+      <SectionHeader title="Activity overview" />
       <div class="metrics-row four-col">
         <MetricCard label="Total events" :value="overview.totalEvents" :loading="loading.overview" />
         <MetricCard label="Unique users" :value="overview.uniqueUsers" :loading="loading.overview" />
@@ -26,14 +27,14 @@
 
     <!-- Activity Timeline -->
     <section v-if="!noData" class="section">
-      <h2>Activity timeline</h2>
+      <SectionHeader title="Activity timeline" />
       <TimeSeriesChart
         title="Events per hour"
         :data="timeline"
         :loading="loading.timeline"
         xKey="time"
         yKey="event_count"
-        color="#8b5cf6"
+        :color="palette.purple"
       />
     </section>
 
@@ -69,7 +70,7 @@
         :loading="loading.heatmap"
         :minValue="0"
         :maxValue="heatmapMax"
-        :colorRange="['#ebedf0', '#c4b5fd', '#8b5cf6', '#6d28d9', '#4c1d95']"
+        :colorRange="['#ebedf0', '#c4b5fd', palette.purple, '#6d28d9', '#4c1d95']"
       />
     </section>
 
@@ -89,6 +90,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { query } from '../services/api'
 import { useTimeRange } from '../composables/useTimeRange'
+import { palette } from '../composables/uiPalette'
 import TimeRangeFilter from '../components/TimeRangeFilter.vue'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
@@ -96,6 +98,8 @@ import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
 import HeatmapChart from '../components/HeatmapChart.vue'
 import DataTable from '../components/DataTable.vue'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
 
 const { timeRangeHours } = useTimeRange()
 const error = ref(null)
@@ -237,89 +241,19 @@ onMounted(() => fetchAll())
   padding: var(--pad-xlarge);
 }
 
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 22px;
-}
-
-h1 {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--fleet-black);
-}
-
-h2 {
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  color: var(--fleet-black);
-  margin-bottom: 14px;
-  padding-bottom: 7px;
-  border-bottom: 1px solid var(--fleet-black-10);
-}
-
-.error-banner {
-  background: var(--fleet-white);
-  color: var(--fleet-error);
-  padding: 11px 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--fleet-black-10);
-  border-left: 3px solid var(--fleet-error);
-  margin-bottom: 22px;
-}
-
 .info-banner {
   background: var(--fleet-off-white);
-  color: var(--fleet-vibrant-blue);
+  color: var(--fleet-black-75);
   padding: 14px 18px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-large);
   border: 1px solid var(--fleet-black-10);
-  border-left: 3px solid var(--fleet-vibrant-blue);
-  margin-bottom: 22px;
   font-size: 13px;
   line-height: 1.5;
 }
 
 .section {
-  margin-bottom: 29px;
-}
-
-.metrics-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-  margin-bottom: 22px;
-}
-
-.metrics-row.four-col {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.charts-row.two-col {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 22px;
-  margin-bottom: 22px;
-}
-
-@media (max-width: 1024px) {
-  .metrics-row.four-col {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .metrics-row, .metrics-row.four-col {
-    grid-template-columns: 1fr;
-  }
-  .charts-row.two-col {
-    grid-template-columns: 1fr;
-  }
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-medium);
 }
 </style>

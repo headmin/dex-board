@@ -1,14 +1,12 @@
 <template>
-  <div class="chart-container">
-    <h3>{{ title }}</h3>
-    <SkeletonLoader v-if="loading" variant="chart" height="300px" />
-    <v-chart v-else class="chart" :option="chartOption" autoresize />
-  </div>
+  <ChartCard :title="title" :loading="loading">
+    <v-chart class="chart" :option="chartOption" autoresize />
+  </ChartCard>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import SkeletonLoader from './SkeletonLoader.vue'
+import ChartCard from './base/ChartCard.vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart } from 'echarts/charts'
@@ -21,6 +19,15 @@ import {
   ToolboxComponent
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import {
+  baseTooltip,
+  baseAxisLabel,
+  baseAxisLine,
+  baseSplitLine,
+  baseDataZoom,
+  resolveColor
+} from '../composables/echartsTheme'
+import { palette, categorical } from '../composables/uiPalette'
 
 use([
   CanvasRenderer, LineChart, GridComponent, TooltipComponent,
@@ -36,33 +43,15 @@ const props = defineProps({
   zoomable: { type: Boolean, default: true },
   threshold: { type: Number, default: null },
   thresholdLabel: { type: String, default: 'High' },
-  color: { type: String, default: '#5cabdf' },
+  color: { type: String, default: categorical[4] },
   yMin: { type: Number, default: null },
   yMax: { type: Number, default: null }
 })
 
-// ECharts paints to canvas and CANNOT resolve CSS custom properties — if
-// a caller passes '#6a67fe' it ends up unparsed and the
-// chart silently falls back to ECharts' default color. Resolve once here.
-function resolveColor(c) {
-  if (!c) return c
-  const m = String(c).match(/var\(\s*(--[\w-]+)\s*\)/)
-  if (!m) return c
-  if (typeof document === 'undefined') return c
-  const v = getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim()
-  return v || c
-}
-
 const chartOption = computed(() => {
   const color = resolveColor(props.color)
   const option = {
-    tooltip: {
-      trigger: 'axis',
-      backgroundColor: '#3e4771',
-      borderColor: '#3e4771',
-      textStyle: { color: '#fff', fontSize: 11 },
-      borderRadius: 4
-    },
+    tooltip: { ...baseTooltip },
     toolbox: {
       right: 16,
       top: 0,
@@ -70,7 +59,7 @@ const chartOption = computed(() => {
         saveAsImage: { title: 'Save', pixelRatio: 2 },
         dataZoom: { title: { zoom: 'Zoom', back: 'Reset' } }
       },
-      iconStyle: { borderColor: '#8b8fa2' }
+      iconStyle: { borderColor: palette.ink50 }
     },
     grid: {
       left: '3%',
@@ -82,15 +71,15 @@ const chartOption = computed(() => {
       type: 'category',
       boundaryGap: false,
       data: props.data.map(d => d[props.xKey]),
-      axisLabel: { color: '#8b8fa2', fontSize: 11 },
-      axisLine: { lineStyle: { color: '#e2e4ea' } }
+      axisLabel: { ...baseAxisLabel, fontSize: 11 },
+      axisLine: { ...baseAxisLine }
     },
     yAxis: {
       type: 'value',
       min: props.yMin,
       max: props.yMax,
-      axisLabel: { color: '#8b8fa2', fontSize: 11 },
-      splitLine: { lineStyle: { color: '#f0f1f4' } }
+      axisLabel: { ...baseAxisLabel, fontSize: 11 },
+      splitLine: { ...baseSplitLine }
     },
     series: [{
       name: props.title,
@@ -116,7 +105,7 @@ const chartOption = computed(() => {
         silent: true,
         symbol: 'none',
         lineStyle: {
-          color: '#eb4343',
+          color: palette.critical,
           type: 'dashed',
           width: 2
         },
@@ -126,7 +115,7 @@ const chartOption = computed(() => {
             formatter: `${props.thresholdLabel} (${props.threshold})`,
             position: 'insideEndTop',
             fontSize: 10,
-            color: '#eb4343'
+            color: palette.critical
           }
         }]
       } : undefined
@@ -136,12 +125,11 @@ const chartOption = computed(() => {
   if (props.zoomable) {
     option.dataZoom = [
       {
+        ...baseDataZoom,
         type: 'slider',
         bottom: 10,
         height: 24,
-        borderColor: '#e2e4ea',
-        fillerColor: 'rgba(106, 103, 254, 0.15)',
-        handleStyle: { color: '#6a67fe' }
+        borderColor: palette.ink10
       },
       {
         type: 'inside',
@@ -155,24 +143,8 @@ const chartOption = computed(() => {
 </script>
 
 <style scoped>
-.chart-container {
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  padding: var(--pad-large);
-  box-shadow: var(--box-shadow);
-}
-
-h3 {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--fleet-black);
-  margin-bottom: var(--pad-medium);
-}
-
 .chart {
   width: 100%;
   height: 300px;
 }
-
 </style>

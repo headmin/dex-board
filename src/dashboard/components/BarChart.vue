@@ -1,19 +1,19 @@
 <template>
-  <div class="chart-container">
-    <h3>{{ title }}</h3>
-    <SkeletonLoader v-if="loading" variant="chart" height="300px" />
-    <v-chart v-else class="chart" :option="chartOption" autoresize />
-  </div>
+  <ChartCard :title="title" :loading="loading">
+    <v-chart class="chart" :option="chartOption" autoresize />
+  </ChartCard>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import SkeletonLoader from './SkeletonLoader.vue'
+import ChartCard from './base/ChartCard.vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { BarChart as EChartsBar } from 'echarts/charts'
 import { GridComponent, TooltipComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { baseTooltip, baseAxisLabel, baseSplitLine } from '../composables/echartsTheme'
+import { palette } from '../composables/uiPalette'
 
 use([CanvasRenderer, EChartsBar, GridComponent, TooltipComponent])
 
@@ -33,12 +33,8 @@ const chartOption = computed(() => {
   if (props.horizontal) {
     return {
       tooltip: {
-        trigger: 'axis',
-        axisPointer: { type: 'shadow' },
-        backgroundColor: '#3e4771',
-        borderColor: '#3e4771',
-        textStyle: { color: '#fff', fontSize: 11 },
-        borderRadius: 4
+        ...baseTooltip,
+        axisPointer: { type: 'shadow' }
       },
       grid: {
         left: '3%',
@@ -48,16 +44,16 @@ const chartOption = computed(() => {
       },
       xAxis: {
         type: 'value',
-        axisLabel: { color: '#8b8fa2', fontSize: 11 },
-        splitLine: { lineStyle: { color: '#f0f1f4' } }
+        axisLabel: { ...baseAxisLabel, fontSize: 11 },
+        splitLine: { ...baseSplitLine }
       },
       yAxis: {
         type: 'category',
         data: names.reverse(),
         axisLabel: {
+          ...baseAxisLabel,
           width: 100,
           overflow: 'truncate',
-          color: '#8b8fa2',
           fontSize: 11
         }
       },
@@ -65,7 +61,7 @@ const chartOption = computed(() => {
         type: 'bar',
         data: values.reverse(),
         itemStyle: {
-          color: '#6a67fe',
+          color: palette.info,
           borderRadius: [0, 4, 4, 0]
         }
       }]
@@ -74,12 +70,8 @@ const chartOption = computed(() => {
 
   return {
     tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'shadow' },
-      backgroundColor: '#3e4771',
-      borderColor: '#3e4771',
-      textStyle: { color: '#fff', fontSize: 11 },
-      borderRadius: 4
+      ...baseTooltip,
+      axisPointer: { type: 'shadow' }
     },
     grid: {
       left: '3%',
@@ -91,23 +83,23 @@ const chartOption = computed(() => {
       type: 'category',
       data: names,
       axisLabel: {
+        ...baseAxisLabel,
         rotate: 45,
         width: 80,
         overflow: 'truncate',
-        color: '#8b8fa2',
         fontSize: 11
       }
     },
     yAxis: {
       type: 'value',
-      axisLabel: { color: '#8b8fa2', fontSize: 11 },
-      splitLine: { lineStyle: { color: '#f0f1f4' } }
+      axisLabel: { ...baseAxisLabel, fontSize: 11 },
+      splitLine: { ...baseSplitLine }
     },
     series: [{
       type: 'bar',
       data: values,
       itemStyle: {
-        color: '#6a67fe',
+        color: palette.info,
         borderRadius: [4, 4, 0, 0]
       }
     }]
@@ -116,21 +108,6 @@ const chartOption = computed(() => {
 </script>
 
 <style scoped>
-.chart-container {
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  padding: var(--pad-large);
-  box-shadow: var(--box-shadow);
-}
-
-h3 {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--fleet-black);
-  margin-bottom: var(--pad-medium);
-}
-
 .chart {
   width: 100%;
   height: 300px;

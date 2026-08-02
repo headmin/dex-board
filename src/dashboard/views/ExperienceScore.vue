@@ -1,12 +1,8 @@
 <template>
-  <div class="experience-score">
+  <div class="experience-score page-stack">
     <!-- ─── Page Header with Time Range ────────────────────── -->
-    <section class="page-header">
-      <div class="header-left">
-        <h2 class="page-title">Experience score</h2>
-        <span class="header-subtitle">Fleet-wide digital employee experience</span>
-      </div>
-      <div class="header-right">
+    <PageHeader title="Experience score" subtitle="Fleet-wide digital employee experience">
+      <template #actions>
         <div class="time-range-group">
           <TimeRangeFilter />
           <span class="time-range-hint" title="The time range only changes the charts further down — grade distribution, the breakdowns, biggest movers and the device list — which show hosts that checked in during the selected window. The scores at the top (composite, the category cards and the exposure tile) always show each host's most recent reading, so they don't change when you switch the range.">
@@ -16,8 +12,8 @@
         <div class="comparison-label">
           tiles show Δ vs {{ tileDeltaLabel }} · 30-day trend
         </div>
-      </div>
-    </section>
+      </template>
+    </PageHeader>
 
     <!-- ─── Scoring readiness warning (SETUP.md §3.2a) ──────── -->
     <div v-if="missingSignals.length" class="readiness-banner">
@@ -46,16 +42,11 @@
       <div class="exposure-main">
         <div class="exposure-eyebrow-row">
           <span class="exposure-eyebrow">Endpoint exposure vs {{ exposureDays }} days ago</span>
-          <div class="exposure-window-picker" role="group" aria-label="Comparison window">
-            <button
-              v-for="w in EXPOSURE_WINDOWS"
-              :key="w"
-              type="button"
-              class="exposure-window-btn"
-              :class="{ active: exposureDays === w }"
-              @click="exposureDays = w"
-            >{{ w }}d</button>
-          </div>
+          <SegmentedControl
+            v-model="exposureDays"
+            :options="exposureWindowOptions"
+            aria-label="Comparison window"
+          />
         </div>
         <span v-if="loading.exposure" class="exposure-headline">Loading…</span>
         <span v-else class="exposure-headline">{{ exposureView.headline }}</span>
@@ -161,10 +152,10 @@
         <div class="breakdown-header">
           <h3>{{ expandedCategoryLabel }} — Signal Breakdown</h3>
           <div class="breakdown-actions">
-            <button class="info-toggle" @click="showMethodology = !showMethodology">
+            <BaseButton size="small" @click="showMethodology = !showMethodology">
               {{ showMethodology ? 'Hide' : 'How is this scored?' }}
-            </button>
-            <button class="close-btn" @click="expandedCategory = null">Close</button>
+            </BaseButton>
+            <BaseButton size="small" @click="expandedCategory = null">Close</BaseButton>
           </div>
         </div>
 
@@ -193,8 +184,8 @@
             <div class="signal-info">
               <span class="signal-name">
                 {{ sig.name }}
-                <span v-if="sig.type" class="signal-type-pill" :class="`signal-type-pill--${sig.type}`">{{ sig.type === 'config' ? 'config' : 'time' }}</span>
-                <span v-if="sig.inactive" class="signal-status-pill">paused</span>
+                <Badge v-if="sig.type" class="signal-type-badge" :tone="sig.type === 'config' ? 'info' : 'good'" :label="sig.type === 'config' ? 'config' : 'time'" />
+                <Badge v-if="sig.inactive" class="signal-status-badge" tone="fair" label="paused" />
               </span>
               <span class="signal-weight">{{ (sig.weight * 100).toFixed(0) }}% weight</span>
               <span v-if="sig.detail" class="signal-detail">{{ sig.detail }}</span>
@@ -262,7 +253,7 @@
                         <div v-for="d in drillDevices" :key="d.host_identifier" class="drill-device-row">
                           <span class="drill-hostname">{{ displayHost(d) }}</span>
                           <span class="drill-version">v{{ d.app_version }}</span>
-                          <span class="drill-usage" :class="d.usage_category">{{ d.usage_category }}</span>
+                          <Badge :tone="usageTone(d.usage_category)" :label="d.usage_category" />
                           <span class="drill-days">{{ d.days_since_opened }}d since opened</span>
                         </div>
                       </div>
@@ -332,20 +323,14 @@
               </div>
             </div>
           </div>
-          <div class="device-search-group">
-            <svg class="device-search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M7.333 12.667A5.333 5.333 0 107.333 2a5.333 5.333 0 000 10.667zM14 14l-2.9-2.9" stroke="#8b8fa2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <input
-              type="text"
-              class="device-search-input"
-              placeholder="Search hostname..."
-              v-model="deviceSearch"
-            />
-          </div>
+          <SearchInput
+            v-model="deviceSearch"
+            class="device-search"
+            placeholder="Search hostname..."
+          />
         </div>
         <SkeletonLoader v-if="loading.deviceList" variant="chart" height="280px" />
-        <div v-else-if="!filteredDeviceList.length" class="empty-state">No devices match your search</div>
+        <EmptyState v-else-if="!filteredDeviceList.length" title="No devices match your search" small />
         <div v-else class="device-table-wrap">
           <table class="device-table">
             <thead>
@@ -371,11 +356,11 @@
                 </td>
                 <td class="device-score-cell">{{ d.composite_score }}</td>
                 <td><GradeBadge :grade="d.composite_grade" /></td>
-                <td class="device-score-cell" :style="{ color: signalColor(d.device_health_score) }">{{ d.device_health_score }}</td>
-                <td class="device-score-cell" :style="{ color: signalColor(d.software_score) }">{{ d.software_score }}</td>
-                <td class="device-score-cell" :style="{ color: signalColor(d.performance_score) }">{{ d.performance_score }}</td>
-                <td class="device-score-cell" :style="{ color: signalColor(d.security_score) }">{{ d.security_score }}</td>
-                <td class="device-score-cell" :style="{ color: signalColor(d.network_score) }">{{ d.network_score }}</td>
+                <td class="device-score-cell" :style="{ color: scoreTextColor(d.device_health_score) }">{{ d.device_health_score }}</td>
+                <td class="device-score-cell" :style="{ color: scoreTextColor(d.software_score) }">{{ d.software_score }}</td>
+                <td class="device-score-cell" :style="{ color: scoreTextColor(d.performance_score) }">{{ d.performance_score }}</td>
+                <td class="device-score-cell" :style="{ color: scoreTextColor(d.security_score) }">{{ d.security_score }}</td>
+                <td class="device-score-cell" :style="{ color: scoreTextColor(d.network_score) }">{{ d.network_score }}</td>
               </tr>
             </tbody>
           </table>
@@ -416,6 +401,15 @@ import DimensionBreakdown from '../components/DimensionBreakdown.vue'
 import MttpTable from '../components/MttpTable.vue'
 import { displayHost } from '../composables/displayName'
 import { useAppConfig } from '../composables/useAppConfig'
+import PageHeader from '../components/base/PageHeader.vue'
+import SegmentedControl from '../components/base/SegmentedControl.vue'
+import BaseButton from '../components/base/BaseButton.vue'
+import Badge from '../components/base/Badge.vue'
+import SearchInput from '../components/base/SearchInput.vue'
+import EmptyState from '../components/base/EmptyState.vue'
+import { useSort } from '../composables/useSort'
+import { gradeColor, scoreToGrade as sharedScoreToGrade, scoreTextColor } from '../composables/gradeColors'
+import { palette } from '../composables/uiPalette'
 
 const { config } = useAppConfig()
 // Friendly team label from the config map (TEAM_NAMES); falls back to the raw
@@ -464,12 +458,9 @@ const trendRangeText = computed(() => {
 })
 const trendColor = computed(() => {
   const g = (fleet.value.grade || '').toUpperCase()
-  if (g === 'A') return '#009a7d'
-  if (g === 'B') return '#009a7d'
-  if (g === 'C') return '#ecc767'
-  if (g === 'D') return '#eb6743'
-  if (g === 'F') return '#eb4343'
-  return '#6a67fe'
+  // Known grades follow the shared grade scale; unknown/"—" falls back to
+  // the info accent (not ink) so a loading sparkline stays on-brand.
+  return ['A', 'B', 'C', 'D', 'F'].includes(g) ? gradeColor(g) : palette.info
 })
 
 // ─── State ────────────────────────────────────────────────────
@@ -491,6 +482,7 @@ const fleet = ref({ grade: '—', score: null, delta: null, sparkline: [], devic
 // Scope is endpoint security posture only — NOT app/network/cloud attack
 // surface (boundary is printed on the tile).
 const EXPOSURE_WINDOWS = [14, 30, 45, 60, 90]
+const exposureWindowOptions = EXPOSURE_WINDOWS.map(w => ({ value: w, label: `${w}d` }))
 const exposureDays = ref(90)
 const securityExposure = ref({ now: null, before: null, delta: null })
 // Per-control adoption %s + their delta over the window — shows WHICH control moved.
@@ -602,8 +594,12 @@ const drillLoading = ref(false)
 // Device list state
 const deviceList = ref([])
 const deviceSearch = ref('')
-const deviceSortCol = ref('composite_score')
-const deviceSortAsc = ref(true)
+const {
+  sortKey: deviceSortCol,
+  sortAsc: deviceSortAsc,
+  toggleSort: deviceToggleSort,
+  sortRows: deviceSortRows,
+} = useSort('composite_score', true)
 
 const filteredDeviceList = computed(() => {
   let list = deviceList.value
@@ -616,15 +612,7 @@ const filteredDeviceList = computed(() => {
       (d.ram_tier || '').toLowerCase().includes(s)
     )
   }
-  const col = deviceSortCol.value
-  const asc = deviceSortAsc.value
-  return [...list].sort((a, b) => {
-    const av = a[col] ?? -1
-    const bv = b[col] ?? -1
-    if (av < bv) return asc ? -1 : 1
-    if (av > bv) return asc ? 1 : -1
-    return 0
-  })
+  return deviceSortRows(list)
 })
 
 const totalGraded = computed(() =>
@@ -648,13 +636,11 @@ const expandedCategoryLabel = computed(() => {
 })
 
 // ─── Grade helper ─────────────────────────────────────────────
+// Thresholds live in composables/gradeColors; this wrapper keeps the view's
+// "—" placeholder for missing/negative scores.
 function scoreToGrade(score) {
   if (score === null || score === undefined || score < 0) return '—'
-  if (score >= 90) return 'A'
-  if (score >= 75) return 'B'
-  if (score >= 60) return 'C'
-  if (score >= 40) return 'D'
-  return 'F'
+  return sharedScoreToGrade(score) || '—'
 }
 
 // ─── Fetch Fleet Score (now + 7d ago for Δ tile + 30d sparkline) ──
@@ -951,8 +937,8 @@ async function fetchDeviceList() {
 }
 
 function deviceSortBy(col) {
-  if (deviceSortCol.value === col) { deviceSortAsc.value = !deviceSortAsc.value }
-  else { deviceSortCol.value = col; deviceSortAsc.value = col === 'hostname' }
+  // hostname starts ascending; every score column starts descending
+  deviceToggleSort(col, col !== 'hostname')
 }
 
 function deviceSortIcon(col) {
@@ -1278,22 +1264,26 @@ async function toggleAppDrill(appName, mode) {
   drillLoading.value = false
 }
 
-// Mockup convention for TEXT (table cells): healthy scores read as plain
-// navy; only degraded scores are colored (gold -> orange -> red).
-function signalColor(score) {
-  if (score >= 75) return '#515774'
-  if (score >= 60) return '#a47f1e'
-  if (score >= 40) return '#eb6743'
-  return '#eb4343'
-}
-
 // Mockup convention for BAR FILLS (score breakdown): the good band is brand
 // green — never navy. Green -> gold -> orange -> red on the canonical scale.
+// NOT gradeColors.scoreBandColor: that splits the green band (soft green for
+// 75–89, full green only at 90+), while these bars stay full green from 75 up.
 function signalBarColor(score) {
-  if (score >= 75) return '#009a7d'
-  if (score >= 60) return '#ecc767'
-  if (score >= 40) return '#eb6743'
-  return '#eb4343'
+  if (score >= 75) return palette.good
+  if (score >= 60) return palette.fair
+  if (score >= 40) return palette.elevated
+  return palette.critical
+}
+
+// App-usage tier -> Badge tone for the stale-app device drill-down.
+function usageTone(cat) {
+  return {
+    daily: 'good',
+    weekly: 'info',
+    monthly: 'fair',
+    stale: 'elevated',
+    never: 'critical',
+  }[cat] || 'neutral'
 }
 
 // ─── Fetch All Data ───────────────────────────────────────────
@@ -1354,13 +1344,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* column layout + gap come from the shared .page-stack class */
 .experience-score {
   max-width: 1280px;
   margin: 0 auto;
   padding: var(--pad-large);
-  display: flex;
-  flex-direction: column;
-  gap: var(--pad-large);
 }
 
 /* ─── 90-day endpoint security-exposure callout ─── */
@@ -1391,26 +1379,6 @@ onMounted(() => {
   font-weight: 600;
   color: var(--fleet-black-75);
 }
-.exposure-window-picker {
-  display: inline-flex;
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.exposure-window-btn {
-  appearance: none;
-  border: none;
-  background: var(--fleet-white);
-  color: var(--fleet-black-50);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  padding: 2px 7px;
-  cursor: pointer;
-  border-left: 1px solid var(--fleet-black-10);
-}
-.exposure-window-btn:first-child { border-left: none; }
-.exposure-window-btn:hover { background: var(--fleet-off-white); color: var(--fleet-black-75); }
-.exposure-window-btn.active { background: #6a67fe; color: var(--fleet-white); }
 .exposure-headline { font-size: var(--font-size-md); font-weight: 600; color: var(--fleet-black); }
 .exposure-detail { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
 .exposure-signals { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
@@ -1446,40 +1414,7 @@ onMounted(() => {
   line-height: 1.4;
 }
 
-/* ─── Page header ─────────────────────────────── */
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--pad-medium);
-}
-
-.header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.page-title {
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--fleet-black);
-  margin: 0;
-}
-
-.header-subtitle {
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--fleet-black-75);
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: var(--pad-medium);
-}
-
+/* ─── Page header extras (inside PageHeader's actions slot) ── */
 .comparison-label {
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -1694,40 +1629,6 @@ onMounted(() => {
   gap: 7px;
 }
 
-.info-toggle {
-  background: var(--fleet-off-white);
-  border: 1px solid var(--fleet-black-25);
-  border-radius: var(--radius);
-  padding: 4px 11px;
-  font-family: var(--font-body);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--fleet-black-75);
-  cursor: pointer;
-  transition: all 150ms ease-in-out;
-}
-
-.info-toggle:hover {
-  background: var(--fleet-black-5);
-}
-
-.close-btn {
-  background: none;
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  padding: 4px 11px;
-  font-family: var(--font-body);
-  font-size: var(--font-size-xs);
-  color: var(--fleet-black-75);
-  cursor: pointer;
-  transition: all 150ms ease-in-out;
-}
-
-.close-btn:hover {
-  background: var(--fleet-black-5);
-  border-color: var(--fleet-black-25);
-}
-
 /* ─── Scoring readiness warning ───────────────── */
 .readiness-banner {
   background: var(--status-fair-bg);
@@ -1847,35 +1748,13 @@ onMounted(() => {
   border-radius: var(--radius-full);
 }
 
-.signal-type-pill {
-  display: inline-block;
+.signal-name .signal-type-badge {
   margin-left: 5px;
-  padding: 1px 5px;
-  font-size: 9px;
-  font-weight: 500;
-  border-radius: var(--radius-full);
   vertical-align: middle;
 }
 
-.signal-type-pill--config {
-  background: var(--fleet-accent-purple-light);
-  color: var(--fleet-accent-purple);
-}
-
-.signal-type-pill--time {
-  background: var(--status-good-bg);
-  color: var(--status-good-text);
-}
-
-.signal-status-pill {
-  display: inline-block;
+.signal-name .signal-status-badge {
   margin-left: 4px;
-  padding: 1px 5px;
-  font-size: 9px;
-  font-weight: 500;
-  border-radius: var(--radius-full);
-  background: var(--status-fair-bg);
-  color: var(--status-fair-text);
   vertical-align: middle;
 }
 
@@ -1918,54 +1797,6 @@ onMounted(() => {
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--fleet-black-75);
-}
-
-.patch-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.patch-row {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-
-.patch-name {
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--fleet-black);
-  min-width: 140px;
-  flex-shrink: 0;
-}
-
-.patch-bar-track {
-  flex: 1;
-  height: var(--gauge-track-height);
-  background: var(--fleet-black-10);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-
-.patch-bar-fill {
-  height: 100%;
-  border-radius: var(--radius);
-  transition: width 400ms ease-out;
-}
-
-.patch-pct {
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--fleet-black);
-  min-width: 80px;
-}
-
-.patch-lag {
-  font-size: var(--font-size-xs);
-  color: var(--fleet-black-50);
-  min-width: 60px;
-  text-align: right;
 }
 
 .usage-tables {
@@ -2080,40 +1911,6 @@ onMounted(() => {
   color: var(--fleet-black-50);
 }
 
-.drill-usage {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: var(--radius);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.drill-usage.daily {
-  background: #e8f8f0;
-  color: var(--fleet-status-success);
-}
-
-.drill-usage.weekly {
-  background: #e8f0fe;
-  color: #2d5fba;
-}
-
-.drill-usage.monthly {
-  background: #fef9e8;
-  color: var(--status-fair-text);
-}
-
-.drill-usage.stale {
-  background: #fef0e8;
-  color: var(--fleet-ui-orange);
-}
-
-.drill-usage.never {
-  background: #fee8ec;
-  color: var(--fleet-status-error);
-}
-
 .drill-days {
   font-size: var(--font-size-xs);
   color: var(--fleet-black-50);
@@ -2126,13 +1923,6 @@ onMounted(() => {
   color: var(--status-good);
   font-weight: 500;
   padding: 7px 0;
-}
-
-/* ─── Two column layout ───────────────────────── */
-.two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--pad-medium);
 }
 
 .full-width {
@@ -2150,9 +1940,6 @@ onMounted(() => {
   .category-cards {
     grid-template-columns: repeat(2, 1fr);
   }
-  .two-col {
-    grid-template-columns: 1fr;
-  }
   .signal-row {
     flex-direction: column;
     align-items: stretch;
@@ -2164,9 +1951,6 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
   .patch-stats {
-    flex-wrap: wrap;
-  }
-  .patch-row {
     flex-wrap: wrap;
   }
 }
@@ -2237,31 +2021,8 @@ onMounted(() => {
   letter-spacing: 0.3px;
 }
 
-.device-search-group {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.device-search-icon {
-  position: absolute;
-  left: 10px;
-  pointer-events: none;
-}
-
-.device-search-input {
-  font-size: var(--font-size-sm);
-  padding: 5px 11px 5px 27px;
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
+.device-table-header .device-search {
   width: 220px;
-  background: var(--fleet-white);
-  outline: none;
-  transition: border-color 150ms ease-in-out;
-}
-
-.device-search-input:focus {
-  border-color: var(--fleet-black);
 }
 
 .device-table-wrap {
@@ -2347,13 +2108,6 @@ onMounted(() => {
 .device-score-cell {
   font-weight: 600;
   text-align: left;
-}
-
-.empty-state {
-  text-align: center;
-  padding: var(--pad-xlarge);
-  color: var(--fleet-black-50);
-  font-size: var(--font-size-sm);
 }
 
 /* ─── Workers Council drill-down notice ──────── */

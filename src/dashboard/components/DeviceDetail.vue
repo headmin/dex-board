@@ -5,25 +5,31 @@
         <div class="header-info">
           <h2>{{ displayHost(device) }}</h2>
           <div class="header-meta">
-            <span class="meta-badge">{{ device.hardware_model || 'Unknown model' }}</span>
-            <span class="meta-badge">{{ device.os_name }} {{ device.os_version }}</span>
+            <Badge>{{ device.hardware_model || 'Unknown model' }}</Badge>
+            <Badge>{{ device.os_name }} {{ device.os_version }}</Badge>
             <span class="meta-id">{{ device.host_identifier }}</span>
           </div>
         </div>
         <div class="header-actions">
-          <button class="compare-link" @click="$emit('compare', device.host_identifier)" title="Compare with another device">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-            </svg>
+          <BaseButton variant="secondary" size="small" title="Compare with another device" @click="$emit('compare', device.host_identifier)">
+            <template #icon>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+            </template>
             Compare
-          </button>
+          </BaseButton>
           <a :href="fleetUrl" target="_blank" class="fleet-link" title="View in Fleet">
             Open in Fleet
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
             </svg>
           </a>
-          <button class="close-btn" @click="$emit('close')">&times;</button>
+          <IconButton label="Close" @click="$emit('close')">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </IconButton>
         </div>
       </header>
 
@@ -33,10 +39,7 @@
           <h3>Support snapshot</h3>
           <p class="support-hint">At-a-glance before you connect — worst signals first. For remote control or scripts, open the host in Fleet.</p>
           <div class="snapshot-chips">
-            <span v-for="c in supportSnapshot" :key="c.label" class="snap-chip" :class="`sev-${c.sev}`">
-              <span class="snap-label">{{ c.label }}</span>
-              <span class="snap-val">{{ c.val }}</span>
-            </span>
+            <Chip v-for="c in supportSnapshot" :key="c.label" :tone="sevTone(c.sev)" :label="c.label" :value="c.val" />
           </div>
         </section>
 
@@ -144,7 +147,7 @@
             <div class="info-row">
               <span class="info-key">Signal Strength</span>
               <span class="info-val">
-                <span class="signal-badge" :class="signalClass">{{ network.wifi_rssi }} dBm</span>
+                <Badge class="signal-badge" :tone="signalTone" :label="`${network.wifi_rssi} dBm`" />
                 <span class="signal-quality">{{ signalQuality }}</span>
               </span>
             </div>
@@ -185,7 +188,7 @@
                 <td class="process-name">{{ proc.process_name }}</td>
                 <td class="num">{{ proc.memory_mb }}</td>
                 <td class="num mono">{{ proc.pid }}</td>
-                <td><span class="state-badge" :class="proc.state">{{ proc.state || 'unknown' }}</span></td>
+                <td><Badge :tone="proc.state === 'running' ? 'good' : 'neutral'" :label="proc.state || 'unknown'" /></td>
               </tr>
             </tbody>
           </table>
@@ -205,8 +208,14 @@ import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/compon
 import VChart from 'vue-echarts'
 import { query } from '../services/api'
 import dayjs from 'dayjs'
+import Badge from './base/Badge.vue'
+import BaseButton from './base/BaseButton.vue'
+import Chip from './base/Chip.vue'
+import IconButton from './base/IconButton.vue'
 import { displayHost } from '../composables/displayName'
 import { useAppConfig } from '../composables/useAppConfig'
+import { palette } from '../composables/uiPalette'
+import { baseTooltip, baseAxisLabel, baseAxisLine, baseSplitLine } from '../composables/echartsTheme'
 
 use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent])
 
@@ -247,6 +256,13 @@ const signalClass = computed(() => {
 
 const signalQuality = computed(() => signalClass.value)
 
+// Presentation-only tone maps for the Badge/Chip primitives
+const SIGNAL_TONE = { excellent: 'good', good: 'good', fair: 'fair', poor: 'critical' }
+const signalTone = computed(() => SIGNAL_TONE[signalClass.value] || 'neutral')
+
+const SEV_TONE = { ok: 'good', mid: 'fair', high: 'critical' }
+function sevTone(sev) { return SEV_TONE[sev] || 'neutral' }
+
 // Pre-connect support briefing — the support-relevant state at a glance,
 // derived from data already fetched (no extra queries). Sorted worst-first.
 const supportSnapshot = computed(() => {
@@ -266,23 +282,23 @@ const supportSnapshot = computed(() => {
 })
 
 const historyChartOption = computed(() => ({
-  tooltip: { trigger: 'axis' },
+  tooltip: { ...baseTooltip },
   legend: {
     data: ['Memory %', 'Disk %'],
     bottom: 0,
-    textStyle: { color: '#515774', fontSize: 11 }
+    textStyle: { color: palette.ink75, fontSize: 11 }
   },
   grid: { left: '3%', right: '4%', bottom: '15%', top: '8%', containLabel: true },
   xAxis: {
     type: 'category',
     data: memoryHistory.value.map(d => dayjs(d.time).format('HH:mm')),
-    axisLabel: { rotate: 45, fontSize: 10, color: '#8b8fa2' },
-    axisLine: { lineStyle: { color: '#e2e4ea' } }
+    axisLabel: { ...baseAxisLabel, rotate: 45 },
+    axisLine: { ...baseAxisLine }
   },
   yAxis: {
     type: 'value', max: 100, min: 0,
-    axisLabel: { formatter: '{value}%', color: '#8b8fa2', fontSize: 10 },
-    splitLine: { lineStyle: { color: '#f0f1f4' } }
+    axisLabel: { ...baseAxisLabel, formatter: '{value}%' },
+    splitLine: { ...baseSplitLine }
   },
   series: [
     {
@@ -290,9 +306,9 @@ const historyChartOption = computed(() => ({
       type: 'line',
       smooth: true,
       showSymbol: false,
-      areaStyle: { opacity: 0.1, color: '#6a67fe' },
-      lineStyle: { color: '#6a67fe', width: 2 },
-      itemStyle: { color: '#6a67fe' },
+      areaStyle: { opacity: 0.1, color: palette.info },
+      lineStyle: { color: palette.info, width: 2 },
+      itemStyle: { color: palette.info },
       data: memoryHistory.value.map(d => d.memory_percent)
     },
     {
@@ -300,9 +316,9 @@ const historyChartOption = computed(() => ({
       type: 'line',
       smooth: true,
       showSymbol: false,
-      areaStyle: { opacity: 0.08, color: '#ecc767' },
-      lineStyle: { color: '#ecc767', width: 2 },
-      itemStyle: { color: '#ecc767' },
+      areaStyle: { opacity: 0.08, color: palette.fair },
+      lineStyle: { color: palette.fair, width: 2 },
+      itemStyle: { color: palette.fair },
       data: memoryHistory.value.map(d => d.disk_percent)
     }
   ]
@@ -371,7 +387,7 @@ onMounted(fetchDeviceData)
   width: 720px;
   max-width: 92vw;
   height: 100%;
-  background: #fff;
+  background: var(--fleet-white);
   box-shadow: -4px 0 24px rgba(52, 59, 96, 0.2);
   display: flex;
   flex-direction: column;
@@ -382,14 +398,14 @@ onMounted(fetchDeviceData)
   justify-content: space-between;
   align-items: flex-start;
   padding: var(--pad-large);
-  border-bottom: 1px solid #e2e4ea;
-  background: #f9fafc;
+  border-bottom: 1px solid var(--fleet-black-10);
+  background: var(--fleet-off-white);
 }
 
 .header-info h2 {
   font-size: 16px;
   font-weight: 600;
-  color: #192147;
+  color: var(--fleet-black);
   margin: 0 0 5px 0;
 }
 
@@ -400,19 +416,10 @@ onMounted(fetchDeviceData)
   flex-wrap: wrap;
 }
 
-.meta-badge {
-  font-size: 11px;
-  padding: 2px 7px;
-  background: #f4f4f6;
-  border-radius: 4px;
-  color: #515774;
-  font-weight: 500;
-}
-
 .meta-id {
   font-size: 10px;
-  color: #8b8fa2;
-  font-family: "SourceCodePro", monospace;
+  color: var(--fleet-black-50);
+  font-family: var(--font-mono);
 }
 
 .header-actions {
@@ -422,54 +429,21 @@ onMounted(fetchDeviceData)
   flex-shrink: 0;
 }
 
-.compare-link {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 11px;
-  background: #fff;
-  border: 1px solid #6a67fe;
-  color: #6a67fe;
-  border-radius: 4px;
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 150ms;
-}
-
-.compare-link:hover {
-  background: rgba(106, 103, 254, 0.08);
-}
-
 .fleet-link {
   display: flex;
   align-items: center;
   gap: 5px;
   padding: 5px 11px;
-  background: #009a7d;
-  color: #fff;
+  background: var(--fleet-green);
+  color: var(--fleet-white);
   text-decoration: none;
-  border-radius: 4px;
+  border-radius: var(--radius);
   font-size: 12px;
   font-weight: 500;
   transition: background 150ms;
 }
 
-.fleet-link:hover { background: #007d65; }
-
-.close-btn {
-  width: 36px; height: 36px;
-  border: none;
-  background: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #8b8fa2;
-  border-radius: 4px;
-  transition: all 150ms;
-}
-
-.close-btn:hover { background: #f4f4f6; color: #192147; }
+.fleet-link:hover { background: var(--fleet-green-over); }
 
 .panel-content {
   flex: 1;
@@ -482,14 +456,9 @@ onMounted(fetchDeviceData)
 }
 
 /* Support snapshot — pre-connect briefing strip */
-.support-snapshot { background: #f7f8fb; border: 1px solid #e2e4ea; border-radius: var(--radius-large); padding: 14px 16px; }
-.support-hint { font-size: 12px; color: #8b8fa2; margin: -4px 0 10px; line-height: 1.4; }
-.snapshot-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.snap-chip { display: inline-flex; align-items: baseline; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: var(--radius-full); border: 1px solid transparent; }
-.snap-label { opacity: 0.7; font-weight: 500; }
-.snap-chip.sev-ok { background: var(--status-good-bg); color: var(--status-good-text); }
-.snap-chip.sev-mid { background: var(--status-fair-bg); color: var(--status-fair-text); }
-.snap-chip.sev-high { background: var(--status-critical-bg); color: var(--status-critical); border-color: var(--status-critical); }
+.support-snapshot { background: var(--fleet-off-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); padding: var(--pad-medium); }
+.support-hint { font-size: 12px; color: var(--fleet-black-50); margin: -4px 0 10px; line-height: 1.4; }
+.snapshot-chips { display: flex; flex-wrap: wrap; gap: var(--pad-small); }
 
 .detail-section h3 {
   font-size: 13px;
@@ -506,16 +475,16 @@ onMounted(fetchDeviceData)
 }
 
 .health-card {
-  background: #f9fafc;
-  border: 1px solid #e2e4ea;
+  background: var(--fleet-off-white);
+  border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
-  padding: 14px 11px;
+  padding: var(--pad-medium) var(--pad-smedium);
   text-align: center;
 }
 
 .health-label {
   font-size: 11px;
-  color: #8b8fa2;
+  color: var(--fleet-black-50);
   font-weight: 500;
   margin-bottom: 7px;
 }
@@ -533,13 +502,13 @@ onMounted(fetchDeviceData)
 .health-ring.good { border-color: var(--fleet-success); background: var(--status-good-bg); }
 .health-ring.warning { border-color: var(--status-fair); background: var(--status-fair-bg); }
 .health-ring.critical { border-color: var(--fleet-error); background: var(--status-critical-bg); }
-.health-ring.neutral { border-color: #c5c7d1; background: #f9fafc; }
+.health-ring.neutral { border-color: var(--fleet-black-25); background: var(--fleet-off-white); }
 
-.ring-value { font-size: 18px; font-weight: 600; color: #192147; }
+.ring-value { font-size: 18px; font-weight: 600; color: var(--fleet-black); }
 
 .health-sub {
   font-size: 10px;
-  color: #8b8fa2;
+  color: var(--fleet-black-50);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -555,14 +524,14 @@ onMounted(fetchDeviceData)
   justify-content: space-between;
   align-items: center;
   padding: 7px 0;
-  border-bottom: 1px solid #f0f1f4;
+  border-bottom: 1px solid var(--fleet-black-5-down);
 }
 
 .info-row:last-child { border-bottom: none; }
 
-.info-key { font-size: 13px; color: #8b8fa2; font-weight: 500; }
-.info-val { font-size: 13px; color: #192147; font-weight: 500; }
-.info-val.mono { font-family: "SourceCodePro", monospace; }
+.info-key { font-size: 13px; color: var(--fleet-black-50); font-weight: 500; }
+.info-val { font-size: 13px; color: var(--fleet-black); font-weight: 500; }
+.info-val.mono { font-family: var(--font-mono); }
 
 /* Security Grid */
 .security-grid { display: flex; flex-direction: column; gap: 6px; }
@@ -573,13 +542,11 @@ onMounted(fetchDeviceData)
   gap: 9px;
   padding: 9px 13px;
   background: var(--status-critical-bg);
-  border-radius: 4px;
-  border-left: 3px solid var(--fleet-error);
+  border-radius: var(--radius);
 }
 
 .security-item.enabled {
   background: var(--status-good-bg);
-  border-left-color: var(--fleet-success);
 }
 
 .status-dot {
@@ -591,12 +558,12 @@ onMounted(fetchDeviceData)
 
 .security-item.enabled .status-dot { background: var(--fleet-success); }
 
-.security-name { font-size: 13px; color: #192147; flex: 1; }
+.security-name { font-size: 13px; color: var(--fleet-black); flex: 1; }
 
 .security-status {
   font-size: 11px;
   font-weight: 600;
-  color: #8b8fa2;
+  color: var(--fleet-black-50);
 }
 
 .security-item.enabled .security-status { color: var(--fleet-success); }
@@ -604,70 +571,54 @@ onMounted(fetchDeviceData)
 
 /* Signal Badge */
 .signal-badge {
-  display: inline-block;
-  padding: 2px 7px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 600;
   font-variant-numeric: tabular-nums;
   margin-right: 5px;
 }
 
-.signal-badge.excellent { background: var(--status-good-bg); color: var(--status-good); }
-.signal-badge.good { background: rgba(106,103,254,0.12); color: #4b4ab4; }
-.signal-badge.fair { background: var(--status-fair-bg); color: var(--fleet-status-warning-dark); }
-.signal-badge.poor { background: var(--status-critical-bg); color: var(--fleet-status-error); }
-
 .signal-quality {
   font-size: 11px;
-  color: #8b8fa2;
+  color: var(--fleet-black-50);
   text-transform: capitalize;
 }
 
 /* History Chart */
 .history-chart { width: 100%; height: 220px; }
 
-/* Data Table */
+/* Data Table — shared table spec */
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: var(--table-font-size);
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+  overflow: hidden;
 }
 
 .data-table th,
 .data-table td {
-  padding: 7px 11px;
+  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
   text-align: left;
-  border-bottom: 1px solid #f0f1f4;
+  border-bottom: 1px solid var(--fleet-black-10);
 }
 
 .data-table th {
-  font-size: var(--font-size-sm);
+  font-size: var(--table-header-font-size);
   font-weight: 700;
   color: var(--fleet-black);
   background: var(--fleet-off-white);
 }
 
-.data-table td { color: #192147; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table td { color: var(--fleet-black); }
 .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
-.data-table .mono { font-family: "SourceCodePro", monospace; font-size: 12px; }
+.data-table .mono { font-family: var(--font-mono); }
 .data-table .process-name { font-weight: 500; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.state-badge {
-  font-size: 10px;
-  padding: 1px 5px;
-  border-radius: 3px;
-  background: #f4f4f6;
-  color: #515774;
-}
-
-.state-badge.running { background: var(--status-good-bg); color: var(--status-good); }
-.state-badge.sleeping { background: rgba(106,103,254,0.08); color: #4b4ab4; }
 
 .loading, .no-data {
   padding: 22px;
   text-align: center;
-  color: #8b8fa2;
+  color: var(--fleet-black-50);
   font-size: 12px;
 }
 

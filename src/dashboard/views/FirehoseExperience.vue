@@ -1,15 +1,12 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>Firehose experience</h1>
-      <span class="subtitle">Fleet health overview from osquery result logs</span>
-    </header>
+  <div class="dashboard page-stack">
+    <PageHeader title="Firehose experience" subtitle="Fleet health overview from osquery result logs" />
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
     <!-- ═══ FLEET OVERVIEW ═══════════════════════════════════ -->
     <section class="section">
-      <h2>Fleet overview</h2>
+      <SectionHeader title="Fleet overview" />
       <div class="metrics-row four-col">
         <MetricCard label="Total hosts" :value="overview.totalDevices" :loading="loading.overview" />
         <MetricCard label="Unique apps" :value="overview.uniqueApps" :loading="loading.overview" />
@@ -30,7 +27,7 @@
 
     <!-- ═══ 1. HARDWARE (Device health) ══════════════════════ -->
     <section class="section">
-      <h2>Host health</h2>
+      <SectionHeader title="Host health" />
       <div class="metrics-row four-col">
         <div class="clickable-wrap" :class="{ active: drillCondition === 'severe_swap' }" @click="toggleDrill('severe_swap')" role="button" tabindex="0">
           <MetricCard label="Severe swap" :value="deviceHealth.severeSwap" :loading="loading.deviceHealth" />
@@ -46,17 +43,13 @@
     </section>
 
     <!-- Drill-down for Device Health — renders here when a DH card was clicked -->
-    <section v-if="drillCondition && drillAnchor === 'device_health'" class="section drill-section">
-      <div class="drill-header">
-        <h3>{{ drillTitle }} <span class="drill-count">· {{ drillHosts.length }} host{{ drillHosts.length === 1 ? '' : 's' }}</span></h3>
-        <button class="drill-close" @click="closeDrill" aria-label="Close drill-down">✕</button>
-      </div>
+    <DrillPanel v-if="drillCondition && drillAnchor === 'device_health'" :title="drillPanelTitle" @close="closeDrill">
       <div v-if="drillLoading" class="drill-loading">Loading hosts...</div>
-      <div v-else-if="!drillHosts.length" class="drill-empty">No hosts match this condition right now.</div>
+      <EmptyState v-else-if="!drillHosts.length" small title="No hosts match this condition right now." />
       <div v-else class="host-tile-grid">
         <HostTile v-for="h in drillHosts" :key="h.host_id" :host="h" :condition="drillCondition" />
       </div>
-    </section>
+    </DrillPanel>
 
     <div class="charts-row two-col">
       <section class="section">
@@ -104,7 +97,7 @@
 
     <!-- ═══ 2. OS HEALTH ═════════════════════════════════════ -->
     <section class="section">
-      <h2>OS health</h2>
+      <SectionHeader title="OS health" />
       <div class="metrics-row four-col">
         <div class="clickable-wrap" :class="{ active: drillCondition === 'healthy_os' }" @click="toggleDrill('healthy_os')" role="button" tabindex="0">
           <MetricCard label="Healthy" :value="osHealth.healthy" :loading="loading.osHealth" />
@@ -120,17 +113,13 @@
     </section>
 
     <!-- Drill-down for OS health -->
-    <section v-if="drillCondition && drillAnchor === 'os'" class="section drill-section">
-      <div class="drill-header">
-        <h3>{{ drillTitle }} <span class="drill-count">· {{ drillHosts.length }} host{{ drillHosts.length === 1 ? '' : 's' }}</span></h3>
-        <button class="drill-close" @click="closeDrill" aria-label="Close drill-down">✕</button>
-      </div>
+    <DrillPanel v-if="drillCondition && drillAnchor === 'os'" :title="drillPanelTitle" @close="closeDrill">
       <div v-if="drillLoading" class="drill-loading">Loading hosts...</div>
-      <div v-else-if="!drillHosts.length" class="drill-empty">No hosts match this condition right now.</div>
+      <EmptyState v-else-if="!drillHosts.length" small title="No hosts match this condition right now." />
       <div v-else class="host-tile-grid">
         <HostTile v-for="h in drillHosts" :key="h.host_id" :host="h" :condition="drillCondition" />
       </div>
-    </section>
+    </DrillPanel>
 
     <div class="charts-row two-col">
       <section class="section">
@@ -157,12 +146,10 @@
 
     <!-- ═══ 3. APPS (memory, adoption, crashes) ══════════════ -->
     <section class="section">
-      <div class="section-header-with-caption">
-        <h2>Application memory usage</h2>
-        <span v-if="overview.appSamples" class="section-caption">
-          Based on {{ overview.appSamples.toLocaleString() }} app samples across {{ overview.appHosts }} hosts
-        </span>
-      </div>
+      <SectionHeader
+        title="Application memory usage"
+        :caption="overview.appSamples ? `Based on ${overview.appSamples.toLocaleString()} app samples across ${overview.appHosts} hosts` : ''"
+      />
       <div class="metrics-row three-col">
         <MetricCard label="Avg app memory" :value="apps.avgMemory" unit="MB" :loading="loading.apps" />
         <MetricCard label="P95 memory" :value="apps.p95Memory" unit="MB" :loading="loading.apps" />
@@ -192,7 +179,7 @@
     </div>
 
     <section class="section">
-      <h2>App adoption</h2>
+      <SectionHeader title="App adoption" />
       <div class="metrics-row four-col">
         <MetricCard label="Hosts" :value="adoption.totalDevices" :loading="loading.adoption" />
         <MetricCard label="Unique apps" :value="adoption.uniqueApps" :loading="loading.adoption" />
@@ -223,7 +210,7 @@
     </div>
 
     <section class="section" v-if="crashes.totalCrashes > 0">
-      <h2>Crash overview</h2>
+      <SectionHeader title="Crash overview" />
       <div class="metrics-row four-col">
         <div class="clickable-wrap" :class="{ active: drillCondition === 'has_crashes' }" @click="toggleDrill('has_crashes')" role="button" tabindex="0">
           <MetricCard label="Hosts w/ crashes" :value="crashes.devicesWithCrashes" :loading="loading.crashes" />
@@ -235,38 +222,29 @@
     </section>
 
     <!-- Drill-down for Crashes -->
-    <section v-if="drillCondition && drillAnchor === 'crashes'" class="section drill-section">
-      <div class="drill-header">
-        <h3>{{ drillTitle }} <span class="drill-count">· {{ drillHosts.length }} host{{ drillHosts.length === 1 ? '' : 's' }}</span></h3>
-        <button class="drill-close" @click="closeDrill" aria-label="Close drill-down">✕</button>
-      </div>
+    <DrillPanel v-if="drillCondition && drillAnchor === 'crashes'" :title="drillPanelTitle" @close="closeDrill">
       <div v-if="drillLoading" class="drill-loading">Loading hosts...</div>
-      <div v-else-if="!drillHosts.length" class="drill-empty">No hosts match this condition right now.</div>
+      <EmptyState v-else-if="!drillHosts.length" small title="No hosts match this condition right now." />
       <div v-else class="host-tile-grid">
         <HostTile v-for="h in drillHosts" :key="h.host_id" :host="h" :condition="drillCondition" />
       </div>
-    </section>
+    </DrillPanel>
 
     <!-- ═══ TOP MOVERS — MTTP per app over the selected window ═══ -->
     <section class="section" v-if="topPatchMovers.length">
-      <div class="section-header-with-caption">
-        <h2>Top patch movers</h2>
-        <span class="section-caption">
-          Mean time to patch per app over the last {{ topPatchMoversWindowDays }}d ·
-          {{ topPatchMovers.length }} apps · sorted by hosts patched
-        </span>
-      </div>
+      <SectionHeader
+        title="Top patch movers"
+        :caption="`Mean time to patch per app over the last ${topPatchMoversWindowDays}d · ${topPatchMovers.length} apps · sorted by hosts patched`"
+      />
       <MttpTable :rows="topPatchMovers" :sla-days="config.patchSlaDays" />
     </section>
 
     <!-- ═══ 4. NETWORK (Wi-Fi + VPN) ═════════════════════════ -->
     <section class="section">
-      <div class="section-header-with-caption">
-        <h2>Network health</h2>
-        <span v-if="overview.wifiSamples" class="section-caption">
-          Based on {{ overview.wifiSamples.toLocaleString() }} samples across {{ overview.wifiHosts }} hosts
-        </span>
-      </div>
+      <SectionHeader
+        title="Network health"
+        :caption="overview.wifiSamples ? `Based on ${overview.wifiSamples.toLocaleString()} samples across ${overview.wifiHosts} hosts` : ''"
+      />
       <div class="metrics-row three-col">
         <MetricCard label="Avg RSSI" :value="wifi.avgRssi" unit="dBm" :loading="loading.wifi" />
         <MetricCard label="Avg SNR" :value="wifi.avgSnr" unit="dB" :loading="loading.wifi" />
@@ -302,12 +280,12 @@
         :loading="loading.wifiTs"
         xKey="hour"
         yKey="avg_rssi"
-        color="#6a67fe"
+        :color="palette.info"
       />
     </section>
 
     <section class="section">
-      <h2>VPN &amp; connectivity</h2>
+      <SectionHeader title="VPN &amp; connectivity" />
       <div class="metrics-row four-col">
         <MetricCard label="Total hosts" :value="vpn.totalDevices" :loading="loading.vpn" />
         <MetricCard label="VPN active" :value="vpn.vpnActive" :loading="loading.vpn" />
@@ -319,17 +297,13 @@
     </section>
 
     <!-- Drill-down for VPN -->
-    <section v-if="drillCondition && drillAnchor === 'vpn'" class="section drill-section">
-      <div class="drill-header">
-        <h3>{{ drillTitle }} <span class="drill-count">· {{ drillHosts.length }} host{{ drillHosts.length === 1 ? '' : 's' }}</span></h3>
-        <button class="drill-close" @click="closeDrill" aria-label="Close drill-down">✕</button>
-      </div>
+    <DrillPanel v-if="drillCondition && drillAnchor === 'vpn'" :title="drillPanelTitle" @close="closeDrill">
       <div v-if="drillLoading" class="drill-loading">Loading hosts...</div>
-      <div v-else-if="!drillHosts.length" class="drill-empty">No hosts match this condition right now.</div>
+      <EmptyState v-else-if="!drillHosts.length" small title="No hosts match this condition right now." />
       <div v-else class="host-tile-grid">
         <HostTile v-for="h in drillHosts" :key="h.host_id" :host="h" :condition="drillCondition" />
       </div>
-    </section>
+    </DrillPanel>
 
     <div class="charts-row">
       <section class="section">
@@ -345,7 +319,7 @@
 
     <!-- ═══ 5. USERS / AGENT DIAGNOSTICS ═════════════════════ -->
     <section class="section">
-      <h2>Fleet agent health</h2>
+      <SectionHeader title="Fleet agent health" />
       <div class="metrics-row four-col">
         <MetricCard label="Total hosts" :value="fleetd.totalHosts" :loading="loading.fleetd" />
         <MetricCard label="Enrolled" :value="fleetd.enrolledHosts" :loading="loading.fleetd" />
@@ -367,7 +341,7 @@
     </div>
 
     <section class="section">
-      <h2>Process landscape</h2>
+      <SectionHeader title="Process landscape" />
       <div class="metrics-row four-col">
         <MetricCard label="Unique processes" :value="processClassTotals.uniqueProcesses" :loading="loading.processes" />
         <MetricCard label="User apps" :value="processClassTotals.userApps" :loading="loading.processes" />
@@ -409,6 +383,11 @@ import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
 import HostTile from '../components/HostTile.vue'
 import MttpTable from '../components/MttpTable.vue'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
+import DrillPanel from '../components/base/DrillPanel.vue'
+import EmptyState from '../components/base/EmptyState.vue'
+import { palette } from '../composables/uiPalette'
 import { displayHost } from '../composables/displayName'
 import { useAppConfig } from '../composables/useAppConfig'
 
@@ -488,6 +467,9 @@ const DRILL_ANCHORS = {
 }
 
 const drillTitle = computed(() => DRILL_TITLES[drillCondition.value] || '')
+const drillPanelTitle = computed(() =>
+  `${drillTitle.value} · ${drillHosts.value.length} host${drillHosts.value.length === 1 ? '' : 's'}`
+)
 
 function closeDrill() {
   drillCondition.value = null
@@ -745,43 +727,25 @@ watch(filterParams, () => {
 
 <style scoped>
 .dashboard { max-width: 1280px; margin: 0 auto; padding: var(--pad-xlarge); }
-.dashboard-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 24px; }
-.subtitle { font-family: var(--font-body); font-size: var(--font-size-sm); color: var(--fleet-black-50); }
-h1 { font-size: var(--font-size-lg); font-weight: 700; color: var(--fleet-black); }
-h2 { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--fleet-black-10); }
-.error-banner { background: var(--fleet-white); color: var(--fleet-error); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--fleet-black-10); border-left: 3px solid var(--fleet-error); margin-bottom: 24px; }
-.section { margin-bottom: 32px; }
-.metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
-.metrics-row.four-col { grid-template-columns: repeat(4, 1fr); }
-.metrics-row.three-col { grid-template-columns: repeat(3, 1fr); }
-.charts-row { margin-bottom: 24px; }
-.charts-row.two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
-.section-header-with-caption { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
-.section-header-with-caption h2 { margin: 0; }
-.section-caption { font-size: var(--font-size-xs); color: var(--fleet-black-50); font-style: italic; }
+
+/* Sections stack their own blocks; the page-stack global handles inter-section gaps */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-medium);
+}
 
 /* Clickable metric-card wrapper. Wraps around <MetricCard> to add interactivity
    without touching the base component. */
-.clickable-wrap { cursor: pointer; border-radius: var(--radius); transition: box-shadow 150ms ease, transform 150ms ease; outline: none; }
-.clickable-wrap:hover { box-shadow: 0 0 0 2px #c7d2fe; }
-.clickable-wrap:focus-visible { box-shadow: 0 0 0 2px var(--rainbow-blue); }
-.clickable-wrap.active { box-shadow: 0 0 0 2px var(--rainbow-blue); }
+.clickable-wrap { cursor: pointer; border-radius: var(--radius); transition: box-shadow var(--transition-base); outline: none; }
+.clickable-wrap:hover { box-shadow: 0 0 0 2px var(--fleet-black-25); }
+.clickable-wrap:focus-visible { box-shadow: 0 0 0 2px var(--fleet-focused-outline); }
+.clickable-wrap.active { box-shadow: 0 0 0 2px var(--fleet-black-75); }
 .clickable-wrap > :first-child { border-color: transparent; }
 
-/* Drill-down panel — highlighted context using Fleet's vibrant-blue tint
-   (same accent used for signal badges / methodology boxes elsewhere). */
-.drill-section { background: rgba(106, 103, 254, 0.06); border: 1px solid rgba(106, 103, 254, 0.2); border-left: 3px solid var(--fleet-vibrant-blue); border-radius: var(--radius-large); padding: 20px 24px; margin-top: -8px; margin-bottom: 24px; }
-.drill-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.drill-header h3 { color: var(--fleet-black); font-size: var(--font-size-sm); font-weight: 700; margin: 0; }
-.drill-count { color: var(--fleet-black-50); font-weight: 400; margin-left: 4px; }
-.drill-close { background: var(--fleet-white); border: 1px solid rgba(106, 103, 254, 0.25); color: var(--fleet-vibrant-blue); border-radius: var(--radius); width: 28px; height: 28px; cursor: pointer; font-size: 14px; transition: all 150ms ease; }
-.drill-close:hover { background: rgba(106, 103, 254, 0.1); border-color: var(--fleet-vibrant-blue); }
-.drill-loading, .drill-empty { color: var(--fleet-black-50); font-size: var(--font-size-sm); padding: 24px 0; text-align: center; }
+.drill-loading { color: var(--fleet-black-50); font-size: var(--font-size-sm); padding: 24px 0; text-align: center; }
 
 .host-tile-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
 @media (max-width: 1024px) { .host-tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .host-tile-grid { grid-template-columns: 1fr; } }
-@media (max-width: 1024px) { .metrics-row.four-col { grid-template-columns: repeat(2, 1fr); } .metrics-row.three-col { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 768px) { .metrics-row, .metrics-row.four-col, .metrics-row.three-col { grid-template-columns: 1fr; } .charts-row.two-col { grid-template-columns: 1fr; } .dashboard-header { flex-direction: column; gap: 8px; } }
-
 </style>

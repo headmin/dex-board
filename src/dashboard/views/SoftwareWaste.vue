@@ -1,9 +1,9 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>Software waste</h1>
-      <span class="subtitle">Third-party apps installed but unused — reclaim seats, control cost</span>
-    </header>
+  <div class="dashboard page-stack">
+    <PageHeader
+      title="Software waste"
+      subtitle="Third-party apps installed but unused — reclaim seats, control cost"
+    />
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
@@ -21,43 +21,40 @@
 
     <!-- Waste leaderboard -->
     <section class="section">
-      <div class="section-header-with-caption">
-        <h2>Most-wasted apps</h2>
-        <span class="section-caption">
-          Ranked by unused installs (opened 90d+ ago or never). Apple built-ins excluded —
-          these are third-party apps with likely seat/license cost.
-        </span>
-      </div>
+      <SectionHeader
+        title="Most-wasted apps"
+        caption="Ranked by unused installs (opened 90d+ ago or never). Apple built-ins excluded — these are third-party apps with likely seat/license cost."
+      />
 
-      <div v-if="loading" class="sw-empty">Loading…</div>
-      <div v-else-if="!apps.length" class="sw-empty">No third-party app usage matches the current filter.</div>
-      <table v-else class="sw-table">
-        <thead>
-          <tr>
-            <th>App</th>
-            <th>Category</th>
-            <th class="num">Installs</th>
-            <th class="num">Unused</th>
-            <th class="sw-bar-col">Unused share</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="a in apps" :key="a.app_name">
-            <td class="sw-app">{{ a.app_name }}</td>
-            <td class="sw-cat">{{ prettyCategory(a.category) }}</td>
-            <td class="num mono">{{ a.installs }}</td>
-            <td class="num mono"><strong>{{ a.unused_hosts }}</strong></td>
-            <td class="sw-bar-col">
-              <div class="sw-bar-row">
-                <div class="sw-bar-track">
-                  <div class="sw-bar-fill" :class="shareClass(a.pct_unused)" :style="{ width: a.pct_unused + '%' }"></div>
+      <div v-if="loading" class="sw-loading">Loading…</div>
+      <EmptyState v-else-if="!apps.length" small title="No third-party app usage matches the current filter." />
+      <div v-else class="sw-table-wrapper">
+        <table class="sw-table">
+          <thead>
+            <tr>
+              <th>App</th>
+              <th>Category</th>
+              <th class="num">Installs</th>
+              <th class="num">Unused</th>
+              <th class="sw-bar-col">Unused share</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="a in apps" :key="a.app_name">
+              <td class="sw-app">{{ a.app_name }}</td>
+              <td class="sw-cat">{{ prettyCategory(a.category) }}</td>
+              <td class="num">{{ a.installs }}</td>
+              <td class="num"><strong>{{ a.unused_hosts }}</strong></td>
+              <td class="sw-bar-col">
+                <div class="sw-bar-row">
+                  <GaugeBar class="sw-bar" :value="a.pct_unused" :color="shareColor(a.pct_unused)" />
+                  <span class="sw-bar-label">{{ a.pct_unused }}%</span>
                 </div>
-                <span class="sw-bar-label">{{ a.pct_unused }}%</span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
   </div>
 </template>
@@ -66,6 +63,10 @@
 import { ref, onMounted, watch } from 'vue'
 import { query } from '../services/api'
 import MetricCard from '../components/MetricCard.vue'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
+import GaugeBar from '../components/base/GaugeBar.vue'
+import EmptyState from '../components/base/EmptyState.vue'
 import { useFleetFilter } from '../composables/useFleetFilter'
 
 const { filterParams } = useFleetFilter()
@@ -82,8 +83,9 @@ function prettyCategory(c) {
   const tail = String(c).split('.').pop() || ''
   return tail ? tail.charAt(0).toUpperCase() + tail.slice(1) : '—'
 }
-function shareClass(pct) {
-  return pct >= 80 ? 'sev-high' : pct >= 50 ? 'sev-mid' : 'sev-ok'
+// Unused-share severity thresholds (same bands as the old shareClass).
+function shareColor(pct) {
+  return pct >= 80 ? 'var(--status-critical)' : pct >= 50 ? 'var(--status-fair)' : 'var(--status-good)'
 }
 
 async function load() {
@@ -107,27 +109,66 @@ watch(filterParams, load, { deep: true })
 </script>
 
 <style scoped>
-.section-header-with-caption { margin-bottom: var(--pad-medium); }
-.section-caption { display: block; font-size: var(--font-size-sm); color: var(--fleet-black-50); margin-top: 2px; }
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-medium);
+}
 
-.sw-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); overflow: hidden; }
-.sw-table th { text-align: left; padding: 10px 14px; font-size: var(--font-size-sm); color: var(--fleet-black-75); font-weight: 600; border-bottom: 1px solid var(--fleet-black-10); background: var(--fleet-off-white); }
-.sw-table td { padding: 8px 14px; color: var(--fleet-black-75); border-bottom: 1px solid var(--fleet-black-5); vertical-align: middle; }
+/* ─── Most-wasted apps table (kept hand-rolled: gauge cells) ─── */
+.sw-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+}
+.sw-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: var(--table-font-size);
+}
+.sw-table th {
+  text-align: left;
+  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
+  font-size: var(--table-header-font-size);
+  color: var(--fleet-black);
+  font-weight: 700;
+  border-bottom: 1px solid var(--fleet-black-10);
+  background: var(--fleet-off-white);
+  white-space: nowrap;
+}
+.sw-table td {
+  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
+  color: var(--fleet-black-75);
+  border-bottom: 1px solid var(--fleet-black-10);
+  vertical-align: middle;
+}
 .sw-table tr:last-child td { border-bottom: none; }
-.sw-table tr:hover td { background: var(--fleet-off-white); }
+.sw-table tbody tr:hover td { background: var(--fleet-off-white); }
 .sw-app { font-weight: 500; color: var(--fleet-black); }
 .sw-cat { color: var(--fleet-black-50); font-size: var(--font-size-xs); }
 .num { text-align: right; }
-.mono { font-family: var(--font-mono); }
 
 .sw-bar-col { width: 200px; }
 .sw-bar-row { display: flex; align-items: center; gap: 10px; }
-.sw-bar-track { position: relative; flex: 1; height: var(--gauge-track-height); background: var(--fleet-black-10); border-radius: var(--radius-full); overflow: hidden; }
-.sw-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--radius-full); }
-.sw-bar-label { font-size: var(--font-size-xs); font-weight: 600; color: var(--fleet-black-75); min-width: 38px; text-align: right; }
-.sev-ok { background: var(--status-good); }
-.sev-mid { background: var(--status-fair); }
-.sev-high { background: var(--status-critical); }
+.sw-bar { flex: 1; }
+.sw-bar-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--fleet-black-75);
+  min-width: 38px;
+  text-align: right;
+}
 
-.sw-empty { text-align: center; color: var(--fleet-black-50); font-style: italic; padding: 28px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); }
+.sw-loading {
+  text-align: center;
+  color: var(--fleet-black-50);
+  font-style: italic;
+  padding: 28px;
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+}
 </style>

@@ -3,11 +3,11 @@
     <div class="compare-header">
       <h2>Host comparison</h2>
       <div class="compare-header-actions">
-        <div class="mode-toggle">
-          <button class="mode-btn" :class="{ active: mode === 'device' }" @click="mode = 'device'">vs Host</button>
-          <button class="mode-btn" :class="{ active: mode === 'platform' }" @click="mode = 'platform'">vs Platform</button>
-        </div>
-        <button class="close-compare" @click="$emit('close')">Exit comparison</button>
+        <SegmentedControl
+          v-model="mode"
+          :options="[{ value: 'device', label: 'vs Host' }, { value: 'platform', label: 'vs Platform' }]"
+        />
+        <BaseButton @click="$emit('close')">Exit comparison</BaseButton>
       </div>
     </div>
 
@@ -15,17 +15,11 @@
     <div class="compare-selectors">
       <div class="selector-card" :class="{ loaded: leftData }">
         <div class="selector-label">Host A</div>
-        <div class="select-wrapper">
-          <select v-model="selectedLeft" class="device-select" @change="onLeftChange">
-            <option value="">Pick a host...</option>
-            <option v-for="d in leftOptions" :key="d.host_identifier" :value="d.host_identifier">
-              {{ displayHost(d) }} — {{ d.hardware_model }}
-            </option>
-          </select>
-          <svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none">
-            <path d="M1 1l4 4 4-4" stroke="#515774" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
+        <BaseSelect
+          :model-value="selectedLeft"
+          :options="leftSelectOptions"
+          @update:model-value="(v) => { selectedLeft = v; onLeftChange() }"
+        />
         <div v-if="leftDevice" class="selector-meta">
           <GradeBadge v-if="leftData" :grade="leftData.composite_grade || '—'" />
           <span class="meta-score" v-if="leftData">{{ Math.round(leftData.composite_score) }} pts</span>
@@ -40,17 +34,11 @@
       <template v-if="mode === 'device'">
         <div class="selector-card" :class="{ loaded: rightData }">
           <div class="selector-label">Host B</div>
-          <div class="select-wrapper">
-            <select v-model="selectedRight" class="device-select" @change="onRightChange">
-              <option value="">Pick a host...</option>
-              <option v-for="d in rightOptions" :key="d.host_identifier" :value="d.host_identifier">
-                {{ displayHost(d) }} — {{ d.hardware_model }}
-              </option>
-            </select>
-            <svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none">
-              <path d="M1 1l4 4 4-4" stroke="#515774" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
+          <BaseSelect
+            :model-value="selectedRight"
+            :options="rightSelectOptions"
+            @update:model-value="(v) => { selectedRight = v; onRightChange() }"
+          />
           <div v-if="rightDevice" class="selector-meta">
             <GradeBadge v-if="rightData" :grade="rightData.composite_grade || '—'" />
             <span class="meta-score" v-if="rightData">{{ Math.round(rightData.composite_score) }} pts</span>
@@ -156,11 +144,11 @@
           <div v-for="d in softwareDiffs" :key="d.app_name" class="sw-diff-row">
             <span class="sw-diff-app">{{ d.app_name }}</span>
             <span class="sw-diff-col">
-              <span v-if="d.leftUsage" class="usage-tag" :class="d.leftUsage">{{ d.leftUsage }}</span>
+              <Badge v-if="d.leftUsage" :tone="usageTone(d.leftUsage)" :label="usageLabel(d.leftUsage)" />
               <span v-else class="not-installed">—</span>
             </span>
             <span class="sw-diff-col">
-              <span v-if="d.rightUsage" class="usage-tag" :class="d.rightUsage">{{ d.rightUsage }}</span>
+              <Badge v-if="d.rightUsage" :tone="usageTone(d.rightUsage)" :label="usageLabel(d.rightUsage)" />
               <span v-else class="not-installed">—</span>
             </span>
           </div>
@@ -224,11 +212,11 @@
 
         <!-- Per-app detail (collapsible) -->
         <div v-if="patchComparison.length" class="mttp-details">
-          <button class="mttp-details-toggle" @click="showPatchDetails = !showPatchDetails">
+          <BaseButton variant="link" class="mttp-details-toggle" @click="showPatchDetails = !showPatchDetails">
             <span class="mttp-details-icon">{{ showPatchDetails ? '▾' : '▸' }}</span>
             {{ showPatchDetails ? 'Hide' : 'Show' }} per-app breakdown
             <span class="mttp-details-count">{{ patchComparison.length }} app{{ patchComparison.length === 1 ? '' : 's' }}</span>
-          </button>
+          </BaseButton>
           <div v-if="showPatchDetails" class="compare-grid mttp-grid">
             <div class="compare-row header">
               <span class="compare-label">Software</span>
@@ -259,6 +247,10 @@
 import { ref, computed, watch } from 'vue'
 import { query } from '../services/api'
 import GradeBadge from './GradeBadge.vue'
+import Badge from './base/Badge.vue'
+import BaseButton from './base/BaseButton.vue'
+import BaseSelect from './base/BaseSelect.vue'
+import SegmentedControl from './base/SegmentedControl.vue'
 import PlatformBenchmark from './PlatformBenchmark.vue'
 import { usePlatformBenchmark } from '../composables/usePlatformBenchmark'
 import { useWorkersCouncil } from '../composables/useWorkersCouncil'
@@ -296,6 +288,17 @@ const rightDevice = computed(() => props.devices.find(d => d.host_identifier ===
 // Filter options so you can't pick the same device on both sides
 const leftOptions = computed(() => props.devices.filter(d => d.host_identifier !== selectedRight.value))
 const rightOptions = computed(() => props.devices.filter(d => d.host_identifier !== selectedLeft.value))
+
+// BaseSelect option lists — the leading '' option keeps "Pick a host..."
+// selectable (deselecting a side is supported behavior).
+const toSelectOption = (d) => ({ value: d.host_identifier, label: `${displayHost(d)} — ${d.hardware_model}` })
+const leftSelectOptions = computed(() => [{ value: '', label: 'Pick a host...' }, ...leftOptions.value.map(toSelectOption)])
+const rightSelectOptions = computed(() => [{ value: '', label: 'Pick a host...' }, ...rightOptions.value.map(toSelectOption)])
+
+// Usage tier -> Badge tone/label (presentation-only mapping)
+const USAGE_TONE = { daily: 'good', weekly: 'info', monthly: 'fair', stale: 'elevated', never: 'critical' }
+function usageTone(u) { return USAGE_TONE[u] || 'neutral' }
+function usageLabel(u) { return u ? u.charAt(0).toUpperCase() + u.slice(1) : '' }
 
 // Auto-load initial device
 if (props.initialHostId) {
@@ -543,40 +546,6 @@ function diffClass(diff) {
   gap: 11px;
 }
 
-.mode-toggle {
-  display: flex;
-  gap: 2px;
-  padding: 3px;
-  background: #f0f0f0;
-  border-radius: 8px;
-}
-
-.mode-btn {
-  padding: 5px 13px;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #666;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-  font-family: var(--font-body);
-}
-
-.mode-btn:hover {
-  color: var(--fleet-black-75);
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.mode-btn.active {
-  color: var(--fleet-black);
-  background: var(--fleet-white);
-  box-shadow: var(--box-shadow);
-  font-weight: 600;
-}
-
 .cohort-info-card .cohort-meta {
   display: flex;
   flex-direction: column;
@@ -604,23 +573,6 @@ function diffClass(diff) {
   margin-top: 7px;
 }
 
-.close-compare {
-  background: none;
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  padding: 5px 13px;
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  color: var(--fleet-black-75);
-  cursor: pointer;
-  transition: all 150ms ease-in-out;
-}
-
-.close-compare:hover {
-  background: var(--fleet-black-5);
-  border-color: var(--fleet-black-25);
-}
-
 /* ─── Selectors ───────────────────────────────── */
 .compare-selectors {
   display: flex;
@@ -641,8 +593,8 @@ function diffClass(diff) {
 }
 
 .selector-card.loaded {
-  border-color: var(--fleet-vibrant-blue);
-  background: rgba(106, 103, 254, 0.02);
+  border-color: var(--fleet-black-25);
+  background: var(--fleet-off-white);
 }
 
 .selector-label {
@@ -702,37 +654,6 @@ function diffClass(diff) {
   color: var(--fleet-black);
 }
 
-.select-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.device-select {
-  width: 100%;
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  padding: 7px 25px 7px 9px;
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  color: var(--fleet-black);
-  background: var(--fleet-white);
-  cursor: pointer;
-  outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-  transition: border-color 150ms ease-in-out;
-}
-
-.device-select:focus { border-color: var(--fleet-black); }
-.device-select:hover { border-color: var(--fleet-black-25); }
-
-.select-arrow {
-  position: absolute;
-  right: 10px;
-  pointer-events: none;
-}
-
 .compare-loading, .compare-empty {
   text-align: center;
   padding: var(--pad-xlarge) 0;
@@ -785,10 +706,6 @@ function diffClass(diff) {
 
 .compare-row:last-child { border-bottom: none; }
 
-.compare-row:nth-of-type(even):not(.header):not(.highlight) {
-  background: rgba(0, 0, 0, 0.015);
-}
-
 .compare-row.header {
   border-bottom: 1px solid var(--fleet-black-10);
   padding-bottom: 9px;
@@ -806,7 +723,7 @@ function diffClass(diff) {
 }
 
 .compare-row.highlight {
-  background: rgba(106, 103, 254, 0.05);
+  background: var(--info-tint-soft);
 }
 
 .compare-label {
@@ -875,26 +792,9 @@ function diffClass(diff) {
 
 .sw-diff-row:last-child { border-bottom: none; }
 
-.sw-diff-row:nth-of-type(even) { background: rgba(0, 0, 0, 0.015); }
-
 .sw-diff-col { text-align: right; }
 
 .sw-diff-app { font-size: var(--font-size-sm); color: var(--fleet-black); }
-
-.usage-tag {
-  font-size: 9px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.usage-tag.daily { background: #e8f8f0; color: var(--fleet-status-success); }
-.usage-tag.weekly { background: #e8f0fe; color: #2d5fba; }
-.usage-tag.monthly { background: #fef9e8; color: var(--status-fair-text); }
-.usage-tag.stale { background: #fef0e8; color: var(--fleet-ui-orange); }
-.usage-tag.never { background: #fee8ec; color: var(--fleet-status-error); }
 
 .not-installed {
   font-size: var(--font-size-xs);
@@ -903,8 +803,8 @@ function diffClass(diff) {
 
 /* ─── Workers Council hidden notice ──────────── */
 .wc-hidden-notice {
-  background: #f0fdf4;
-  border-color: #d1fae5;
+  background: var(--status-good-bg);
+  border-color: var(--fleet-status-success-border);
 }
 
 .wc-notice-content {
@@ -914,12 +814,12 @@ function diffClass(diff) {
   gap: 7px;
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: #065f46;
+  color: var(--status-good-text);
   padding: var(--pad-medium) 0;
 }
 
 .wc-notice-content svg {
-  stroke: #065f46;
+  stroke: var(--status-good-text);
   flex-shrink: 0;
 }
 
@@ -1022,7 +922,7 @@ function diffClass(diff) {
 
 .mttp-side.winner {
   border-color: var(--fleet-status-success);
-  background: rgba(34, 197, 94, 0.04);
+  background: color-mix(in srgb, var(--status-good) 4%, transparent);
 }
 
 .mttp-side-label {
@@ -1090,8 +990,8 @@ function diffClass(diff) {
   border: 1px solid currentColor;
 }
 
-.mttp-diff-pill.diff-good { background: rgba(34, 197, 94, 0.1); }
-.mttp-diff-pill.diff-bad  { background: rgba(220, 38, 38, 0.1); }
+.mttp-diff-pill.diff-good { background: color-mix(in srgb, var(--status-good) 10%, transparent); }
+.mttp-diff-pill.diff-bad  { background: color-mix(in srgb, var(--status-critical) 10%, transparent); }
 .mttp-diff-pill.diff-neutral { background: var(--fleet-black-5); color: var(--fleet-black-50); }
 .mttp-diff-arrow { font-size: 14px; line-height: 1; }
 
@@ -1112,21 +1012,10 @@ function diffClass(diff) {
 }
 
 .mttp-details-toggle {
-  background: none;
-  border: none;
-  display: flex;
-  align-items: center;
   gap: 7px;
   padding: 5px 0;
-  font-family: var(--font-body);
   font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--fleet-vibrant-blue);
-  cursor: pointer;
-  transition: color 120ms;
 }
-
-.mttp-details-toggle:hover { filter: brightness(0.85); }
 
 .mttp-details-icon {
   font-size: 11px;
@@ -1145,10 +1034,10 @@ function diffClass(diff) {
 
 @media (max-width: 768px) {
   .compare-selectors { flex-direction: column; }
-  .selector-vs { padding: 8px 0; }
+  .selector-vs { padding: var(--pad-small) 0; }
   .swap-btn { transform: rotate(90deg); }
   .compare-row { grid-template-columns: 90px 1fr 1fr 60px; }
   .mttp-headline { grid-template-columns: 1fr; }
-  .mttp-vs { flex-direction: row; padding: 8px 0; min-width: 0; }
+  .mttp-vs { flex-direction: row; padding: var(--pad-small) 0; min-width: 0; }
 }
 </style>

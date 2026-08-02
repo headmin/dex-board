@@ -1,4 +1,8 @@
 <template>
+  <!-- Not on ChartCard: title is optional (two call sites render header-less)
+       and the skeleton is the heatmap variant with dynamic height — ChartCard
+       always renders a header and uses a fixed chart skeleton. CSS is
+       retargeted to the card spec tokens instead. -->
   <div class="chart-container">
     <h3 v-if="title">{{ title }}</h3>
     <SkeletonLoader v-if="loading" variant="heatmap" :height="chartHeight + 'px'" :rows="8" />
@@ -18,6 +22,8 @@ import {
   VisualMapComponent
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { baseTooltip, baseAxisLabel } from '../composables/echartsTheme'
+import { palette, statusRamp } from '../composables/uiPalette'
 
 use([CanvasRenderer, EChartsHeatmap, GridComponent, TooltipComponent, VisualMapComponent])
 
@@ -31,7 +37,7 @@ const props = defineProps({
   maxValue: { type: Number, default: null },
   colorRange: {
     type: Array,
-    default: () => ['#009a7d', '#4bb79b', '#ecc767', '#eb6743', '#eb4343']
+    default: () => statusRamp
   },
   tooltipLabel: { type: String, default: 'Score' }
 })
@@ -66,11 +72,9 @@ const effectiveMax = computed(() => {
 
 const chartOption = computed(() => ({
   tooltip: {
+    ...baseTooltip,
+    trigger: 'item',
     position: 'top',
-    backgroundColor: '#3e4771',
-    borderColor: '#3e4771',
-    textStyle: { color: '#fff', fontSize: 11 },
-    borderRadius: 4,
     formatter(params) {
       const label = props.yLabels[params.value[1]] || ''
       const hour = props.xLabels[params.value[0]] || ''
@@ -91,8 +95,7 @@ const chartOption = computed(() => ({
     position: 'top',
     splitArea: { show: false },
     axisLabel: {
-      fontSize: 10,
-      color: '#8b8fa2',
+      ...baseAxisLabel,
       interval: 'auto',
       rotate: 0
     },
@@ -106,10 +109,9 @@ const chartOption = computed(() => ({
     inverse: true,
     axisLabel: {
       fontSize: 11,
-      color: '#515774',
+      color: palette.ink75,
       width: 130,
-      overflow: 'truncate',
-      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace'
+      overflow: 'truncate'
     },
     axisTick: { show: false },
     axisLine: { show: false }
@@ -126,7 +128,7 @@ const chartOption = computed(() => ({
     inRange: {
       color: props.colorRange
     },
-    textStyle: { fontSize: 9, color: '#8b8fa2' },
+    textStyle: { fontSize: 9, color: palette.ink50 },
     show: true
   },
   series: [{
@@ -164,21 +166,19 @@ function handleClick(params) {
 <style scoped>
 .chart-container {
   background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  padding: var(--pad-large);
-  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-large);
+  padding: var(--card-pad);
 }
 
 h3 {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-size: var(--card-title-size);
+  font-weight: 700;
   color: var(--fleet-black);
-  margin-bottom: var(--pad-medium);
+  margin: 0 0 var(--pad-medium);
 }
 
 .chart {
   width: 100%;
 }
-
 </style>

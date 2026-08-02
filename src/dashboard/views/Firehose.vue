@@ -1,50 +1,45 @@
 <template>
-  <div class="dashboard">
-    <header class="dashboard-header">
-      <h1>Firehose</h1>
-      <span class="subtitle">osquery result logs — direct from S3 ClickPipe</span>
-    </header>
+  <div class="dashboard page-stack">
+    <PageHeader title="Firehose" subtitle="osquery result logs — direct from S3 ClickPipe" />
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
     <!-- ── Device Detail Drawer ──────────────────── -->
-    <section v-if="selectedDevice" class="device-drawer">
-      <div class="drawer-header">
-        <h2>{{ displayHost(selectedDevice) }}</h2>
-        <button class="close-btn" @click="closeDevice">&times;</button>
+    <Drawer v-if="selectedDevice" :title="displayHost(selectedDevice)" @close="closeDevice">
+      <div class="drawer-body">
+        <div class="metrics-row four-col">
+          <MetricCard label="RSSI" :value="selectedDevice.rssi" unit="dBm" />
+          <MetricCard label="SNR" :value="selectedDevice.snr" unit="dB" />
+          <MetricCard label="Quality" :value="selectedDevice.signal_quality" />
+          <MetricCard label="Tx Rate" :value="selectedDevice.transmit_rate" unit="Mbps" />
+        </div>
+
+        <!-- Device Wi-Fi timeseries -->
+        <TimeSeriesChart
+          v-if="deviceWifiTs.length"
+          :title="`RSSI over time — ${displayHost(selectedDevice)}`"
+          :data="deviceWifiTs"
+          :loading="loading.deviceWifi"
+          xKey="hour"
+          yKey="avg_rssi"
+          :color="palette.info"
+        />
+
+        <!-- Device running apps -->
+        <div v-if="deviceApps.length">
+          <h3>Running apps (latest snapshot)</h3>
+          <DataTable
+            :data="deviceApps"
+            :columns="deviceAppColumns"
+            :loading="loading.deviceApps"
+          />
+        </div>
       </div>
-
-      <div class="metrics-row four-col">
-        <MetricCard label="RSSI" :value="selectedDevice.rssi" unit="dBm" />
-        <MetricCard label="SNR" :value="selectedDevice.snr" unit="dB" />
-        <MetricCard label="Quality" :value="selectedDevice.signal_quality" />
-        <MetricCard label="Tx Rate" :value="selectedDevice.transmit_rate" unit="Mbps" />
-      </div>
-
-      <!-- Device Wi-Fi timeseries -->
-      <TimeSeriesChart
-        v-if="deviceWifiTs.length"
-        :title="`RSSI over time — ${displayHost(selectedDevice)}`"
-        :data="deviceWifiTs"
-        :loading="loading.deviceWifi"
-        xKey="hour"
-        yKey="avg_rssi"
-        color="#6a67fe"
-      />
-
-      <!-- Device running apps -->
-      <h3 v-if="deviceApps.length">Running apps (latest snapshot)</h3>
-      <DataTable
-        v-if="deviceApps.length"
-        :data="deviceApps"
-        :columns="deviceAppColumns"
-        :loading="loading.deviceApps"
-      />
-    </section>
+    </Drawer>
 
     <!-- ── Wi-Fi Signal Summary ──────────────────── -->
     <section class="section">
-      <h2>Wi-Fi signal quality</h2>
+      <SectionHeader title="Wi-Fi signal quality" />
       <div class="metrics-row four-col">
         <MetricCard label="Unique hosts" :value="wifi.uniqueHosts" :loading="loading.wifi" />
         <MetricCard label="Avg RSSI" :value="wifi.avgRssi" unit="dBm" :loading="loading.wifi" />
@@ -83,13 +78,14 @@
         :loading="loading.wifiTimeseries"
         xKey="hour"
         yKey="avg_rssi"
-        color="#6a67fe"
+        :color="palette.info"
       />
     </section>
 
-    <!-- Wi-Fi Devices Table (clickable) -->
+    <!-- Wi-Fi Devices Table (clickable; kept hand-rolled for the
+         selected-row highlight + composite unit cells) -->
     <section class="section">
-      <h2>All hosts — Wi-Fi</h2>
+      <SectionHeader title="All hosts — Wi-Fi" />
       <div class="table-wrap">
         <table class="data-table">
           <thead>
@@ -114,7 +110,7 @@
               <td class="hostname">{{ displayHost(d) }}</td>
               <td :class="rssiClass(d.rssi)">{{ d.rssi }} dBm</td>
               <td>{{ d.snr }} dB</td>
-              <td><span class="quality-badge" :class="d.signal_quality">{{ d.signal_quality }}</span></td>
+              <td><Badge :tone="qualityTone(d.signal_quality)" :label="qualityLabel(d.signal_quality)" /></td>
               <td>{{ d.transmit_rate }} Mbps</td>
               <td>{{ d.channel }} ({{ d.channel_width }}MHz)</td>
               <td>{{ d.security_type }}</td>
@@ -126,7 +122,7 @@
 
     <!-- ── Running Apps ──────────────────────────── -->
     <section class="section">
-      <h2>Running apps</h2>
+      <SectionHeader title="Running apps" />
       <div class="metrics-row four-col">
         <MetricCard label="Unique apps" :value="apps.uniqueApps" :loading="loading.apps" />
         <MetricCard label="Unique hosts" :value="apps.uniqueHosts" :loading="loading.apps" />
@@ -146,7 +142,7 @@
 
     <!-- ── Hardware Inventory ────────────────────── -->
     <section class="section">
-      <h2>Hardware inventory</h2>
+      <SectionHeader title="Hardware inventory" />
       <div class="charts-row two-col">
         <PieChart
           title="RAM tiers"
@@ -155,39 +151,19 @@
           nameKey="ram_tier"
           valueKey="device_count"
         />
-        <div>
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Hostname</th>
-                  <th>CPU</th>
-                  <th>RAM</th>
-                  <th>Model</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="h in hardwareList"
-                  :key="h.host_id"
-                  class="clickable-row"
-                  @click="selectDeviceById(h.host_id, h.hostname)"
-                >
-                  <td class="hostname">{{ displayHost(h) }}</td>
-                  <td>{{ h.cpu_brand }}</td>
-                  <td>{{ h.memory_gb }} GB</td>
-                  <td>{{ h.hardware_model }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <DataTable
+          :data="hardwareRows"
+          :columns="hardwareColumns"
+          :loading="loading.hardware"
+          clickable
+          @row-click="row => selectDeviceById(row.host_id, row.hostname)"
+        />
       </div>
     </section>
 
     <!-- ── Fleetd Info ───────────────────────────── -->
     <section class="section">
-      <h2>Fleet agent (fleetd)</h2>
+      <SectionHeader title="Fleet agent (fleetd)" />
       <DataTable
         title="Devices with errors"
         :data="fleetdErrors"
@@ -199,7 +175,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { query } from '../services/api'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
@@ -207,6 +183,11 @@ import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
 import { displayHost } from '../composables/displayName'
 import DataTable from '../components/DataTable.vue'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
+import Drawer from '../components/base/Drawer.vue'
+import Badge from '../components/base/Badge.vue'
+import { palette } from '../composables/uiPalette'
 
 const error = ref(null)
 
@@ -265,12 +246,41 @@ const fleetdColumns = [
   { key: 'last_error', label: 'Last error' },
 ]
 
+const hardwareColumns = [
+  { key: 'display_host', label: 'Hostname' },
+  { key: 'cpu_brand', label: 'CPU' },
+  { key: 'memory_gb', label: 'RAM (GB)', type: 'number' },
+  { key: 'hardware_model', label: 'Model' },
+]
+
+// Display rows for the hardware DataTable; keeps hardwareList untouched.
+const hardwareRows = computed(() =>
+  hardwareList.value.map(h => ({ ...h, display_host: displayHost(h) }))
+)
+
 // ── Helpers ─────────────────────────────────────────
 function rssiClass(rssi) {
   if (rssi >= -50) return 'rssi-excellent'
   if (rssi >= -60) return 'rssi-good'
   if (rssi >= -70) return 'rssi-fair'
   return 'rssi-poor'
+}
+
+// signal_quality value → Badge tone on the canonical status scale.
+const QUALITY_TONES = {
+  excellent: 'good',
+  good: 'good',
+  fair: 'fair',
+  weak: 'critical',
+  poor: 'critical',
+  very_weak: 'critical',
+}
+function qualityTone(q) {
+  return QUALITY_TONES[q] || 'neutral'
+}
+function qualityLabel(q) {
+  const s = String(q || '').replace(/_/g, ' ')
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 // ── Device drill-down ───────────────────────────────
@@ -416,115 +426,28 @@ onMounted(() => fetchAll())
   padding: var(--pad-xlarge);
 }
 
-.dashboard-header {
+.section {
   display: flex;
-  align-items: baseline;
-  gap: 14px;
-  margin-bottom: 22px;
-}
-
-.subtitle {
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  color: var(--fleet-black-50);
-}
-
-h1 {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--fleet-black);
-}
-
-h2 {
-  font-size: var(--font-size-md);
-  font-weight: 700;
-  color: var(--fleet-black);
-  margin-bottom: 14px;
-  padding-bottom: 7px;
-  border-bottom: 1px solid var(--fleet-black-10);
+  flex-direction: column;
+  gap: var(--pad-medium);
 }
 
 h3 {
   font-size: var(--font-size-sm);
   font-weight: 700;
   color: var(--fleet-black);
-  margin: 14px 0 7px;
+  margin: 0 0 7px;
 }
 
-.error-banner {
-  background: var(--fleet-white);
-  color: var(--fleet-error);
-  padding: 11px 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--fleet-black-10);
-  border-left: 3px solid var(--fleet-error);
-  margin-bottom: 22px;
-}
-
-.section {
-  margin-bottom: 29px;
-}
-
-.metrics-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-  margin-bottom: 22px;
-}
-
-.metrics-row.four-col {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.charts-row.two-col {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 22px;
-  margin-bottom: 22px;
-}
-
-/* ── Device Drawer ───────────────────────────── */
-.device-drawer {
-  background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius-large);
-  padding: 18px 22px;
-  margin-bottom: 29px;
-}
-
-.drawer-header {
+/* ── Device Drawer content ───────────────────── */
+.drawer-body {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
+  flex-direction: column;
+  gap: var(--pad-medium);
 }
 
-.drawer-header h2 {
-  margin: 0;
-  padding: 0;
-  border: none;
-}
-
-.close-btn {
-  background: none;
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  font-size: 18px;
-  cursor: pointer;
-  color: var(--fleet-black-50);
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.close-btn:hover {
-  background: var(--fleet-off-white);
-  color: var(--fleet-black);
-}
-
-/* ── Data Tables ─────────────────────────────── */
+/* ── Wi-Fi hosts table (kept hand-rolled for the selected-row
+     highlight; styled to the shared table spec) ── */
 .table-wrap {
   overflow-x: auto;
   background: var(--fleet-white);
@@ -536,24 +459,24 @@ h3 {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-body);
-  font-size: var(--font-size-sm);
+  font-size: var(--table-font-size);
 }
 
 .data-table th {
   text-align: left;
-  padding: 9px 13px;
+  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
   font-weight: 700;
   color: var(--fleet-black);
   background: var(--fleet-off-white);
   border-bottom: 1px solid var(--fleet-black-10);
-  font-size: var(--font-size-sm);
+  font-size: var(--table-header-font-size);
   white-space: nowrap;
 }
 .data-table th:first-child { border-top-left-radius: var(--radius-large); }
 .data-table th:last-child { border-top-right-radius: var(--radius-large); }
 
 .data-table td {
-  padding: 9px 13px;
+  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
   border-bottom: 1px solid var(--fleet-black-10);
   color: var(--fleet-black-75);
 }
@@ -581,39 +504,5 @@ h3 {
 .rssi-excellent { color: var(--status-good); font-weight: 600; }
 .rssi-good { color: var(--status-good); }
 .rssi-fair { color: var(--status-fair-text); }
-.rssi-poor { color: var(--fleet-status-error); font-weight: 600; }
-
-/* ── Quality badges ──────────────────────────── */
-.quality-badge {
-  display: inline-block;
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-}
-
-.quality-badge.excellent { background: var(--fleet-status-success-light); color: var(--fleet-status-success); }
-.quality-badge.good { background: var(--status-good-bg); color: var(--status-good); }
-.quality-badge.fair { background: var(--status-fair-bg); color: var(--status-fair-text); }
-.quality-badge.weak, .quality-badge.poor { background: var(--fleet-status-error-light); color: var(--fleet-status-error); }
-.quality-badge.very_weak { background: var(--status-critical-bg); color: var(--status-critical); }
-
-@media (max-width: 1024px) {
-  .metrics-row.four-col {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .metrics-row, .metrics-row.four-col {
-    grid-template-columns: 1fr;
-  }
-  .charts-row.two-col {
-    grid-template-columns: 1fr;
-  }
-  .dashboard-header {
-    flex-direction: column;
-    gap: 7px;
-  }
-}
+.rssi-poor { color: var(--status-critical); font-weight: 600; }
 </style>

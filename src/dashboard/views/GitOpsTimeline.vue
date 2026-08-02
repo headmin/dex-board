@@ -1,28 +1,22 @@
 <template>
-  <div class="timeline-page">
-    <header class="timeline-header">
-      <h1>GitOps timeline</h1>
-      <div class="timeline-controls">
-        <button
-          v-for="r in ranges"
-          :key="r.value"
-          class="range-btn"
-          :class="{ active: selectedRange === r.value }"
-          @click="selectedRange = r.value"
-        >{{ r.label }}</button>
-        <button
-          class="range-btn release-toggle"
-          :class="{ active: releasesOnly }"
+  <div class="timeline-page page-stack">
+    <PageHeader title="GitOps timeline">
+      <template #actions>
+        <SegmentedControl v-model="selectedRange" :options="ranges" />
+        <BaseButton
+          :variant="releasesOnly ? 'primary' : 'secondary'"
           :title="releasesOnly ? 'Showing software releases only' : 'Show software releases only'"
           @click="releasesOnly = !releasesOnly"
-        >Releases only</button>
-      </div>
-    </header>
+        >Releases only</BaseButton>
+      </template>
+    </PageHeader>
 
     <!-- GitHub-style score heatmap -->
     <section class="section">
-      <h2>Fleet health heatmap</h2>
-      <p class="section-hint">Hourly fleet composite score · darker = healthier · dots mark git deployments</p>
+      <SectionHeader
+        title="Fleet health heatmap"
+        caption="Hourly fleet composite score · darker = healthier · dots mark git deployments"
+      />
       <div class="heatmap-scroll">
         <div class="heatmap-grid" :style="{ gridTemplateColumns: `60px repeat(24, 1fr)` }">
           <!-- Hour headers -->
@@ -58,41 +52,23 @@
 
     <!-- Upstream Fleet-maintained app releases (from fmalibrary.com) -->
     <section v-if="fmaReleasesInRange.length" class="section">
-      <h2>App releases</h2>
-      <p class="section-hint">
+      <SectionHeader title="App releases" />
+      <p class="section-caption">
         Vendor-published Fleet-maintained app versions in this window · click "Show hosts patched" to
         match each release against <code>dex_patch_events</code> for the {{ fmaWindowDays }} days that follow.
       </p>
       <div class="fma-grid">
-        <div v-for="r in fmaReleasesInRange" :key="r.id" class="fma-card">
-          <div class="fma-head">
-            <span class="fma-app">{{ r.app }}</span>
-            <span class="fma-platform" :class="'platform-' + r.platform">{{ r.platform }}</span>
-            <span v-if="r.event_type === 'added'" class="fma-badge added">new app</span>
-          </div>
-          <div class="fma-version edp-mono">
-            <template v-if="r.version_from">{{ r.version_from }} → </template>
-            <strong>{{ r.version_to }}</strong>
-          </div>
-          <div class="fma-time">{{ formatTime(r.timestamp) }}</div>
-          <button
-            class="rollout-btn fma-load-btn"
-            :class="{ active: fmaDeviceCounts[r.id] }"
-            :disabled="fmaDeviceLoading[r.id]"
-            @click="loadFmaReleaseDevices(r)"
-          >
-            {{
-              fmaDeviceLoading[r.id]
-                ? 'Loading…'
-                : fmaDeviceCounts[r.id]
-                  ? (totalDevicesForRelease(r.id) > 0
-                      ? totalDevicesForRelease(r.id) + ' host(s) patched · refresh'
-                      : 'No hosts patched in ' + fmaWindowDays + 'd · refresh')
-                  : 'Show hosts patched'
-            }}
-          </button>
-          <div v-if="fmaDeviceCounts[r.id] && fmaDeviceCounts[r.id].length" class="fma-rollout">
-            <table class="edp-table release-rollout-table">
+        <FmaReleaseCard
+          v-for="r in fmaReleasesInRange"
+          :key="r.id"
+          :release="r"
+          :rows="fmaDeviceCounts[r.id] ?? null"
+          :loading="!!fmaDeviceLoading[r.id]"
+          :windowDays="fmaWindowDays"
+          @load-devices="loadFmaReleaseDevices"
+        >
+          <div v-if="fmaDeviceCounts[r.id] && fmaDeviceCounts[r.id].length" class="fma-rollout edp-table-wrap">
+            <table class="edp-table">
               <thead>
                 <tr>
                   <th>Match</th>
@@ -119,14 +95,16 @@
               </tbody>
             </table>
           </div>
-        </div>
+        </FmaReleaseCard>
       </div>
     </section>
 
     <!-- Timeline -->
     <section class="section">
-      <h2>Deployment timeline</h2>
-      <p class="section-hint">Git commits to main with correlated fleet events · click to expand</p>
+      <SectionHeader
+        title="Deployment timeline"
+        caption="Git commits to main with correlated fleet events · click to expand"
+      />
 
       <div v-if="loading" class="timeline-loading">Loading timeline data...</div>
 
@@ -150,7 +128,7 @@
               <span class="commit-time">{{ formatTime(commit.timestamp) }}</span>
               <!-- What this commit changed (from git diff, not guessed) -->
               <span v-for="ct in (commit.changeTypes || [])" :key="ct" class="change-type-pill" :class="'ct-' + ct">{{ changeTypeLabel(ct) }}</span>
-              <span v-if="commit.tags.length" class="tag-count">{{ commit.tags.length }} pinned</span>
+              <Badge v-if="commit.tags.length" tone="info" :label="commit.tags.length + ' pinned'" />
             </div>
             <div class="commit-message">{{ commit.message }}</div>
             <div class="commit-meta">
@@ -180,11 +158,12 @@
               <span v-if="visibleEvents(commit).length > 4" class="fleet-more">
                 +{{ visibleEvents(commit).length - 4 }} more
               </span>
-              <button
+              <BaseButton
                 v-if="dismissedEvents[commit.hash] && Object.keys(dismissedEvents[commit.hash]).length"
+                variant="link"
                 class="badge-restore"
                 @click.stop="restoreEvents(commit.hash)"
-              >Show {{ Object.keys(dismissedEvents[commit.hash]).length }} dismissed</button>
+              >Show {{ Object.keys(dismissedEvents[commit.hash]).length }} dismissed</BaseButton>
             </div>
 
             <!-- Inline event detail (shown when a badge is clicked, even before full expand) -->
@@ -198,8 +177,12 @@
               <div class="edp-header">
                 <span class="fe-icon" :class="fe.type">{{ eventIcon(fe.type) }}</span>
                 <span class="edp-title">{{ fe.label }}</span>
-                <span class="fe-severity" :class="fe.severity">{{ fe.severity }}</span>
-                <button class="edp-close" @click.stop="expandedEventKey = null">×</button>
+                <Badge :tone="severityTones[fe.severity] || 'neutral'" :label="fe.severity" />
+                <IconButton label="Close" size="small" @click.stop="expandedEventKey = null">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </IconButton>
               </div>
 
               <!-- Patch rollout detail (aggregated) -->
@@ -231,13 +214,13 @@
                   </div>
                 </div>
                 <!-- Rollout adoption curve -->
-                <button
+                <BaseButton
+                  size="small"
                   class="rollout-btn"
-                  :class="{ active: rolloutEventKey === commit.hash + '-' + fi }"
                   @click.stop="loadRollout(fe.data.software, fe.data.newVersion, commit.hash + '-' + fi)"
                 >
                   {{ rolloutEventKey === commit.hash + '-' + fi ? 'Hide rollout' : 'Track rollout over time' }}
-                </button>
+                </BaseButton>
                 <div v-if="rolloutEventKey === commit.hash + '-' + fi" class="rollout-panel">
                   <div v-if="rolloutLoading" class="affected-loading">Loading rollout data...</div>
                   <template v-else-if="rolloutData">
@@ -311,7 +294,7 @@
                   <span class="fe-icon" :class="fe.type">{{ eventIcon(fe.type) }}</span>
                   <span class="fe-time">{{ formatTime(fe.time) }}</span>
                   <span class="fe-label">{{ fe.label }}</span>
-                  <span class="fe-corr" :class="'corr-' + fe.correlation">{{ fe.correlation }}</span>
+                  <Badge :tone="corrTones[fe.correlation] || 'neutral'" :label="fe.correlation" />
                   <span v-if="hasDetail(fe)" class="fe-expand-hint">details →</span>
                 </div>
               </div>
@@ -323,17 +306,17 @@
               <div class="detail-section">
                 <div class="impact-header-row">
                   <h4>Fleet impact</h4>
-                  <button class="score-info-btn" @click.stop="showScoreInfo = !showScoreInfo">
+                  <BaseButton variant="link" class="score-info-btn" @click.stop="showScoreInfo = !showScoreInfo">
                     {{ showScoreInfo ? 'Hide score info' : 'What is the DEX score?' }}
-                  </button>
+                  </BaseButton>
                 </div>
                 <div v-if="showScoreInfo" class="score-info-box">
                   <p>The <strong>DEX composite score</strong> (0–100) measures overall device health. It's a weighted average of four categories, each computed hourly from real device telemetry:</p>
                   <div class="si-categories">
-                    <span class="si-cat"><span class="si-dot" style="background:#4a90d9"></span><strong>Performance</strong> 35% — memory %, disk %, top process load, uptime</span>
-                    <span class="si-cat"><span class="si-dot" style="background:var(--fleet-success)"></span><strong>Host health</strong> 25% — disk capacity, hardware age</span>
-                    <span class="si-cat"><span class="si-dot" style="background:#8b5cf6"></span><strong>Security</strong> 20% — encryption, firewall, SIP, Gatekeeper</span>
-                    <span class="si-cat"><span class="si-dot" style="background:#ec4899"></span><strong>Software</strong> 20% — app sprawl, browser extensions</span>
+                    <span class="si-cat"><span class="si-dot" :style="{ background: seriesColors.performance }"></span><strong>Performance</strong> 35% — memory %, disk %, top process load, uptime</span>
+                    <span class="si-cat"><span class="si-dot" :style="{ background: seriesColors.health }"></span><strong>Host health</strong> 25% — disk capacity, hardware age</span>
+                    <span class="si-cat"><span class="si-dot" :style="{ background: seriesColors.security }"></span><strong>Security</strong> 20% — encryption, firewall, SIP, Gatekeeper</span>
+                    <span class="si-cat"><span class="si-dot" :style="{ background: seriesColors.software }"></span><strong>Software</strong> 20% — app sprawl, browser extensions</span>
                   </div>
                   <p class="si-grades">Grades: <strong>A</strong> ≥90 · <strong>B</strong> ≥75 · <strong>C</strong> ≥60 · <strong>D</strong> ≥40 · <strong>F</strong> &lt;40. Network (WiFi) is tracked but excluded from scoring — it's environmental. If any scored category is F, the grade drops one letter.</p>
                   <p class="si-context">When this deploy happened, we compare the fleet-wide average composite score from 4h before to 4h after. Devices with a score change &gt;5 points are flagged as improved or degraded.</p>
@@ -388,47 +371,50 @@
                   These devices had the biggest composite score shift in the ±4h window around this deploy.
                   Click a hostname to inspect its health and score breakdown.
                 </p>
-                <table class="edp-table">
-                  <thead>
-                    <tr>
-                      <th>Device</th>
-                      <th>Platform</th>
-                      <th>Before</th>
-                      <th>After</th>
-                      <th>Delta</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="dev in topMovers" :key="dev.host_identifier"
-                      :class="{ 'row-selected': selectedDeviceId === dev.host_identifier }"
-                    >
-                      <td class="edp-hostname" @click.stop="selectDevice(commit, dev)" style="cursor:pointer">{{ dev.hostname }}</td>
-                      <td>{{ dev.os_name }} · {{ dev.hardware_model || '' }}</td>
-                      <td>{{ dev.score_before }}</td>
-                      <td>{{ dev.score_after }}</td>
-                      <td>
-                        <span class="ad-delta" :class="deltaClass(dev.score_delta)">
-                          {{ parseFloat(dev.score_delta) > 0 ? '+' : '' }}{{ dev.score_delta }}
-                        </span>
-                      </td>
-                      <td>
-                        <button class="ad-tag-btn"
-                          @click.stop="quickTag(commit.hash, dev)"
-                          :disabled="commit.tags.some(t => t.hostId === dev.host_identifier)"
-                        >{{ commit.tags.some(t => t.hostId === dev.host_identifier) ? 'Pinned' : 'Pin' }}</button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div class="edp-table-wrap">
+                  <table class="edp-table">
+                    <thead>
+                      <tr>
+                        <th>Device</th>
+                        <th>Platform</th>
+                        <th>Before</th>
+                        <th>After</th>
+                        <th>Delta</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="dev in topMovers" :key="dev.host_identifier"
+                        :class="{ 'row-selected': selectedDeviceId === dev.host_identifier }"
+                      >
+                        <td class="edp-hostname" @click.stop="selectDevice(commit, dev)" style="cursor:pointer">{{ dev.hostname }}</td>
+                        <td>{{ dev.os_name }} · {{ dev.hardware_model || '' }}</td>
+                        <td>{{ dev.score_before }}</td>
+                        <td>{{ dev.score_after }}</td>
+                        <td>
+                          <span class="ad-delta" :class="deltaClass(dev.score_delta)">
+                            {{ parseFloat(dev.score_delta) > 0 ? '+' : '' }}{{ dev.score_delta }}
+                          </span>
+                        </td>
+                        <td>
+                          <BaseButton size="small"
+                            @click.stop="quickTag(commit.hash, dev)"
+                            :disabled="commit.tags.some(t => t.hostId === dev.host_identifier)"
+                          >{{ commit.tags.some(t => t.hostId === dev.host_identifier) ? 'Pinned' : 'Pin' }}</BaseButton>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               <!-- Device inspection panel (inline health view) -->
-              <div v-if="selectedDeviceId && expandedHash === commit.hash" class="detail-section device-inspect-panel">
-                <div class="inspect-header">
-                  <h4>{{ selectedDeviceName }} — around deploy</h4>
-                  <button class="inspect-close" @click.stop="clearDeviceSelection()">×</button>
-                </div>
+              <DrillPanel
+                v-if="selectedDeviceId && expandedHash === commit.hash"
+                class="device-inspect-panel"
+                :title="selectedDeviceName + ' — around deploy'"
+                @close="clearDeviceSelection()"
+              >
                 <div v-if="deviceHealthLoading" class="affected-loading">Loading device data...</div>
                 <template v-else>
                   <!-- DEX score categories chart (primary view) -->
@@ -449,7 +435,7 @@
                       :xLabels="deviceHealthLabels"
                       :series="deviceHealthSeries"
                       :yAxes="[{ name: '%', min: 0, max: 100 }]"
-                      :thresholds="[{ value: 85, label: 'Warning', color: '#eb4343' }]"
+                      :thresholds="memThresholds"
                       :events="deployMarker(commit) ? [deployMarker(commit)] : []"
                       :zoomable="false"
                     />
@@ -458,17 +444,17 @@
                   <div v-if="devicePatches.length" class="inspect-patches">
                     <h4>Patches applied (±24h)</h4>
                     <div v-for="(p, pi) in devicePatches" :key="pi" class="patch-row">
-                      <span class="patch-type">{{ p.patch_type }}</span>
+                      <Badge tone="info" :label="p.patch_type" />
                       <span class="patch-name">{{ p.software_name }}</span>
                       <span class="patch-versions">{{ p.old_version }} → {{ p.new_version }}</span>
-                      <span class="patch-lag" v-if="p.days_to_patch">{{ p.days_to_patch }}d lag</span>
+                      <Badge v-if="p.days_to_patch" tone="fair" :label="p.days_to_patch + 'd lag'" />
                     </div>
                   </div>
                   <div v-if="!deviceScoreLabels.length && !deviceHealthLabels.length" class="detail-empty">
                     No telemetry data for this device in the ±12h window.
                   </div>
                 </template>
-              </div>
+              </DrillPanel>
 
               <!-- Release rollout: what app updates hit hosts in the window after this release commit -->
               <div v-if="isReleaseCommit(commit)" class="detail-section">
@@ -479,9 +465,9 @@
                   Below: patches recorded in <code>dex_patch_events</code> for matching software names in the
                   {{ releaseWindowDays }} days after the commit.
                 </p>
-                <button
+                <BaseButton
+                  size="small"
                   class="rollout-btn"
-                  :class="{ active: releaseRollouts[commit.hash] }"
                   :disabled="releaseRolloutLoading[commit.hash]"
                   @click.stop="loadReleaseRollout(commit)"
                 >
@@ -492,36 +478,38 @@
                         ? 'Refresh rollout data'
                         : 'Show what app updates hit hosts'
                   }}
-                </button>
+                </BaseButton>
                 <div v-if="releaseRollouts[commit.hash]" class="release-rollout-panel">
                   <p v-if="!releaseRollouts[commit.hash].length" class="detail-empty">
                     No matching patches recorded on hosts in the {{ releaseWindowDays }} days after this commit.
                   </p>
-                  <table v-else class="edp-table release-rollout-table">
-                    <thead>
-                      <tr>
-                        <th>Software</th>
-                        <th>Version</th>
-                        <th>Hosts</th>
-                        <th>First applied</th>
-                        <th>Last applied</th>
-                        <th>Lag (avg / max)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="(w, wi) in releaseRollouts[commit.hash]" :key="wi">
-                        <td>{{ w.software_name }} <span class="patch-type">{{ w.patch_type }}</span></td>
-                        <td class="edp-mono">{{ w.old_version || '—' }} → {{ w.new_version }}</td>
-                        <td><strong>{{ w.device_count }}</strong></td>
-                        <td>{{ formatTime(w.first_applied) }} <span class="rollout-rel">(+{{ formatHours(w.hours_to_first_patch) }})</span></td>
-                        <td>{{ formatTime(w.last_applied) }} <span class="rollout-rel">(+{{ formatHours(w.hours_to_last_patch) }})</span></td>
-                        <td>
-                          <span :class="lagClass(w.avg_lag)">{{ w.avg_lag }}d</span> /
-                          <span :class="lagClass(w.max_lag)">{{ w.max_lag }}d</span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <div v-else class="edp-table-wrap">
+                    <table class="edp-table">
+                      <thead>
+                        <tr>
+                          <th>Software</th>
+                          <th>Version</th>
+                          <th>Hosts</th>
+                          <th>First applied</th>
+                          <th>Last applied</th>
+                          <th>Lag (avg / max)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(w, wi) in releaseRollouts[commit.hash]" :key="wi">
+                          <td>{{ w.software_name }} <Badge tone="info" :label="w.patch_type" /></td>
+                          <td class="edp-mono">{{ w.old_version || '—' }} → {{ w.new_version }}</td>
+                          <td><strong>{{ w.device_count }}</strong></td>
+                          <td>{{ formatTime(w.first_applied) }} <span class="rollout-rel">(+{{ formatHours(w.hours_to_first_patch) }})</span></td>
+                          <td>{{ formatTime(w.last_applied) }} <span class="rollout-rel">(+{{ formatHours(w.hours_to_last_patch) }})</span></td>
+                          <td>
+                            <span :class="lagClass(w.avg_lag)">{{ w.avg_lag }}d</span> /
+                            <span :class="lagClass(w.max_lag)">{{ w.max_lag }}d</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
@@ -529,22 +517,21 @@
               <div class="detail-section">
                 <h4>Pinned hosts</h4>
                 <div class="pinned-row">
-                  <div v-for="tag in commit.tags" :key="tag.hostId" class="pinned-chip"
+                  <Chip v-for="tag in commit.tags" :key="tag.hostId" tone="info" class="pinned-chip"
                     :class="{ active: selectedDeviceId === tag.hostId }"
                     @click.stop="selectDeviceById(commit, tag.hostId, tag.hostname)"
                   >
-                    <span class="pin-icon">&#x1F4CC;</span>
                     <span class="pin-name">{{ tag.hostname }}</span>
                     <span v-if="tag.note" class="pin-note">{{ tag.note }}</span>
                     <button class="pin-remove" @click.stop="handleUntag(commit.hash, tag.hostId)" title="Unpin">×</button>
-                  </div>
+                  </Chip>
                   <!-- Search to pin any device -->
                   <div class="pin-search-wrap" @click.stop>
-                    <input
+                    <SearchInput
                       v-model="deviceSearchText"
-                      class="pin-search-input"
                       placeholder="Search host to pin..."
-                      @input="onDeviceSearch"
+                      :debounce="250"
+                      @search="onDeviceSearch"
                     />
                     <div v-if="deviceSearchResults.length" class="pin-search-results">
                       <div
@@ -567,9 +554,11 @@
           </div>
         </div>
 
-        <div v-if="displayedCommits.length === 0 && !loading" class="timeline-empty">
-          {{ releasesOnly ? 'No software releases in the selected time range.' : 'No deployments in the selected time range.' }}
-        </div>
+        <EmptyState
+          v-if="displayedCommits.length === 0 && !loading"
+          small
+          :title="releasesOnly ? 'No software releases in the selected time range' : 'No deployments in the selected time range'"
+        />
       </div>
     </section>
   </div>
@@ -581,8 +570,20 @@ import dayjs from 'dayjs'
 import { useGitopsEvents } from '../composables/useGitopsEvents'
 import { useTimelineEvents } from '../composables/useTimelineEvents'
 import { useFmaReleases } from '../composables/useFmaReleases'
+import { palette, categorical } from '../composables/uiPalette'
 import MultiSeriesChart from '../components/MultiSeriesChart.vue'
 import BarChart from '../components/BarChart.vue'
+import PageHeader from '../components/base/PageHeader.vue'
+import SectionHeader from '../components/base/SectionHeader.vue'
+import SegmentedControl from '../components/base/SegmentedControl.vue'
+import BaseButton from '../components/base/BaseButton.vue'
+import IconButton from '../components/base/IconButton.vue'
+import SearchInput from '../components/base/SearchInput.vue'
+import Badge from '../components/base/Badge.vue'
+import Chip from '../components/base/Chip.vue'
+import DrillPanel from '../components/base/DrillPanel.vue'
+import EmptyState from '../components/base/EmptyState.vue'
+import FmaReleaseCard from '../components/base/FmaReleaseCard.vue'
 
 const { gitopsEvents, fetchGitopsEvents } = useGitopsEvents()
 const { releases: fmaReleases, fetchFmaReleases, fetchReleaseDevices } = useFmaReleases()
@@ -726,12 +727,6 @@ async function loadFmaReleaseDevices(release) {
   }
 }
 
-function totalDevicesForRelease(releaseId) {
-  const rows = fmaDeviceCounts.value[releaseId]
-  if (!rows) return null
-  return rows.reduce((sum, r) => sum + Number(r.device_count || 0), 0)
-}
-
 // ─── Heatmap ────────────────────────────────────────
 
 const heatmapDays = computed(() => {
@@ -803,6 +798,10 @@ function eventIcon(type) {
   }
 }
 
+// Badge tones for event severity and commit correlation
+const severityTones = { high: 'critical', medium: 'fair', low: 'good' }
+const corrTones = { verified: 'good', likely: 'info', temporal: 'neutral' }
+
 function changeTypeLabel(ct) {
   const labels = {
     software: 'Software',
@@ -872,26 +871,6 @@ const impactVerdictClass = computed(() => {
   return 'verdict-neutral'
 })
 
-function commitImpactLabel(commit) {
-  if (!commit.fleetEvents.length) return null
-  const types = commit.fleetEvents.map(e => e.type)
-  const parts = []
-  if (types.includes('score_drop')) parts.push('score drop')
-  if (types.includes('score_improvement')) parts.push('score improved')
-  if (types.includes('patch_wave')) {
-    const pw = commit.fleetEvents.find(e => e.type === 'patch_wave')
-    parts.push(`${pw.data.uniqueDevices} patched`)
-  }
-  return parts.length ? parts.join(' · ') : null
-}
-
-function commitImpactClass(commit) {
-  const types = commit.fleetEvents.map(e => e.type)
-  if (types.includes('score_drop')) return 'impact-negative'
-  if (types.includes('score_improvement')) return 'impact-positive'
-  return 'impact-neutral'
-}
-
 function lagClass(days) {
   const d = parseFloat(days)
   if (d <= 1) return 'lag-fast'
@@ -922,17 +901,14 @@ function quickTag(commitHash, dev) {
 // ─── Device search for pinning ─────────────────────
 const deviceSearchText = ref('')
 const deviceSearchResults = ref([])
-let searchTimeout = null
 
-function onDeviceSearch() {
-  clearTimeout(searchTimeout)
+// Debounced by SearchInput (:debounce="250")
+async function onDeviceSearch() {
   if (deviceSearchText.value.length < 2) {
     deviceSearchResults.value = []
     return
   }
-  searchTimeout = setTimeout(async () => {
-    deviceSearchResults.value = await searchDevices(deviceSearchText.value)
-  }, 250)
+  deviceSearchResults.value = await searchDevices(deviceSearchText.value)
 }
 
 function pinFromSearch(commitHash, device) {
@@ -996,18 +972,30 @@ async function loadRollout(softwareName, newVersion, eventKey) {
   }
 }
 
+// Series identity colors from the shared JS palette (charts can't resolve var()).
+const seriesColors = {
+  composite: palette.ink,
+  health: palette.good,
+  performance: categorical[4],  // blue
+  network: categorical[3],      // gold
+  security: categorical[2],     // purple
+  software: categorical[5],     // pink
+}
+
+const memThresholds = [{ value: 85, label: 'Warning', color: palette.critical }]
+
 const deviceHealthSeries = computed(() => [
-  { name: 'Memory %', data: deviceHealthData.value.memory, color: '#4a90d9' },
-  { name: 'Disk %', data: deviceHealthData.value.disk, color: '#f59e0b' }
+  { name: 'Memory %', data: deviceHealthData.value.memory, color: seriesColors.performance },
+  { name: 'Disk %', data: deviceHealthData.value.disk, color: seriesColors.network }
 ])
 
 const deviceScoreSeries = computed(() => [
-  { name: 'Composite', data: deviceScoreData.value.composite, color: '#192147' },
-  { name: 'Health', data: deviceScoreData.value.health, color: '#009a7d' },
-  { name: 'Performance', data: deviceScoreData.value.performance, color: '#3b82f6' },
-  { name: 'Network', data: deviceScoreData.value.network, color: '#f59e0b' },
-  { name: 'Security', data: deviceScoreData.value.security, color: '#8b5cf6' },
-  { name: 'Software', data: deviceScoreData.value.software, color: '#ec4899' },
+  { name: 'Composite', data: deviceScoreData.value.composite, color: seriesColors.composite },
+  { name: 'Health', data: deviceScoreData.value.health, color: seriesColors.health },
+  { name: 'Performance', data: deviceScoreData.value.performance, color: seriesColors.performance },
+  { name: 'Network', data: deviceScoreData.value.network, color: seriesColors.network },
+  { name: 'Security', data: deviceScoreData.value.security, color: seriesColors.security },
+  { name: 'Software', data: deviceScoreData.value.software, color: seriesColors.software },
 ])
 
 function deltaClass(delta) {
@@ -1022,7 +1010,7 @@ function scoreDeployMarker(commit) {
   const commitHour = dayjs(commit.timestamp).format('MM-DD HH:00')
   const idx = deviceScoreLabels.value.indexOf(commitHour)
   if (idx < 0) return []
-  return [{ xIndex: idx, label: 'Deploy', hash: commit.hash, message: commit.message, color: '#6a67fe' }]
+  return [{ xIndex: idx, label: 'Deploy', hash: commit.hash, message: commit.message, color: palette.info }]
 }
 
 function deployMarker(commit) {
@@ -1030,7 +1018,7 @@ function deployMarker(commit) {
   const commitHour = dayjs(commit.timestamp).format('MM-DD HH:00')
   const idx = deviceHealthLabels.value.indexOf(commitHour)
   if (idx < 0) return null
-  return { xIndex: idx, label: 'Deploy', hash: commit.hash, message: commit.message, color: '#6a67fe' }
+  return { xIndex: idx, label: 'Deploy', hash: commit.hash, message: commit.message, color: palette.info }
 }
 
 async function loadImpactData(commit) {
@@ -1135,83 +1123,18 @@ onMounted(() => loadTimeline())
   max-width: 1400px;
 }
 
-.timeline-header {
+.section {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--pad-xlarge);
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: var(--pad-medium);
 }
 
-.timeline-header h1 {
-  font-family: var(--font-body);
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--fleet-black);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.timeline-controls {
-  display: flex;
-  gap: 2px;
-  background: var(--fleet-black-5);
-  border-radius: var(--radius);
-  padding: 3px;
-}
-
-.range-btn {
-  padding: 7px 14px;
-  border: none;
-  border-radius: calc(var(--radius) - 2px);
-  background: transparent;
-  color: var(--fleet-black-50);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: all var(--transition-fast);
-}
-
-.range-btn:hover {
-  color: var(--fleet-black-75);
-}
-
-.range-btn.active {
-  background: var(--fleet-white);
-  color: var(--fleet-black);
-  box-shadow: var(--shadow-xs);
-  font-weight: 600;
-}
-
-.range-btn.release-toggle {
-  margin-left: var(--pad-small);
-  border-left: 1px solid var(--fleet-black-10);
-  padding-left: var(--pad-medium);
-}
-
-.section {
-  margin-bottom: var(--pad-xxl);
-}
-
-.section h2 {
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  color: var(--fleet-black);
-  margin-bottom: var(--pad-small);
-  letter-spacing: var(--letter-spacing-tight);
-}
-
-.section-hint {
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  color: var(--fleet-black-50);
-  margin-bottom: var(--pad-medium);
+.section-caption {
+  margin: 0;
   line-height: var(--line-height-relaxed);
 }
 
-.section-hint code {
+.section-caption code {
   font-family: var(--font-mono);
   background: var(--fleet-black-5);
   padding: 2px 5px;
@@ -1223,7 +1146,7 @@ onMounted(() => loadTimeline())
 .heatmap-scroll {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius-medium);
+  border-radius: var(--radius-large);
   padding: var(--pad-medium);
   overflow-x: auto;
 }
@@ -1327,14 +1250,6 @@ onMounted(() => loadTimeline())
   font-size: var(--font-size-sm);
 }
 
-.timeline-empty {
-  text-align: center;
-  padding: var(--pad-xxl);
-  color: var(--fleet-black-50);
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-}
-
 .timeline {
   position: relative;
 }
@@ -1379,7 +1294,7 @@ onMounted(() => loadTimeline())
   flex: 1;
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius-medium);
+  border-radius: var(--radius-large);
   padding: var(--pad-medium);
   margin-bottom: var(--pad-medium);
   cursor: pointer;
@@ -1391,17 +1306,9 @@ onMounted(() => loadTimeline())
   box-shadow: var(--shadow-sm);
 }
 
-.timeline-entry.has-impact .timeline-card {
-  border-left: 3px solid var(--fleet-status-warning);
-}
-
 .timeline-entry.expanded .timeline-card {
   border-color: var(--fleet-core-vibrant-blue);
   box-shadow: var(--shadow-md);
-}
-
-.timeline-entry.is-release .timeline-card {
-  border-left: 3px solid var(--fleet-accent-green);
 }
 
 .commit-header {
@@ -1428,28 +1335,6 @@ onMounted(() => loadTimeline())
   color: var(--fleet-black-50);
 }
 
-.impact-badge {
-  font-family: var(--font-body);
-  font-size: 10px;
-  padding: 2px 9px;
-  border-radius: var(--radius-full);
-  font-weight: 500;
-}
-
-.impact-negative { color: var(--fleet-status-error); background: var(--fleet-status-error-light); }
-.impact-positive { color: var(--fleet-status-success); background: var(--fleet-status-success-light); }
-.impact-neutral { color: var(--fleet-status-warning-dark); background: var(--fleet-status-warning-light); }
-
-.tag-count {
-  font-family: var(--font-body);
-  font-size: 10px;
-  color: var(--fleet-core-vibrant-blue);
-  background: var(--fleet-accent-blue-light);
-  padding: 2px 9px;
-  border-radius: var(--radius-full);
-  font-weight: 500;
-}
-
 .commit-message {
   font-family: var(--font-body);
   font-size: var(--font-size-sm);
@@ -1470,18 +1355,16 @@ onMounted(() => loadTimeline())
 }
 
 .commit-author { }
-.commit-teams { color: var(--fleet-core-vibrant-blue); font-weight: 500; }
+.commit-teams { color: var(--fleet-black-75); font-weight: 600; }
 .commit-files { }
 
 /* ─── Change Type Pills ───────────────────────────────── */
 .change-type-pill {
   font-family: var(--font-body);
-  font-size: 9px;
+  font-size: 10px;
   padding: 2px 7px;
   border-radius: var(--radius-full);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-wide);
 }
 
 .ct-software { background: var(--fleet-accent-blue-light); color: var(--fleet-accent-blue); }
@@ -1491,13 +1374,6 @@ onMounted(() => loadTimeline())
 .ct-os_update { background: var(--fleet-status-success-light); color: var(--fleet-status-success); }
 .ct-bootstrap { background: var(--fleet-accent-indigo-light); color: var(--fleet-accent-indigo); }
 .ct-config { background: var(--fleet-black-5); color: var(--fleet-black-75); }
-
-.fleet-obs-label {
-  font-family: var(--font-body);
-  font-size: 10px;
-  color: var(--fleet-black-50);
-  margin-right: 2px;
-}
 
 /* ─── File List ───────────────────────────────────────── */
 .file-list {
@@ -1569,16 +1445,9 @@ onMounted(() => loadTimeline())
 .badge-dismiss:hover { opacity: 1 !important; }
 
 .badge-restore {
-  border: none;
-  background: none;
-  font-family: var(--font-body);
   font-size: 10px;
-  color: var(--fleet-core-vibrant-blue);
-  cursor: pointer;
   padding: 3px 7px;
 }
-
-.badge-restore:hover { text-decoration: underline; }
 
 /* ─── Correlation Badges ──────────────────────────────── */
 .fleet-badge.corr-verified { border: 1px solid var(--fleet-status-success); }
@@ -1590,20 +1459,6 @@ onMounted(() => loadTimeline())
   margin-right: 2px;
 }
 
-.fe-corr {
-  font-family: var(--font-body);
-  font-size: 9px;
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-wide);
-}
-
-.fe-corr.corr-verified { background: var(--fleet-status-success-light); color: var(--fleet-status-success); }
-.fe-corr.corr-likely { background: var(--fleet-accent-blue-light); color: var(--fleet-accent-blue); }
-.fe-corr.corr-temporal { background: var(--fleet-black-5); color: var(--fleet-black-50); }
-
 .fleet-more {
   font-family: var(--font-body);
   font-size: 10px;
@@ -1614,7 +1469,7 @@ onMounted(() => loadTimeline())
 /* ─── Event detail panel (inline) ────────────── */
 
 .event-detail-panel {
-  background: #fafafe;
+  background: var(--fleet-off-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
   padding: var(--pad-small) var(--pad-medium);
@@ -1635,35 +1490,31 @@ onMounted(() => loadTimeline())
   color: var(--fleet-black);
 }
 
-.edp-close {
-  border: none;
-  background: none;
-  font-size: 14px;
-  color: var(--fleet-black-50);
-  cursor: pointer;
-  padding: 0 4px;
-  line-height: 1;
+.edp-table-wrap {
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+  overflow: hidden;
+  background: var(--fleet-white);
 }
-
-.edp-close:hover { color: var(--fleet-black); }
 
 .edp-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .edp-table th {
   text-align: left;
-  font-weight: 600;
-  color: var(--fleet-black-50);
-  font-size: 9px;
-  padding: 4px 7px;
+  background: var(--fleet-off-white);
+  font-weight: 700;
+  color: var(--fleet-black);
+  font-size: 12px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--fleet-black-10);
 }
 
 .edp-table td {
-  padding: 4px 7px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--fleet-black-10);
   color: var(--fleet-black);
 }
@@ -1671,26 +1522,26 @@ onMounted(() => loadTimeline())
 .edp-table tr:last-child td { border-bottom: none; }
 
 .edp-hostname {
-  font-weight: 500;
-  color: #6a67fe;
+  font-weight: 600;
+  color: var(--fleet-black);
 }
 
 .edp-mono {
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  font-size: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
   color: var(--fleet-black-50);
 }
 
-.edp-lag {
-  font-size: 10px;
-  padding: 1px 5px;
+.lag-fast { background: var(--status-good-bg); color: var(--status-good-text); }
+.lag-ok { background: var(--status-fair-bg); color: var(--status-fair-text); }
+.lag-slow { background: var(--status-critical-bg); color: var(--status-critical); }
+
+.lag-fast, .lag-ok, .lag-slow {
+  font-size: 11px;
+  padding: 1px 6px;
   border-radius: var(--radius-full);
   font-weight: 500;
 }
-
-.lag-fast { background: #d1fae5; color: #065f46; }
-.lag-ok { background: var(--status-fair-bg); color: #92400e; }
-.lag-slow { background: var(--status-critical-bg); color: #991b1b; }
 
 .edp-score-detail {
   display: flex;
@@ -1710,11 +1561,12 @@ onMounted(() => loadTimeline())
 .edp-score-value { font-weight: 600; color: var(--fleet-black); }
 
 .fleet-event-row.clickable { cursor: pointer; }
-.fleet-event-row.clickable:hover { background: #f8f7ff; border-radius: var(--radius); }
+.fleet-event-row.clickable:hover { background: var(--info-tint-soft); border-radius: var(--radius); }
 
 .fe-expand-hint {
   font-size: 10px;
-  color: #6a67fe;
+  font-weight: 600;
+  color: var(--fleet-black-75);
   margin-left: auto;
 }
 
@@ -1760,9 +1612,9 @@ onMounted(() => loadTimeline())
   font-size: 13px;
 }
 
-.fe-icon.score_drop { color: #ef4444; }
+.fe-icon.score_drop { color: var(--status-critical); }
 .fe-icon.score_improvement { color: var(--fleet-green); }
-.fe-icon.patch_wave { color: #3b82f6; }
+.fe-icon.patch_wave { color: var(--fleet-accent-blue); }
 
 .fe-time {
   font-size: 11px;
@@ -1775,17 +1627,6 @@ onMounted(() => loadTimeline())
   color: var(--fleet-black);
 }
 
-.fe-severity {
-  font-size: 10px;
-  padding: 1px 7px;
-  border-radius: var(--radius-full);
-  font-weight: 500;
-}
-
-.fe-severity.high { color: #991b1b; background: var(--status-critical-bg); }
-.fe-severity.medium { color: #92400e; background: var(--status-fair-bg); }
-.fe-severity.low { color: #065f46; background: #d1fae5; }
-
 /* Pinned devices */
 .pinned-row {
   display: flex;
@@ -1795,36 +1636,26 @@ onMounted(() => loadTimeline())
 }
 
 .pinned-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 9px;
-  background: #f0efff;
-  border: 1px solid #d8d6ff;
-  border-radius: var(--radius-full);
-  font-size: 11px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
 }
 
 .pinned-chip:hover {
-  background: #e4e2ff;
-  border-color: #6a67fe;
+  border-color: var(--fleet-status-info);
 }
 
 .pinned-chip.active {
-  background: #6a67fe;
-  border-color: #6a67fe;
-  color: white;
+  background: var(--fleet-status-info);
+  border-color: var(--fleet-status-info);
+  color: var(--fleet-white);
 }
 
-.pinned-chip.active .pin-name { color: white; }
-.pinned-chip.active .pin-note { color: rgba(255,255,255,0.7); }
-.pinned-chip.active .pin-remove { color: rgba(255,255,255,0.7); }
-.pinned-chip.active .pin-remove:hover { color: white; }
+.pinned-chip.active .pin-name { color: var(--fleet-white); }
+.pinned-chip.active .pin-note { color: rgba(255, 255, 255, 0.7); }
+.pinned-chip.active .pin-remove { color: rgba(255, 255, 255, 0.7); }
+.pinned-chip.active .pin-remove:hover { color: var(--fleet-white); }
 
-.pin-icon { font-size: 11px; }
-.pin-name { font-weight: 500; color: #6a67fe; }
+.pin-name { font-weight: 600; color: var(--fleet-black); }
 .pin-note { color: var(--fleet-black-50); font-size: 11px; }
 
 .pin-remove {
@@ -1838,7 +1669,7 @@ onMounted(() => loadTimeline())
   margin-left: 2px;
 }
 
-.pin-remove:hover { color: #ef4444; }
+.pin-remove:hover { color: var(--status-critical); }
 
 .pin-hint {
   font-size: 11px;
@@ -1858,19 +1689,11 @@ onMounted(() => loadTimeline())
 .impact-header-row h4 { margin-bottom: 0; }
 
 .score-info-btn {
-  border: none;
-  background: none;
   font-size: 11px;
-  color: #6a67fe;
-  cursor: pointer;
-  font-family: var(--font-body);
-  font-weight: 500;
 }
 
-.score-info-btn:hover { text-decoration: underline; }
-
 .score-info-box {
-  background: #f8f9fa;
+  background: var(--fleet-off-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
   padding: var(--pad-medium);
@@ -1933,10 +1756,10 @@ onMounted(() => loadTimeline())
   margin-top: var(--pad-small);
 }
 
-.verdict-neutral { background: #f8f9fa; color: var(--fleet-black-50); }
-.verdict-positive { background: #d1fae5; color: #065f46; }
-.verdict-negative { background: var(--status-critical-bg); color: #991b1b; }
-.verdict-mixed { background: var(--status-fair-bg); color: #92400e; }
+.verdict-neutral { background: var(--fleet-off-white); color: var(--fleet-black-50); }
+.verdict-positive { background: var(--status-good-bg); color: var(--status-good-text); }
+.verdict-negative { background: var(--status-critical-bg); color: var(--status-critical); }
+.verdict-mixed { background: var(--status-fair-bg); color: var(--status-fair-text); }
 
 /* ─── Impact summary ───────────────────────────── */
 
@@ -1951,7 +1774,7 @@ onMounted(() => loadTimeline())
   flex-direction: column;
   align-items: center;
   padding: var(--pad-small) var(--pad-medium);
-  background: #f8f9fa;
+  background: var(--fleet-off-white);
   border-radius: var(--radius-large);
   min-width: 80px;
 }
@@ -1960,7 +1783,6 @@ onMounted(() => loadTimeline())
   font-size: 18px;
   font-weight: 700;
   color: var(--fleet-black);
-  font-family: 'SF Mono', 'Fira Code', monospace;
 }
 
 .impact-label {
@@ -1969,7 +1791,7 @@ onMounted(() => loadTimeline())
   text-align: center;
 }
 
-.row-selected { background: #f8f7ff; }
+.row-selected { background: var(--info-tint-soft); }
 
 /* ─── Device search for pinning ────────────────── */
 
@@ -1980,28 +1802,6 @@ onMounted(() => loadTimeline())
   max-width: 280px;
 }
 
-.pin-search-input {
-  width: 100%;
-  padding: 4px 9px;
-  border: 1px dashed #d8d6ff;
-  border-radius: 16px;
-  font-size: 11px;
-  font-family: var(--font-body);
-  background: transparent;
-  color: var(--fleet-black);
-  outline: none;
-}
-
-.pin-search-input:focus {
-  border-style: solid;
-  border-color: #6a67fe;
-  background: var(--fleet-white);
-}
-
-.pin-search-input::placeholder {
-  color: #6a67fe;
-}
-
 .pin-search-results {
   position: absolute;
   top: 100%;
@@ -2010,7 +1810,7 @@ onMounted(() => loadTimeline())
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md);
   z-index: 10;
   max-height: 200px;
   overflow-y: auto;
@@ -2027,12 +1827,12 @@ onMounted(() => loadTimeline())
 }
 
 .pin-search-result:last-child { border-bottom: none; }
-.pin-search-result:hover { background: #f8f7ff; }
+.pin-search-result:hover { background: var(--info-tint-soft); }
 
 .psr-name {
   font-size: 11px;
-  font-weight: 500;
-  color: #6a67fe;
+  font-weight: 600;
+  color: var(--fleet-black);
 }
 
 .psr-meta {
@@ -2043,24 +1843,8 @@ onMounted(() => loadTimeline())
 /* ─── Rollout tracking ─────────────────────────── */
 
 .rollout-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
   margin-top: var(--pad-small);
-  padding: 4px 13px;
-  border: 1px solid #6a67fe;
-  border-radius: var(--radius);
-  background: transparent;
-  color: #6a67fe;
-  font-size: 11px;
-  font-weight: 500;
-  font-family: var(--font-body);
-  cursor: pointer;
-  transition: all 0.15s;
 }
-
-.rollout-btn:hover { background: #f8f7ff; }
-.rollout-btn.active { background: #6a67fe; color: white; }
 
 .rollout-panel {
   margin-top: var(--pad-small);
@@ -2092,63 +1876,19 @@ onMounted(() => loadTimeline())
 .ad-delta {
   font-size: 12px;
   font-weight: 700;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
 }
 
-.delta-bad { color: #ef4444; }
-.delta-warn { color: #f59e0b; }
+.delta-bad { color: var(--status-critical); }
+.delta-warn { color: var(--status-fair-text); }
 .delta-good { color: var(--fleet-green); }
 .delta-neutral { color: var(--fleet-black-50); }
-
-.ad-tag-btn, .ad-inspect-btn {
-  font-size: 10px;
-  padding: 2px 9px;
-  border: 1px solid var(--fleet-black-10);
-  border-radius: var(--radius);
-  background: var(--fleet-white);
-  cursor: pointer;
-  font-family: var(--font-body);
-  font-weight: 500;
-  transition: all 0.15s;
-}
-
-.ad-tag-btn:hover { border-color: #6a67fe; color: #6a67fe; }
-.ad-tag-btn:disabled { opacity: 0.4; cursor: default; }
-.ad-inspect-btn { background: #6a67fe; color: white; border-color: #6a67fe; }
-.ad-inspect-btn:hover { background: #5854d6; }
 
 /* ─── Device inspection panel ──────────────────── */
 
 .device-inspect-panel {
-  background: #fafafe;
-  border: 1px solid #e2e0ff;
-  border-radius: var(--radius-large);
-  padding: var(--pad-medium);
   margin-top: var(--pad-small);
 }
-
-.inspect-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--pad-small);
-}
-
-.inspect-header h4 {
-  margin-bottom: 0;
-}
-
-.inspect-close {
-  border: none;
-  background: none;
-  font-size: 16px;
-  color: var(--fleet-black-50);
-  cursor: pointer;
-  padding: 0 4px;
-  line-height: 1;
-}
-
-.inspect-close:hover { color: var(--fleet-black); }
 
 .inspect-chart {
   margin-bottom: var(--pad-medium);
@@ -2166,6 +1906,9 @@ onMounted(() => loadTimeline())
 }
 
 .inspect-patches h4 {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fleet-black);
   margin-bottom: var(--pad-small);
 }
 
@@ -2180,53 +1923,23 @@ onMounted(() => loadTimeline())
 
 .patch-row:last-child { border-bottom: none; }
 
-.patch-type {
-  font-size: 10px;
-  padding: 1px 5px;
-  border-radius: var(--radius-full);
-  background: #dbeafe;
-  color: #1e40af;
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
 .patch-name {
   font-weight: 500;
   color: var(--fleet-black);
 }
 
 .patch-versions {
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--fleet-black-50);
 }
 
-.patch-lag {
-  font-size: 10px;
-  color: #92400e;
-  background: var(--status-fair-bg);
-  padding: 1px 5px;
-  border-radius: var(--radius-full);
-}
-
-/* Release toggle + per-release rollout panel */
-.release-toggle { margin-left: 8px; }
+/* Per-release rollout panel */
 .timeline-entry.is-release .timeline-dot { box-shadow: 0 0 0 3px var(--status-fair-bg); }
 .release-rollout-panel { margin-top: 10px; }
-.release-rollout-table { font-size: 12px; }
-.release-rollout-table .patch-type {
-  display: inline-block;
-  margin-left: 5px;
-  font-size: 9px;
-  color: #92400e;
-  background: var(--status-fair-bg);
-  padding: 1px 4px;
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-}
 .rollout-rel {
   margin-left: 4px;
-  color: #6b7280;
+  color: var(--fleet-black-50);
   font-size: 10px;
 }
 
@@ -2235,42 +1948,6 @@ onMounted(() => loadTimeline())
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 11px;
-  margin-top: 11px;
 }
-.fma-card {
-  background: var(--fleet-white, #fff);
-  border: 1px solid var(--fleet-black-10, #e5e7eb);
-  border-radius: var(--radius-large);
-  padding: 11px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.fma-head { display: flex; align-items: center; gap: 6px; }
-.fma-app { font-weight: 600; font-size: 13px; }
-.fma-platform {
-  font-size: 9px;
-  text-transform: uppercase;
-  padding: 1px 5px;
-  border-radius: var(--radius-full);
-  background: var(--fleet-off-white, #f5f5f5);
-  color: var(--fleet-black-75, #444);
-}
-.fma-platform.platform-mac { background: #e0e7ff; color: #3730a3; }
-.fma-platform.platform-darwin { background: #e0e7ff; color: #3730a3; }
-.fma-platform.platform-windows { background: #dbeafe; color: #1e40af; }
-.fma-platform.platform-linux { background: var(--status-good-bg); color: #166534; }
-.fma-badge.added {
-  font-size: 9px;
-  padding: 1px 5px;
-  border-radius: var(--radius-full);
-  background: var(--status-fair-bg);
-  color: #92400e;
-  text-transform: uppercase;
-  font-weight: 700;
-}
-.fma-version { font-size: 12px; }
-.fma-time { font-size: 11px; color: var(--fleet-black-50, #6b7280); }
-.fma-load-btn { align-self: flex-start; }
 .fma-rollout { margin-top: 6px; }
 </style>
