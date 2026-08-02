@@ -1691,7 +1691,6 @@ h2 {
 }
 
 .score-grade {
-  font-family: var(--font-mono);
   font-size: 52px;
   font-weight: 700;
   line-height: 1;
@@ -1766,9 +1765,9 @@ h2 {
 
 .cat-bar-track {
   flex: 1;
-  height: 18px;
-  background: var(--fleet-black-5);
-  border-radius: var(--radius);
+  height: 14px;
+  background: var(--fleet-black-10);
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 
@@ -2015,7 +2014,6 @@ h2 {
 
 .app-usage-ver {
   font-size: var(--font-size-xs);
-  font-family: var(--font-mono);
   color: var(--fleet-black-50);
 }
 

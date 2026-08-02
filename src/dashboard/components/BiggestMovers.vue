@@ -349,7 +349,6 @@ h3 {
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;
-  font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   font-weight: 700;
   color: var(--fleet-white);

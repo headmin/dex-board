@@ -160,7 +160,6 @@ const deltaClass = computed(() => {
 }
 
 .grade-display {
-  font-family: var(--font-mono);
   font-size: 44px;
   font-weight: 700;
   line-height: 1;
@@ -187,14 +186,12 @@ const deltaClass = computed(() => {
 }
 
 .score-divider {
-  font-family: var(--font-mono);
   font-size: var(--font-size-sm);
   color: var(--fleet-black-33);
   margin: 0 1px;
 }
 
 .score-max {
-  font-family: var(--font-mono);
   font-size: var(--font-size-sm);
   color: var(--fleet-black-50);
 }

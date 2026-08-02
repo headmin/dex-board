@@ -112,11 +112,10 @@ const slaSummary = computed(() => {
 .mttp-table .mttp-col-app { font-weight: 500; color: var(--fleet-black); }
 .mttp-table .mttp-col-num { text-align: right; font-family: var(--font-mono); white-space: nowrap; }
 .mttp-table .mttp-col-num strong { color: #6a67fe; font-weight: 700; }
-.mttp-table .mttp-col-range { text-align: right; font-family: var(--font-mono); color: var(--fleet-black-50); white-space: nowrap; }
+.mttp-table .mttp-col-range { text-align: right; color: var(--fleet-black-50); white-space: nowrap; }
 .mttp-table .mono { font-family: var(--font-mono); }
 .mttp-empty {
   text-align: center;
-  font-family: var(--font-mono);
   color: var(--fleet-black-50);
   font-style: italic;
   padding: 20px;
@@ -129,7 +128,6 @@ const slaSummary = computed(() => {
   margin-bottom: 10px;
 }
 .mttp-sla-pct {
-  font-family: var(--font-mono);
   font-weight: 700;
   font-size: var(--font-size-md);
 }

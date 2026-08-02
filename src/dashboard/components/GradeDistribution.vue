@@ -126,9 +126,9 @@ h3 {
 
 .dist-track {
   flex: 1;
-  height: 20px;
+  height: 10px;
   background: var(--fleet-black-5);
-  border-radius: var(--radius);
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 

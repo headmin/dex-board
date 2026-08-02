@@ -133,7 +133,7 @@ h3 {
 .breakdown-rows {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 
 .breakdown-row {
@@ -145,7 +145,7 @@ h3 {
 .breakdown-row.clickable {
   cursor: pointer;
   border-radius: var(--radius);
-  padding: 6px 8px;
+  padding: 12px 8px;
   margin: 0 -8px;
   transition: background 150ms ease-in-out;
 }
@@ -183,15 +183,15 @@ h3 {
 
 .score-bar-track {
   flex: 1;
-  height: 18px;
-  background: var(--fleet-black-5);
-  border-radius: var(--radius);
+  height: 8px;
+  background: transparent;
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 
 .score-bar-fill {
   height: 100%;
-  border-radius: var(--radius);
+  border-radius: var(--radius-full);
   transition: width 400ms ease-out;
 }
 

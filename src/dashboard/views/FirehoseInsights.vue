@@ -543,7 +543,6 @@ h2 {
 }
 
 .stat-value {
-  font-family: var(--font-mono);
   font-size: var(--font-size-lg);
   font-weight: 600;
   color: var(--fleet-black);
@@ -586,7 +585,6 @@ h2 {
 .pressure-fill.pressure-critical { background: var(--fleet-status-error); }
 
 .pressure-label {
-  font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   color: var(--fleet-black-50);
   margin-top: var(--pad-xs);
@@ -722,7 +720,6 @@ h2 {
 }
 
 .hostname {
-  font-family: var(--font-mono);
   font-weight: 500;
   font-size: var(--font-size-sm);
 }
@@ -802,7 +799,6 @@ h2 {
 }
 
 .ram-tier-name {
-  font-family: var(--font-mono);
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--fleet-black);
@@ -819,16 +815,16 @@ h2 {
 }
 
 .ram-bar-track {
-  height: 28px;
-  background: var(--fleet-black-5);
-  border-radius: var(--radius);
+  height: 14px;
+  background: var(--fleet-black-10);
+  border-radius: var(--radius-full);
   position: relative;
   overflow: visible;
 }
 
 .ram-bar-used {
   height: 100%;
-  border-radius: var(--radius);
+  border-radius: var(--radius-full);
   transition: width 500ms ease;
   min-width: 2px;
 }
@@ -865,13 +861,11 @@ h2 {
 }
 
 .ram-used-label {
-  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--fleet-black-75);
 }
 
 .ram-free-label {
-  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--fleet-black-50);
 }

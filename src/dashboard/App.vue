@@ -210,7 +210,10 @@ a:not([class]):hover { color: var(--link-color-hover); }
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--fleet-off-white);
+  background: var(--fleet-white);
+  /* Global density scale — the layout is all-px; this brings the whole UI down
+     to a denser, compact scale (≈ browser zoom) without touching every value. */
+  zoom: 0.9;
 }
 
 /* ── Top Navigation (Fleet-style) ────────────── */

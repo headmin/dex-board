@@ -1245,7 +1245,6 @@ onMounted(() => loadTimeline())
 }
 
 .heatmap-hour {
-  font-family: var(--font-mono);
   font-size: 10px;
   color: var(--fleet-black-33);
   text-align: center;
@@ -2228,7 +2227,6 @@ onMounted(() => loadTimeline())
 .rollout-rel {
   margin-left: 4px;
   color: #6b7280;
-  font-family: var(--font-mono);
   font-size: 11px;
 }
 
@@ -2251,7 +2249,6 @@ onMounted(() => loadTimeline())
 .fma-head { display: flex; align-items: center; gap: 6px; }
 .fma-app { font-weight: 600; font-size: 13px; }
 .fma-platform {
-  font-family: var(--font-mono);
   font-size: 10px;
   text-transform: uppercase;
   padding: 1px 6px;

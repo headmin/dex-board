@@ -155,12 +155,12 @@ watch(filterParams, load, { deep: true })
 .num { text-align: right; }
 .mono { font-family: var(--font-mono); }
 
-.lc-badge { display: inline-block; font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 600; padding: 1px 7px; border-radius: var(--radius-full); margin-right: 4px; }
+.lc-badge { display: inline-block; font-size: var(--font-size-xs); font-weight: 600; padding: 1px 7px; border-radius: var(--radius-full); margin-right: 4px; }
 .sev-ok { background: var(--status-good-bg); color: var(--status-good); }
 .sev-mid { background: var(--status-fair-bg); color: var(--status-fair-text); }
 .sev-high { background: var(--status-critical-bg); color: var(--status-critical); }
 .lc-none { color: var(--fleet-black-25); }
 
-.lc-score { font-family: var(--font-mono); font-weight: 700; padding: 1px 8px; border-radius: var(--radius-full); }
-.lc-empty { text-align: center; font-family: var(--font-mono); color: var(--fleet-black-50); font-style: italic; padding: 28px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); }
+.lc-score { font-weight: 700; padding: 1px 8px; border-radius: var(--radius-full); }
+.lc-empty { text-align: center; color: var(--fleet-black-50); font-style: italic; padding: 28px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); }
 </style>

@@ -90,7 +90,6 @@
   display: inline;
   padding: 2px 8px;
   margin: 0 2px;
-  font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   color: var(--fleet-vibrant-blue);
   background: var(--fleet-vibrant-blue-10);
@@ -337,9 +336,9 @@ function diffClass(row) {
 
 .bench-bar-track {
   position: relative;
-  height: 20px;
-  background: var(--fleet-black-5);
-  border-radius: var(--radius);
+  height: 14px;
+  background: var(--fleet-black-10);
+  border-radius: var(--radius-full);
   overflow: visible;
 }
 

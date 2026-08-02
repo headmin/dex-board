@@ -336,7 +336,7 @@ onUnmounted(() => { if (playTimer) clearInterval(playTimer) })
 <style scoped>
 .changeboard { display: flex; flex-direction: column; height: calc(100vh - 120px); background: var(--fleet-off-white); overflow: hidden; }
 .error-banner { background: var(--fleet-white); color: var(--fleet-error); padding: 12px 16px; border-radius: var(--radius); border-left: 3px solid var(--fleet-error); margin: 16px; }
-.loading-state { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--fleet-black-50); font-family: var(--font-mono); }
+.loading-state { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--fleet-black-50); }
 .placeholder { color: var(--fleet-black-50); font-size: var(--font-size-sm); padding: 12px; }
 
 .cb-header { padding: 16px 20px; display: flex; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--fleet-black-10); background: var(--fleet-white); flex-shrink: 0; }
@@ -350,7 +350,7 @@ onUnmounted(() => { if (playTimer) clearInterval(playTimer) })
 .tree-panel h2 { font-family: var(--font-body); font-size: 13px; color: var(--fleet-black); padding: 0 16px 8px; font-weight: 700; }
 .tree-node { padding: 6px 16px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: var(--font-size-sm); transition: background var(--transition-fast); }
 .tree-node:hover { background: var(--fleet-black-3); }
-.tree-leaf { padding: 5px 16px 5px 28px; font-family: var(--font-mono); font-size: 12px; color: var(--fleet-black-75); transition: background var(--transition-fast); display: flex; align-items: center; gap: 6px; }
+.tree-leaf { padding: 5px 16px 5px 28px; font-size: 12px; color: var(--fleet-black-75); transition: background var(--transition-fast); display: flex; align-items: center; gap: 6px; }
 .tree-leaf.highlight { background: var(--fleet-status-success-light); color: var(--fleet-status-success); font-weight: 600; }
 .tree-folder.sub .tree-node { padding-left: 28px; }
 .tree-folder.sub .tree-leaf { padding-left: 44px; }
@@ -379,7 +379,7 @@ onUnmounted(() => { if (playTimer) clearInterval(playTimer) })
 .detail-panel h2 { font-family: var(--font-body); font-size: 13px; color: var(--fleet-black); font-weight: 700; margin: 0; }
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .stat-card { background: var(--fleet-black-3); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-medium); padding: 12px 10px; text-align: center; }
-.stat-value { font-family: var(--font-mono); font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-core-vibrant-blue); }
+.stat-value { font-size: var(--font-size-lg); font-weight: 600; color: var(--fleet-core-vibrant-blue); }
 .stat-label { font-family: var(--font-body); font-size: 10px; color: var(--fleet-black-50); margin-top: 2px; }
 .commit-card { background: var(--fleet-black-3); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-medium); padding: 14px; }
 .commit-msg { font-family: var(--font-body); font-size: var(--font-size-sm); font-weight: 600; line-height: 1.5; margin-bottom: 10px; color: var(--fleet-black); }
@@ -401,7 +401,7 @@ onUnmounted(() => { if (playTimer) clearInterval(playTimer) })
 .file-list li { padding: 6px 10px; border-radius: var(--radius); display: flex; align-items: flex-start; gap: 8px; transition: background var(--transition-fast); }
 .file-list li:hover { background: var(--fleet-black-3); }
 .file-list .file-icon { width: 14px; height: 14px; color: var(--fleet-status-success); flex-shrink: 0; margin-top: 1px; }
-.file-list .file-name { font-family: var(--font-mono); font-size: 12px; color: var(--fleet-black-75); word-break: break-all; line-height: 1.4; }
+.file-list .file-name { font-size: 12px; color: var(--fleet-black-75); word-break: break-all; line-height: 1.4; }
 
 /* Timeline bar */
 .timeline-bar { border-top: 1px solid var(--fleet-black-10); padding: 14px 20px; display: flex; align-items: center; gap: 14px; background: var(--fleet-white); flex-shrink: 0; }
@@ -411,7 +411,7 @@ onUnmounted(() => { if (playTimer) clearInterval(playTimer) })
 .tl-controls button:hover { border-color: var(--fleet-core-vibrant-blue); color: var(--fleet-black); }
 .tl-controls button.active { background: var(--fleet-core-vibrant-blue); color: var(--fleet-white); border-color: var(--fleet-core-vibrant-blue); }
 .tl-slider { flex: 1; accent-color: var(--fleet-core-vibrant-blue); cursor: pointer; height: 6px; }
-.tl-date { font-family: var(--font-mono); font-size: var(--font-size-sm); color: var(--fleet-core-vibrant-blue); min-width: 180px; text-align: right; font-weight: 500; }
+.tl-date { font-size: var(--font-size-sm); color: var(--fleet-core-vibrant-blue); min-width: 180px; text-align: right; font-weight: 500; }
 .tl-search { font-family: var(--font-body); font-size: 13px; padding: 6px 10px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); background: var(--fleet-white); color: var(--fleet-black); min-width: 280px; outline: none; transition: border-color var(--transition-fast); }
 .tl-search:focus { border-color: var(--fleet-core-vibrant-blue); }
 .tl-search-counter { font-family: var(--font-mono); font-size: 11px; color: var(--fleet-black-50); }

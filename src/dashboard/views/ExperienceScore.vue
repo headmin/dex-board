@@ -1360,7 +1360,6 @@ onMounted(() => {
   border: none;
   background: var(--fleet-white);
   color: var(--fleet-black-50);
-  font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   font-weight: 600;
   padding: 2px 8px;
@@ -1374,8 +1373,7 @@ onMounted(() => {
 .exposure-detail { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
 .exposure-signals { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .exposure-signal {
-  display: inline-flex; align-items: baseline; gap: 5px;
-  font-family: var(--font-mono); font-size: var(--font-size-xs);
+  display: inline-flex; align-items: baseline; gap: 5px; font-size: var(--font-size-xs);
   background: var(--fleet-off-white); border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-sm, 4px); padding: 2px 7px;
 }
@@ -1517,7 +1515,6 @@ onMounted(() => {
   color: var(--fleet-black);
 }
 .team-card-hosts {
-  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--fleet-black-50);
 }
@@ -1528,7 +1525,6 @@ onMounted(() => {
   margin-bottom: 10px;
 }
 .team-card-grade {
-  font-family: var(--font-mono);
   font-size: 32px;
   font-weight: 700;
   line-height: 1;
@@ -1539,7 +1535,6 @@ onMounted(() => {
 .team-card-grade.grade-d { color: var(--fleet-ui-orange); }
 .team-card-grade.grade-f { color: var(--fleet-error); }
 .team-card-score {
-  font-family: var(--font-mono);
   font-size: var(--font-size-lg);
   font-weight: 600;
   color: var(--fleet-black);
@@ -1561,7 +1556,6 @@ onMounted(() => {
   padding: 2px 8px;
   border-radius: 10px;
   font-size: 11px;
-  font-family: var(--font-mono);
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
 }
@@ -1619,7 +1613,6 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   margin-top: 4px;
-  font-family: var(--font-mono);
   font-size: 10px;
   color: var(--fleet-black-33);
 }
@@ -1750,9 +1743,9 @@ onMounted(() => {
 
 .signal-bar-track {
   flex: 1;
-  height: 16px;
-  background: var(--fleet-black-5);
-  border-radius: var(--radius);
+  height: 14px;
+  background: var(--fleet-black-10);
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 
@@ -1770,7 +1763,6 @@ onMounted(() => {
 }
 
 .signal-score {
-  font-family: var(--font-mono);
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--fleet-black);
@@ -1860,7 +1852,6 @@ onMounted(() => {
 }
 
 .stat-value {
-  font-family: var(--font-mono);
   font-size: var(--font-size-xl);
   font-weight: 600;
   color: var(--fleet-black);
@@ -1895,8 +1886,8 @@ onMounted(() => {
 .patch-bar-track {
   flex: 1;
   height: 14px;
-  background: var(--fleet-black-5);
-  border-radius: var(--radius);
+  background: var(--fleet-black-10);
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 
@@ -2157,13 +2148,12 @@ onMounted(() => {
 /* Mini stacked grade distribution (replaces the full GradeDistribution component) */
 .mini-distribution {
   display: flex;
-  height: 20px;
-  border-radius: var(--radius);
+  height: 8px;
+  border-radius: var(--radius-full);
   overflow: hidden;
   flex: 1;
   max-width: 360px;
   min-width: 180px;
-  border: 1px solid var(--fleet-black-10);
 }
 
 .mini-dist-segment {
@@ -2181,6 +2171,7 @@ onMounted(() => {
 .mini-dist-segment.grade-F { background: var(--fleet-error); }
 
 .mini-dist-label {
+  display: none;
   font-size: 10px;
   font-weight: 700;
   color: #fff;
@@ -2202,7 +2193,6 @@ onMounted(() => {
 }
 
 .device-search-input {
-  font-family: var(--font-mono);
   font-size: var(--font-size-sm);
   padding: 6px 12px 6px 30px;
   border: 1px solid var(--fleet-black-10);
@@ -2298,7 +2288,6 @@ onMounted(() => {
 }
 
 .device-score-cell {
-  font-family: var(--font-mono);
   font-weight: 600;
   text-align: left;
 }
@@ -2333,8 +2322,7 @@ onMounted(() => {
 }
 
 .patch-movers-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.patch-trend {
-  font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 600;
+.patch-trend { font-size: var(--font-size-xs); font-weight: 600;
   padding: 2px 8px; border-radius: var(--radius-full); background: var(--fleet-off-white);
 }
 .patch-trend-arrow { font-weight: 700; }
@@ -2343,5 +2331,5 @@ onMounted(() => {
 .patch-trend--flat { color: var(--fleet-black-50); }
 
 /* small caption used by the software breakdown above the MttpTable */
-.section-hint { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); margin: 0 0 12px; }
+.section-hint { font-size: var(--font-size-xs); color: var(--fleet-black-50); margin: 0 0 12px; }
 </style>

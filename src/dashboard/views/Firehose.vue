@@ -487,7 +487,6 @@ h3 {
 .device-drawer {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
-  border-left: 3px solid var(--fleet-vibrant-blue);
   border-radius: var(--radius-large);
   padding: 20px 24px;
   margin-bottom: 32px;

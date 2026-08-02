@@ -48,8 +48,10 @@
             <td class="num mono">{{ a.installs }}</td>
             <td class="num mono"><strong>{{ a.unused_hosts }}</strong></td>
             <td class="sw-bar-col">
-              <div class="sw-bar-track">
-                <div class="sw-bar-fill" :class="shareClass(a.pct_unused)" :style="{ width: a.pct_unused + '%' }"></div>
+              <div class="sw-bar-row">
+                <div class="sw-bar-track">
+                  <div class="sw-bar-fill" :class="shareClass(a.pct_unused)" :style="{ width: a.pct_unused + '%' }"></div>
+                </div>
                 <span class="sw-bar-label">{{ a.pct_unused }}%</span>
               </div>
             </td>
@@ -119,12 +121,13 @@ watch(filterParams, load, { deep: true })
 .mono { font-family: var(--font-mono); }
 
 .sw-bar-col { width: 200px; }
-.sw-bar-track { position: relative; height: 18px; background: var(--fleet-black-5); border-radius: var(--radius-sm, 4px); overflow: hidden; }
-.sw-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--radius-sm, 4px); }
-.sw-bar-label { position: absolute; right: 6px; top: 0; line-height: 18px; font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 600; color: var(--fleet-black-75); }
+.sw-bar-row { display: flex; align-items: center; gap: 10px; }
+.sw-bar-track { position: relative; flex: 1; height: 14px; background: var(--fleet-black-10); border-radius: var(--radius-full); overflow: hidden; }
+.sw-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--radius-full); }
+.sw-bar-label { font-size: var(--font-size-xs); font-weight: 600; color: var(--fleet-black-75); min-width: 38px; text-align: right; }
 .sev-ok { background: var(--status-good); }
 .sev-mid { background: var(--status-fair); }
 .sev-high { background: var(--status-critical); }
 
-.sw-empty { text-align: center; font-family: var(--font-mono); color: var(--fleet-black-50); font-style: italic; padding: 28px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); }
+.sw-empty { text-align: center; color: var(--fleet-black-50); font-style: italic; padding: 28px; background: var(--fleet-white); border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); }
 </style>

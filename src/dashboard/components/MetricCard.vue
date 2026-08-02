@@ -49,7 +49,7 @@ const trendClass = computed(() => {
 
 <style scoped>
 .metric-card {
-  background: var(--fleet-white);
+  background: var(--fleet-off-white);
   border-radius: var(--radius-large);
   border: 1px solid var(--fleet-black-10);
   padding: var(--pad-medium);
@@ -85,7 +85,6 @@ const trendClass = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  font-family: var(--font-mono);
   font-size: var(--font-size-xxsmall);
   font-weight: 700;
   padding: 2px 6px;

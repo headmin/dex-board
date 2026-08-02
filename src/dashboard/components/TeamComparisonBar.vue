@@ -83,9 +83,9 @@ h3 {
 }
 
 .bar-track {
-  height: 24px;
-  background: var(--fleet-black-5);
-  border-radius: var(--radius);
+  height: 14px;
+  background: var(--fleet-black-10);
+  border-radius: var(--radius-full);
   position: relative;
   overflow: hidden;
 }
