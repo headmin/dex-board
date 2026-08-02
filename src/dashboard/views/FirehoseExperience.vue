@@ -63,13 +63,9 @@
         />
       </section>
       <section class="section">
-        <PieChart
-          title="RAM distribution"
-          :data="ramTiers"
-          :loading="loading.hardware"
-          nameKey="ram_tier"
-          valueKey="device_count"
-        />
+        <ChartCard title="RAM distribution" :loading="loading.hardware" :empty="!ramTiers.length">
+          <BarList :data="ramTiers" nameKey="ram_tier" valueKey="device_count" :humanize="false" />
+        </ChartCard>
       </section>
     </div>
 
@@ -85,13 +81,10 @@
         />
       </section>
       <section class="section">
-        <PieChart
-          title="Battery health"
-          :data="batteryDist"
-          :loading="loading.deviceHealth"
-          nameKey="battery_health_score"
-          valueKey="device_count"
-        />
+        <ChartCard title="Battery health" :loading="loading.deviceHealth" :empty="!batteryDist.length">
+          <DistributionStrip :data="batteryDist" nameKey="battery_health_score" valueKey="device_count"
+            :order="BATTERY_ORDER" :tones="BATTERY_TONES" />
+        </ChartCard>
       </section>
     </div>
 
@@ -190,13 +183,10 @@
 
     <div class="charts-row two-col">
       <section class="section">
-        <PieChart
-          title="Usage tiers"
-          :data="adoptionTierDist"
-          :loading="loading.adoption"
-          nameKey="usage_tier"
-          valueKey="app_count"
-        />
+        <ChartCard title="Usage tiers" :loading="loading.adoption" :empty="!adoptionTierDist.length">
+          <DistributionStrip :data="adoptionTierDist" nameKey="usage_tier" valueKey="app_count"
+            :order="USAGE_ORDER" :tones="USAGE_TONES" />
+        </ChartCard>
       </section>
       <section class="section">
         <BarChart
@@ -254,13 +244,10 @@
 
     <div class="charts-row two-col">
       <section class="section">
-        <PieChart
-          title="Wi-Fi signal quality"
-          :data="wifiDistribution"
-          :loading="loading.wifi"
-          nameKey="signal_quality"
-          valueKey="cnt"
-        />
+        <ChartCard title="Wi-Fi signal quality" :loading="loading.wifi" :empty="!wifiDistribution.length">
+          <DistributionStrip :data="wifiDistribution" nameKey="signal_quality" valueKey="cnt"
+            :order="SIGNAL_ORDER" :tones="SIGNAL_TONES" />
+        </ChartCard>
       </section>
       <section class="section">
         <BarChart
@@ -307,13 +294,10 @@
 
     <div class="charts-row">
       <section class="section">
-        <PieChart
-          title="Network path"
-          :data="humanizedVpnConfDist"
-          :loading="loading.vpn"
-          nameKey="network_confidence"
-          valueKey="device_count"
-        />
+        <ChartCard title="Network path" :loading="loading.vpn" :empty="!vpnConfDist.length">
+          <DistributionStrip :data="vpnConfDist" nameKey="network_confidence" valueKey="device_count"
+            :order="NETWORK_ORDER" :tones="NETWORK_TONES" />
+        </ChartCard>
       </section>
     </div>
 
@@ -330,13 +314,10 @@
 
     <div class="charts-row">
       <section class="section">
-        <PieChart
-          title="Uptime distribution"
-          :data="uptimeDist"
-          :loading="loading.uptime"
-          nameKey="uptime_bucket"
-          valueKey="device_count"
-        />
+        <ChartCard title="Uptime distribution" :loading="loading.uptime" :empty="!uptimeDist.length">
+          <DistributionStrip :data="uptimeDist" nameKey="uptime_bucket" valueKey="device_count"
+            :order="UPTIME_ORDER" :tones="UPTIME_TONES" />
+        </ChartCard>
       </section>
     </div>
 
@@ -379,8 +360,10 @@ import { query } from '../services/api'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
-import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
+import ChartCard from '../components/base/ChartCard.vue'
+import DistributionStrip from '../components/base/DistributionStrip.vue'
+import BarList from '../components/base/BarList.vue'
 import HostTile from '../components/HostTile.vue'
 import MttpTable from '../components/MttpTable.vue'
 import PageHeader from '../components/base/PageHeader.vue'
@@ -390,6 +373,18 @@ import EmptyState from '../components/base/EmptyState.vue'
 import { palette } from '../composables/uiPalette'
 import { displayHost } from '../composables/displayName'
 import { useAppConfig } from '../composables/useAppConfig'
+
+const SIGNAL_ORDER = ['excellent', 'good', 'fair', 'weak', 'poor', 'very_weak', 'unknown']
+const SIGNAL_TONES = { excellent: 'good', good: 'soft', fair: 'fair', weak: 'elevated', poor: 'critical', very_weak: 'critical', unknown: 'neutral' }
+const NETWORK_ORDER = ['direct_connected', 'tunnel_active', 'vpn_active', 'proxy_suspected', 'disconnected', 'unknown']
+const NETWORK_TONES = { direct_connected: 'good', tunnel_active: 'info', vpn_active: 'info', proxy_suspected: 'fair', disconnected: 'critical', unknown: 'neutral' }
+const BATTERY_ORDER = ['good', 'degraded', 'replace']
+const BATTERY_TONES = { good: 'good', degraded: 'fair', replace: 'critical' }
+const USAGE_ORDER = ['active_today', 'active_week', 'stale_30d', 'stale_90d', 'stale_90d_plus', 'never_opened']
+const USAGE_TONES = { active_today: 'good', active_week: 'soft', stale_30d: 'fair', stale_90d: 'elevated', stale_90d_plus: 'elevated', never_opened: 'critical' }
+// firehose.fleetd.uptime buckets (recently rebooted -> long-running)
+const UPTIME_ORDER = ['< 1h', '1h - 1d', '1d - 7d', '7d - 30d', '30d+']
+const UPTIME_TONES = { '< 1h': 'good', '1h - 1d': 'good', '1d - 7d': 'soft', '7d - 30d': 'fair', '30d+': 'elevated' }
 
 const { config } = useAppConfig()
 
@@ -496,19 +491,6 @@ async function toggleDrill(condition) {
   drillLoading.value = false
 }
 
-// Humanize the raw enum values from ClickHouse so pie chart legend
-// reads "Direct" / "VPN tunnel" / "Disconnected" instead of snake_case.
-const VPN_LABELS = {
-  direct_connected: 'Direct',
-  tunnel_active: 'VPN tunnel',
-  disconnected: 'Disconnected',
-}
-const humanizedVpnConfDist = computed(() =>
-  vpnConfDist.value.map(row => ({
-    ...row,
-    network_confidence: VPN_LABELS[row.network_confidence] || row.network_confidence,
-  }))
-)
 const batteryDist = ref([])
 const processClassData = ref([])
 const processClassTotals = ref({ uniqueProcesses: 0, userApps: 0, mgmtAgents: 0, system: 0 })

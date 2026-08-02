@@ -16,7 +16,9 @@ import { computed } from 'vue'
 const props = defineProps({
   value: { type: Number, default: 0 },
   color: { type: String, default: null },
-  marker: { type: Number, default: null }
+  marker: { type: Number, default: null },
+  /** Track height — row-list contexts pass var(--bar-height). */
+  height: { type: String, default: 'var(--gauge-track-height)' }
 })
 
 /* Utilization semantics: higher = worse. */

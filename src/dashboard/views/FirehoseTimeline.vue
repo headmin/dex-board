@@ -272,13 +272,9 @@
         nameKey="author"
         valueKey="count"
       />
-      <PieChart
-        title="Changes by type"
-        :data="typeStats"
-        :loading="loading"
-        nameKey="type"
-        valueKey="count"
-      />
+      <ChartCard title="Changes by type" :loading="loading" :empty="!typeStats.length">
+        <BarList :data="typeStats" nameKey="type" valueKey="count" />
+      </ChartCard>
     </div>
   </div>
 </template>
@@ -287,7 +283,8 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import MetricCard from '../components/MetricCard.vue'
 import BarChart from '../components/BarChart.vue'
-import PieChart from '../components/PieChart.vue'
+import ChartCard from '../components/base/ChartCard.vue'
+import BarList from '../components/base/BarList.vue'
 import PageHeader from '../components/base/PageHeader.vue'
 import SectionHeader from '../components/base/SectionHeader.vue'
 import Tabs from '../components/base/Tabs.vue'

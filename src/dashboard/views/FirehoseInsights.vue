@@ -54,7 +54,7 @@
             <span class="ram-tier-count">{{ t.device_count }} device{{ t.device_count !== 1 ? 's' : '' }}</span>
           </div>
           <div class="ram-bar-container">
-            <GaugeBar :value="t.avg_mem_pressure_pct" :marker="t.max_mem_pressure_pct" />
+            <GaugeBar height="var(--bar-height)" :value="t.avg_mem_pressure_pct" :marker="t.max_mem_pressure_pct" />
             <div class="ram-bar-labels">
               <span class="ram-used-label">{{ t.avg_used_gb }} GB used</span>
               <span class="ram-free-label">{{ Math.round((t.avg_total_ram_gb - t.avg_used_gb) * 10) / 10 }} GB free</span>

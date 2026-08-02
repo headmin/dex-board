@@ -35,8 +35,10 @@
       </div>
       <div class="charts-row two-col">
         <section class="section">
-          <PieChart title="Signal quality distribution" :data="wifiDist" :loading="loading"
-            nameKey="signal_quality" valueKey="cnt" />
+          <ChartCard title="Signal quality distribution" :loading="loading" :empty="!wifiDist.length">
+            <DistributionStrip :data="wifiDist" nameKey="signal_quality" valueKey="cnt"
+              :order="SIGNAL_ORDER" :tones="SIGNAL_TONES" />
+          </ChartCard>
         </section>
         <section class="section connectivity-note">
           <h3>Weak-signal hosts</h3>
@@ -59,8 +61,10 @@
       </div>
       <div class="charts-row two-col">
         <section class="section">
-          <PieChart title="Network confidence" :data="vpnDist" :loading="loading"
-            nameKey="network_confidence" valueKey="device_count" />
+          <ChartCard title="Network confidence" :loading="loading" :empty="!vpnDist.length">
+            <DistributionStrip :data="vpnDist" nameKey="network_confidence" valueKey="device_count"
+              :order="NETWORK_ORDER" :tones="NETWORK_TONES" />
+          </ChartCard>
         </section>
       </div>
     </section>
@@ -71,10 +75,16 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { query } from '../services/api'
 import MetricCard from '../components/MetricCard.vue'
-import PieChart from '../components/PieChart.vue'
+import ChartCard from '../components/base/ChartCard.vue'
+import DistributionStrip from '../components/base/DistributionStrip.vue'
 import PageHeader from '../components/base/PageHeader.vue'
 import SectionHeader from '../components/base/SectionHeader.vue'
 import { useFleetFilter } from '../composables/useFleetFilter'
+
+const SIGNAL_ORDER = ['excellent', 'good', 'fair', 'weak', 'poor', 'very_weak', 'unknown']
+const SIGNAL_TONES = { excellent: 'good', good: 'soft', fair: 'fair', weak: 'elevated', poor: 'critical', very_weak: 'critical', unknown: 'neutral' }
+const NETWORK_ORDER = ['direct_connected', 'tunnel_active', 'vpn_active', 'proxy_suspected', 'disconnected', 'unknown']
+const NETWORK_TONES = { direct_connected: 'good', tunnel_active: 'info', vpn_active: 'info', proxy_suspected: 'fair', disconnected: 'critical', unknown: 'neutral' }
 
 const { filterParams } = useFleetFilter()
 const fp = () => ({ ...filterParams.value })

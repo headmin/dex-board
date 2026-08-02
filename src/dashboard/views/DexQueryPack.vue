@@ -56,13 +56,10 @@
             nameKey="device"
             valueKey="memory_pct"
           />
-          <PieChart
-            title="Uptime distribution"
-            :data="perf.uptimeDistribution"
-            :loading="loading.performance"
-            nameKey="uptime_bucket"
-            valueKey="count"
-          />
+          <ChartCard title="Uptime distribution" :loading="loading.performance" :empty="!perf.uptimeDistribution.length">
+            <DistributionStrip :data="perf.uptimeDistribution" nameKey="uptime_bucket" valueKey="count"
+              :order="UPTIME_ORDER" :tones="UPTIME_TONES" />
+          </ChartCard>
         </div>
         <DataTable
           title="Disk status by device"
@@ -109,13 +106,9 @@
             xKey="time"
             yKey="avg_mb"
           />
-          <PieChart
-            title="Process state distribution"
-            :data="proc.stateDistribution"
-            :loading="loading.processes"
-            nameKey="state"
-            valueKey="count"
-          />
+          <ChartCard title="Process state distribution" :loading="loading.processes" :empty="!proc.stateDistribution.length">
+            <BarList :data="proc.stateDistribution" nameKey="state" valueKey="count" />
+          </ChartCard>
         </div>
         <DataTable
           title="All processes (latest snapshot)"
@@ -139,20 +132,12 @@
           <MetricCard label="Hardware models" :value="hw.modelCount" :loading="loading.hardware" />
         </div>
         <div class="charts-row two-col">
-          <PieChart
-            title="Hardware model distribution"
-            :data="hw.modelDistribution"
-            :loading="loading.hardware"
-            nameKey="hardware_model"
-            valueKey="count"
-          />
-          <PieChart
-            title="OS distribution"
-            :data="hw.osDistribution"
-            :loading="loading.hardware"
-            nameKey="os"
-            valueKey="count"
-          />
+          <ChartCard title="Hardware model distribution" :loading="loading.hardware" :empty="!hw.modelDistribution.length">
+            <BarList :data="hw.modelDistribution" nameKey="hardware_model" valueKey="count" :maxRows="8" :humanize="false" />
+          </ChartCard>
+          <ChartCard title="OS distribution" :loading="loading.hardware" :empty="!hw.osDistribution.length">
+            <BarList :data="hw.osDistribution" nameKey="os" valueKey="count" :humanize="false" />
+          </ChartCard>
         </div>
         <DataTable
           title="Device inventory"
@@ -176,20 +161,12 @@
           <MetricCard label="Gatekeeper on" :value="sec.gatekeeperPct + '%'" :loading="loading.security" />
         </div>
         <div class="charts-row two-col">
-          <PieChart
-            title="Encryption status"
-            :data="sec.encryptionBreakdown"
-            :loading="loading.security"
-            nameKey="status"
-            valueKey="count"
-          />
-          <PieChart
-            title="OS version distribution"
-            :data="sec.osVersions"
-            :loading="loading.security"
-            nameKey="os_version"
-            valueKey="count"
-          />
+          <ChartCard title="Encryption status" :loading="loading.security" :empty="!sec.encryptionBreakdown.length">
+            <BarList :data="sec.encryptionBreakdown" nameKey="status" valueKey="count" :humanize="false" />
+          </ChartCard>
+          <ChartCard title="OS version distribution" :loading="loading.security" :empty="!sec.osVersions.length">
+            <BarList :data="sec.osVersions" nameKey="os_version" valueKey="count" :maxRows="8" :humanize="false" />
+          </ChartCard>
         </div>
         <DataTable
           title="Security posture by device"
@@ -232,8 +209,10 @@ import { useFleetFilter } from '../composables/useFleetFilter'
 import TimeRangeFilter from '../components/TimeRangeFilter.vue'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
-import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
+import ChartCard from '../components/base/ChartCard.vue'
+import DistributionStrip from '../components/base/DistributionStrip.vue'
+import BarList from '../components/base/BarList.vue'
 import DataTable from '../components/DataTable.vue'
 import DeviceDetail from '../components/DeviceDetail.vue'
 import DeviceCompare from '../components/DeviceCompare.vue'
@@ -241,6 +220,10 @@ import PageHeader from '../components/base/PageHeader.vue'
 import SectionHeader from '../components/base/SectionHeader.vue'
 import Tabs from '../components/base/Tabs.vue'
 import { palette, categorical } from '../composables/uiPalette'
+
+// devices.uptime_distribution buckets (best -> worst: recently rebooted -> long-running)
+const UPTIME_ORDER = ['< 1 day', '1-7 days', '7-30 days', '30+ days']
+const UPTIME_TONES = { '< 1 day': 'good', '1-7 days': 'soft', '7-30 days': 'fair', '30+ days': 'elevated' }
 
 const { timeRangeHours } = useTimeRange()
 const { filterParams } = useFleetFilter()

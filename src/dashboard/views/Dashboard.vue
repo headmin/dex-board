@@ -451,13 +451,9 @@
             nameKey="process_name"
             valueKey="avg_mb"
           />
-          <PieChart
-            title="Process distribution"
-            :data="processDistribution"
-            :loading="loading.processes"
-            nameKey="process_name"
-            valueKey="count"
-          />
+          <ChartCard title="Process distribution" :loading="loading.processes" :empty="!processDistribution.length">
+            <BarList :data="processDistribution" nameKey="process_name" valueKey="count" :maxRows="8" :humanize="false" />
+          </ChartCard>
         </div>
         <div class="charts-row two-col">
           <TimeSeriesChart
@@ -512,8 +508,9 @@ import TimeSeriesChart from '../components/TimeSeriesChart.vue'
 import MultiSeriesChart from '../components/MultiSeriesChart.vue'
 import HeatmapChart from '../components/HeatmapChart.vue'
 import SequenceChart from '../components/SequenceChart.vue'
-import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
+import ChartCard from '../components/base/ChartCard.vue'
+import BarList from '../components/base/BarList.vue'
 import DataTable from '../components/DataTable.vue'
 import DeviceDetail from '../components/DeviceDetail.vue'
 import GradeBadge from '../components/GradeBadge.vue'

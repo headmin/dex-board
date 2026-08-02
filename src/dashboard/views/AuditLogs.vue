@@ -41,13 +41,9 @@
     <!-- Charts Row -->
     <div v-if="!noData" class="charts-row two-col">
       <section class="section">
-        <PieChart
-          title="Event type breakdown"
-          :data="typeBreakdown"
-          :loading="loading.details"
-          nameKey="event_type"
-          valueKey="count"
-        />
+        <ChartCard title="Event type breakdown" :loading="loading.details" :empty="!typeBreakdown.length">
+          <BarList :data="typeBreakdown" nameKey="event_type" valueKey="count" :maxRows="8" />
+        </ChartCard>
       </section>
       <section class="section">
         <BarChart
@@ -94,8 +90,9 @@ import { palette } from '../composables/uiPalette'
 import TimeRangeFilter from '../components/TimeRangeFilter.vue'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
-import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
+import ChartCard from '../components/base/ChartCard.vue'
+import BarList from '../components/base/BarList.vue'
 import HeatmapChart from '../components/HeatmapChart.vue'
 import DataTable from '../components/DataTable.vue'
 import PageHeader from '../components/base/PageHeader.vue'

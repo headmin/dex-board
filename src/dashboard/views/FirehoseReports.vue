@@ -25,7 +25,9 @@
 
       <div class="charts-row two-col">
         <section class="section">
-          <PieChart title="Signal quality" :data="wifiDist" :loading="loading.wifi" nameKey="signal_quality" valueKey="cnt" />
+          <ChartCard title="Signal quality" :loading="loading.wifi" :empty="!wifiDist.length">
+            <DistributionStrip :data="wifiDist" nameKey="signal_quality" valueKey="cnt" :order="SIGNAL_ORDER" :tones="SIGNAL_TONES" />
+          </ChartCard>
         </section>
         <section class="section">
           <TimeSeriesChart title="Fleet RSSI trend" :data="wifiTs" :loading="loading.wifi" xKey="hour" yKey="avg_rssi" :color="palette.info" />
@@ -100,10 +102,14 @@
 
       <div class="charts-row two-col">
         <section class="section">
-          <PieChart title="Uptime distribution" :data="uptimeDist" :loading="loading.fleetd" nameKey="uptime_bucket" valueKey="device_count" />
+          <ChartCard title="Uptime distribution" :loading="loading.fleetd" :empty="!uptimeDist.length">
+            <DistributionStrip :data="uptimeDist" nameKey="uptime_bucket" valueKey="device_count" :order="UPTIME_ORDER" :tones="UPTIME_TONES" />
+          </ChartCard>
         </section>
         <section class="section">
-          <PieChart title="Version distribution" :data="versionDist" :loading="loading.fleetd" nameKey="orbit_version" valueKey="device_count" />
+          <ChartCard title="Version distribution" :loading="loading.fleetd" :empty="!versionDist.length">
+            <BarList :data="versionDist" nameKey="orbit_version" valueKey="device_count" :maxRows="8" :humanize="false" />
+          </ChartCard>
         </section>
       </div>
 
@@ -183,7 +189,9 @@
 
       <div class="charts-row two-col">
         <section class="section">
-          <PieChart title="Network confidence" :data="vpnConfDist" :loading="loading.vpn" nameKey="network_confidence" valueKey="device_count" />
+          <ChartCard title="Network confidence" :loading="loading.vpn" :empty="!vpnConfDist.length">
+            <DistributionStrip :data="vpnConfDist" nameKey="network_confidence" valueKey="device_count" :order="NETWORK_ORDER" :tones="NETWORK_TONES" />
+          </ChartCard>
         </section>
       </div>
 
@@ -205,7 +213,9 @@
 
       <div class="charts-row two-col">
         <section class="section">
-          <PieChart title="Crash severity" :data="crashSevDist" :loading="loading.crashes" nameKey="crash_severity" valueKey="crash_count" />
+          <ChartCard title="Crash severity" :loading="loading.crashes" :empty="!crashSevDist.length">
+            <DistributionStrip :data="crashSevDist" nameKey="crash_severity" valueKey="crash_count" :order="CRASH_ORDER" :tones="CRASH_TONES" />
+          </ChartCard>
         </section>
       </div>
 
@@ -227,7 +237,9 @@
 
       <div class="charts-row two-col">
         <section class="section">
-          <PieChart title="Usage tier distribution" :data="adoptionTierDist" :loading="loading.adoption" nameKey="usage_tier" valueKey="app_count" />
+          <ChartCard title="Usage tier distribution" :loading="loading.adoption" :empty="!adoptionTierDist.length">
+            <DistributionStrip :data="adoptionTierDist" nameKey="usage_tier" valueKey="app_count" :order="USAGE_ORDER" :tones="USAGE_TONES" />
+          </ChartCard>
         </section>
       </div>
 
@@ -243,8 +255,10 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { query } from '../services/api'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
-import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
+import ChartCard from '../components/base/ChartCard.vue'
+import DistributionStrip from '../components/base/DistributionStrip.vue'
+import BarList from '../components/base/BarList.vue'
 import DataTable from '../components/DataTable.vue'
 import PageHeader from '../components/base/PageHeader.vue'
 import SectionHeader from '../components/base/SectionHeader.vue'
@@ -252,6 +266,18 @@ import Tabs from '../components/base/Tabs.vue'
 import { palette } from '../composables/uiPalette'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { displayHost } from '../composables/displayName'
+
+const SIGNAL_ORDER = ['excellent', 'good', 'fair', 'weak', 'poor', 'very_weak', 'unknown']
+const SIGNAL_TONES = { excellent: 'good', good: 'soft', fair: 'fair', weak: 'elevated', poor: 'critical', very_weak: 'critical', unknown: 'neutral' }
+const NETWORK_ORDER = ['direct_connected', 'tunnel_active', 'vpn_active', 'proxy_suspected', 'disconnected', 'unknown']
+const NETWORK_TONES = { direct_connected: 'good', tunnel_active: 'info', vpn_active: 'info', proxy_suspected: 'fair', disconnected: 'critical', unknown: 'neutral' }
+const CRASH_ORDER = ['none', 'single', 'recurring', 'elevated', 'critical']
+const CRASH_TONES = { none: 'good', single: 'soft', recurring: 'fair', elevated: 'elevated', critical: 'critical' }
+const USAGE_ORDER = ['active_today', 'active_week', 'stale_30d', 'stale_90d', 'stale_90d_plus', 'never_opened']
+const USAGE_TONES = { active_today: 'good', active_week: 'soft', stale_30d: 'fair', stale_90d: 'elevated', stale_90d_plus: 'elevated', never_opened: 'critical' }
+// core.fleetd.uptime_distribution buckets (recently rebooted -> long-running)
+const UPTIME_ORDER = ['< 1h', '1h - 1d', '1d - 7d', '7d - 30d', '30d+']
+const UPTIME_TONES = { '< 1h': 'good', '1h - 1d': 'good', '1d - 7d': 'soft', '7d - 30d': 'fair', '30d+': 'elevated' }
 
 // DataTable renders row[col.key], so the raw .local-suffixed hostname leaks
 // into every "Hostname" column in this view. Mapping rows once at assignment

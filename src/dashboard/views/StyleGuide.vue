@@ -80,6 +80,22 @@
       </div>
     </ChartCard>
 
+    <!-- Distributions (donut replacements) -->
+    <ChartCard title="Distributions — DistributionStrip (ordered severity) vs BarList (categorical)">
+      <p class="section-caption" style="margin-bottom: 10px">Signal quality — ordered strip</p>
+      <DistributionStrip
+        :data="[{ q: 'excellent', n: 41 }, { q: 'good', n: 24 }, { q: 'fair', n: 18 }, { q: 'weak', n: 9 }, { q: 'very_weak', n: 3 }]"
+        nameKey="q" valueKey="n"
+        :order="['excellent', 'good', 'fair', 'weak', 'very_weak']"
+        :tones="{ excellent: 'good', good: 'soft', fair: 'fair', weak: 'elevated', very_weak: 'critical' }"
+      />
+      <p class="section-caption" style="margin: 16px 0 10px">RAM tiers — categorical bars</p>
+      <BarList
+        :data="[{ t: '16gb', n: 38 }, { t: '24gb', n: 27 }, { t: '32gb_plus', n: 14 }, { t: '8gb', n: 6 }]"
+        nameKey="t" valueKey="n"
+      />
+    </ChartCard>
+
     <!-- Score breakdown (the mockup component) -->
     <DimensionBreakdown :data="breakdownData" :loading="false" />
 
@@ -159,6 +175,8 @@ import GradeBadge from '../components/GradeBadge.vue'
 import MetricCard from '../components/MetricCard.vue'
 import DataTable from '../components/DataTable.vue'
 import DimensionBreakdown from '../components/DimensionBreakdown.vue'
+import DistributionStrip from '../components/base/DistributionStrip.vue'
+import BarList from '../components/base/BarList.vue'
 
 const inputVal = ref('')
 const searchVal = ref('')

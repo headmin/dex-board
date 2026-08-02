@@ -51,13 +51,10 @@
     <!-- Signal Quality Distribution + Wi-Fi Per Device -->
     <div class="charts-row two-col">
       <section class="section">
-        <PieChart
-          title="Signal quality distribution"
-          :data="wifiDistribution"
-          :loading="loading.wifiDistribution"
-          nameKey="signal_quality"
-          valueKey="cnt"
-        />
+        <ChartCard title="Signal quality distribution" :loading="loading.wifiDistribution" :empty="!wifiDistribution.length">
+          <DistributionStrip :data="wifiDistribution" nameKey="signal_quality" valueKey="cnt"
+            :order="SIGNAL_ORDER" :tones="SIGNAL_TONES" />
+        </ChartCard>
       </section>
       <section class="section">
         <BarChart
@@ -144,13 +141,9 @@
     <section class="section">
       <SectionHeader title="Hardware inventory" />
       <div class="charts-row two-col">
-        <PieChart
-          title="RAM tiers"
-          :data="ramTiers"
-          :loading="loading.hardware"
-          nameKey="ram_tier"
-          valueKey="device_count"
-        />
+        <ChartCard title="RAM tiers" :loading="loading.hardware" :empty="!ramTiers.length">
+          <BarList :data="ramTiers" nameKey="ram_tier" valueKey="device_count" :humanize="false" />
+        </ChartCard>
         <DataTable
           :data="hardwareRows"
           :columns="hardwareColumns"
@@ -179,8 +172,10 @@ import { ref, computed, onMounted } from 'vue'
 import { query } from '../services/api'
 import MetricCard from '../components/MetricCard.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
-import PieChart from '../components/PieChart.vue'
 import BarChart from '../components/BarChart.vue'
+import ChartCard from '../components/base/ChartCard.vue'
+import DistributionStrip from '../components/base/DistributionStrip.vue'
+import BarList from '../components/base/BarList.vue'
 import { displayHost } from '../composables/displayName'
 import DataTable from '../components/DataTable.vue'
 import PageHeader from '../components/base/PageHeader.vue'
@@ -188,6 +183,9 @@ import SectionHeader from '../components/base/SectionHeader.vue'
 import Drawer from '../components/base/Drawer.vue'
 import Badge from '../components/base/Badge.vue'
 import { palette } from '../composables/uiPalette'
+
+const SIGNAL_ORDER = ['excellent', 'good', 'fair', 'weak', 'poor', 'very_weak', 'unknown']
+const SIGNAL_TONES = { excellent: 'good', good: 'soft', fair: 'fair', weak: 'elevated', poor: 'critical', very_weak: 'critical', unknown: 'neutral' }
 
 const error = ref(null)
 
