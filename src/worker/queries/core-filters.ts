@@ -22,6 +22,9 @@ export const FILTER_PARAMS = [
   { name: 'ramTier', type: 'string' as const, required: false },
   { name: 'os', type: 'string' as const, required: false },
   { name: 'team', type: 'string' as const, required: false },
+  // Single-host scope — lets any filtered query double as a per-host lookup
+  // (e.g. the host-detail page pulling one host's 30d pressure pattern).
+  { name: 'hostId', type: 'string' as const, required: false },
 ]
 
 /**
@@ -48,6 +51,7 @@ filtered_hosts AS (
     FROM fleetd_info GROUP BY host_id
   ) fi ON hi.host_id = fi.host_id
   WHERE 1=1
+    AND if({filterHostId:String} != '', hi.host_id = {filterHostId:String}, true)
     AND if({filterSearch:String} != '',
       hi.hostname LIKE concat('%', {filterSearch:String}, '%')
       OR hi.hardware_serial LIKE concat('%', {filterSearch:String}, '%')

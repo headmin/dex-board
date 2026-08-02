@@ -74,25 +74,15 @@ const fleetBase = computed(() => props.fleetServerUrl || config.value.fleetUrl)
 // to the same host, keeping the view visually coherent.
 function openInDex() {
   searchText.value = displayHost(props.host) || props.host.host_id || ''
-  router.push({ path: '/hosts', query: { hostId: props.host.host_id } })
+  router.push(`/hosts/${props.host.host_id}`)
 }
 
-// Fleet deep-link: /hosts/manage/labels/7 is Fleet's "All hosts" label
-// context. Fleet's search is a substring match across hostname/serial/UUID,
-// so precision matters. Priority:
-//   1. hardware_serial — globally unique per Apple device, short, searchable
-//   2. host_id (osquery UUID) — globally unique, longer, also indexed by Fleet
-//   3. hostname — last-resort fallback (can collide)
-const FLEET_ALL_HOSTS_LABEL_ID = 7
+// Fleet deep-link: /hosts/manage?query=<host UUID>. The UUID is globally
+// unique and indexed by Fleet's host search, so the link resolves to exactly
+// this host; serial/hostname are only fallbacks when no UUID is present.
 const openInFleetUrl = computed(() => {
-  const q = props.host.hardware_serial || props.host.host_id || props.host.hostname || ''
-  const params = new URLSearchParams({
-    query: q,
-    page: '0',
-    order_key: 'display_name',
-    order_direction: 'asc',
-  })
-  return `${fleetBase.value}/hosts/manage/labels/${FLEET_ALL_HOSTS_LABEL_ID}?${params.toString()}`
+  const q = props.host.host_id || props.host.hardware_serial || props.host.hostname || ''
+  return `${fleetBase.value}/hosts/manage?query=${encodeURIComponent(q)}`
 })
 
 // First letter of hostname drives both avatar letter and a deterministic color

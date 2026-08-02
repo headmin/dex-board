@@ -1,60 +1,60 @@
 <template>
-  <!-- ─── Device Scores Table (with inline grade distribution) -->
+  <!-- ─── Act — hosts needing attention (design 1a briefing) ──── -->
   <section v-if="!wcMode" class="full-width">
-    <div class="chart-container">
-      <div class="device-table-header">
-        <div class="device-table-title-group">
-          <h3>Host scores ({{ filteredDeviceList.length }})</h3>
-          <div v-if="totalGraded > 0" class="mini-distribution" :title="distributionTooltip">
-            <div
-              v-for="g in ['A','B','C','D','F']"
-              :key="g"
-              class="mini-dist-segment"
-              :class="'grade-' + g"
-              :style="{ width: distributionPct(g) + '%' }"
-            >
-              <span v-if="distributionPct(g) >= 8" class="mini-dist-label">{{ g }} {{ distribution[g] || 0 }}</span>
-            </div>
-          </div>
+    <div class="act-card">
+      <div class="act-header">
+        <div v-if="totalGraded > 0" class="act-distribution" :title="distributionTooltip">
+          <div
+            v-for="g in GRADES"
+            :key="g"
+            class="act-dist-segment"
+            :style="{ width: distributionPct(g) + '%', background: gradeColor(g) }"
+          ></div>
         </div>
-        <SearchInput
-          v-model="deviceSearch"
-          class="device-search"
-          placeholder="Search hostname..."
-        />
+        <div v-if="totalGraded > 0" class="act-dist-counts">
+          <span v-for="g in GRADES" :key="g"><strong>{{ distribution[g] || 0 }}</strong> {{ g }}</span>
+        </div>
+        <div class="act-header-actions">
+          <button
+            type="button"
+            class="act-filter-chip"
+            :class="{ 'is-active': lowGradesOnly }"
+            @click="lowGradesOnly = !lowGradesOnly"
+          >Grade D or F</button>
+          <SearchInput v-model="deviceSearch" class="act-search" placeholder="Search hostname..." />
+        </div>
       </div>
+
       <SkeletonLoader v-if="loading" variant="chart" height="280px" />
-      <EmptyState v-else-if="!filteredDeviceList.length" title="No hosts match your search" small />
-      <div v-else class="device-table-wrap">
-        <table class="device-table">
+      <EmptyState v-else-if="!filteredDeviceList.length" title="No hosts match the current filter" small />
+      <div v-else class="act-table-wrap">
+        <table class="act-table">
           <thead>
             <tr>
-              <th @click="deviceSortBy('hostname')" class="sortable">Hostname {{ deviceSortIcon('hostname') }}</th>
-              <th @click="deviceSortBy('composite_score')" class="sortable">Score {{ deviceSortIcon('composite_score') }}</th>
+              <th @click="deviceSortBy('hostname')" class="sortable">Host {{ deviceSortIcon('hostname') }}</th>
+              <th>Hardware</th>
               <th @click="deviceSortBy('composite_grade')" class="sortable">Grade {{ deviceSortIcon('composite_grade') }}</th>
-              <th @click="deviceSortBy('device_health_score')" class="sortable">Health {{ deviceSortIcon('device_health_score') }}</th>
-              <th @click="deviceSortBy('software_score')" class="sortable">Software {{ deviceSortIcon('software_score') }}</th>
-              <th @click="deviceSortBy('performance_score')" class="sortable">Perf {{ deviceSortIcon('performance_score') }}</th>
-              <th @click="deviceSortBy('security_score')" class="sortable">Security {{ deviceSortIcon('security_score') }}</th>
-              <th @click="deviceSortBy('network_score')" class="sortable">Network {{ deviceSortIcon('network_score') }}</th>
+              <th @click="deviceSortBy('composite_score')" class="sortable">Score {{ deviceSortIcon('composite_score') }}</th>
+              <th>Weakest signal</th>
+              <th>Recommended action</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="d in filteredDeviceList" :key="d.host_id"
-                class="device-row-clickable"
+                class="act-row"
                 :title="`Open ${displayHost(d)} in host details`"
                 @click="$emit('inspect-host', d.host_id)">
-              <td class="device-hostname">
-                {{ displayHost(d) }}
-                <span class="device-row-cta">→</span>
-              </td>
-              <td class="device-score-cell">{{ d.composite_score }}</td>
+              <td class="act-hostname">{{ displayHost(d) }}</td>
+              <td class="act-muted">{{ hardwareLabel(d) }}</td>
               <td><GradeBadge :grade="d.composite_grade" /></td>
-              <td class="device-score-cell" :style="{ color: scoreTextColor(d.device_health_score) }">{{ d.device_health_score }}</td>
-              <td class="device-score-cell" :style="{ color: scoreTextColor(d.software_score) }">{{ d.software_score }}</td>
-              <td class="device-score-cell" :style="{ color: scoreTextColor(d.performance_score) }">{{ d.performance_score }}</td>
-              <td class="device-score-cell" :style="{ color: scoreTextColor(d.security_score) }">{{ d.security_score }}</td>
-              <td class="device-score-cell" :style="{ color: scoreTextColor(d.network_score) }">{{ d.network_score }}</td>
+              <td class="act-score">{{ d.composite_score }}</td>
+              <td class="act-muted">
+                <template v-if="weakest(d)">{{ weakest(d).label }} · {{ weakest(d).score }}</template>
+                <template v-else>—</template>
+              </td>
+              <td class="act-muted">{{ actionFor(d) }}</td>
+              <td class="act-cta">→</td>
             </tr>
           </tbody>
         </table>
@@ -79,8 +79,20 @@ import SkeletonLoader from '../base/SkeletonLoader.vue'
 import EmptyState from '../base/EmptyState.vue'
 import { displayHost } from '../../composables/displayName'
 import { useSort } from '../../composables/useSort'
-import { scoreTextColor } from '../../composables/gradeColors'
+import { gradeColor } from '../../composables/gradeColors'
+import { humanizeToken } from '../../composables/humanize'
 import { useWorkersCouncil } from '../../composables/useWorkersCouncil'
+
+const GRADES = ['A', 'B', 'C', 'D', 'F']
+
+// Weakest category → what to actually do about it. Honest, generic
+// playbook entries — procurement/MDM specifics live outside this view.
+const SIGNALS = [
+  { key: 'software_score', label: 'Software', action: 'Patch & update apps' },
+  { key: 'security_score', label: 'Security', action: 'Re-apply security profile' },
+  { key: 'performance_score', label: 'Performance', action: 'Investigate workload / RAM' },
+  { key: 'device_health_score', label: 'Device health', action: 'Hardware check (battery / RAM)' },
+]
 
 const props = defineProps({
   deviceList: { type: Array, default: () => [] },
@@ -92,8 +104,10 @@ defineEmits(['inspect-host'])
 
 const { wcMode } = useWorkersCouncil()
 
-// Device list state
 const deviceSearch = ref('')
+const lowGradesOnly = ref(false)
+
+// Act reads worst-first by default: the top of the table is the work queue.
 const {
   sortKey: deviceSortCol,
   sortAsc: deviceSortAsc,
@@ -103,6 +117,9 @@ const {
 
 const filteredDeviceList = computed(() => {
   let list = props.deviceList
+  if (lowGradesOnly.value) {
+    list = list.filter(d => d.composite_grade === 'D' || d.composite_grade === 'F')
+  }
   if (deviceSearch.value) {
     const s = deviceSearch.value.toLowerCase()
     list = list.filter(d =>
@@ -115,8 +132,33 @@ const filteredDeviceList = computed(() => {
   return deviceSortRows(list)
 })
 
+function hardwareLabel(d) {
+  const cpu = d.cpu_class ? humanizeToken(String(d.cpu_class)) : ''
+  const ram = d.ram_tier ? String(d.ram_tier).toUpperCase() : ''
+  return [cpu, ram].filter(Boolean).join(' · ') || '—'
+}
+
+function weakest(d) {
+  let worst = null
+  for (const s of SIGNALS) {
+    const v = d[s.key]
+    if (v == null || v === '') continue
+    const n = Number(v)
+    if (!worst || n < worst.score) worst = { ...s, score: n }
+  }
+  return worst
+}
+
+// Only recommend work where a signal is actually weak — a healthy host's
+// "weakest" signal at 86 doesn't need a playbook entry.
+function actionFor(d) {
+  const w = weakest(d)
+  if (!w || w.score >= 75) return '—'
+  return w.action
+}
+
 const totalGraded = computed(() =>
-  ['A','B','C','D','F'].reduce((s, g) => s + (props.distribution[g] || 0), 0)
+  GRADES.reduce((s, g) => s + (props.distribution[g] || 0), 0)
 )
 
 function distributionPct(grade) {
@@ -126,13 +168,13 @@ function distributionPct(grade) {
 }
 
 const distributionTooltip = computed(() => {
-  const parts = ['A','B','C','D','F'].map(g => `${g}: ${props.distribution[g] || 0}`)
+  const parts = GRADES.map(g => `${g}: ${props.distribution[g] || 0}`)
   return `Grade distribution — ${parts.join(', ')}`
 })
 
 function deviceSortBy(col) {
-  // hostname starts ascending; every score column starts descending
-  deviceToggleSort(col, col !== 'hostname')
+  // hostname starts ascending; score columns start ascending too (worst first)
+  deviceToggleSort(col, false)
 }
 
 function deviceSortIcon(col) {
@@ -142,162 +184,132 @@ function deviceSortIcon(col) {
 </script>
 
 <style scoped>
-.full-width {
-  width: 100%;
+.full-width { width: 100%; }
+
+.act-card {
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+  overflow: hidden;
 }
 
-/* ─── Device scores table ────────────────────── */
-.device-table-header {
+/* ─── Header: distribution strip + counts + quick filter ── */
+.act-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--pad-medium);
+  gap: 16px;
+  padding: 14px var(--pad-large);
+  border-bottom: 1px solid var(--fleet-black-10);
   flex-wrap: wrap;
-  gap: 11px;
 }
 
-.device-table-title-group {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex: 1;
-  min-width: 0;
-}
-
-.device-table-header h3 {
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  color: var(--fleet-black);
-  white-space: nowrap;
-}
-
-/* Mini stacked grade distribution (replaces the full GradeDistribution component) */
-.mini-distribution {
+.act-distribution {
   display: flex;
   height: 8px;
   border-radius: var(--radius-full);
   overflow: hidden;
   flex: 1;
-  max-width: 360px;
-  min-width: 180px;
+  max-width: 420px;
+  min-width: 200px;
 }
+.act-dist-segment { transition: width 400ms ease-out; }
 
-.mini-dist-segment {
+.act-dist-counts {
+  display: flex;
+  gap: 14px;
+  font-size: var(--font-size-sm);
+  color: var(--fleet-black-75);
+  white-space: nowrap;
+}
+.act-dist-counts strong { color: var(--fleet-black); }
+
+.act-header-actions {
+  margin-left: auto;
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: width 400ms ease-out;
-  overflow: hidden;
+  gap: 8px;
 }
 
-.mini-dist-segment.grade-A { background: var(--fleet-success); }
-.mini-dist-segment.grade-B { background: var(--status-good-soft); }
-.mini-dist-segment.grade-C { background: var(--status-fair); }
-.mini-dist-segment.grade-D { background: var(--fleet-ui-orange); }
-.mini-dist-segment.grade-F { background: var(--fleet-error); }
-
-.mini-dist-label {
-  display: none;
-  font-size: 9px;
-  font-weight: 700;
-  color: #fff;
-  white-space: nowrap;
-  padding: 0 4px;
-  letter-spacing: 0.3px;
-}
-
-.device-table-header .device-search {
-  width: 220px;
-}
-
-.device-table-wrap {
-  overflow-x: auto;
+.act-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--fleet-black-25);
+  border-radius: var(--radius-medium);
   background: var(--fleet-white);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-large);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--fleet-black-75);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--transition-base), background var(--transition-base);
+}
+.act-filter-chip.is-active {
+  border-color: var(--fleet-green);
+  background: var(--fleet-accent-green-light);
+  color: var(--fleet-green-down);
+  font-weight: 600;
+}
+.act-filter-chip:focus-visible {
+  outline: 1px solid var(--fleet-focused-outline);
+  outline-offset: 1px;
 }
 
-.device-table {
+.act-search { width: 200px; }
+
+/* ─── Table ─────────────────────────────────── */
+.act-table-wrap { overflow-x: auto; }
+
+.act-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
 }
 
-.device-table th {
+.act-table th {
   text-align: left;
   font-size: var(--font-size-sm);
-  font-weight: 700;
-  color: var(--fleet-black);
+  font-weight: 600;
+  color: var(--fleet-black-75);
   background: var(--fleet-off-white);
-  padding: 9px 13px;
+  padding: 10px 13px;
   border-bottom: 1px solid var(--fleet-black-10);
   white-space: nowrap;
   user-select: none;
 }
-.device-table th:first-child { border-top-left-radius: var(--radius-large); }
-.device-table th:last-child { border-top-right-radius: var(--radius-large); }
+.act-table th:first-child { padding-left: var(--pad-large); }
+.act-table th:last-child { padding-right: var(--pad-large); }
+.act-table th.sortable { cursor: pointer; }
+.act-table th.sortable:hover { color: var(--fleet-black); }
 
-.device-table th.sortable {
-  cursor: pointer;
-}
-
-.device-table th.sortable:hover {
-  color: var(--fleet-black);
-}
-
-.device-table td {
-  padding: 9px 13px;
-  border-bottom: 1px solid var(--fleet-black-10);
+.act-table td {
+  padding: 12px 13px;
+  border-bottom: 1px solid var(--fleet-black-5);
   color: var(--fleet-black-75);
 }
+.act-table td:first-child { padding-left: var(--pad-large); }
+.act-table td:last-child { padding-right: var(--pad-large); }
+.act-table tbody tr:last-child td { border-bottom: 0; }
 
-.device-table tbody tr:last-child td {
-  border-bottom: 0;
-}
+.act-row { cursor: pointer; transition: background var(--transition-fast); }
+.act-row:hover { background: var(--fleet-off-white); }
+.act-row:hover .act-hostname { color: var(--fleet-black); }
+.act-row:hover .act-cta { color: var(--fleet-green); }
 
-.device-table tbody tr:hover {
-  background: var(--fleet-off-white);
-}
-
-.device-row-clickable {
-  cursor: pointer;
-  transition: background var(--transition-fast);
-}
-
-.device-row-clickable:hover {
-  background: var(--fleet-off-white);
-}
-
-.device-row-clickable:hover .device-hostname {
-  color: var(--fleet-black);
-}
-
-.device-row-cta {
-  display: inline-block;
-  margin-left: 5px;
-  font-weight: 600;
+.act-hostname { font-weight: 600; color: var(--fleet-black); }
+.act-score { font-weight: 600; color: var(--fleet-black); }
+.act-muted { color: var(--fleet-black-75); }
+.act-cta {
+  text-align: right;
   color: var(--fleet-black-25);
-  transition: color var(--transition-fast), transform var(--transition-fast);
-}
-
-.device-row-clickable:hover .device-row-cta {
-  color: var(--fleet-green);
-  transform: translateX(2px);
-}
-
-.device-hostname {
-  font-weight: 700;
-  color: var(--fleet-black);
-}
-
-.device-score-cell {
   font-weight: 600;
-  text-align: left;
+  transition: color var(--transition-fast);
 }
 
-/* ─── Workers Council drill-down notice ──────── */
+/* ─── Workers Council notice ─────────────────── */
 .wc-drill-notice {
-  grid-column: 1 / -1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -309,11 +321,6 @@ function deviceSortIcon(col) {
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--status-good-text);
-  margin-top: var(--pad-medium);
 }
-
-.wc-drill-notice svg {
-  stroke: var(--status-good-text);
-  flex-shrink: 0;
-}
+.wc-drill-notice svg { stroke: var(--status-good-text); flex-shrink: 0; }
 </style>

@@ -1,16 +1,46 @@
 <template>
   <div class="firehose-timeline page-stack">
-    <PageHeader title="GitOps timeline" subtitle="Changes to fleetdm/fleet → it-and-security/" />
+    <PageHeader title="GitOps timeline" subtitle="Changes to fleetdm/fleet → it-and-security/, and what the score did after them" />
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
-    <!-- Summary -->
-    <div class="metrics-row four-col">
-      <MetricCard label="Total commits" :value="commits.length" :loading="loading" />
-      <MetricCard label="Authors" :value="uniqueAuthors" :loading="loading" />
-      <MetricCard label="Files changed" :value="uniqueFiles" :loading="loading" />
-      <MetricCard label="Latest" :value="latestDate" :loading="loading" />
-    </div>
+    <!-- ─── Answer — did shipping help? (briefing hero) ─────── -->
+    <section class="go-hero">
+      <div class="hero-block">
+        <span class="hero-eyebrow">Net score move · 30d</span>
+        <div class="hero-count-row">
+          <span v-if="netMove != null" class="hero-count" :class="netMove >= 0 ? 'hero-up' : 'hero-down'">{{ netMove >= 0 ? '+' : '−' }}{{ Math.abs(netMove).toFixed(1) }}</span>
+          <span v-else class="hero-count hero-count--muted">—</span>
+          <span class="hero-count-of">points</span>
+        </div>
+        <span class="hero-chip">{{ commits.length }} commits · {{ uniqueAuthors }} authors · {{ uniqueFiles }} files</span>
+      </div>
+      <div class="hero-narrative">
+        <p class="hero-headline">
+          <template v-if="outcome.judged === 0">
+            {{ commits.length }} changes landed<template v-if="netMove != null">; the fleet composite moved {{ netMove >= 0 ? 'up' : 'down' }} {{ Math.abs(netMove).toFixed(1) }} points over 30 days</template> — none are 7 days old yet, so per-change impact can't be judged.
+          </template>
+          <template v-else-if="outcome.worse === 0">
+            Shipping was <span class="hl-good">net positive or neutral</span> — none of the {{ outcome.judged }} judgeable changes was followed by a measurable score drop.
+          </template>
+          <template v-else>
+            <span :class="netMove != null && netMove >= 0 ? 'hl-good' : 'hl-critical'">Shipping was net {{ netMove != null && netMove >= 0 ? 'positive' : 'negative' }}</span>, but
+            <span class="hl-critical">{{ outcome.worse }} change{{ outcome.worse === 1 ? ' was' : 's were' }} followed by a score drop</span> — flagged in the chain below.
+          </template>
+        </p>
+        <p class="hero-support">Per-change impact is the fleet-composite move in the 7 days after the change landed — correlation, not attribution.</p>
+      </div>
+      <div class="hero-rail">
+        <span class="hero-eyebrow">By outcome · 7d window</span>
+        <div class="hero-rail-list">
+          <div class="hero-rail-row"><span>Score rose after</span><span class="hero-rail-count hero-up">{{ outcome.better }}</span></div>
+          <div class="hero-rail-row"><span>No measurable move</span><span class="hero-rail-count">{{ outcome.flat }}</span></div>
+          <div class="hero-rail-row" :class="{ 'hero-rail-row--bad': outcome.worse }"><span>Score fell after</span><span class="hero-rail-count" :class="{ 'hero-down': outcome.worse }">{{ outcome.worse }}</span></div>
+          <div v-if="outcome.tooRecent" class="hero-rail-row"><span>Too recent to judge</span><span class="hero-rail-count">{{ outcome.tooRecent }}</span></div>
+          <div v-if="outcome.outsideWindow" class="hero-rail-row hero-rail-row--dim"><span>Before the 30d score window</span><span class="hero-rail-count">{{ outcome.outsideWindow }}</span></div>
+        </div>
+      </div>
+    </section>
 
     <!-- Upstream Fleet-maintained app releases (from fmalibrary.com) -->
     <section v-if="fmaReleases.length" class="fma-section">
@@ -78,27 +108,6 @@
       </BaseButton>
     </div>
 
-    <!-- Background apps & daemons (running across fleet but not in adoption_gap) -->
-    <section v-if="daemons.length" class="daemons-section">
-      <SectionHeader title="Background apps &amp; daemons" :caption="daemonsCaption" />
-      <EmptyState
-        v-if="!filteredDaemons.length"
-        small
-        :title="`No background apps match &quot;${search}&quot;`"
-        info="Clear the search to see all daemons."
-      />
-      <div v-else class="daemons-grid">
-        <div v-for="d in filteredDaemons" :key="d.bundle_identifier" class="daemon-card">
-          <div class="daemon-head">
-            <span class="daemon-name">{{ d.app_name || d.bundle_identifier }}</span>
-            <span class="daemon-hosts"><strong>{{ d.hosts_running }}</strong> host{{ d.hosts_running === 1 ? '' : 's' }}</span>
-          </div>
-          <div class="daemon-bundle mono">{{ d.bundle_identifier }}</div>
-          <div class="daemon-path mono" :title="d.path">{{ d.path }}</div>
-        </div>
-      </div>
-    </section>
-
     <!-- Timeline -->
     <section class="timeline-section" id="deployment-timeline">
       <div class="timeline-controls">
@@ -134,6 +143,12 @@
               <template v-if="eventTypeFilter.releases && day.releases.length"> · {{ day.releases.length }} release{{ day.releases.length === 1 ? '' : 's' }}</template>
               <template v-if="eventTypeFilter.patches && day.patchBuckets.length"> · {{ day.patchBuckets.length }} app{{ day.patchBuckets.length === 1 ? '' : 's' }} patched ({{ day.totalPatchedHosts }} hosts)</template>
             </span>
+            <span
+              v-if="deltaAfter(day.date) != null"
+              class="day-delta"
+              :class="dayDeltaClass(day.date)"
+              :title="`Fleet composite move in the 7 days after ${day.date} — correlation, not attribution`"
+            >Δ7d {{ deltaAfter(day.date) > 0 ? '+' : deltaAfter(day.date) < 0 ? '−' : '' }}{{ Math.abs(deltaAfter(day.date)).toFixed(1) }} pts</span>
           </div>
 
           <!-- 1. Vendor releases (RSS) — first in the cause→effect reading order -->
@@ -172,6 +187,11 @@
                 <span class="commit-author">{{ c.author }}</span>
                 <span class="commit-files-count">{{ c.files.length }} file{{ c.files.length > 1 ? 's' : '' }}</span>
                 <span v-for="tag in fileTags(c.files)" :key="tag" class="file-tag" :class="tag">{{ tag }}</span>
+              </div>
+
+              <div v-if="commitRegression(c)" class="commit-regression">
+                <strong>Score fell after this change.</strong>
+                Fleet composite moved {{ commitRegression(c) }} pts in the following 7 days — correlation, not attribution; worth reviewing the change.
               </div>
 
               <div v-if="expandedSha === c.sha" class="commit-detail">
@@ -281,7 +301,6 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import MetricCard from '../components/MetricCard.vue'
 import BarChart from '../components/BarChart.vue'
 import ChartCard from '../components/base/ChartCard.vue'
 import BarList from '../components/base/BarList.vue'
@@ -309,6 +328,82 @@ const CHANGELOG_URL = 'https://raw.githubusercontent.com/headmin/fleet-gitops-ch
 const loading = ref(true)
 const error = ref(null)
 const commits = ref([])
+
+// ─── Daily fleet-composite series (asOfDaysAgo 0..29, same pattern as the
+// home hero). Powers the per-change "score after 7d" reading: the composite
+// on day+7 minus the composite on the change day. Correlation, not
+// attribution — the labels say so wherever a delta is shown.
+const dailyScore = ref({})   // 'YYYY-MM-DD' -> avg composite
+const seriesLoaded = ref(false)
+
+async function fetchDailySeries() {
+  const calls = Array.from({ length: 30 }, (_, i) =>
+    query('firehose.scores.fleet_summary', { asOfDaysAgo: i })
+      .then(rows => ({ i, score: rows?.[0]?.avg_score != null ? Number(rows[0].avg_score) : null }))
+      .catch(() => ({ i, score: null }))
+  )
+  const rows = await Promise.all(calls)
+  const map = {}
+  for (const { i, score } of rows) {
+    if (score == null) continue
+    map[dayjs().subtract(i, 'day').format('YYYY-MM-DD')] = score
+  }
+  dailyScore.value = map
+  seriesLoaded.value = true
+}
+
+/** Composite move over the 7 days AFTER the given date; null when the
+ *  window isn't complete yet or either endpoint is missing. */
+function deltaAfter(dateStr) {
+  const start = dailyScore.value[dateStr]
+  const endDate = dayjs(dateStr).add(7, 'day')
+  if (endDate.isAfter(dayjs(), 'day')) return null
+  const end = dailyScore.value[endDate.format('YYYY-MM-DD')]
+  if (start == null || end == null) return null
+  return Math.round((end - start) * 10) / 10
+}
+
+function dayDeltaClass(dateStr) {
+  const d = deltaAfter(dateStr)
+  if (d == null) return ''
+  if (d >= 0.5) return 'day-delta--up'
+  if (d <= -0.5) return 'day-delta--down'
+  return 'day-delta--flat'
+}
+
+function commitRegression(c) {
+  const d = deltaAfter(String(c.timestamp).split('T')[0])
+  return d != null && d <= -1 ? d.toFixed(1) : null
+}
+
+// Net 30d move = newest series point minus oldest available point.
+const netMove = computed(() => {
+  const dates = Object.keys(dailyScore.value).sort()
+  if (dates.length < 2) return null
+  const first = dailyScore.value[dates[0]]
+  const last = dailyScore.value[dates[dates.length - 1]]
+  return Math.round((last - first) * 10) / 10
+})
+
+// Outcome buckets across commits (each judged by its 7d-after window).
+// "Too recent" = the 7-day window hasn't closed; "outside window" = the
+// commit predates the 30-day score series — two different kinds of unknown.
+const outcome = computed(() => {
+  let better = 0, flat = 0, worse = 0, tooRecent = 0, outsideWindow = 0
+  for (const c of commits.value) {
+    const dateStr = String(c.timestamp).split('T')[0]
+    const d = deltaAfter(dateStr)
+    if (d == null) {
+      if (dayjs(dateStr).add(7, 'day').isAfter(dayjs(), 'day')) tooRecent++
+      else outsideWindow++
+      continue
+    }
+    if (d >= 0.5) better++
+    else if (d <= -0.5) worse++
+    else flat++
+  }
+  return { better, flat, worse, tooRecent, outsideWindow, judged: better + flat + worse }
+})
 const search = ref('')
 const authorFilter = ref('')
 const fileTypeFilter = ref('')
@@ -718,38 +813,6 @@ function applyHash() {
   }, 80)
 }
 
-// ─── Background apps & daemons inventory ───────────────────
-// Source: running_apps minus what adoption_gap covers. Surfaces system
-// daemons (Santa, Fleet Desktop, browser helpers, security agents) that
-// the user-facing app-adoption pack misses because they have no
-// last_opened_time. No version data — running_apps doesn't carry it.
-const daemons = ref([])
-
-async function loadDaemons() {
-  try {
-    const rows = await query('firehose.apps.daemon_inventory', { limit: 60, minHosts: 2 })
-    daemons.value = rows || []
-  } catch {
-    daemons.value = []
-  }
-}
-
-const filteredDaemons = computed(() => {
-  if (!search.value) return daemons.value
-  const s = search.value.toLowerCase()
-  return daemons.value.filter(d =>
-    (d.app_name || '').toLowerCase().includes(s) ||
-    (d.bundle_identifier || '').toLowerCase().includes(s) ||
-    (d.path || '').toLowerCase().includes(s)
-  )
-})
-
-const daemonsCaption = computed(() => {
-  let cap = `System services, helpers, security agents — running on the fleet but not tracked by app-adoption · showing ${filteredDaemons.value.length} of ${daemons.value.length}`
-  if (search.value) cap += ` (filter: "${search.value}")`
-  return cap
-})
-
 // ─── Copy current view as Markdown ─────────────────────────
 const copied = ref(false)
 let copiedTimer = null
@@ -864,8 +927,8 @@ async function copyMarkdownExport() {
 
 onMounted(async () => {
   fetchChangelog()
+  fetchDailySeries()
   loadPatchBuckets()
-  loadDaemons()
   await fetchFmaReleases()
   // fmaReleases now populated → eager-load counts for the top slice
   eagerLoadFmaCounts()
@@ -883,7 +946,7 @@ onMounted(async () => {
 .firehose-timeline { max-width: 1280px; margin: 0 auto; padding: var(--pad-xlarge); }
 
 /* Sections stack their own children */
-.fma-section, .daemons-section, .timeline-section { display: flex; flex-direction: column; gap: 12px; }
+.fma-section, .timeline-section { display: flex; flex-direction: column; gap: 12px; }
 
 /* ── Filter bar ── */
 .filter-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -896,15 +959,6 @@ onMounted(async () => {
   color: var(--status-good-text);
 }
 
-/* ── Background apps & daemons ── */
-.daemons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
-.daemon-card { padding: 10px 12px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); background: var(--fleet-white); transition: border-color var(--transition-fast); }
-.daemon-card:hover { border-color: var(--fleet-black-50); }
-.daemon-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.daemon-name { font-weight: 600; color: var(--fleet-black); font-size: var(--font-size-sm); }
-.daemon-hosts { font-size: var(--font-size-sm); color: var(--fleet-black-75); white-space: nowrap; }
-.daemon-bundle { font-size: 11px; color: var(--fleet-black-50); margin-top: 4px; word-break: break-all; }
-.daemon-path { font-size: 10px; color: var(--fleet-black-33); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ── Timeline rail (day dots keep the blue chart-identity accent) ── */
 .timeline { position: relative; padding-left: 24px; }
@@ -1031,5 +1085,96 @@ onMounted(async () => {
 @media (max-width: 900px) {
   .patch-bucket-row { grid-template-columns: 16px auto 1fr auto; }
   .patch-bucket-versions, .patch-bucket-transitions, .patch-bucket-lag { display: none; }
+}
+/* ─── Briefing hero (4a chain) ─────────────────── */
+.go-hero {
+  background: var(--fleet-black);
+  border-radius: var(--radius-xlarge);
+  padding: var(--pad-xlarge) 32px;
+  display: grid;
+  grid-template-columns: 280px 1fr 300px;
+  gap: 40px;
+  align-items: center;
+  color: var(--fleet-white);
+}
+
+.hero-eyebrow {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--fleet-black-50);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.hero-block { display: flex; flex-direction: column; gap: 8px; }
+.hero-count-row { display: flex; align-items: baseline; gap: 12px; }
+.hero-count { font-size: 56px; font-weight: 700; line-height: 0.9; }
+.hero-count--muted { color: var(--fleet-black-50); }
+.hero-count-of { font-size: 15px; color: var(--fleet-black-33); }
+.hero-up { color: var(--status-good-soft); }
+.hero-down { color: #ff9a9a; }
+.hero-chip {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px 9px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--fleet-black-10);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.go-hero .hero-narrative {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 1px solid var(--fleet-blue);
+  padding-left: 40px;
+}
+.hero-headline { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.35; text-wrap: pretty; }
+.hl-good { color: var(--status-good-soft); }
+.hl-critical { color: #ff9a9a; }
+.hero-support { margin: 0; font-size: var(--font-size-base); line-height: 1.6; color: var(--fleet-black-33); text-wrap: pretty; }
+
+.hero-rail { display: flex; flex-direction: column; gap: 10px; }
+.hero-rail-list { display: flex; flex-direction: column; gap: 8px; }
+.hero-rail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-medium);
+  font-size: var(--font-size-base);
+}
+.hero-rail-row--bad { background: rgba(235, 67, 67, 0.16); }
+.hero-rail-row--dim { opacity: 0.6; }
+.hero-rail-count { font-family: var(--font-mono); font-weight: 700; }
+
+/* ─── Per-day / per-commit score deltas ────────── */
+.day-delta {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+}
+.day-delta--up { color: var(--status-good); }
+.day-delta--down { color: var(--status-critical); }
+.day-delta--flat { color: var(--fleet-black-50); }
+
+.commit-regression {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--status-critical-bg);
+  border-radius: var(--radius-medium);
+  font-size: var(--font-size-sm);
+  color: var(--fleet-black-75);
+  text-wrap: pretty;
+}
+.commit-regression strong { color: var(--status-critical-text); }
+
+@media (max-width: 1100px) {
+  .go-hero { grid-template-columns: 1fr; gap: 20px; }
+  .go-hero .hero-narrative { border-left: none; padding-left: 0; }
 }
 </style>

@@ -20,7 +20,7 @@
               {{ mover.delta > 0 ? '+' : '' }}{{ mover.delta.toFixed(0) }}pt
             </span>
             <router-link
-              :to="{ path: '/hosts', query: { hostId: mover.host_identifier, focus: 'movers' } }"
+              :to="`/hosts/${mover.host_identifier}`"
               class="mover-inspect-link"
               :title="`Open ${displayHost(mover)} in host details`"
               @click.stop
@@ -55,7 +55,7 @@
                  give them an obvious "now take me to that host" exit. -->
             <div class="mover-detail-footer">
               <router-link
-                :to="{ path: '/hosts', query: { hostId: expandedId, focus: 'movers' } }"
+                :to="`/hosts/${expandedId}`"
                 custom
                 v-slot="{ navigate }"
               >

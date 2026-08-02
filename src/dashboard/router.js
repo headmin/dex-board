@@ -2,12 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router'
 import ExperienceScore from './views/ExperienceScore.vue'
 import Analytics from './views/Analytics.vue'
 import Hosts from './views/Hosts.vue'
+import HostDetail from './views/HostDetail.vue'
 import Insights from './views/Insights.vue'
 import GitOps from './views/GitOps.vue'
 import AuditLogs from './views/AuditLogs.vue'
 import StyleGuide from './views/StyleGuide.vue'
 import Lifecycle from './views/Lifecycle.vue'
-import SoftwareWaste from './views/SoftwareWaste.vue'
+import SoftwareUsage from './views/SoftwareUsage.vue'
 import Connectivity from './views/Connectivity.vue'
 
 // Nav order tells the decision-maker story:
@@ -16,9 +17,11 @@ const routes = [
   { path: '/', name: 'Experience score', component: ExperienceScore },
   { path: '/analytics', name: 'Analytics', component: Analytics },
   { path: '/hosts', name: 'Hosts', component: Hosts },
+  { path: '/hosts/:hostId', name: 'Host detail', component: HostDetail },
   { path: '/insights', name: 'Insights', component: Insights },
   { path: '/lifecycle', name: 'Lifecycle', component: Lifecycle },
-  { path: '/software-waste', name: 'Software waste', component: SoftwareWaste },
+  { path: '/software-usage', name: 'Software usage', component: SoftwareUsage },
+  { path: '/software-waste', redirect: '/software-usage' },
   { path: '/gitops', name: 'GitOps timeline', component: GitOps },
   { path: '/connectivity', name: 'Connectivity', component: Connectivity },
   { path: '/audit', name: 'Audit log', component: AuditLogs },

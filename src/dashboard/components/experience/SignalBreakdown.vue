@@ -1,15 +1,23 @@
 <template>
-  <!-- ─── Signal Breakdown (appears when category card clicked) ── -->
+  <!-- ─── Why (expanded) — signal panel (design 1a briefing) ──── -->
   <section v-if="expandedCategory" class="signal-breakdown">
-    <div class="chart-container">
+    <div class="breakdown-card">
       <div class="breakdown-header">
-        <h3>{{ expandedCategoryLabel }} — Signal Breakdown</h3>
-        <div class="breakdown-actions">
-          <BaseButton size="small" @click="$emit('update:showMethodology', !showMethodology)">
-            {{ showMethodology ? 'Hide' : 'How is this scored?' }}
-          </BaseButton>
-          <BaseButton size="small" @click="$emit('close')">Close</BaseButton>
+        <div class="breakdown-title-group">
+          <h3 class="breakdown-title">
+            {{ expandedCategoryLabel }}<template v-if="category && category.score != null"> ·
+            <span :style="{ color: gradeColor(category.grade) }">{{ category.grade }}</span> {{ category.score }}</template>
+          </h3>
+          <span class="breakdown-count">{{ activeSignals.length }} signal{{ activeSignals.length === 1 ? '' : 's' }}, weighted</span>
+          <button type="button" class="method-link" @click="$emit('update:showMethodology', !showMethodology)">
+            {{ showMethodology ? 'Hide methodology' : 'How is this scored?' }}
+          </button>
         </div>
+        <IconButton label="Close" size="small" @click="$emit('close')">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </IconButton>
       </div>
 
       <!-- Methodology info popup -->
@@ -32,27 +40,38 @@
         </div>
       </div>
 
-      <div class="signal-list">
-        <div v-for="sig in signals" :key="sig.name" class="signal-row" :class="{ 'signal-row--inactive': sig.inactive }">
-          <div class="signal-info">
+      <div class="signal-grid">
+        <div v-for="sig in signals" :key="sig.name" class="signal-cell" :class="{ 'signal-cell--inactive': sig.inactive }">
+          <div class="signal-cell-head">
             <span class="signal-name">
               {{ sig.name }}
-              <Badge v-if="sig.type" class="signal-type-badge" :tone="sig.type === 'config' ? 'info' : 'good'" :label="sig.type === 'config' ? 'config' : 'time'" />
               <Badge v-if="sig.inactive" class="signal-status-badge" tone="fair" label="paused" />
             </span>
-            <span class="signal-weight">{{ (sig.weight * 100).toFixed(0) }}% weight</span>
-            <span v-if="sig.detail" class="signal-detail">{{ sig.detail }}</span>
+            <span class="signal-score" :style="{ color: sig.inactive ? 'var(--fleet-black-33)' : signalBarColor(sig.score) }">{{ sig.inactive ? '—' : sig.score.toFixed(0) }}</span>
           </div>
-          <div class="signal-bar-track">
+          <div class="signal-meter">
             <div
               v-if="!sig.inactive"
-              class="signal-bar-fill"
+              class="signal-meter-fill"
               :style="{ width: sig.score + '%', backgroundColor: signalBarColor(sig.score) }"
             ></div>
-            <div v-else class="signal-bar-empty">no data</div>
           </div>
-          <span class="signal-score">{{ sig.inactive ? '—' : sig.score.toFixed(0) }}</span>
+          <span class="signal-caption">
+            {{ sig.detail || `${(sig.weight * 100).toFixed(0)}% weight` }}<template v-if="sig.detail"> · {{ (sig.weight * 100).toFixed(0) }}% weight</template>
+          </span>
         </div>
+      </div>
+
+      <!-- Weakest signal = the biggest single lever. Data-derived, no copy. -->
+      <div v-if="weakestSignal" class="lever-callout">
+        <span class="lever-text">
+          <strong>Biggest single lever:</strong>
+          {{ expandedCategoryLabel }} loses most points to
+          {{ weakestSignal.name.toLowerCase() }} ({{ weakestSignal.score.toFixed(0) }}/100 at {{ (weakestSignal.weight * 100).toFixed(0) }}% weight)<template v-if="weakestSignal.detail"> — {{ weakestSignal.detail }}</template>.
+        </span>
+        <router-link to="/hosts" custom v-slot="{ navigate }">
+          <BaseButton variant="secondary" size="small" @click="navigate">View hosts</BaseButton>
+        </router-link>
       </div>
 
       <!-- ─── Software Detail: Patch Velocity + Usage Tables ──── -->
@@ -62,23 +81,36 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import BaseButton from '../base/BaseButton.vue'
+import IconButton from '../base/IconButton.vue'
 import Badge from '../base/Badge.vue'
 import { palette } from '../../composables/uiPalette'
+import { gradeColor } from '../../composables/gradeColors'
 
-defineProps({
+const props = defineProps({
   expandedCategory: { type: String, default: null },
   expandedCategoryLabel: { type: String, default: '' },
+  /** The expanded category object ({ grade, score }) for the panel title. */
+  category: { type: Object, default: null },
   signals: { type: Array, default: () => [] },
   showMethodology: { type: Boolean, default: false },
 })
 
 defineEmits(['update:showMethodology', 'close'])
 
-// Mockup convention for BAR FILLS (score breakdown): the good band is brand
-// green — never navy. Green -> gold -> orange -> red on the canonical scale.
-// NOT gradeColors.scoreBandColor: that splits the green band (soft green for
-// 75–89, full green only at 90+), while these bars stay full green from 75 up.
+const activeSignals = computed(() => props.signals.filter(s => !s.inactive))
+
+// Lowest score × meaningful weight = where the points are actually going.
+const weakestSignal = computed(() => {
+  const active = activeSignals.value.filter(s => s.score != null)
+  if (!active.length) return null
+  const worst = active.reduce((a, b) => (b.score < a.score ? b : a))
+  return worst.score < 75 ? worst : null
+})
+
+// Mockup convention for BAR FILLS: green -> gold -> orange -> red on the
+// canonical scale (full green from 75 up — not scoreBandColor's split band).
 function signalBarColor(score) {
   if (score >= 75) return palette.good
   if (score >= 60) return palette.fair
@@ -88,33 +120,54 @@ function signalBarColor(score) {
 </script>
 
 <style scoped>
-/* ─── Signal breakdown ────────────────────────── */
-.signal-breakdown .chart-container {
+/* Expanded panel echoes the expanded card: 2px ink border */
+.breakdown-card {
   background: var(--fleet-white);
-  border: 1px solid var(--fleet-black-10);
+  border: 2px solid var(--fleet-black);
   border-radius: var(--radius-large);
-  padding: var(--pad-large);
-  box-shadow: var(--box-shadow);
+  padding: var(--pad-large) var(--pad-xlarge);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .breakdown-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--pad-medium);
 }
 
-.breakdown-header h3 {
-  font-size: var(--font-size-sm);
+.breakdown-title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.breakdown-title {
+  margin: 0;
+  font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--fleet-black);
 }
 
-.breakdown-actions {
-  display: flex;
-  align-items: center;
-  gap: 7px;
+.breakdown-count {
+  font-size: var(--font-size-sm);
+  color: var(--fleet-black-50);
 }
+
+.method-link {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--fleet-black-75);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.method-link:hover { color: var(--fleet-black); }
 
 /* ─── Methodology info box ────────────────────── */
 .methodology-box {
@@ -122,7 +175,6 @@ function signalBarColor(score) {
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
   padding: var(--pad-medium);
-  margin-bottom: var(--pad-medium);
 }
 
 .method-content p {
@@ -131,117 +183,75 @@ function signalBarColor(score) {
   line-height: 1.5;
   margin: 0 0 7px 0;
 }
+.method-content p:last-child { margin-bottom: 0; }
+.method-content strong { color: var(--fleet-black); }
 
-.method-content p:last-child {
-  margin-bottom: 0;
+/* ─── Signal grid: one cell per signal ────────── */
+.signal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 20px;
 }
 
-.method-content strong {
-  color: var(--fleet-black);
-}
-
-.signal-list {
+.signal-cell {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 8px;
 }
+.signal-cell--inactive { opacity: 0.55; }
 
-.signal-row {
+.signal-cell-head {
   display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.signal-info {
-  width: 280px;
-  min-width: 280px;
-  flex-shrink: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .signal-name {
-  display: block;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--fleet-black);
-}
-
-.signal-weight {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   font-weight: 500;
   color: var(--fleet-black-75);
 }
 
-/* Score bars (comparative, per the Score-breakdown mockup): thin trackless
-   pills — the color stops at the value. Gauges keep tracks; these don't. */
-.signal-bar-track {
-  flex: 1;
-  height: var(--bar-height);
-  background: var(--fleet-black-10);
+.signal-score {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.signal-meter {
+  height: 6px;
+  background: var(--fleet-black-5);
   border-radius: var(--radius-full);
   overflow: hidden;
 }
-
-.signal-bar-fill {
+.signal-meter-fill {
   height: 100%;
-  border-radius: var(--radius);
   transition: width 400ms ease-out;
 }
 
-.signal-detail {
-  display: block;
-  font-size: 10px;
-  color: var(--fleet-black-33);
-  font-style: italic;
+.signal-caption {
+  font-size: var(--font-size-xxsmall);
+  color: var(--fleet-black-50);
 }
 
-.signal-score {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--fleet-black);
-  min-width: 32px;
-  text-align: right;
-}
+.signal-status-badge { margin-left: 4px; vertical-align: middle; }
 
-.signal-row--inactive {
-  opacity: 0.55;
-}
-
-.signal-row--inactive .signal-score {
-  color: var(--fleet-black-33);
-}
-
-.signal-bar-empty {
+/* ─── Lever callout ───────────────────────────── */
+.lever-callout {
   display: flex;
   align-items: center;
-  justify-content: center;
-  height: 100%;
-  font-size: 10px;
-  color: var(--fleet-black-33);
-  font-style: italic;
-  /* the track itself is transparent (score bars are trackless) — paused rows
-     get their own soft strip so "no data" doesn't float in whitespace */
-  background: var(--fleet-black-5);
-  border-radius: var(--radius-full);
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--fleet-off-white);
+  border-radius: var(--radius-medium);
 }
 
-.signal-name .signal-type-badge {
-  margin-left: 5px;
-  vertical-align: middle;
+.lever-text {
+  font-size: var(--font-size-base);
+  color: var(--fleet-black-75);
+  text-wrap: pretty;
 }
+.lever-text strong { color: var(--fleet-black); }
 
-.signal-name .signal-status-badge {
-  margin-left: 4px;
-  vertical-align: middle;
-}
-
-/* ─── Responsive ──────────────────────────────── */
-@media (max-width: 768px) {
-  .signal-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .signal-info {
-    min-width: 0;
-  }
-}
+.lever-callout > :last-child { margin-left: auto; flex-shrink: 0; }
 </style>

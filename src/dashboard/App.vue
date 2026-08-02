@@ -60,12 +60,12 @@
               </svg>
               Lifecycle
             </router-link>
-            <router-link to="/software-waste" class="nav-item" active-class="active">
+            <router-link to="/software-usage" class="nav-item" active-class="active">
               <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M5 6h10l-1 11H6L5 6z"/>
                 <path d="M8 6V4h4v2"/>
               </svg>
-              Software waste
+              Software usage
             </router-link>
           </div>
 
@@ -321,11 +321,13 @@ a:not([class]):hover { color: var(--link-color-hover); }
 
 .nav-section-label {
   display: block;
-  padding: var(--pad-small) var(--pad-small);
+  padding: var(--pad-small) var(--pad-small) 4px;
   font-family: var(--font-body);
-  font-size: var(--font-size-xsmall);
+  font-size: var(--font-size-xxsmall);
   font-weight: 600;
   color: var(--fleet-black-50);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
   margin-bottom: 2px;
 }
 
@@ -350,9 +352,10 @@ a:not([class]):hover { color: var(--link-color-hover); }
 }
 
 .nav-item.active {
-  color: var(--fleet-green);
-  background: var(--sidebar-active-bg);
-  font-weight: 700;
+  color: var(--fleet-white);
+  background: var(--fleet-green);
+  font-weight: 600;
+  border-radius: var(--radius-medium);
 }
 
 .nav-icon {
@@ -364,7 +367,7 @@ a:not([class]):hover { color: var(--link-color-hover); }
 
 .nav-item.active .nav-icon {
   opacity: 1;
-  stroke: var(--fleet-green);
+  stroke: var(--fleet-white);
 }
 
 .sidebar-footer {

@@ -14,20 +14,41 @@
       Once actions occur (login, policy changes, query edits), data will appear here.
     </div>
 
-    <!-- Overview Metrics -->
-    <section class="section">
-      <SectionHeader title="Activity overview" />
-      <div class="metrics-row four-col">
-        <MetricCard label="Total events" :value="overview.totalEvents" :loading="loading.overview" />
-        <MetricCard label="Unique users" :value="overview.uniqueUsers" :loading="loading.overview" />
-        <MetricCard label="Event types" :value="overview.eventTypes" :loading="loading.overview" />
-        <MetricCard label="Peak hour events" :value="overview.peakHourEvents" :loading="loading.overview" />
+    <!-- ─── Answer — the accountability hero ────────────────── -->
+    <section v-if="!noData" class="au-hero">
+      <div class="hero-block">
+        <span class="hero-eyebrow">Admin events · window</span>
+        <div class="hero-count-row">
+          <span class="hero-count">{{ overview.totalEvents.toLocaleString() }}</span>
+          <span class="hero-count-of">{{ overview.uniqueUsers }} user{{ overview.uniqueUsers === 1 ? '' : 's' }}</span>
+        </div>
+        <span class="hero-chip">{{ overview.eventTypes }} event type{{ overview.eventTypes === 1 ? '' : 's' }} · peak {{ overview.peakHourEvents }}/h</span>
+      </div>
+      <div class="hero-narrative">
+        <p class="hero-headline">
+          Every admin action in Fleet is on this page —
+          <template v-if="topActor"><span class="hl-good">{{ topActor.share }}%</span> of activity comes from {{ topActor.user_email }}<template v-if="topType"> and the most common action is {{ topTypeLabel }}</template>.</template>
+          <template v-else>who did what, and when.</template>
+        </p>
+        <p class="hero-support">Audit covers admin activity in the Fleet UI/API — not end-user behavior. Host telemetry never appears here.</p>
+      </div>
+      <div class="hero-rail">
+        <span class="hero-eyebrow">Most active users</span>
+        <div v-if="topUsers.length" class="hero-rail-list">
+          <div v-for="u in topUsers.slice(0, 3)" :key="u.user_email" class="hero-rail-row">
+            <span class="hero-rail-label">{{ u.user_email }}</span>
+            <span class="hero-rail-count">{{ u.count }}</span>
+          </div>
+        </div>
+        <span v-else class="hero-rail-empty">—</span>
       </div>
     </section>
 
     <!-- Activity Timeline -->
     <section v-if="!noData" class="section">
-      <SectionHeader title="Activity timeline" />
+      <div class="grammar-head">
+        <h2 class="grammar-title">Why — when the activity happened</h2>
+      </div>
       <TimeSeriesChart
         title="Events per hour"
         :data="timeline"
@@ -72,8 +93,10 @@
 
     <!-- Recent Events Table -->
     <section v-if="!noData" class="section">
+      <div class="grammar-head">
+        <h2 class="grammar-title">Act — the event trail</h2>
+      </div>
       <DataTable
-        title="Recent events"
         :data="recentEvents"
         :columns="eventColumns"
         :loading="loading.details"
@@ -128,6 +151,18 @@ const heatmapMax = ref(10)
 const recentEvents = ref([])
 
 const noData = computed(() => !loading.value.overview && overview.value.totalEvents === 0)
+
+// Hero facts — top actor share and most common event type, all queried.
+const topActor = computed(() => {
+  const u = topUsers.value[0]
+  const total = Number(overview.value.totalEvents) || 0
+  if (!u || !total) return null
+  return { ...u, share: Math.round((Number(u.count) / total) * 100) }
+})
+const topType = computed(() => typeBreakdown.value[0] || null)
+const topTypeLabel = computed(() =>
+  topType.value ? String(topType.value.event_type).replace(/_/g, ' ') : ''
+)
 
 // ===================== Fetch Functions =====================
 
@@ -252,5 +287,41 @@ onMounted(() => fetchAll())
   display: flex;
   flex-direction: column;
   gap: var(--pad-medium);
+}
+
+/* ─── Briefing hero ────────────────────────────── */
+.au-hero {
+  background: var(--fleet-black);
+  border-radius: var(--radius-xlarge);
+  padding: var(--pad-xlarge) 32px;
+  display: grid;
+  grid-template-columns: 280px 1fr 300px;
+  gap: 40px;
+  align-items: center;
+  color: var(--fleet-white);
+}
+.hero-eyebrow { font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black-50); letter-spacing: 0.4px; text-transform: uppercase; }
+.hero-block { display: flex; flex-direction: column; gap: 8px; }
+.hero-count-row { display: flex; align-items: baseline; gap: 12px; }
+.hero-count { font-size: 56px; font-weight: 700; line-height: 0.9; }
+.hero-count-of { font-size: 15px; color: var(--fleet-black-33); }
+.hero-chip { display: inline-flex; align-self: flex-start; padding: 3px 9px; border-radius: var(--radius); background: rgba(255,255,255,0.1); color: var(--fleet-black-10); font-size: var(--font-size-sm); font-weight: 600; }
+.hero-narrative { display: flex; flex-direction: column; gap: 12px; border-left: 1px solid var(--fleet-blue); padding-left: 40px; }
+.hero-headline { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.35; text-wrap: pretty; }
+.hl-good { color: var(--status-good-soft); }
+.hero-support { margin: 0; font-size: var(--font-size-base); line-height: 1.6; color: var(--fleet-black-33); text-wrap: pretty; }
+.hero-rail { display: flex; flex-direction: column; gap: 10px; }
+.hero-rail-list { display: flex; flex-direction: column; gap: 8px; }
+.hero-rail-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: rgba(255,255,255,0.06); border-radius: var(--radius-medium); font-size: var(--font-size-base); }
+.hero-rail-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hero-rail-count { font-family: var(--font-mono); font-weight: 700; }
+.hero-rail-empty { font-size: var(--font-size-sm); color: var(--fleet-black-50); font-style: italic; }
+
+.grammar-head { display: flex; align-items: baseline; justify-content: space-between; }
+.grammar-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--fleet-black); }
+
+@media (max-width: 1100px) {
+  .au-hero { grid-template-columns: 1fr; gap: 20px; }
+  .hero-narrative { border-left: none; padding-left: 0; }
 }
 </style>

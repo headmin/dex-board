@@ -107,6 +107,9 @@ export function buildFilters(params: Record<string, string | number>): FilterRes
   if (!queryParams.filterRamTier) queryParams.filterRamTier = params.ramTier || ''
   if (!queryParams.filterOs) queryParams.filterOs = params.os || ''
   if (!queryParams.filterTeam) queryParams.filterTeam = params.team || ''
+  // filterHostId too: list queries use `if({filterHostId:String} != '', …)`
+  // to double as single-host lookups — unbound, ClickHouse rejects the query.
+  if (!queryParams.filterHostId) queryParams.filterHostId = params.hostId || params.hostIdentifier || ''
 
   // Limit — parameterized
   if (params.limit) {

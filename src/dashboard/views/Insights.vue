@@ -1,674 +1,719 @@
 <template>
-  <div class="dashboard page-stack">
-    <PageHeader title="Insights" subtitle="Memory pressure, agent overhead, risk signals" />
+  <div class="insights-page page-stack">
+    <!-- ─── Header ──────────────────────────────────────────── -->
+    <div class="in-header">
+      <div>
+        <h1 class="in-title">Insights</h1>
+        <div class="in-page-subtitle">Findings the telemetry supports — every claim carries its evidence and its population</div>
+      </div>
+    </div>
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
-    <!-- Fleet Summary -->
-    <section class="section">
-      <SectionHeader title="Fleet summary" />
-      <div class="metrics-row four-col">
-        <MetricCard label="Hosts reporting pressure" :value="summary.total_devices" :loading="loading" />
-        <MetricCard label="Avg memory pressure" :value="summary.avg_mem_pressure_pct" unit="%" :loading="loading" />
-        <MetricCard label="High pressure (>50%)" :value="summary.high_pressure_devices" :loading="loading" />
-        <MetricCard label="Critical (>70%)" :value="summary.critical_pressure_devices" :loading="loading" />
+    <!-- ─── Answer — what's on the table ────────────────────── -->
+    <section class="in-hero">
+      <div class="hero-block">
+        <span class="hero-eyebrow">Open findings</span>
+        <div class="hero-count-row">
+          <span class="hero-count">{{ findings.length }}</span>
+          <span class="hero-count-of">{{ totalPopulation }} host-signals affected</span>
+        </div>
+        <span v-if="configCount" class="hero-chip">{{ configCount }} of {{ findings.length }} are config or policy — no hardware spend</span>
+      </div>
+      <div class="hero-narrative">
+        <p class="hero-headline">
+          <template v-if="findings.length">
+            <template v-if="configCount === findings.length">Every open finding is <span class="hl-good">configuration or policy, not hardware</span> — they cost nothing but a change window.</template>
+            <template v-else-if="configCount">{{ configCount }} of {{ findings.length }} findings are <span class="hl-good">configuration or policy, not hardware</span> — they cost nothing but a change window.</template>
+            <template v-else>The open findings need investigation or spend — none is a pure config fix.</template>
+          </template>
+          <template v-else>No findings pass their evidence thresholds right now — the telemetry doesn't support a claim.</template>
+        </p>
+        <p v-if="overlapNote" class="hero-support">{{ overlapNote }}</p>
+      </div>
+      <div class="hero-rail">
+        <span class="hero-eyebrow">Largest populations</span>
+        <div v-if="railRows.length" class="hero-rail-list">
+          <div v-for="r in railRows" :key="r.id" class="hero-rail-row">
+            <span class="hero-rail-label">{{ r.short }}</span>
+            <span class="hero-rail-count">{{ r.population }}</span>
+          </div>
+        </div>
+        <span v-else class="hero-rail-empty">—</span>
       </div>
     </section>
 
-    <!-- Architecture Comparison -->
-    <section class="section">
-      <SectionHeader title="Architecture comparison" />
-      <div class="arch-cards">
-        <div v-for="a in archData" :key="a.arch" class="arch-card">
-          <div class="arch-name">{{ a.arch }}</div>
-          <div class="arch-stat-row">
-            <div class="arch-stat">
-              <span class="stat-value">{{ a.device_count }}</span>
-              <span class="stat-label">hosts</span>
+    <!-- ─── Why — the findings and their evidence ───────────── -->
+    <section class="grammar-section" id="findings">
+      <div class="grammar-head">
+        <h2 class="grammar-title">Why — the findings and their evidence</h2>
+        <div class="in-filters">
+          <button type="button" class="in-filter" :class="{ 'is-active': categoryFilter === null }" @click="categoryFilter = null">All {{ findings.length }}</button>
+          <button
+            v-for="c in categoryCounts"
+            :key="c.key"
+            type="button"
+            class="in-filter"
+            :class="{ 'is-active': categoryFilter === c.key }"
+            @click="categoryFilter = categoryFilter === c.key ? null : c.key"
+          >{{ c.label }} {{ c.count }}</button>
+        </div>
+      </div>
+
+      <div v-if="loading" class="in-loading">Analyzing telemetry…</div>
+      <EmptyState v-else-if="!visibleFindings.length" small title="No findings pass their evidence thresholds in this window." />
+
+      <div
+        v-for="f in visibleFindings"
+        :key="f.id"
+        class="finding-card"
+        :class="{ 'finding-card--open': expandedId === f.id }"
+        @click="expandedId = expandedId === f.id ? null : f.id"
+      >
+        <div class="finding-head">
+          <div class="finding-title-group">
+            <div class="finding-title-row">
+              <span class="finding-cat">{{ categoryLabel(f.category) }}</span>
+              <h3 class="finding-title">{{ f.title }}</h3>
+              <span v-if="f.overlap" class="finding-overlap">{{ f.overlap }}</span>
             </div>
-            <div class="arch-stat">
-              <span class="stat-value">{{ a.avg_ram_gb }}</span>
-              <span class="stat-label">avg RAM (GB)</span>
-            </div>
-            <div class="arch-stat">
-              <span class="stat-value" :class="a.avg_mem_pressure_pct ? pressureClass(a.avg_mem_pressure_pct) : ''" :title="a.avg_mem_pressure_pct ? '' : 'No memory-pressure telemetry for this architecture'">{{ a.avg_mem_pressure_pct ? a.avg_mem_pressure_pct + '%' : '—' }}</span>
-              <span class="stat-label">avg pressure</span>
-            </div>
-            <div class="arch-stat">
-              <span class="stat-value">{{ a.avg_uptime_hours }}h</span>
-              <span class="stat-label">avg uptime</span>
+            <p class="finding-body">{{ f.body }}</p>
+          </div>
+          <div class="finding-side">
+            <span class="finding-pop">{{ f.population }}</span>
+            <span class="finding-pop-label">{{ f.populationLabel }}</span>
+            <span class="finding-effort">{{ f.effort }} effort · {{ f.kind }}</span>
+          </div>
+          <span class="finding-caret">{{ expandedId === f.id ? '▾' : '▸' }}</span>
+        </div>
+
+        <template v-if="expandedId === f.id">
+          <div v-if="f.evidence && f.evidence.length" class="finding-evidence" @click.stop>
+            <div v-for="panel in f.evidence" :key="panel.label" class="evidence-panel">
+              <span class="evidence-label">{{ panel.label }}</span>
+              <div v-for="row in panel.rows" :key="row.label" class="evidence-row">
+                <span class="evidence-row-label" :title="row.label">{{ row.label }}</span>
+                <div class="evidence-meter">
+                  <div class="evidence-fill" :style="{ width: row.pct + '%', background: row.color }"></div>
+                </div>
+                <span class="evidence-value"><strong>{{ row.value }}</strong> <span class="evidence-unit">{{ row.unit }}</span></span>
+              </div>
+              <span v-if="panel.note" class="evidence-note">{{ panel.note }}</span>
             </div>
           </div>
-        </div>
+          <div class="finding-rec" @click.stop>
+            <span class="finding-rec-text"><strong>Recommended:</strong> {{ f.recommendation }}</span>
+            <router-link v-if="f.link" :to="f.link.to" custom v-slot="{ navigate }">
+              <BaseButton variant="secondary" size="small" @click="navigate">{{ f.link.label }}</BaseButton>
+            </router-link>
+          </div>
+        </template>
       </div>
     </section>
 
-    <!-- RAM Utilization -->
-    <section class="section">
-      <SectionHeader title="RAM utilization by tier" />
-      <p class="section-caption">Hosts with more RAM show higher pressure — not because they're struggling, but because they run heavier workloads (VMs, IDEs). The real risk is <strong>headroom</strong>: 8 GB hosts at 8% have only ~0.6 GB of app memory — one heavy app away from swap. 128 GB at 28% has 92 GB free.</p>
-      <div class="ram-tiers">
-        <div v-for="t in ramTierData" :key="t.ram_tier" class="ram-tier-row">
-          <div class="ram-tier-label">
-            <span class="ram-tier-name">{{ t.ram_tier }}</span>
-            <span class="ram-tier-count">{{ t.device_count }} host{{ t.device_count !== 1 ? 's' : '' }}</span>
-          </div>
-          <div class="ram-bar-container">
-            <MeterBar height="var(--bar-height)" :value="t.avg_mem_pressure_pct" :marker="t.max_mem_pressure_pct" />
-            <div class="ram-bar-labels">
-              <span class="ram-used-label">{{ t.avg_used_gb }} GB used</span>
-              <span class="ram-free-label">{{ Math.round((t.avg_total_ram_gb - t.avg_used_gb) * 10) / 10 }} GB free</span>
-              <span class="ram-pct-label" :class="pressureClass(t.avg_mem_pressure_pct)">{{ t.avg_mem_pressure_pct }}%</span>
-            </div>
-          </div>
-          <div class="ram-total-label">of {{ t.avg_total_ram_gb }} GB<br/><span class="ram-device-count">{{ t.device_count }} host{{ t.device_count !== 1 ? 's' : '' }}</span></div>
-        </div>
+    <!-- ─── Act — ranked by effort ──────────────────────────── -->
+    <section v-if="findings.length" class="grammar-section">
+      <div class="grammar-head">
+        <h2 class="grammar-title">Act — ranked by effort</h2>
+        <span class="grammar-hint">Low-effort configuration and policy changes first — impact lives in each finding's evidence</span>
       </div>
-    </section>
-
-    <!-- Pressure by CPU -->
-    <section class="section">
-      <BarChart
-        title="Memory pressure by CPU generation"
-        :data="cpuData"
-        :loading="loading"
-        nameKey="cpu_brand"
-        valueKey="avg_mem_pressure_pct"
-      />
-      <p class="section-caption"><strong>Higher bar = worse.</strong> Compares CPU generations on memory pressure. Older chips (M1) with less RAM may show lower absolute pressure but be closer to their ceiling. Newer chips with more RAM absorb heavier workloads.</p>
-    </section>
-
-    <!-- Device Drill-Down -->
-    <section v-if="selectedDevice" ref="drawerRef">
-      <Drawer :title="displayHost(selectedDevice)" @close="selectedDevice = null; deviceApps = []">
-        <template #subtitle>{{ selectedDevice.cpu_brand }} · {{ selectedDevice.hardware_model }} · {{ selectedDevice.memory_gb }} GB RAM · {{ selectedDevice.avg_mem_pressure_pct }}% pressure</template>
-        <div class="pressure-bar-wrap">
-          <MeterBar :value="selectedDevice.peak_mem_pressure_pct" />
-          <span class="pressure-label">Peak: {{ selectedDevice.peak_mem_pressure_pct }}% of {{ selectedDevice.memory_gb }} GB</span>
-        </div>
-        <DataTable
-          v-if="deviceApps.length"
-          :data="deviceApps"
-          :columns="deviceAppColumns"
-          density="compact"
-        />
-      </Drawer>
-    </section>
-
-    <!-- Devices Under Pressure -->
-    <section class="section">
-      <SectionHeader title="Hosts by memory pressure" />
-      <div class="table-wrap">
-        <table class="data-table">
+      <div class="act-card">
+        <table class="act-table">
           <thead>
             <tr>
-              <th @click="sortDevBy('hostname')" class="sortable">Hostname {{ devSortIcon('hostname') }}</th>
-              <th @click="sortDevBy('cpu_brand')" class="sortable">CPU {{ devSortIcon('cpu_brand') }}</th>
-              <th @click="sortDevBy('hardware_model')" class="sortable">Model {{ devSortIcon('hardware_model') }}</th>
-              <th @click="sortDevBy('memory_gb')" class="sortable">RAM {{ devSortIcon('memory_gb') }}</th>
-              <th @click="sortDevBy('avg_mem_pressure_pct')" class="sortable">Avg Pressure {{ devSortIcon('avg_mem_pressure_pct') }}</th>
-              <th @click="sortDevBy('peak_mem_pressure_pct')" class="sortable">Peak Pressure {{ devSortIcon('peak_mem_pressure_pct') }}</th>
-              <th @click="sortDevBy('avg_total_app_mem_mb')" class="sortable">Avg App Mem {{ devSortIcon('avg_total_app_mem_mb') }}</th>
+              <th>Action</th>
+              <th>Category</th>
+              <th class="num">Population</th>
+              <th>Effort</th>
+              <th>Cost</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="d in sortedPressureDevices" :key="d.host_id" class="clickable-row" :class="{ selected: selectedDevice?.host_id === d.host_id }" @click="selectDevice(d)">
-              <td class="hostname">{{ displayHost(d) }}</td>
-              <td>{{ d.cpu_brand }}</td>
-              <td>{{ d.hardware_model }}</td>
-              <td>{{ d.memory_gb }} GB</td>
-              <td :class="pressureClass(d.avg_mem_pressure_pct)">{{ d.avg_mem_pressure_pct }}%</td>
-              <td :class="pressureClass(d.peak_mem_pressure_pct)">{{ d.peak_mem_pressure_pct }}%</td>
-              <td>{{ formatMB(d.avg_total_app_mem_mb) }}</td>
+            <tr v-for="f in actRows" :key="f.id" class="act-row" @click="expandFinding(f.id)">
+              <td class="act-action">{{ f.action }}</td>
+              <td class="act-muted">{{ categoryLabel(f.category) }}</td>
+              <td class="num act-hosts">{{ f.population }}</td>
+              <td><span class="effort-badge" :class="`effort--${f.effort}`">{{ f.effort }}</span></td>
+              <td class="act-muted">{{ f.cost }}</td>
+              <td class="act-caret">→</td>
             </tr>
           </tbody>
         </table>
       </div>
-    </section>
-
-    <!-- Agent Overhead -->
-    <section class="section">
-      <SectionHeader title="Management agent overhead" caption="Memory cost of security and management agents across the fleet." />
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Agent</th><th>Avg MB</th><th>P95 MB</th><th>Peak MB</th><th>Hosts</th><th>Total RAM</th></tr></thead>
-          <tbody>
-            <tr v-for="a in agentData" :key="a.bundle_identifier">
-              <td class="hostname">{{ a.app_name }}</td>
-              <td>{{ a.avg_mem_mb }}</td>
-              <td>{{ a.p95_mem_mb }}</td>
-              <td :class="memClass(a.peak_mem_mb)">{{ a.peak_mem_mb }}</td>
-              <td>{{ a.device_count }}</td>
-              <td><strong>{{ formatMB(a.fleet_cost_mb) }}</strong></td>
-            </tr>
-          </tbody>
-          <tfoot v-if="agentData.length">
-            <tr class="total-row">
-              <td colspan="5"><strong>Total agent RAM overhead</strong></td>
-              <td><strong>{{ formatMB(totalAgentOverhead) }}</strong></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </section>
-
-    <!-- Top User Apps -->
-    <section class="section">
-      <SectionHeader title="Top user applications by total RAM footprint" caption="Non-system apps ranked by avg memory × host count. Apps with high total RAM footprint across the fleet are candidates for optimization or license review." />
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead><tr>
-            <th @click="sortAppsBy('app_name')" class="sortable">App {{ appSortIcon('app_name') }}</th>
-            <th @click="sortAppsBy('device_count')" class="sortable">Devices {{ appSortIcon('device_count') }}</th>
-            <th @click="sortAppsBy('avg_mem_mb')" class="sortable">Avg MB {{ appSortIcon('avg_mem_mb') }}</th>
-            <th @click="sortAppsBy('peak_mem_mb')" class="sortable">Peak MB {{ appSortIcon('peak_mem_mb') }}</th>
-            <th @click="sortAppsBy('fleet_cost_mb')" class="sortable">Total RAM {{ appSortIcon('fleet_cost_mb') }}</th>
-          </tr></thead>
-          <tbody>
-            <tr v-for="a in sortedTopApps" :key="a.bundle_identifier">
-              <td class="hostname">{{ a.app_name }}</td>
-              <td>{{ a.device_count }}</td>
-              <td>{{ a.avg_mem_mb }}</td>
-              <td :class="memClass(a.peak_mem_mb)">{{ a.peak_mem_mb }}</td>
-              <td><strong>{{ formatMB(a.fleet_cost_mb) }}</strong></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Risk Assessment -->
-    <section class="section">
-      <SectionHeader title="Risk assessment" caption="Hosts scored on: Intel architecture (+1), RAM ≤ 8 GB (+1), memory pressure > 50% (+1). Score 2+ = likely poor DEX." />
-      <div class="risk-summary">
-        <Chip tone="good">{{ riskCounts[0] || 0 }} healthy</Chip>
-        <Chip tone="fair">{{ riskCounts[1] || 0 }} low risk</Chip>
-        <Chip tone="elevated">{{ riskCounts[2] || 0 }} moderate</Chip>
-        <Chip tone="critical">{{ riskCounts[3] || 0 }} high risk</Chip>
-      </div>
-      <div v-if="riskyDevices.length" class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Hostname</th><th>CPU</th><th>RAM</th><th>Pressure</th><th>Risk</th><th>Factors</th></tr></thead>
-          <tbody>
-            <tr v-for="d in riskyDevices" :key="d.host_id">
-              <td class="hostname">
-                <router-link
-                  :to="{ path: '/hosts', query: { hostId: d.host_id, focus: 'movers' } }"
-                  class="host-link"
-                  :title="`Inspect ${displayHost(d)} →`"
-                >{{ displayHost(d) }}</router-link>
-              </td>
-              <td>{{ d.cpu_brand }}</td>
-              <td>{{ d.memory_gb }} GB</td>
-              <td :class="pressureClass(d.avg_mem_pressure_pct)">{{ d.avg_mem_pressure_pct }}%</td>
-              <td><Badge :tone="riskTone(d.risk_score)" :label="d.risk_score + '/3'" /></td>
-              <td class="muted">{{ riskFactors(d) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <EmptyState v-else small title="No high-risk hosts" info="All hosts scored 0 — no high-risk hosts detected." />
     </section>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { query } from '../services/api'
-import { useFleetFilter } from '../composables/useFleetFilter'
-import { useSort } from '../composables/useSort'
-import MetricCard from '../components/MetricCard.vue'
-import BarChart from '../components/BarChart.vue'
-import DataTable from '../components/DataTable.vue'
-import PageHeader from '../components/base/PageHeader.vue'
-import SectionHeader from '../components/base/SectionHeader.vue'
-import Drawer from '../components/base/Drawer.vue'
-import MeterBar from '../components/base/MeterBar.vue'
-import Chip from '../components/base/Chip.vue'
-import Badge from '../components/base/Badge.vue'
+import BaseButton from '../components/base/BaseButton.vue'
 import EmptyState from '../components/base/EmptyState.vue'
-import { displayHost } from '../composables/displayName'
+import { useFleetFilter } from '../composables/useFleetFilter'
+import { chipInfo, verdictFor } from '../composables/chipAge'
+import { palette } from '../composables/uiPalette'
 
-const { searchText: globalSearch, selectedModel, selectedRAMTier } = useFleetFilter()
+const { filterParams } = useFleetFilter()
+const fp = () => ({ ...filterParams.value })
 
 const error = ref(null)
-const loading = ref(true)
+const loading = ref(false)
+const expandedId = ref(null)
+const categoryFilter = ref(null)
 
-const summary = ref({})
-const archData = ref([])
-const ramTierData = ref([])
-const cpuData = ref([])
-const pressureDevices = ref([])
-const agentData = ref([])
-const topApps = ref([])
-const riskData = ref([])
+const agents = ref([])
+const ramTiers = ref([])
+const crashers = ref([])
+const crashSummary = ref({})
+const waste = ref({})
+const uptimeDist = ref([])
+const lifecycleRows = ref([])
 
-const selectedDevice = ref(null)
-const deviceApps = ref([])
-const drawerRef = ref(null)
-
-const totalAgentOverhead = computed(() => agentData.value.reduce((s, a) => s + (Number(a.fleet_cost_mb) || 0), 0))
-
-const riskCounts = computed(() => {
-  const c = {}
-  for (const d of riskData.value) c[d.risk_score] = (c[d.risk_score] || 0) + 1
-  return c
-})
-
-function applyGlobalFilter(list) {
-  let filtered = list
-  if (globalSearch.value) {
-    const s = globalSearch.value.toLowerCase()
-    filtered = filtered.filter(d =>
-      (d.hostname || '').toLowerCase().includes(s) ||
-      (d.cpu_brand || '').toLowerCase().includes(s) ||
-      (d.host_id || '').toLowerCase().includes(s)
-    )
-  }
-  if (selectedModel.value) {
-    filtered = filtered.filter(d => d.hardware_model === selectedModel.value)
-  }
-  if (selectedRAMTier.value) {
-    const target = parseInt(selectedRAMTier.value)
-    if (selectedRAMTier.value === '128GB+') {
-      filtered = filtered.filter(d => (Number(d.memory_gb) || 0) >= 128)
-    } else if (target) {
-      filtered = filtered.filter(d => {
-        const gb = Number(d.memory_gb) || 0
-        return gb >= target && gb < target * 2
-      })
-    }
-  }
-  return filtered
-}
-
-const riskyDevices = computed(() => applyGlobalFilter(riskData.value.filter(d => d.risk_score > 0)))
-
-/* ─── Table sorting (shared composable) ─────────────────── */
-const DEV_NUMERIC_COLS = new Set(['memory_gb', 'avg_mem_pressure_pct', 'peak_mem_pressure_pct', 'avg_total_app_mem_mb'])
-const devSort = useSort('avg_mem_pressure_pct', false)
-
-const sortedPressureDevices = computed(() =>
-  devSort.sortRows(applyGlobalFilter(pressureDevices.value), k => DEV_NUMERIC_COLS.has(k))
-)
-
-function sortDevBy(col) {
-  devSort.toggleSort(col, DEV_NUMERIC_COLS.has(col))
-}
-
-function devSortIcon(col) {
-  if (devSort.sortKey.value !== col) return ''
-  return devSort.sortAsc.value ? '▲' : '▼'
-}
-
-const APP_NUMERIC_COLS = new Set(['device_count', 'avg_mem_mb', 'peak_mem_mb', 'fleet_cost_mb'])
-const appSort = useSort('fleet_cost_mb', false)
-
-const sortedTopApps = computed(() =>
-  appSort.sortRows(topApps.value, k => APP_NUMERIC_COLS.has(k))
-)
-
-function sortAppsBy(col) {
-  appSort.toggleSort(col, APP_NUMERIC_COLS.has(col))
-}
-
-function appSortIcon(col) {
-  if (appSort.sortKey.value !== col) return ''
-  return appSort.sortAsc.value ? '▲' : '▼'
-}
-
-function pressureClass(pct) {
-  if (pct >= 70) return 'pressure-critical'
-  if (pct >= 50) return 'pressure-high'
-  if (pct >= 30) return 'pressure-moderate'
-  return 'pressure-ok'
-}
-
-function memClass(mb) {
-  if (mb > 1000) return 'pressure-critical'
-  if (mb > 500) return 'pressure-high'
-  return ''
-}
-
-function memTone(mb) {
-  if (mb > 1000) return 'critical'
-  if (mb > 500) return 'elevated'
-  return null
-}
-
-const deviceAppColumns = [
-  { key: 'app_name', label: 'App' },
-  { key: 'memory_mb', label: 'Memory (MB)', type: 'number', tone: memTone },
-  { key: 'threads', label: 'Threads', type: 'number' },
-  { key: 'bundle_identifier', label: 'Bundle ID' },
-]
-
-function riskTone(score) {
-  return ['good', 'fair', 'elevated', 'critical'][Math.min(Number(score) || 0, 3)]
-}
-
-function formatMB(mb) {
-  if (mb >= 1024) return `${(mb / 1024).toFixed(1)} GB`
-  return `${Math.round(mb)} MB`
-}
-
-function riskFactors(d) {
-  const f = []
-  if (d.is_intel) f.push('Intel')
-  if (d.is_low_ram) f.push('≤8 GB RAM')
-  if (d.is_high_pressure) f.push('>50% pressure')
-  return f.join(', ')
-}
-
-async function selectDevice(device) {
-  selectedDevice.value = device
-  await nextTick()
-  drawerRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  try {
-    deviceApps.value = await query('firehose.apps.per_device', { hostId: device.host_id })
-  } catch (e) {
-    deviceApps.value = []
-  }
-}
-
-async function fetchAll() {
+async function load() {
   loading.value = true
   error.value = null
   try {
-    const [s, arch, ram, cpu, pressure, agents, apps, risk] = await Promise.all([
-      query('firehose.insights.summary'),
-      query('firehose.insights.pressure_by_arch'),
-      query('firehose.insights.pressure_by_ram_tier'),
-      query('firehose.insights.pressure_by_cpu'),
-      query('firehose.insights.memory_pressure', { limit: 100 }),
-      query('firehose.insights.agent_overhead'),
-      query('firehose.insights.top_user_apps', { limit: 20 }),
-      query('firehose.insights.risk_devices'),
+    const [ag, tiers, top, cs, ws, up, lc] = await Promise.all([
+      query('firehose.insights.agent_overhead', { limit: 8, ...fp() }).catch(() => []),
+      query('firehose.insights.pressure_by_ram_tier', fp()).catch(() => []),
+      query('firehose.crashes.top_crashers', { limit: 5, ...fp() }).catch(() => []),
+      query('firehose.crashes.summary', fp()).catch(() => []),
+      query('firehose.adoption.waste_summary', fp()).catch(() => []),
+      query('firehose.health.uptime_distribution', fp()).catch(() => []),
+      query('firehose.lifecycle.refresh_candidates', { limit: 200, ...fp() }).catch(() => []),
     ])
-    summary.value = s[0] || {}
-    archData.value = arch
-    ramTierData.value = ram
-    cpuData.value = cpu
-    pressureDevices.value = pressure
-    agentData.value = agents
-    topApps.value = apps
-    riskData.value = risk
+    agents.value = ag || []
+    ramTiers.value = tiers || []
+    crashers.value = top || []
+    crashSummary.value = (cs || [])[0] || {}
+    waste.value = (ws || [])[0] || {}
+    uptimeDist.value = up || []
+    lifecycleRows.value = lc || []
   } catch (e) {
     error.value = e.message
-  } finally {
-    loading.value = false
+  }
+  loading.value = false
+}
+
+onMounted(load)
+watch(filterParams, load, { deep: true })
+
+// ─── The findings engine ──────────────────────────────────────
+// Each finding computes its claim from live query results and only emits
+// when its own evidence threshold passes. Effort/kind/cost are playbook
+// metadata describing the ACTION; every number in a claim is queried.
+
+const CATEGORY_LABELS = { performance: 'Performance', software: 'Software', device_health: 'Device health' }
+function categoryLabel(key) {
+  return CATEGORY_LABELS[key] || key
+}
+
+// Second evidence panel for the agent finding: headroom in GB by RAM tier.
+function headroomPanel() {
+  const tiers = ramTiers.value.filter(t => Number(t.device_count) > 0 && Number(t.avg_total_ram_gb) > 0)
+  if (tiers.length < 2) return null
+  const rows = tiers.map(t => {
+    const free = Math.round((Number(t.avg_total_ram_gb) - Number(t.avg_used_gb)) * 10) / 10
+    const usedPct = Math.min(100, Math.round((Number(t.avg_used_gb) / Number(t.avg_total_ram_gb)) * 100))
+    return {
+      label: t.ram_tier,
+      pct: Math.max(2, usedPct),
+      color: free < 2 ? palette.critical : free < 6 ? palette.fair : palette.good,
+      value: `${free} GB`,
+      unit: `free · ${t.device_count} host${Number(t.device_count) === 1 ? '' : 's'}`,
+    }
+  })
+  return {
+    label: 'Evidence — app-memory headroom by RAM tier',
+    rows,
+    note: 'Bars show the share of RAM held by apps on average. Headroom in gigabytes is the honest measure — percentages punish big machines for doing big work.',
   }
 }
 
-onMounted(() => fetchAll())
+const findings = computed(() => {
+  const out = []
+
+  // 1 — Management agent overhead (firehose.insights.agent_overhead)
+  if (agents.value.length >= 2) {
+    const top = [...agents.value].sort((a, b) => Number(b.avg_mem_mb) - Number(a.avg_mem_mb)).slice(0, 5)
+    const combined = Math.round(top.reduce((s, a) => s + Number(a.avg_mem_mb), 0))
+    const fleetGb = Math.round(agents.value.reduce((s, a) => s + Number(a.fleet_cost_mb || 0), 0) / 1024 * 10) / 10
+    const pop = Math.max(...agents.value.map(a => Number(a.device_count) || 0))
+    if (combined >= 500) {
+      const maxAvg = Number(top[0].avg_mem_mb) || 1
+      out.push({
+        id: 'agent-overhead',
+        category: 'performance',
+        title: `Management agents hold ~${(combined / 1024).toFixed(1)} GB resident per host`,
+        short: 'Agent overhead',
+        body: `The top ${top.length} management agents average ${combined} MB resident combined on hosts that run them — fleet-wide, agents hold ~${fleetGb} GB of RAM. On a 16 GB host that is roughly ${Math.round((combined / 1024 / 16) * 100)}% of total memory before any user app opens.`,
+        population: pop,
+        populationLabel: 'hosts running agents',
+        effort: 'low',
+        kind: 'config',
+        cost: 'none',
+        action: 'Review agent set and scan frequency on low-RAM hosts',
+        recommendation: 'review which agents low-RAM hosts actually need and lower inventory/scan frequency where policy allows — the same agent set costs a 16 GB machine a far larger share of its memory than a 48 GB one.',
+        link: { to: '/hosts', label: 'View hosts' },
+        evidence: [
+          {
+            label: 'Evidence — agent RAM, fleet-wide',
+            rows: top.map(a => ({
+              label: a.app_name || a.bundle_identifier,
+              pct: Math.round((Number(a.avg_mem_mb) / maxAvg) * 100),
+              color: Number(a.avg_mem_mb) >= 400 ? palette.critical : Number(a.avg_mem_mb) >= 250 ? palette.elevated : Number(a.avg_mem_mb) >= 150 ? palette.fair : palette.good,
+              value: `${Math.round(a.avg_mem_mb)} MB`,
+              unit: `avg · ${a.device_count} hosts`,
+            })),
+          },
+          headroomPanel(),
+        ].filter(Boolean),
+      })
+    }
+  }
+
+  // 2 — Sustained severe swap on current silicon (lifecycle verdicts)
+  const investigate = lifecycleRows.value.filter(h => {
+    const info = chipInfo(h.cpu_class)
+    return verdictFor(Number(h.refresh_score) >= 30, info?.gensBehind ?? null, {
+      weakDays: Number(h.days_pressured_30d) || 0,
+      reportDays: Number(h.days_reporting_30d) || 0,
+      severeDays: Number(h.days_severe_30d) || 0,
+    }).key === 'investigate'
+  })
+  if (investigate.length >= 3) {
+    const severeDaysSorted = investigate.map(h => Number(h.days_severe_30d)).sort((a, b) => a - b)
+    const medianSevere = severeDaysSorted[Math.floor(severeDaysSorted.length / 2)]
+    out.push({
+      id: 'current-silicon-strain',
+      category: 'performance',
+      title: `${investigate.length} current-silicon hosts run in severe swap most days`,
+      short: 'Current-silicon strain',
+      body: `${investigate.length} hosts on current silicon spend at least half their reporting days under severe swap pressure — the median is ${medianSevere} severe days in 30. Their hardware age is not the problem; the workload or the RAM spec is.`,
+      population: investigate.length,
+      populationLabel: 'hosts',
+      effort: 'medium',
+      kind: 'investigation',
+      cost: 'none',
+      action: 'Investigate workload / spec on strained current-silicon hosts',
+      recommendation: 'investigate what these hosts run before any purchase — replacing current silicon buys nothing. The same hosts appear on the Lifecycle page under "Investigate".',
+      overlap: 'Overlaps Lifecycle',
+      link: { to: '/lifecycle', label: 'Open Lifecycle' },
+      evidence: null,
+    })
+  }
+
+  // 3 — Reboot hygiene (firehose.health.uptime_distribution)
+  const stale14 = uptimeDist.value.filter(r => ['stale_14d', 'stale_30d'].includes(r.uptime_risk)).reduce((s, r) => s + Number(r.device_count), 0)
+  const stale7 = uptimeDist.value.filter(r => r.uptime_risk === 'stale_7d').reduce((s, r) => s + Number(r.device_count), 0)
+  if (stale14 >= 3) {
+    const maxCount = Math.max(...uptimeDist.value.map(r => Number(r.device_count) || 0), 1)
+    out.push({
+      id: 'reboot-hygiene',
+      category: 'device_health',
+      title: `${stale14} hosts have not rebooted in 14+ days`,
+      short: 'Reboot hygiene',
+      body: `${stale14} hosts sit past the 14-day uptime threshold the OS-health classifier treats as degraded${stale7 ? `, and another ${stale7} are past 7 days` : ''}. Long uptimes hold back patches and let memory fragmentation accumulate.`,
+      population: stale14,
+      populationLabel: 'hosts',
+      effort: 'low',
+      kind: 'policy',
+      cost: 'none',
+      action: 'Scheduled reboot nudge past 14 days of uptime',
+      recommendation: 'a scheduled reboot nudge (or a forced restart window) for hosts past 14 days of uptime — the OS-health classifier already marks them degraded at that point.',
+      link: { to: '/hosts', label: 'View hosts' },
+      evidence: [{
+        label: 'Evidence — uptime distribution',
+        rows: uptimeDist.value.map(r => ({
+          label: String(r.uptime_risk).replace(/_/g, ' '),
+          pct: Math.max(2, Math.round((Number(r.device_count) / maxCount) * 100)),
+          color: ['stale_14d', 'stale_30d'].includes(r.uptime_risk) ? palette.critical : r.uptime_risk === 'stale_7d' ? palette.fair : palette.good,
+          value: r.device_count,
+          unit: 'hosts',
+        })),
+      }],
+    })
+  }
+
+  // 4 — Crash concentration (firehose.crashes.top_crashers)
+  const totalCrashes = Number(crashSummary.value.total_crashes_7d) || 0
+  if (crashers.value.length && totalCrashes >= 10) {
+    const top = crashers.value[0]
+    const topN = Number(top.total_crashes_7d) || 0
+    const pct = Math.round((topN / totalCrashes) * 100)
+    if (pct >= 25) {
+      const maxN = topN || 1
+      out.push({
+        id: 'crash-concentration',
+        category: 'software',
+        title: `${top.crashed_identifier} accounts for ${pct}% of fleet crashes this week`,
+        short: 'Crash concentration',
+        body: `${topN} of ${totalCrashes} crashes in the last 7 days come from ${top.crashed_identifier} (${top.affected_devices} host${Number(top.affected_devices) === 1 ? '' : 's'}, worst severity ${top.worst_severity}). One identifier owns most of the fleet's crash budget.`,
+        population: Number(top.affected_devices) || 0,
+        populationLabel: 'hosts affected',
+        effort: 'medium',
+        kind: 'investigation',
+        cost: 'none',
+        action: `Investigate ${top.crashed_identifier} on affected hosts`,
+        recommendation: `investigate ${top.crashed_identifier} on the affected host${Number(top.affected_devices) === 1 ? '' : 's'} — with ${pct}% of all crashes in one identifier, one fix moves the whole software category.`,
+        link: { to: '/analytics', label: 'Open Analytics' },
+        evidence: [{
+          label: 'Evidence — top crashers, 7 days',
+          rows: crashers.value.map(c => ({
+            label: c.crashed_identifier,
+            pct: Math.max(2, Math.round((Number(c.total_crashes_7d) / maxN) * 100)),
+            color: c.worst_severity === 'critical' ? palette.critical : c.worst_severity === 'elevated' ? palette.elevated : palette.fair,
+            value: c.total_crashes_7d,
+            unit: `crashes · ${c.affected_devices} host${Number(c.affected_devices) === 1 ? '' : 's'}`,
+          })),
+        }],
+      })
+    }
+  }
+
+  // 5 — License waste (firehose.adoption.waste_summary)
+  const unused = Number(waste.value.unused_seats) || 0
+  const totalSeats = Number(waste.value.total_seats) || 0
+  if (totalSeats >= 50 && unused / totalSeats >= 0.2) {
+    out.push({
+      id: 'license-waste',
+      category: 'software',
+      title: `${Math.round((unused / totalSeats) * 100)}% of installed seats sit unused for 90+ days`,
+      short: 'License waste',
+      body: `${unused.toLocaleString()} of ${totalSeats.toLocaleString()} installed app seats have not been opened in 90 days, across ${waste.value.apps_with_waste} apps. Every unused seat is renewal budget and update surface spent on nothing.`,
+      population: unused,
+      populationLabel: 'unused seats',
+      effort: 'low',
+      kind: 'process',
+      cost: 'reclaims budget',
+      action: 'Reclaim seats unused 90+ days at renewal',
+      recommendation: 'take the shelfware list into the next renewal cycle — the Software usage page ranks apps by reclaimable seats.',
+      link: { to: '/software-usage', label: 'Open Software usage' },
+      evidence: null,
+    })
+  }
+
+  return out
+})
+
+// ─── Derived UI state ─────────────────────────────────────────
+const visibleFindings = computed(() =>
+  categoryFilter.value ? findings.value.filter(f => f.category === categoryFilter.value) : findings.value
+)
+
+const categoryCounts = computed(() => {
+  const counts = new Map()
+  for (const f of findings.value) counts.set(f.category, (counts.get(f.category) || 0) + 1)
+  return [...counts.entries()].map(([key, count]) => ({ key, label: categoryLabel(key), count }))
+})
+
+const configCount = computed(() => findings.value.filter(f => ['config', 'policy', 'process'].includes(f.kind)).length)
+const totalPopulation = computed(() => findings.value.reduce((s, f) => s + (f.population || 0), 0).toLocaleString())
+
+const overlapNote = computed(() => {
+  const o = findings.value.find(f => f.overlap)
+  return o ? `"${o.short}" overlaps the Lifecycle shortlist — the same hosts appear there. Don't count it twice.` : ''
+})
+
+const railRows = computed(() =>
+  [...findings.value].sort((a, b) => (b.population || 0) - (a.population || 0)).slice(0, 3)
+)
+
+const EFFORT_RANK = { low: 0, medium: 1, high: 2 }
+const actRows = computed(() =>
+  [...findings.value].sort((a, b) =>
+    (EFFORT_RANK[a.effort] - EFFORT_RANK[b.effort]) || (b.population || 0) - (a.population || 0)
+  )
+)
+
+function expandFinding(id) {
+  categoryFilter.value = null
+  expandedId.value = id
+  document.getElementById('findings')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 </script>
 
 <style scoped>
-/* ─── Page Layout ─────────────────────────────────────── */
-.dashboard {
-  max-width: 1400px;
+.insights-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--pad-large);
 }
 
-.section {
+/* ─── Header ───────────────────────────────────── */
+.in-header { display: flex; align-items: flex-end; justify-content: space-between; }
+.in-title { margin: 0; font-size: 24px; font-weight: 700; color: var(--fleet-black); }
+.in-page-subtitle { font-size: var(--font-size-base); color: var(--fleet-black-75); margin-top: 3px; }
+
+/* ─── Hero ─────────────────────────────────────── */
+.in-hero {
+  background: var(--fleet-black);
+  border-radius: var(--radius-xlarge);
+  padding: var(--pad-xlarge) 32px;
+  display: grid;
+  grid-template-columns: 300px 1fr 300px;
+  gap: 40px;
+  align-items: center;
+  color: var(--fleet-white);
+}
+
+.hero-eyebrow {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--fleet-black-50);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.hero-block { display: flex; flex-direction: column; gap: 8px; }
+.hero-count-row { display: flex; align-items: baseline; gap: 12px; }
+.hero-count { font-size: 60px; font-weight: 700; line-height: 0.9; }
+.hero-count-of { font-size: 14px; color: var(--fleet-black-33); }
+.hero-chip {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px 9px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--fleet-black-10);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.hero-narrative {
   display: flex;
   flex-direction: column;
-  gap: var(--pad-medium);
+  gap: 12px;
+  border-left: 1px solid var(--fleet-blue);
+  padding-left: 40px;
 }
+.hero-headline { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.35; text-wrap: pretty; }
+.hl-good { color: var(--status-good-soft); }
+.hero-support { margin: 0; font-size: var(--font-size-base); line-height: 1.6; color: var(--fleet-black-33); text-wrap: pretty; }
 
-.section-caption {
-  margin: 0;
-  line-height: var(--line-height-relaxed);
+.hero-rail { display: flex; flex-direction: column; gap: 10px; }
+.hero-rail-list { display: flex; flex-direction: column; gap: 8px; }
+.hero-rail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-medium);
+  font-size: var(--font-size-base);
 }
+.hero-rail-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hero-rail-count { font-family: var(--font-mono); font-weight: 700; }
+.hero-rail-empty { font-size: var(--font-size-sm); color: var(--fleet-black-50); font-style: italic; }
 
-/* ─── Architecture Cards ──────────────────────────────── */
-.arch-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--pad-medium);
+/* ─── Grammar ──────────────────────────────────── */
+.grammar-section { display: flex; flex-direction: column; gap: var(--pad-smedium); }
+.grammar-head { display: flex; align-items: baseline; justify-content: space-between; }
+.grammar-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--fleet-black); }
+.grammar-hint { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
+
+.in-filters { display: flex; gap: 6px; }
+.in-filter {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--fleet-black-25);
+  border-radius: var(--radius);
+  background: var(--fleet-white);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--fleet-black-75);
+  cursor: pointer;
 }
+.in-filter.is-active {
+  background: var(--fleet-black);
+  border-color: var(--fleet-black);
+  color: var(--fleet-white);
+  font-weight: 600;
+}
+.in-filter:focus-visible { outline: 1px solid var(--fleet-focused-outline); outline-offset: 1px; }
 
-.arch-card {
+.in-loading { text-align: center; color: var(--fleet-black-50); font-style: italic; padding: 28px; }
+
+/* ─── Finding cards ────────────────────────────── */
+.finding-card {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
-  padding: var(--card-pad);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.arch-card:hover {
-  border-color: var(--fleet-black-25);
-  box-shadow: var(--shadow-sm);
-}
-
-.arch-name {
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--fleet-black);
-  margin-bottom: var(--pad-medium);
-}
-
-.arch-stat-row {
-  display: flex;
-  gap: var(--pad-large);
-}
-
-.arch-stat {
+  padding: 18px var(--pad-large);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 16px;
+  cursor: pointer;
+  transition: border-color var(--transition-base);
 }
+.finding-card:hover { border-color: var(--fleet-black-25); }
+.finding-card--open { border: 2px solid var(--fleet-black); padding: 17px calc(var(--pad-large) - 1px); cursor: default; }
 
-.stat-value {
-  font-size: var(--metric-value-size);
-  font-weight: 600;
-  color: var(--fleet-black);
-}
+.finding-head { display: flex; align-items: flex-start; gap: 24px; }
+.finding-title-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+.finding-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-.stat-label {
-  font-family: var(--font-body);
-  font-size: var(--metric-label-size);
-  font-weight: 500;
-  color: var(--fleet-black-75);
-}
-
-/* ─── Pressure Colors ─────────────────────────────────── */
-.pressure-ok { color: var(--status-good); }
-.pressure-moderate { color: var(--status-fair-text); font-weight: 600; }
-.pressure-high { color: var(--status-elevated); font-weight: 600; }
-.pressure-critical { color: var(--status-critical); font-weight: 700; }
-
-/* ─── Drawer pressure gauge ───────────────────────────── */
-.pressure-bar-wrap {
-  margin: var(--pad-medium) 0;
-}
-
-.pressure-label {
+.finding-cat {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 3px;
+  background: var(--info-tint);
+  color: var(--fleet-vibrant-blue);
   font-size: var(--font-size-xs);
-  color: var(--fleet-black-50);
-  margin-top: var(--pad-xs);
-  display: block;
-}
-
-/* ─── Tables ──────────────────────────────────────────── */
-.table-wrap {
-  overflow-x: auto;
-  background: var(--fleet-white);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-large);
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-body);
-  font-size: var(--table-font-size);
-}
-
-.data-table th {
-  text-align: left;
-  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
   font-weight: 700;
-  color: var(--fleet-black);
-  background: var(--fleet-off-white);
-  border-bottom: 1px solid var(--fleet-black-10);
-  font-size: var(--table-header-font-size);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
   white-space: nowrap;
 }
-.data-table th:first-child { border-top-left-radius: var(--radius-large); }
-.data-table th:last-child { border-top-right-radius: var(--radius-large); }
 
-.data-table th.sortable {
-  cursor: pointer;
-  user-select: none;
-  transition: color var(--transition-fast);
-}
+.finding-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--fleet-black); }
+.finding-card--open .finding-title { font-size: 16px; }
 
-.data-table th.sortable:hover {
-  color: var(--fleet-black);
-}
-
-.data-table td {
-  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
-  border-bottom: 1px solid var(--fleet-black-10);
-  color: var(--fleet-black-75);
-}
-
-.data-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.data-table tfoot td {
-  padding: var(--table-cell-pad-y) var(--table-cell-pad-x);
-  border-top: 1px solid var(--fleet-black-10);
-  border-bottom: none;
-  background: var(--fleet-black-3);
-}
-
-.total-row {
-  font-weight: 600;
-}
-
-.clickable-row {
-  cursor: pointer;
-  transition: background var(--transition-fast);
-}
-
-.clickable-row:hover {
-  background: var(--fleet-black-3);
-}
-
-.clickable-row.selected {
-  background: var(--fleet-accent-green-light);
-}
-
-.hostname {
-  font-weight: 500;
-  font-size: var(--font-size-sm);
-}
-
-.host-link {
-  color: var(--fleet-core-vibrant-blue);
-  text-decoration: none;
-  transition: color var(--transition-fast);
-}
-
-.host-link:hover {
-  color: var(--fleet-black);
-  text-decoration: underline;
-}
-
-.muted {
-  color: var(--fleet-black-50);
-  font-size: var(--font-size-xs);
-}
-
-/* ─── Risk summary chips ──────────────────────────────── */
-.risk-summary {
-  display: flex;
-  gap: var(--pad-small);
-  flex-wrap: wrap;
-}
-
-/* ─── RAM Tier Utilization ────────────────────────────── */
-.ram-tiers {
-  display: flex;
-  flex-direction: column;
-  gap: var(--pad-large);
-}
-
-.ram-tier-row {
-  display: grid;
-  grid-template-columns: 100px 1fr 80px;
-  gap: var(--pad-medium);
+.finding-overlap {
+  display: inline-flex;
   align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 3px;
+  background: var(--status-fair-bg);
+  color: var(--status-fair-text);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.ram-tier-label {
+.finding-body {
+  margin: 0;
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  color: var(--fleet-black-75);
+  max-width: 820px;
+  text-wrap: pretty;
+}
+
+.finding-side {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.finding-pop { font-size: 24px; font-weight: 700; line-height: 1; color: var(--fleet-black); }
+.finding-pop-label { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
+.finding-effort { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); margin-top: 4px; }
+
+.finding-caret { font-size: 16px; color: var(--fleet-black-25); flex-shrink: 0; align-self: center; }
+
+/* ─── Evidence panels ──────────────────────────── */
+.finding-evidence {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  cursor: default;
 }
 
-.ram-tier-name {
+.evidence-panel { display: flex; flex-direction: column; gap: 10px; }
+.evidence-label {
+  font-size: var(--font-size-xxsmall);
+  font-weight: 600;
+  color: var(--fleet-black-50);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.evidence-row {
+  display: grid;
+  grid-template-columns: 150px 1fr 130px;
+  align-items: center;
+  gap: 12px;
+}
+.evidence-row-label {
+  font-size: var(--font-size-base);
+  color: var(--fleet-black);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.evidence-meter { height: 8px; background: var(--fleet-black-5); border-radius: var(--radius-full); overflow: hidden; }
+.evidence-fill { height: 100%; transition: width 400ms ease-out; }
+.evidence-value { font-size: var(--font-size-sm); text-align: right; color: var(--fleet-black); }
+.evidence-unit { color: var(--fleet-black-50); font-weight: 400; }
+.evidence-note { font-size: var(--font-size-sm); color: var(--fleet-black-50); line-height: 1.5; text-wrap: pretty; }
+
+.finding-rec {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--fleet-off-white);
+  border-radius: var(--radius-medium);
+  cursor: default;
+}
+.finding-rec-text { font-size: var(--font-size-base); color: var(--fleet-black-75); text-wrap: pretty; }
+.finding-rec-text strong { color: var(--fleet-black); }
+.finding-rec > :last-child { margin-left: auto; flex-shrink: 0; }
+
+/* ─── Act table ────────────────────────────────── */
+.act-card {
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+  overflow: hidden;
+}
+.act-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-base); }
+.act-table th {
+  text-align: left;
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: var(--fleet-black);
+  color: var(--fleet-black-75);
+  background: var(--fleet-off-white);
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--fleet-black-10);
+  white-space: nowrap;
 }
-
-.ram-tier-count {
-  font-family: var(--font-body);
-  font-size: 9px;
-  color: var(--fleet-black-50);
-}
-
-.ram-bar-container {
-  flex: 1;
-}
-
-.ram-bar-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 5px;
-}
-
-.ram-used-label {
-  font-size: 10px;
+.act-table th:first-child { padding-left: var(--pad-large); }
+.act-table th:last-child { padding-right: var(--pad-large); }
+.act-table td {
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--fleet-black-5);
   color: var(--fleet-black-75);
 }
+.act-table td:first-child { padding-left: var(--pad-large); }
+.act-table td:last-child { padding-right: var(--pad-large); }
+.act-table tbody tr:last-child td { border-bottom: 0; }
 
-.ram-free-label {
-  font-size: 10px;
-  color: var(--fleet-black-50);
+.act-row { cursor: pointer; transition: background var(--transition-fast); }
+.act-row:hover { background: var(--fleet-off-white); }
+.act-action { font-weight: 600; color: var(--fleet-black); }
+.act-muted { color: var(--fleet-black-75); }
+.act-hosts { font-weight: 600; color: var(--fleet-black); }
+.num { text-align: right; }
+.act-caret { text-align: right; color: var(--fleet-black-25); font-weight: 600; }
+
+.effort-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 3px;
+  font-size: var(--font-size-xxsmall);
+  font-weight: 700;
 }
+.effort--low { background: var(--status-good-bg); color: var(--status-good-text); }
+.effort--medium { background: var(--status-fair-bg); color: var(--status-fair-text); }
+.effort--high { background: var(--status-critical-bg); color: var(--status-critical-text); }
 
-.ram-pct-label {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-}
-
-.ram-total-label {
-  font-family: var(--font-body);
-  font-size: var(--font-size-xs);
-  color: var(--fleet-black-50);
-  text-align: right;
-}
-
-.ram-device-count {
-  font-size: 9px;
-  color: var(--fleet-black-50);
-}
-
-/* ─── Responsive ──────────────────────────────────────── */
-@media (max-width: 768px) {
-  .arch-stat-row {
-    flex-wrap: wrap;
-  }
-
-  .ram-tier-row {
-    grid-template-columns: 1fr;
-    gap: var(--pad-small);
-  }
+@media (max-width: 1100px) {
+  .in-hero { grid-template-columns: 1fr; gap: 20px; }
+  .hero-narrative { border-left: none; padding-left: 0; }
+  .finding-head { flex-direction: column; gap: 10px; }
+  .finding-side { align-items: flex-start; }
 }
 </style>
