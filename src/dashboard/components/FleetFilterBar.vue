@@ -117,7 +117,7 @@ watch(searchText, (val) => {
   }
 })
 
-watch([searchText, selectedOS, selectedModel, selectedEncryption, selectedRAMTier], () => {
+watch([searchText, selectedOS, selectedModel, selectedEncryption, selectedRAMTier, selectedTeam], () => {
   fetchDeviceCount()
 })
 

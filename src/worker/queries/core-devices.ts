@@ -219,36 +219,11 @@ export const firehoseDeviceQueries: QueryConfig[] = [
     name: 'firehose.devices.filtered_count',
     domain: 'devices',
     client: 'core',
-    description: 'Filtered device count for firehose data',
-    params: [
-      { name: 'search', type: 'string' as const, required: false },
-      { name: 'model', type: 'string' as const, required: false },
-      { name: 'ramTier', type: 'string' as const, required: false },
-    ],
+    description: 'Filtered device count for firehose data — same FILTERED_HOSTS_CTE as every scoped query, so the hosts chip agrees with the pages',
+    params: [...FILTER_PARAMS],
     sql: `
-      SELECT count() AS cnt FROM (
-        SELECT host_id,
-          argMax(hostname, timestamp) AS hostname,
-          argMax(hardware_model, timestamp) AS hardware_model,
-          argMax(hardware_serial, timestamp) AS hardware_serial,
-          argMax(memory_gb, timestamp) AS memory_gb
-        FROM hardware_inventory
-        GROUP BY host_id
-      )
-      WHERE 1=1
-        AND if({filterSearch:String} != '', hostname LIKE concat('%', {filterSearch:String}, '%') OR hardware_serial LIKE concat('%', {filterSearch:String}, '%') OR hardware_model LIKE concat('%', {filterSearch:String}, '%'), true)
-        AND if({filterModel:String} != '', hardware_model = {filterModel:String}, true)
-        AND if({filterRamTier:String} != '', memory_gb <= multiIf(
-          {filterRamTier:String} = '8GB', 8,
-          {filterRamTier:String} = '16GB', 16,
-          {filterRamTier:String} = '18GB', 18,
-          {filterRamTier:String} = '24GB', 24,
-          {filterRamTier:String} = '32GB', 32,
-          {filterRamTier:String} = '36GB', 36,
-          {filterRamTier:String} = '48GB', 48,
-          {filterRamTier:String} = '64GB', 64,
-          999999
-        ), true)
+      WITH ${FILTERED_HOSTS_CTE}
+      SELECT count() AS cnt FROM filtered_hosts
     `,
   },
 ]

@@ -1,8 +1,8 @@
 /**
  * Shared fleet-filter infrastructure for firehose queries.
  *
- * Any query that wants to respect the fleet filter bar (search/model/ramTier/os)
- * should:
+ * Any query that wants to respect the fleet filter bar
+ * (search/model/ramTier/os/team) should:
  *   1. Spread `...FILTER_PARAMS` into its `params: []` so the param-validator
  *      accepts them (otherwise they get silently dropped).
  *   2. Prefix its SQL with `WITH ${FILTERED_HOSTS_CTE},` and reference
@@ -33,12 +33,12 @@ export const FILTER_PARAMS = [
  * Or for single-CTE queries:
  *   `WITH ${FILTERED_HOSTS_CTE} SELECT ... WHERE host_id IN (SELECT host_id FROM filtered_hosts)`
  *
- * Platform comes from fleetd_info (LEFT JOIN so hosts missing fleetd data
- * aren't dropped when no platform filter is set).
+ * Platform comes from fleetd_info, team from host_teams (both LEFT JOINs so
+ * hosts missing that data aren't dropped when the filter is unset).
  */
 export const FILTERED_HOSTS_CTE = `
 filtered_hosts AS (
-  SELECT hi.host_id FROM (
+  SELECT hi.host_id AS host_id FROM (
     SELECT host_id,
       argMax(hostname, timestamp) AS hostname,
       argMax(hardware_model, timestamp) AS hardware_model,
@@ -50,6 +50,10 @@ filtered_hosts AS (
     SELECT host_id, argMax(platform, timestamp) AS platform
     FROM fleetd_info GROUP BY host_id
   ) fi ON hi.host_id = fi.host_id
+  LEFT JOIN (
+    SELECT host_id, argMax(team_id, last_seen) AS team_id
+    FROM host_teams GROUP BY host_id
+  ) ht ON hi.host_id = ht.host_id
   WHERE 1=1
     AND if({filterHostId:String} != '', hi.host_id = {filterHostId:String}, true)
     AND if({filterSearch:String} != '',
@@ -59,7 +63,7 @@ filtered_hosts AS (
       true)
     AND if({filterModel:String} != '', hi.hardware_model = {filterModel:String}, true)
     AND if({filterOs:String} != '', fi.platform = {filterOs:String}, true)
-    -- Team filter intentionally NOT in this CTE — see {filterTeam} note below.
+    AND if({filterTeam:String} != '', ht.team_id = {filterTeam:String}, true)
     -- RAM filter is "at most N GB" (inclusive) — selecting 24GB returns
     -- hosts with <= 24GB (i.e. 8, 16, 18, 24). "128GB+" effectively matches all.
     AND if({filterRamTier:String} != '', hi.memory_gb <= multiIf(
