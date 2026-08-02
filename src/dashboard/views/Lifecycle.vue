@@ -42,10 +42,12 @@
               <th>Host</th>
               <th>Model</th>
               <th>CPU</th>
+              <th>Chip age</th>
               <th class="num">RAM</th>
               <th>Battery</th>
               <th>Signals</th>
               <th class="num">Score</th>
+              <th>Verdict</th>
             </tr>
           </thead>
           <tbody>
@@ -53,6 +55,13 @@
               <td class="lc-host">{{ displayHost(h) }}</td>
               <td class="mono">{{ h.hardware_model }}</td>
               <td>{{ cpuLabel(h.cpu_class) }}</td>
+              <td>
+                <span v-if="chipInfo(h.cpu_class)" class="lc-age" :class="`lc-age--${ageTone(chipInfo(h.cpu_class).gensBehind)}`"
+                  :title="`${chipInfo(h.cpu_class).gensBehind} generation(s) behind current — device is at least ${new Date().getFullYear() - chipInfo(h.cpu_class).year} years old`">
+                  {{ chipInfo(h.cpu_class).year }} · {{ chipInfo(h.cpu_class).gensBehind }} gens
+                </span>
+                <span v-else class="lc-none">—</span>
+              </td>
               <td class="num">{{ h.ram_gb }}GB</td>
               <td>
                 <Badge :tone="batteryTone(h.battery_health_score)">
@@ -67,6 +76,12 @@
               </td>
               <td class="num">
                 <span class="lc-score" :class="`lc-score--${scoreTone(h.refresh_score)}`">{{ h.refresh_score }}</span>
+              </td>
+              <td>
+                <span class="lc-verdict" :title="verdictTitle(h)">
+                  <Badge :tone="hostVerdict(h).tone" :label="hostVerdict(h).label" />
+                  <span v-if="h.days_reporting_30d >= 5" class="lc-verdict-days">{{ h.days_pressured_30d }}/{{ h.days_reporting_30d }}d</span>
+                </span>
               </td>
             </tr>
           </tbody>
@@ -86,6 +101,7 @@ import Badge from '../components/base/Badge.vue'
 import EmptyState from '../components/base/EmptyState.vue'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { displayHost } from '../composables/displayName'
+import { chipInfo, ageTone, verdictFor } from '../composables/chipAge'
 
 const { filterParams } = useFleetFilter()
 const fp = () => ({ ...filterParams.value })
@@ -105,6 +121,24 @@ function cpuLabel(c) {
   if (!c) return '—'
   return c.replace('apple_', 'Apple ').replace('intel_', 'Intel ').toUpperCase().replace('APPLE ', 'Apple ').replace('INTEL ', 'Intel ')
 }
+// Chip age context + the refresh decision quadrant (perf x silicon age):
+// weak on OLD silicon -> replace; weak on NEW silicon -> investigate first.
+function hostVerdict(h) {
+  const info = chipInfo(h.cpu_class)
+  // refresh_score is inverted (higher = more refresh-worthy); the 30d
+  // pressure persistence keeps one bad day from nominating a device.
+  return verdictFor(Number(h.refresh_score) >= 30, info?.gensBehind ?? null, {
+    weakDays: Number(h.days_pressured_30d) || 0,
+    reportDays: Number(h.days_reporting_30d) || 0,
+  })
+}
+
+function verdictTitle(h) {
+  const d = Number(h.days_pressured_30d) || 0
+  const r = Number(h.days_reporting_30d) || 0
+  return `Memory-pressured on ${d} of ${r} reporting days (30d)`
+}
+
 // Internal severity keys ('high'/'mid'/'ok') → Badge tones.
 const sevTone = { high: 'critical', mid: 'fair', ok: 'good' }
 function batteryTone(s) {
@@ -192,6 +226,15 @@ watch(filterParams, load, { deep: true })
 .mono { font-family: var(--font-mono); }
 
 .lc-signals { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.lc-verdict { display: inline-flex; align-items: center; gap: 6px; }
+.lc-verdict-days { font-size: var(--font-size-xs); color: var(--fleet-black-50); font-variant-numeric: tabular-nums; }
+
+.lc-age { font-size: var(--font-size-sm); font-variant-numeric: tabular-nums; }
+.lc-age--neutral { color: var(--fleet-black-75); }
+.lc-age--fair { color: var(--status-fair-text); }
+.lc-age--elevated { color: var(--status-elevated); }
+.lc-age--critical { color: var(--status-critical); }
+
 .lc-none { color: var(--fleet-black-25); }
 
 .lc-score { font-family: var(--font-mono); font-weight: 700; }

@@ -79,8 +79,14 @@
 
       <!-- Health, OS & VPN fact chips -->
       <div v-if="deviceHealth.cpu_class || deviceOS.os_version || deviceVPN.network_confidence" class="detail-badges">
-        <Chip v-if="deviceHealth.cpu_class" label="CPU" :value="humanizeToken(deviceHealth.cpu_class)" />
-        <Chip v-if="deviceHealth.ram_tier" label="RAM" :value="String(deviceHealth.ram_tier)" />
+        <Chip
+          v-if="deviceHealth.cpu_class"
+          :tone="cpuAgeTone"
+          label="CPU"
+          :value="cpuAgeValue"
+          :title="cpuAgeTitle"
+        />
+        <Chip v-if="deviceHealth.ram_tier" label="RAM" :value="humanizeToken(deviceHealth.ram_tier, { capitalize: false })" />
         <Chip
           v-if="deviceHealth.swap_pressure"
           :tone="chipTone('swap', deviceHealth.swap_pressure)"
@@ -110,7 +116,8 @@
           v-if="deviceOS.dex_os_health"
           :tone="chipTone('dex', deviceOS.dex_os_health)"
           label="OS health"
-          :value="humanizeToken(deviceOS.dex_os_health, { capitalize: false })"
+          :value="osHealthValue"
+          :title="osHealthTitle"
         />
         <Chip
           v-if="deviceVPN.network_confidence"
@@ -354,6 +361,8 @@ import GaugeBar from '../components/base/GaugeBar.vue'
 import { buildSignalDrivers } from '../composables/scoreFormulas'
 import { displayHost } from '../composables/displayName'
 import { humanizeToken } from '../composables/humanize'
+import { chipInfo, ageTone } from '../composables/chipAge'
+import { osHealthReasons } from '../composables/osHealth'
 import { useSort } from '../composables/useSort'
 import { palette } from '../composables/uiPalette'
 import dayjs from 'dayjs'
@@ -377,6 +386,36 @@ const { config: appConfig } = useAppConfig()
 // we prefer hardware_serial (globally unique, short) → host_id → hostname
 // for highest-precision lookup, matching the convention used by HostTile.
 const FLEET_ALL_HOSTS_LABEL_ID = 7
+// dex_os_health is classified on-device (OS major x uptime) — surface WHY
+// instead of a bare "degraded" (mirrors upstream dex-queries.yml logic).
+const osHealthWhy = computed(() =>
+  osHealthReasons(deviceOS.value?.os_version, deviceOS.value?.uptime_days, deviceOS.value?.dex_os_health)
+)
+const osHealthValue = computed(() => {
+  const base = humanizeToken(deviceOS.value?.dex_os_health || '', { capitalize: false })
+  const why = osHealthWhy.value
+  return why.length ? `${base} — ${why.map(r => r.short).join(', ')}` : base
+})
+const osHealthTitle = computed(() => {
+  const why = osHealthWhy.value
+  if (!why.length) return 'OS major version and reboot recency are both within healthy thresholds'
+  return 'Why: ' + why.map(r => r.long).join('; ')
+})
+
+// Chip generation = minimum device age — the swap/perf context that
+// separates "refresh" from "investigate".
+const cpuAgeInfo = computed(() => chipInfo(deviceHealth.value?.cpu_class))
+const cpuAgeValue = computed(() => {
+  const i = cpuAgeInfo.value
+  if (!i) return humanizeToken(deviceHealth.value?.cpu_class || '')
+  return i.year ? `${i.pretty} (${i.year})` : i.pretty
+})
+const cpuAgeTone = computed(() => ageTone(cpuAgeInfo.value?.gensBehind ?? null))
+const cpuAgeTitle = computed(() => {
+  const i = cpuAgeInfo.value
+  return i ? `${i.gensBehind} generation(s) behind current silicon` : ''
+})
+
 // OS chip label follows the host platform (was hardcoded "macOS")
 const osChipLabel = computed(() => {
   const p = String(detail.value?.platform || selected.value?.platform || '').toLowerCase()

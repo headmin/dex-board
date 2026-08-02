@@ -19,6 +19,7 @@
         <div class="row-label">
           <span class="row-name">{{ prettyName(row.name) }}</span>
           <span class="row-count">{{ row.count }}</span>
+          <span v-if="activeDimension === 'os' && chipYear(row.name)" class="row-year">{{ chipYear(row.name) }}</span>
         </div>
         <div class="row-scores">
           <div class="score-bar-group">
@@ -41,6 +42,7 @@
 
 <script setup>
 import { gradeColor as sharedGradeColor } from '../composables/gradeColors'
+import { chipInfo } from '../composables/chipAge'
 import { ref, computed } from 'vue'
 import SkeletonLoader from './SkeletonLoader.vue'
 import GradeBadge from './GradeBadge.vue'
@@ -68,6 +70,10 @@ const activeData = computed(() => {
 
 function gradeColor(grade) {
   return sharedGradeColor(grade)
+}
+
+function chipYear(name) {
+  return chipInfo(name)?.year ?? null
 }
 
 // "apple_m5" -> "Apple M5" — the mockup shows humanized single-line names
@@ -192,6 +198,12 @@ h3 {
 .row-count {
   font-size: var(--font-size-xs);
   color: var(--fleet-black-33);
+  font-variant-numeric: tabular-nums;
+}
+
+.row-year {
+  font-size: var(--font-size-xs);
+  color: var(--fleet-black-50);
   font-variant-numeric: tabular-nums;
 }
 

@@ -53,7 +53,19 @@ export const firehoseLifecycleQueries: QueryConfig[] = [
     ],
     sql: `
       WITH ${FILTERED_HOSTS_CTE},
-      dh AS (${LATEST_HEALTH})
+      dh AS (${LATEST_HEALTH}),
+      -- 30d pressure persistence: a verdict must not flip on one bad day.
+      -- days_pressured / days_reporting distinguishes sustained strain from
+      -- a transient spike (raw device_health retains 90d).
+      press AS (
+        SELECT host_id,
+          uniqExact(toDate(timestamp)) AS days_reporting_30d,
+          uniqExactIf(toDate(timestamp), swap_pressure IN ('severe', 'elevated')) AS days_pressured_30d
+        FROM device_health
+        WHERE host_id IN (SELECT host_id FROM filtered_hosts)
+          AND timestamp >= now() - INTERVAL 30 DAY
+        GROUP BY host_id
+      )
       SELECT
         dh.host_id           AS host_id,
         hostname,
@@ -67,8 +79,11 @@ export const firehoseLifecycleQueries: QueryConfig[] = [
         battery_health_pct,
         battery_cycles,
         swap_pressure,
-        ${REFRESH_SCORE} AS refresh_score
+        ${REFRESH_SCORE} AS refresh_score,
+        ifNull(press.days_reporting_30d, 0) AS days_reporting_30d,
+        ifNull(press.days_pressured_30d, 0) AS days_pressured_30d
       FROM dh
+      LEFT JOIN press ON dh.host_id = press.host_id
       LEFT JOIN (
         SELECT host_id, argMax(computer_name, timestamp) AS computer_name
         FROM hardware_inventory GROUP BY host_id
