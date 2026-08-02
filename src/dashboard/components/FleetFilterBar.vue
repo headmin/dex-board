@@ -80,7 +80,7 @@
 
         <div class="device-count">
           <span class="count-value">{{ deviceCount.toLocaleString() }}</span>
-          <span class="count-label">devices</span>
+          <span class="count-label">{{ Number(deviceCount) === 1 ? 'device' : 'devices' }}</span>
         </div>
       </div>
     </div>
@@ -244,9 +244,9 @@ onMounted(() => {
   font-family: inherit;
   color: var(--fleet-black);
   background-color: var(--fleet-white);
-  border: 1px solid var(--fleet-black-25);
+  border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius);
-  height: 36px;
+  height: 32px;
   outline: none;
   transition: border-color var(--transition-base);
 }
@@ -256,8 +256,20 @@ onMounted(() => {
 }
 
 .field__input:focus {
-  border-color: var(--fleet-green);
-  box-shadow: 0 0 0 3px rgba(0, 154, 125, 0.15);
+  outline: none;
+  border-color: var(--fleet-black-75-down);
+}
+
+select.field__input {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 28px;
+  min-width: 96px;
+  max-width: 200px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23515774' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  cursor: pointer;
 }
 
 .field__input::placeholder {

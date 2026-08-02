@@ -68,7 +68,7 @@
     <ChartCard title="Bars — ScoreBar (comparative, trackless) vs GaugeBar (utilization, tracked)">
       <div class="bar-demo" v-for="row in scoreRows" :key="row.name">
         <span class="bar-demo__label">{{ row.name }}</span>
-        <ScoreBar :value="row.score" />
+        <ScoreBar :value="row.score" :color="gradeColor(row.grade)" />
         <GradeBadge :grade="row.grade" />
         <span class="bar-demo__score">{{ row.score }}</span>
       </div>
@@ -79,6 +79,9 @@
         <GaugeBar :value="91" />
       </div>
     </ChartCard>
+
+    <!-- Score breakdown (the mockup component) -->
+    <DimensionBreakdown :data="breakdownData" :loading="false" />
 
     <!-- Metric tiles -->
     <SectionHeader title="Metric tiles" caption="Off-white fill, 17px value, 11px label — per the device-card mockup" />
@@ -133,6 +136,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { gradeColor } from '../composables/gradeColors'
 import PageHeader from '../components/base/PageHeader.vue'
 import SectionHeader from '../components/base/SectionHeader.vue'
 import ChartCard from '../components/base/ChartCard.vue'
@@ -154,6 +158,7 @@ import Modal from '../components/base/Modal.vue'
 import GradeBadge from '../components/GradeBadge.vue'
 import MetricCard from '../components/MetricCard.vue'
 import DataTable from '../components/DataTable.vue'
+import DimensionBreakdown from '../components/DimensionBreakdown.vue'
 
 const inputVal = ref('')
 const searchVal = ref('')
@@ -164,6 +169,19 @@ const tableFilter = ref('')
 const modalOpen = ref(false)
 
 // Sample rows mirroring the score-breakdown mockup
+// Mirrors the dex-score-breakdown mockup exactly (incl. the faded tail)
+const breakdownData = {
+  os: [
+    { name: 'apple_m4', count: 29, score: 80, grade: 'B' },
+    { name: 'apple_m5', count: 16, score: 77, grade: 'B' },
+    { name: 'apple_m2', count: 8, score: 72, grade: 'C' },
+    { name: 'apple_m1', count: 3, score: 71, grade: 'C' },
+    { name: 'amd_ryzen_3', count: 2, score: 71, grade: 'C' },
+    { name: 'intel_core_i3', count: 1, score: 71, grade: 'C' },
+  ],
+  model: [], ram: [], team: [],
+}
+
 const scoreRows = [
   { name: 'Apple M4', score: 80, grade: 'B' },
   { name: 'Apple M5', score: 77, grade: 'B' },

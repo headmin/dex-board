@@ -1,7 +1,7 @@
 <template>
   <div class="chart-container">
     <div class="header">
-      <h3>Score Breakdown</h3>
+      <h3>Score breakdown</h3>
       <div class="dimension-tabs">
         <button
           v-for="dim in dimensions"
@@ -15,10 +15,10 @@
     <SkeletonLoader v-if="loading" variant="chart" height="280px" />
     <div v-else-if="!activeData.length" class="empty-state">No data for this dimension</div>
     <div v-else class="breakdown-rows">
-      <div v-for="row in activeData" :key="row.name" class="breakdown-row clickable" @click="$emit('row-click', { dimension: activeDimension, value: row.name })" :title="'Filter fleet by ' + row.name">
+      <div v-for="(row, idx) in activeData" :key="row.name" class="breakdown-row clickable" :style="{ opacity: rowFade(idx) }" @click="$emit('row-click', { dimension: activeDimension, value: row.name })" :title="'Filter fleet by ' + row.name + ' (' + row.count + (Number(row.count) === 1 ? ' device)' : ' devices)')">
         <div class="row-label">
-          <span class="row-name">{{ row.name }}</span>
-          <span class="row-count">{{ row.count }} devices</span>
+          <span class="row-name">{{ prettyName(row.name) }}</span>
+          <span class="row-count">{{ row.count }}</span>
         </div>
         <div class="row-scores">
           <div class="score-bar-group">
@@ -68,6 +68,22 @@ const activeData = computed(() => {
 
 function gradeColor(grade) {
   return sharedGradeColor(grade)
+}
+
+// "apple_m5" -> "Apple M5" — the mockup shows humanized single-line names
+function prettyName(name) {
+  return String(name).split('_').map((w, i) => {
+    if (/^m\d+$/.test(w) || w === 'amd') return w.toUpperCase()
+    if (i === 0) return w.charAt(0).toUpperCase() + w.slice(1)
+    return w
+  }).join(' ')
+}
+
+// The mockup de-emphasizes the ranking tail: bottom rows fade out
+function rowFade(idx) {
+  if (idx < 4) return 1
+  if (idx === 4) return 0.65
+  return 0.45
 }
 </script>
 
@@ -145,7 +161,7 @@ h3 {
 .breakdown-row.clickable {
   cursor: pointer;
   border-radius: var(--radius);
-  padding: 11px 7px;
+  padding: 6px 7px;
   margin: 0 -7px;
   transition: background 150ms ease-in-out;
 }
@@ -155,20 +171,28 @@ h3 {
 }
 
 .row-label {
-  min-width: 160px;
+  min-width: 150px;
+  max-width: 220px;
   flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .row-name {
-  display: block;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: 400;
   color: var(--fleet-black);
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .row-count {
   font-size: var(--font-size-xs);
-  color: var(--fleet-black-50);
+  color: var(--fleet-black-33);
+  font-variant-numeric: tabular-nums;
 }
 
 .row-scores {

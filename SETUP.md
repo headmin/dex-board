@@ -110,7 +110,7 @@ the scorer's `ifNull()` defaults make an **empty** table look like an
 # Via the worker API (same check the dashboard runs):
 curl -s -X POST https://<your-worker>/api/query \
   -H 'Content-Type: application/json' \
-  -d '{"name":"firehose.scores.readiness"}' | jq
+  -d '{"query":"firehose.scores.readiness"}' | jq
 ```
 
 Every `row_count` should be > 0 (`security_posture` may lag — the score has

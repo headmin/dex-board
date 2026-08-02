@@ -74,6 +74,8 @@ const normalizedOptions = computed(() =>
   background-color: var(--fleet-black-5);
 }
 
+.segmented-control__segment:focus { outline: none; }
+
 .segmented-control__segment:focus-visible {
   outline: 1px solid var(--fleet-focused-outline);
   outline-offset: -1px;
