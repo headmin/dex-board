@@ -93,7 +93,7 @@
         <label class="fma-toggle">
           <input type="checkbox" v-model="onlyWithData" />
           <span>Only show releases with patch data</span>
-          <span v-if="onlyWithData && fmaEagerLoaded" class="fma-toggle-meta">({{ releasesWithData }}/{{ fmaTopReleases.length }} match)</span>
+          <span v-if="onlyWithData && patchedPairsLoaded" class="fma-toggle-meta">({{ fmaFilteredReleases.length }} of {{ fmaReleases.length }} match)</span>
         </label>
       </div>
       <div v-if="!fmaEagerLoaded" class="fma-loading">Loading patch matches for {{ fmaTopReleases.length }} releases…</div>
@@ -121,7 +121,7 @@
           >See in timeline →</a>
         </FmaReleaseCard>
       </div>
-      <BaseButton v-if="visibleFmaReleases.length > 0 && fmaTopReleases.length < fmaReleases.length" class="fma-more-btn" @click="fmaLimit += 12">
+      <BaseButton v-if="visibleFmaReleases.length > 0 && fmaTopReleases.length < fmaFilteredReleases.length" class="fma-more-btn" @click="fmaLimit += 12">
         Show 12 more releases
       </BaseButton>
     </section>
@@ -717,20 +717,46 @@ const osTabs = computed(() =>
 )
 
 const fmaCaption = computed(() =>
-  `Vendor-published Fleet-maintained app versions · showing ${visibleFmaReleases.value.length} of ${fmaReleases.value.length} · ${fmaWindowDays}d patch window`
+  `Vendor-published Fleet-maintained app versions · showing ${visibleFmaReleases.value.length} of ${fmaFilteredReleases.value.length} matching (${fmaReleases.value.length} in feed) · ${fmaWindowDays}d patch window`
 )
 
-// Toggle: hide cards where the worker came back with zero matches.
+// Toggle: only show releases the fleet actually patched. Matching runs
+// against the WHOLE feed via one fleet-wide (software, version) pair set —
+// not just the visible top-N slice, which used to dead-end at "0/24 match"
+// whenever the newest feed batch happened to contain unmatched titles.
 const onlyWithData = ref(true)
+const patchedPairs = ref([])
+const patchedPairsLoaded = ref(false)
 
-const fmaTopReleases = computed(() => {
+async function fetchPatchedPairs() {
+  try {
+    patchedPairs.value = await query('firehose.scores.patched_versions', { windowDays: fmaWindowDays })
+  } catch {
+    patchedPairs.value = []
+  }
+  patchedPairsLoaded.value = true
+}
+
+// Mirrors fma_release_devices matching: exact version_to + case-insensitive
+// bidirectional name containment (Cursor ↔ Cursor.app).
+function releaseHasPatchData(r) {
+  const app = String(r.app || '').toLowerCase()
+  if (app.length < 4) return false
+  const ver = String(r.version_to || '')
+  return patchedPairs.value.some(p => {
+    if (String(p.new_version) !== ver) return false
+    const sw = String(p.software_name || '').toLowerCase()
+    return sw.includes(app) || app.includes(sw)
+  })
+}
+
+// OS tab + text search + (optionally) the patch-data filter — applied
+// BEFORE slicing, so matching releases are found wherever they sit.
+const fmaFilteredReleases = computed(() => {
   let list = fmaReleases.value
-  // Layer 1: OS tab filter
   if (osFilter.value !== 'all') {
     list = list.filter(r => platformBucket(r.platform) === osFilter.value)
   }
-  // Layer 2: text search (same `search` ref the timeline below uses) — keeps
-  // the top App-releases grid in lockstep with the timeline filter.
   if (search.value) {
     const s = search.value.toLowerCase()
     list = list.filter(r =>
@@ -740,23 +766,20 @@ const fmaTopReleases = computed(() => {
       (r.version_from || '').toLowerCase().includes(s)
     )
   }
-  return list.slice(0, fmaLimit.value)
+  if (onlyWithData.value && patchedPairsLoaded.value) {
+    list = list.filter(releaseHasPatchData)
+  }
+  return list
 })
 
-const visibleFmaReleases = computed(() => {
-  if (!fmaEagerLoaded.value) return fmaTopReleases.value
-  if (!onlyWithData.value) return fmaTopReleases.value
-  return fmaTopReleases.value.filter(r => (totalDevicesForRelease(r.id) || 0) > 0)
-})
+const fmaTopReleases = computed(() => fmaFilteredReleases.value.slice(0, fmaLimit.value))
+const visibleFmaReleases = computed(() => fmaTopReleases.value)
 
-const releasesWithData = computed(() =>
-  fmaTopReleases.value.filter(r => (totalDevicesForRelease(r.id) || 0) > 0).length
-)
-
-// If the patch-data filter would empty the section entirely, switch it off —
-// an empty flagship section with an active filter reads as broken.
-watch([releasesWithData, fmaEagerLoaded], ([n, loaded]) => {
-  if (loaded && onlyWithData.value && n === 0) onlyWithData.value = false
+// If the patch-data filter finds nothing fleet-wide (and it isn't the text
+// search doing it), switch it off — an empty flagship section with an
+// active filter reads as broken.
+watch([fmaFilteredReleases, patchedPairsLoaded], ([list, loaded]) => {
+  if (loaded && onlyWithData.value && !search.value && list.length === 0) onlyWithData.value = false
 })
 
 // Shared helpers from useFmaReleases, bound to this view's state.
@@ -1041,6 +1064,7 @@ onMounted(async () => {
   fetchDailySeries()
   loadPatchBuckets()
   fetchMttpStrip()
+  fetchPatchedPairs()
   await fetchFmaReleases()
   // fmaReleases now populated → eager-load counts for the top slice
   eagerLoadFmaCounts()

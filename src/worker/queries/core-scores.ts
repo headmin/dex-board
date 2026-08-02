@@ -1056,6 +1056,23 @@ export const firehoseScoreQueries: QueryConfig[] = [
         AND event_time <  now() - toIntervalDay({offsetDays:UInt32})
     `,
   },
+  // Every (software, new_version) pair seen patching in the window — ONE
+  // cheap query so the GitOps "only show releases with patch data" toggle
+  // can match the whole FMA feed instead of the visible top-N slice.
+  {
+    name: 'firehose.scores.patched_versions',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'Distinct (software_name, new_version) pairs with patch events in the window',
+    params: [
+      { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 180, default: 30 },
+    ],
+    sql: `
+      SELECT DISTINCT software_name, new_version
+      FROM dex_patch_events FINAL
+      WHERE event_time >= now() - toIntervalDay({windowDays:UInt32})
+    `,
+  },
   // Distribution of days_to_patch as a per-day histogram, split by patch
   // type. The client folds this into an adoption/survival curve. Clock:
   // fleet-first sighting → host applies; the sample is transitions that
