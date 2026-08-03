@@ -149,25 +149,6 @@
       </div>
     </section>
 
-    <!-- ─── What everyone is waiting for ────────────────────── -->
-    <section class="waiting-card">
-      <div class="curve-head">
-        <h2>What everyone is waiting for</h2>
-        <span class="curve-sub">typical days per step · different samples per row, so they don't sum</span>
-      </div>
-      <div class="waiting-rows">
-        <div v-for="w in waitingRows" :key="w.label" class="waiting-row" :class="{ 'waiting-row--na': w.value == null }">
-          <span class="waiting-label">{{ w.label }}</span>
-          <div class="waiting-meter">
-            <div v-if="w.value != null" class="waiting-fill" :style="{ width: w.pct + '%', background: w.color }"></div>
-            <span v-else class="waiting-na">{{ w.na }}</span>
-          </div>
-          <span class="waiting-value mono" :style="w.value != null ? { color: w.color } : {}">{{ w.value != null ? w.value.toFixed(1) + 'd' : '—' }}</span>
-        </div>
-      </div>
-      <div class="waiting-foot">{{ waitingFoot }}</div>
-    </section>
-
     <!-- ─── The blind spot, in plain words ──────────────────── -->
     <section class="blind-card">
       <div class="blind-count">
@@ -239,14 +220,9 @@ import EmptyState from '../components/base/EmptyState.vue'
 import { useAppConfig } from '../composables/useAppConfig'
 import { usePatchVelocity } from '../composables/usePatchVelocity'
 import { usePatchEvents } from '../composables/usePatchEvents'
-import { useChangelog, fileTags } from '../composables/useChangelog'
-import { useFmaReleases } from '../composables/useFmaReleases'
-import { useDailyScoreSeries } from '../composables/useDailyScoreSeries'
-import { buildChangeImpact } from '../composables/useChangeImpact'
 import { buildImpactRows, COHORT_RULES } from '../composables/useCohortImpact'
 import { query } from '../services/api'
 import { palette } from '../composables/uiPalette'
-import dayjs from 'dayjs'
 
 const RULES = COHORT_RULES
 const { config } = useAppConfig()
@@ -336,21 +312,6 @@ const slowApps = computed(() => rankedApps.value
   .slice(Math.max(5, rankedApps.value.length - 5))
   .reverse())
 
-// ─── What everyone is waiting for — plain-words stages ────────
-const { commits, fetchChangelog } = useChangelog()
-const { releases: fmaReleases, fetchFmaReleases } = useFmaReleases()
-const { fetchDailySeries, deltaAfter, judgementFor } = useDailyScoreSeries()
-const patchBuckets = ref([])
-
-const impact = computed(() => buildChangeImpact({
-  commits: commits.value,
-  releases: fmaReleases.value,
-  patchBuckets: patchBuckets.value,
-  fileTags,
-  deltaAfter,
-  judgementFor,
-}))
-
 function median(xs) {
   const a = xs.filter(x => isFinite(x)).sort((x, y) => x - y)
   if (!a.length) return null
@@ -358,42 +319,8 @@ function median(xs) {
   return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2
 }
 
-const approveDays = computed(() => {
-  const gaps = impact.value.chains
-    .filter(ch => ch.release)
-    .map(ch => dayjs(ch.anchorDay).diff(dayjs(String(ch.release.timestamp).slice(0, 10)), 'day'))
-    .filter(g => g >= 0)
-  return gaps.length ? median(gaps) : null
-})
-const fleetPartDays = computed(() => {
-  const gaps = impact.value.chains
-    .map(ch => {
-      const first = ch.bucketKeys.map(k => String(k).split('::')[0]).sort()[0]
-      return first ? dayjs(first).diff(dayjs(ch.anchorDay), 'day') : null
-    })
-    .filter(g => g != null && g >= 0)
-  return gaps.length ? median(gaps) : null
-})
-
-const waitingRows = computed(() => {
-  const rows = [
-    { label: 'Waiting for us to approve it', value: approveDays.value, color: palette.critical, na: 'nothing to compare this window' },
-    { label: 'Waiting for the machine to apply it', value: p50_90.value, color: palette.fair, na: 'no updates in the window' },
-    { label: "Fleet's own part of the job", value: fleetPartDays.value, color: palette.good, na: 'nothing to compare this window' },
-    { label: 'Waiting for someone to restart', value: null, color: palette.elevated, na: "can't see this yet — not instrumented" },
-  ]
-  const max = Math.max(...rows.map(r => r.value ?? 0), 0.1)
-  return rows.map(r => ({ ...r, pct: r.value != null ? Math.max(2, (r.value / max) * 100) : 0 }))
-})
-
-const waitingFoot = computed(() => {
-  const measured = waitingRows.value.filter(r => r.value != null)
-  if (!measured.length) return 'None of these steps is measurable in the current window.'
-  const worst = measured.reduce((a, b) => (b.value > a.value ? b : a))
-  return `The longest measured wait is "${worst.label.toLowerCase()}" at ${worst.value.toFixed(1)} days. The restart wait is probably the biggest of all — it's the one we can't see yet.`
-})
-
 // ─── Did recent rollouts help? ────────────────────────────────
+const patchBuckets = ref([])
 const impactRows = ref([])
 const impactLoading = ref(false)
 
@@ -477,9 +404,6 @@ onMounted(async () => {
 
   await Promise.all([
     fetchAll(sla),
-    fetchChangelog(),
-    fetchFmaReleases(),
-    fetchDailySeries(),
     fetchPatchSummaryBucketed(fmt(start), fmt(end), 1).then(rows => { patchBuckets.value = rows || [] }).catch(() => {}),
     query('firehose.scores.mttp_survival', { windowDays: 90 }).then(rows => { survivalRows.value = rows || [] }).catch(() => {}),
   ])
@@ -541,7 +465,7 @@ onMounted(async () => {
 .curve-sub { font-size: var(--font-size-sm); color: var(--fleet-black-50); text-align: right; }
 
 /* ─── Coverage curve ───────────────────────────── */
-.curve-card, .apps-card, .waiting-card {
+.curve-card, .apps-card {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);
   border-radius: var(--radius-large);
@@ -580,18 +504,6 @@ onMounted(async () => {
 .app-row-value { font-size: 16px; font-weight: 700; white-space: nowrap; }
 .apps-col-foot { font-size: var(--font-size-sm); color: var(--fleet-black-50); line-height: 1.5; text-wrap: pretty; }
 .mono { font-family: var(--font-mono); }
-
-/* ─── Waiting rows ─────────────────────────────── */
-.waiting-rows { display: flex; flex-direction: column; gap: 14px; }
-.waiting-row { display: grid; grid-template-columns: 260px 1fr 72px; align-items: center; gap: 20px; }
-.waiting-row--na { opacity: 0.7; }
-.waiting-label { font-size: 15px; font-weight: 700; color: var(--fleet-black); }
-.waiting-row--na .waiting-label { font-weight: 500; color: var(--fleet-black-75); }
-.waiting-meter { height: 26px; background: var(--fleet-black-5); border-radius: var(--radius); overflow: hidden; display: flex; align-items: center; }
-.waiting-fill { height: 100%; transition: width 400ms ease-out; }
-.waiting-na { font-size: var(--font-size-sm); color: var(--fleet-black-50); font-style: italic; padding: 0 12px; }
-.waiting-value { font-size: 17px; font-weight: 700; text-align: right; }
-.waiting-foot { padding-top: 16px; border-top: 1px solid var(--fleet-black-10); font-size: var(--font-size-base); color: var(--fleet-black-75); line-height: 1.55; text-wrap: pretty; }
 
 /* ─── Blind-spot callout ───────────────────────── */
 .blind-card {
@@ -684,7 +596,5 @@ onMounted(async () => {
   .hero-headline { border-left: none; padding-left: 0; }
   .apps-split { grid-template-columns: 1fr; }
   .method-panel { grid-template-columns: 1fr; }
-  .waiting-row { grid-template-columns: 1fr 72px; }
-  .waiting-row .waiting-meter { display: none; }
 }
 </style>
