@@ -5,7 +5,6 @@ import { query } from '../services/api'
 const searchText = ref('')
 const selectedOS = ref('')
 const selectedModel = ref('')
-const selectedEncryption = ref('')
 const selectedRAMTier = ref('')
 const selectedTeam = ref('')
 const heatmapMode = ref('unhealthiest')
@@ -21,7 +20,7 @@ const optionsLoaded = ref(false)
 export function useFleetFilter() {
 
   const isFleetFiltered = computed(() => {
-    return !!(searchText.value.trim() || selectedOS.value || selectedModel.value || selectedEncryption.value || selectedRAMTier.value || selectedTeam.value)
+    return !!(searchText.value.trim() || selectedOS.value || selectedModel.value || selectedRAMTier.value || selectedTeam.value)
   })
 
   // Param object for API calls — replaces all SQL fragment computeds
@@ -30,7 +29,6 @@ export function useFleetFilter() {
     if (searchText.value.trim()) params.search = searchText.value.trim()
     if (selectedOS.value) params.os = selectedOS.value
     if (selectedModel.value) params.model = selectedModel.value
-    if (selectedEncryption.value) params.encryption = selectedEncryption.value
     if (selectedRAMTier.value) params.ramTier = selectedRAMTier.value
     if (selectedTeam.value) params.team = selectedTeam.value
     return params
@@ -41,7 +39,6 @@ export function useFleetFilter() {
     if (searchText.value.trim()) parts.push(`"${searchText.value.trim()}"`)
     if (selectedOS.value) parts.push(selectedOS.value)
     if (selectedModel.value) parts.push(selectedModel.value)
-    if (selectedEncryption.value) parts.push(selectedEncryption.value)
     if (selectedRAMTier.value) parts.push(selectedRAMTier.value)
     if (selectedTeam.value) parts.push(selectedTeam.value)
     return parts.join(' + ')
@@ -76,7 +73,6 @@ export function useFleetFilter() {
     searchText.value = ''
     selectedOS.value = ''
     selectedModel.value = ''
-    selectedEncryption.value = ''
     selectedRAMTier.value = ''
     selectedTeam.value = ''
   }
@@ -91,7 +87,6 @@ export function useFleetFilter() {
     searchText,
     selectedOS,
     selectedModel,
-    selectedEncryption,
     selectedRAMTier,
     selectedTeam,
     heatmapMode,

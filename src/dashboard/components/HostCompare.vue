@@ -246,6 +246,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { query } from '../services/api'
+import { PATCH_EXCLUSIONS_PARAM } from '../composables/patchExclusions'
 import GradeBadge from './GradeBadge.vue'
 import Badge from './base/Badge.vue'
 import BaseButton from './base/BaseButton.vue'
@@ -405,8 +406,8 @@ async function loadDeviceData(hostId) {
   const [scores, appsRaw, patches, mttp] = await Promise.all([
     query('firehose.scores.device_latest', { hostIdentifier: safe }),
     query('firehose.adoption.per_device',  { hostId: safe }).catch(() => []),
-    query('firehose.scores.device_patch_avg', { hostIdentifier: safe }).catch(() => []),
-    query('firehose.scores.device_mttp',      { hostIdentifier: safe }).catch(() => [])
+    query('firehose.scores.device_patch_avg', { hostIdentifier: safe, excludeSoftware: PATCH_EXCLUSIONS_PARAM }).catch(() => []),
+    query('firehose.scores.device_mttp',      { hostIdentifier: safe, excludeSoftware: PATCH_EXCLUSIONS_PARAM }).catch(() => [])
   ])
   // adoption_gap calls it `usage_tier`; the existing softwareDiffs compares
   // on `usage_category`. Map once at the boundary so downstream code stays

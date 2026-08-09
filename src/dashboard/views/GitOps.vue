@@ -74,6 +74,7 @@
                 <template v-else>no vendor release matched → </template>
                 <span class="mono">{{ ch.commits[0].short_sha }}</span> committed → {{ ch.totalHosts }} host{{ ch.totalHosts === 1 ? '' : 's' }} patched · see in timeline →
               </div>
+              <div v-if="chainCohortLine(ch)" class="why-chain-cohort">{{ chainCohortLine(ch) }}</div>
             </div>
           </template>
           <span v-else class="why-empty">No verified chain was followed by a score {{ gi === 0 ? 'rise' : 'drop' }}.</span>
@@ -230,6 +231,7 @@
                 <span class="commit-author">{{ c.author }}</span>
                 <span class="commit-files-count">{{ c.files.length }} file{{ c.files.length > 1 ? 's' : '' }}</span>
                 <span v-for="tag in fileTags(c.files)" :key="tag" class="file-tag" :class="tag">{{ tag }}</span>
+                <span v-if="c.scope && c.scope !== 'global'" class="file-tag scope" :title="`Files in this commit target ${c.scope}`">{{ c.scope }}</span>
                 <template v-if="commitTier(c)">
                   <span
                     v-if="commitTier(c).tier === 'verified'"
@@ -384,9 +386,11 @@ import {
   loadFmaReleaseDevices as sharedLoadFmaReleaseDevices,
 } from '../composables/useFmaReleases'
 import { usePatchEvents } from '../composables/usePatchEvents'
+import { PATCH_EXCLUSIONS_PARAM } from '../composables/patchExclusions'
 import { useChangelog, fileTags } from '../composables/useChangelog'
 import { useDailyScoreSeries } from '../composables/useDailyScoreSeries'
 import { buildChangeImpact } from '../composables/useChangeImpact'
+import { buildImpactRows } from '../composables/useCohortImpact'
 import { useAppConfig } from '../composables/useAppConfig'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { query } from '../services/api'
@@ -461,6 +465,9 @@ const fileTypeOptions = [
   { value: 'scripts', label: 'Scripts' },
   { value: 'profiles', label: 'Profiles' },
   { value: 'queries', label: 'Queries' },
+  { value: 'software', label: 'Software' },
+  { value: 'labels', label: 'Labels' },
+  { value: 'fleets', label: 'Fleets' },
 ]
 
 const filteredCommits = computed(() => {
@@ -663,9 +670,18 @@ const authorStats = computed(() => {
 })
 
 const typeStats = computed(() => {
-  const counts = { policies: 0, scripts: 0, profiles: 0, queries: 0, other: 0 }
-  for (const c of commits.value) { for (const f of c.files) { if (f.includes('/policies/')) counts.policies++; else if (f.includes('/scripts/')) counts.scripts++; else if (f.includes('/profiles/')) counts.profiles++; else if (f.includes('/queries/')) counts.queries++; else counts.other++ } }
-  return Object.entries(counts).filter(([, v]) => v > 0).map(([type, count]) => ({ type, count }))
+  // Prefer the workflow's per-commit change_type (security/policy/profile/
+  // software/script/report/label/config) — it classifies every commit, so
+  // software and label changes no longer vanish into "other".
+  const counts = {}
+  for (const c of commits.value) {
+    const t = c.change_type || fileTags(c.files)[0] || 'other'
+    counts[t] = (counts[t] || 0) + 1
+  }
+  return Object.entries(counts)
+    .filter(([, v]) => v > 0)
+    .map(([type, count]) => ({ type, count }))
+    .sort((a, b) => b.count - a.count)
 })
 
 function formatDate(dateStr) { return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) }
@@ -1032,6 +1048,46 @@ const whyChains = computed(() => {
   return { best, worst, judgedCount: judged.length, chainCount: impact.value.chains.length }
 })
 
+// ─── Cohort verdicts for verified chains ─────────────────────
+// A verified chain already identifies its exposed host set (the rollout
+// buckets), so it deserves the same exposed-vs-waiting Welch comparison
+// the Patch velocity page runs — not just the day-shared fleet-wide Δ7d.
+const chainCohort = ref({})           // { software(lower): impactRow }
+let chainCohortKey = ''
+
+watch(() => impact.value.chains, async (chains) => {
+  const softwares = [...new Set((chains || []).map(ch => ch.software))]
+  const key = softwares.sort().join('|')
+  if (!softwares.length || key === chainCohortKey) return
+  chainCohortKey = key
+  const candidates = softwares.map(sw => ({ id: `chain-${sw}`, label: sw, software: sw }))
+  try {
+    const rows = await buildImpactRows(candidates, 14)
+    chainCohort.value = Object.fromEntries(rows.map(r => [String(r.software).toLowerCase(), r]))
+  } catch {
+    chainCohort.value = {}
+  }
+}, { immediate: true })
+
+function chainCohortRow(ch) {
+  return chainCohort.value[String(ch.software).toLowerCase()] || null
+}
+
+// One subdued line per chain: the cohort verdict with its evidence.
+function chainCohortLine(ch) {
+  const r = chainCohortRow(ch)
+  if (!r || !r.verdict) return ''
+  const v = r.verdict
+  if (v.key === 'likely') {
+    const dir = r.effect > 0 ? 'improved' : 'declined'
+    return `cohort: hosts that updated ${dir} ${Math.abs(r.effect).toFixed(1)} pts more than those waiting (${r.exposedN} vs ${r.controlN}, ${v.note})`
+  }
+  if (v.key === 'wide') return `cohort: effect unclear — ${v.note} (${r.exposedN} updated vs ${r.controlN} waiting)`
+  if (v.key === 'none') return `cohort: no effect found (${r.exposedN} updated vs ${r.controlN} waiting)`
+  if (v.key === 'rolled-out') return `cohort: rolled out — ${v.note}`
+  return ''
+}
+
 // Jump to a rollout bucket from a chain connector (reuses the hash receiver).
 function jumpToBucket(key) {
   const [day, sw] = String(key).split('::')
@@ -1048,8 +1104,10 @@ const mttpPrior7 = ref(null)
 
 async function fetchMttpStrip() {
   const sla = Number(config.value.patchSlaDays) || 14
+  // Same exclusions as the Patch velocity page — the two surfaces must
+  // never show different MTTP numbers for the same window.
   const one = (params) =>
-    query('firehose.scores.mttp_summary', { slaDays: sla, ...params })
+    query('firehose.scores.mttp_summary', { slaDays: sla, excludeSoftware: PATCH_EXCLUSIONS_PARAM, ...params })
       .then(rows => rows?.[0] || null)
       .catch(() => null)
   ;[mttp7.value, mttpPrior7.value] = await Promise.all([
@@ -1143,6 +1201,11 @@ onMounted(async () => {
 .file-tag.scripts { background: var(--status-good-bg); color: var(--status-good-text); }
 .file-tag.profiles { background: var(--status-fair-bg); color: var(--status-fair-text); }
 .file-tag.queries { background: var(--fleet-accent-purple-light); color: var(--fleet-accent-purple); }
+.file-tag.software { background: var(--status-good-bg); color: var(--status-good-text); }
+.file-tag.labels { background: var(--fleet-black-5); color: var(--fleet-black-75); }
+.file-tag.fleets { background: var(--fleet-accent-blue-light); color: var(--fleet-accent-blue); }
+.file-tag.config { background: var(--fleet-black-5); color: var(--fleet-black-75); }
+.file-tag.scope { background: var(--fleet-black-5); color: var(--fleet-black-50); text-transform: none; }
 .commit-detail { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--fleet-black-5); }
 .file-list { margin-bottom: 8px; }
 .file-entry { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: var(--font-size-xs); color: var(--fleet-black-75); }
@@ -1366,6 +1429,7 @@ onMounted(async () => {
 .why-chain .hero-up { color: var(--status-good); }
 .why-chain .hero-down { color: var(--status-critical); }
 .why-chain-sub { margin-top: 3px; font-size: var(--font-size-sm); color: var(--fleet-black-50); }
+.why-chain-cohort { margin-top: 3px; font-size: var(--font-size-xxsmall); color: var(--fleet-black-75); }
 .why-empty { font-size: var(--font-size-sm); color: var(--fleet-black-50); font-style: italic; }
 .why-empty-block { font-size: var(--font-size-base); color: var(--fleet-black-50); }
 

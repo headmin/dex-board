@@ -85,7 +85,7 @@ import { useWorkersCouncil } from '../composables/useWorkersCouncil'
 const route = useRoute()
 
 const {
-  searchText, selectedOS, selectedModel, selectedEncryption, selectedRAMTier, selectedTeam,
+  searchText, selectedOS, selectedModel, selectedRAMTier, selectedTeam,
   osOptions, modelOptions, teamOptions, ramTierOptions, deviceCount,
   isFleetFiltered, clearFleetFilter,
   loadFilterOptions, fetchDeviceCount
@@ -117,7 +117,7 @@ watch(searchText, (val) => {
   }
 })
 
-watch([searchText, selectedOS, selectedModel, selectedEncryption, selectedRAMTier, selectedTeam], () => {
+watch([searchText, selectedOS, selectedModel, selectedRAMTier, selectedTeam], () => {
   fetchDeviceCount()
 })
 

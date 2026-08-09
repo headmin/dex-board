@@ -24,11 +24,11 @@ export function usePatchVelocity() {
   const byHost = ref([])
   const loading = ref(false)
 
-  async function fetchAll(slaDays = 14) {
+  async function fetchAll(slaDays = 14, filterParams = {}) {
     loading.value = true
     const excludeSoftware = PATCH_EXCLUSIONS_PARAM
     const one = (params) =>
-      query('firehose.scores.mttp_summary', { slaDays, excludeSoftware, ...params })
+      query('firehose.scores.mttp_summary', { slaDays, excludeSoftware, ...filterParams, ...params })
         .then(rows => rows?.[0] || null)
         .catch(() => null)
 
@@ -41,9 +41,9 @@ export function usePatchVelocity() {
       one({ windowDays: 90 }),
       one({ windowDays: 7 }),
       one({ windowDays: 7, offsetDays: 7 }),
-      query('firehose.scores.mttp_summary_by_type', { windowDays: 90, excludeSoftware }).catch(() => []),
+      query('firehose.scores.mttp_summary_by_type', { windowDays: 90, excludeSoftware, ...filterParams }).catch(() => []),
       fetchPatchSummaryBucketed(fmt(start), fmt(end), 1).catch(() => []),
-      query('firehose.scores.mttp_by_host', { windowDays: 30, limit: 15, excludeSoftware }).catch(() => []),
+      query('firehose.scores.mttp_by_host', { windowDays: 30, limit: 15, excludeSoftware, ...filterParams }).catch(() => []),
     ])
     summary90.value = s90
     current7.value = c7

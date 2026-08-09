@@ -164,6 +164,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { query } from '../services/api'
+import { PATCH_EXCLUSIONS_PARAM } from '../composables/patchExclusions'
 import Badge from '../components/base/Badge.vue'
 import Chip from '../components/base/Chip.vue'
 import BaseButton from '../components/base/BaseButton.vue'
@@ -226,7 +227,7 @@ async function load() {
       query('firehose.adoption.per_device', { hostId: id }).catch(() => []),
       query('firehose.scores.device_top_patches', { hostIdentifier: id, limit: 12 }).catch(() => []),
       query('firehose.scores.device_signals_compare', { hostId: id }).catch(() => []),
-      query('firehose.scores.device_mttp', { hostIdentifier: id }).catch(() => []),
+      query('firehose.scores.device_mttp', { hostIdentifier: id, excludeSoftware: PATCH_EXCLUSIONS_PARAM }).catch(() => []),
       // 30d pressure pattern (same source as the Lifecycle verdicts) — a
       // point-in-time "severe" is a workload moment; the pattern is the story.
       query('firehose.lifecycle.refresh_candidates', { hostId: id, limit: 1 }).catch(() => []),

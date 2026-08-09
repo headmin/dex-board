@@ -17,6 +17,7 @@
         <h3>How this is measured</h3>
         <p><strong>Clock starts:</strong> the fleet first sees a new version anywhere. <strong>Clock stops:</strong> this host reports it. Elapsed is wall clock.</p>
         <p><strong>Who is counted:</strong> only hosts observed completing an update. A host still on the old build has no event and is in none of these numbers — so the real picture is worse than shown, never better. Fresh installs after a fix are excluded by construction.</p>
+        <p><strong>Scope:</strong> macOS app updates only — Windows and Linux hosts produce no patch events yet, and OS updates are not tracked as patches.</p>
         <p>Medians and percentiles are reported instead of the mean: patch times have a heavy tail, and the mean ({{ mean90 != null ? mean90.toFixed(1) + 'd' : '—' }}) would read as slower than the typical host actually is.</p>
       </div>
       <div class="method-col">
@@ -73,6 +74,9 @@
           <template v-if="weekTrend.flat">This week's typical patch is holding steady at {{ fmtLag(weekTrend.current) }}.</template>
           <template v-else>This week's typical patch is <span :class="weekTrend.faster ? 'hl-good' : 'hl-fair'">{{ Math.abs(weekTrend.delta).toFixed(1) }}d {{ weekTrend.faster ? 'faster' : 'slower' }}</span> than last week.</template>
         </p>
+        <!-- Window honesty: while the events table is younger than the 90d
+             window, "90 days" would overstate what was actually measured. -->
+        <p v-if="dataWindowNote" class="hero-window-note">{{ dataWindowNote }}</p>
       </div>
     </section>
 
@@ -287,7 +291,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '../components/base/BaseButton.vue'
 import EmptyState from '../components/base/EmptyState.vue'
@@ -295,7 +299,8 @@ import { useAppConfig } from '../composables/useAppConfig'
 import { usePatchVelocity } from '../composables/usePatchVelocity'
 import { usePatchEvents } from '../composables/usePatchEvents'
 import { buildImpactRows, COHORT_RULES } from '../composables/useCohortImpact'
-import { PATCH_EXCLUSIONS, PATCH_EXCLUSIONS_PARAM } from '../composables/patchExclusions'
+import { PATCH_EXCLUSIONS, PATCH_EXCLUSIONS_PARAM, isExcludedSoftware } from '../composables/patchExclusions'
+import { useFleetFilter } from '../composables/useFleetFilter'
 import { query } from '../services/api'
 import { displayHost } from '../composables/displayName'
 import { palette } from '../composables/uiPalette'
@@ -303,6 +308,7 @@ import { palette } from '../composables/uiPalette'
 const RULES = COHORT_RULES
 const router = useRouter()
 const { config } = useAppConfig()
+const { filterParams } = useFleetFilter()
 const error = ref(null)
 const showMethod = ref(false)
 
@@ -328,6 +334,18 @@ const weekTrend = computed(() => {
   if (c == null || p == null) return null
   const delta = +(Number(c) - Number(p)).toFixed(1)
   return { current: Number(c), delta, faster: delta < 0, flat: Math.abs(delta) < 0.1 }
+})
+
+// The hero claims a 90-day window; when patch-event collection started more
+// recently than that, say so instead of implying 90 days of history.
+const dataWindowNote = computed(() => {
+  const start = summary90.value?.data_start
+  if (!start) return null
+  const startDate = new Date(start)
+  if (!isFinite(startDate.getTime())) return null
+  const ageDays = (Date.now() - startDate.getTime()) / 86400000
+  if (ageDays >= 90) return null
+  return `Patch events have been collected since ${start} (${Math.floor(ageDays)} days) — the 90-day window is not fully populated yet.`
 })
 
 const statBand = computed(() => {
@@ -474,6 +492,9 @@ async function computeImpact() {
     const sw = String(b.software_name)
     if (seen.has(sw.toLowerCase())) continue
     seen.add(sw.toLowerCase())
+    // Excluded titles (Safari et al.) must not reappear as rollout
+    // candidates on the page that excludes them from every other number.
+    if (isExcludedSoftware(sw)) continue
     // Version transition of the dominant wave (this software's biggest bucket
     // in the window). The cohort itself is version-agnostic — any update to
     // this app in the window — so this labels the main wave, not a strict
@@ -569,19 +590,24 @@ const levers = computed(() => {
 })
 
 // ─── Load ─────────────────────────────────────────────────────
-onMounted(async () => {
+async function loadAll() {
   const sla = Number(config.value.patchSlaDays) || 14
   const end = new Date()
   const start = new Date(end.getTime() - 14 * 24 * 3600 * 1000)
   const fmt = (d) => d.toISOString().slice(0, 19).replace('T', ' ')
 
   await Promise.all([
-    fetchAll(sla),
+    fetchAll(sla, { ...filterParams.value }),
     fetchPatchSummaryBucketed(fmt(start), fmt(end), 1).then(rows => { patchBuckets.value = rows || [] }).catch(() => {}),
-    query('firehose.scores.mttp_survival', { windowDays: 90, excludeSoftware: PATCH_EXCLUSIONS_PARAM }).then(rows => { survivalRows.value = rows || [] }).catch(() => {}),
+    query('firehose.scores.mttp_survival', { windowDays: 90, excludeSoftware: PATCH_EXCLUSIONS_PARAM, ...filterParams.value }).then(rows => { survivalRows.value = rows || [] }).catch(() => {}),
   ])
   await computeImpact()
-})
+}
+
+onMounted(loadAll)
+// The global fleet filter bar scopes this page too — the MTTP queries all
+// accept FILTER_PARAMS now, so a filter change means a full refetch.
+watch(filterParams, loadAll, { deep: true })
 </script>
 
 <style scoped>
@@ -629,6 +655,7 @@ onMounted(async () => {
 .hero-right { border-left: 1px solid var(--fleet-blue); padding-left: 40px; display: flex; flex-direction: column; gap: 10px; }
 .hero-headline { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.4; text-wrap: pretty; }
 .hero-trend { margin: 0; font-size: var(--font-size-base); color: var(--fleet-black-33); }
+.hero-window-note { margin: 0; font-size: var(--font-size-sm); color: var(--status-fair); }
 .hl-fair { color: var(--status-fair); }
 .hl-good { color: var(--status-good-soft); }
 
