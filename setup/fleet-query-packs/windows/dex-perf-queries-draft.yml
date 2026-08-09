@@ -1,0 +1,65 @@
+# DRAFT — Windows performance queries for the deployed DEX pack.
+#
+# Destination: fleetdm/fleet it-and-security/lib/all/reports/dex-queries.yml
+# (append; names/style match the deployed "DEX - ..." convention). These are
+# NOT picked up from this file — they take effect only via a fleet-repo PR.
+#
+# Why: Windows hosts are scored coverage-aware (Security + Software) since
+# 2026-08-09; Performance/Device-Health stay NULL because no Windows stream
+# carries live memory or process telemetry. These three queries close the
+# collectable part of that gap using core-osquery tables only (processes,
+# system_info, uptime — no extensions). Live memory pressure beyond the
+# process-RSS footprint (cache/committed pages) has no core-osquery table on
+# Windows and stays a genuine open gap.
+#
+# After the pack ships, the dex-board side needs one normalization addition
+# (setup/clickhouse-schema, same pattern as 11-windows-normalization.sql):
+#   win_process_health  <- "Windows top processes"     (max-RSS Performance signal)
+#   win_memory          <- "Windows memory footprint"  (RSS-vs-physical %)
+#   win_uptime          <- "Windows uptime"            (staleness signal)
+# and core-scores.ts gains a Windows Performance branch (max-RSS 50% +
+# uptime staleness 50%, renormalized like the other partial categories).
+
+- name: DEX - System performance - Windows top processes
+  description: Top 10 processes by resident memory. Feeds the max-RSS Performance signal for Windows hosts.
+  query: |
+    SELECT
+      name AS process_name,
+      pid,
+      ROUND(resident_size / 1048576.0, 1) AS rss_mb,
+      ROUND(total_size / 1048576.0, 1) AS vms_mb
+    FROM processes
+    WHERE resident_size > 0
+    ORDER BY resident_size DESC
+    LIMIT 10;
+  interval: 900
+  platform: windows
+  automations_enabled: true
+  logging: snapshot
+
+- name: DEX - System performance - Windows memory footprint
+  description: Total process resident memory vs physical memory. Proxy for memory pressure until a real available-memory source exists on Windows.
+  query: |
+    SELECT
+      ROUND(SUM(p.resident_size) / 1048576.0, 0) AS processes_rss_mb,
+      ROUND(MAX(s.physical_memory) / 1048576.0, 0) AS physical_mb,
+      ROUND(100.0 * SUM(p.resident_size) / MAX(s.physical_memory), 1) AS rss_pct
+    FROM processes p
+    JOIN system_info s ON 1=1
+    WHERE p.resident_size > 0;
+  interval: 900
+  platform: windows
+  automations_enabled: true
+  logging: snapshot
+
+- name: DEX - System performance - Windows uptime
+  description: Days since last boot. Feeds the uptime-staleness Performance signal for Windows hosts.
+  query: |
+    SELECT
+      total_seconds AS uptime_seconds,
+      ROUND(total_seconds / 86400.0, 2) AS uptime_days
+    FROM uptime;
+  interval: 900
+  platform: windows
+  automations_enabled: true
+  logging: snapshot
