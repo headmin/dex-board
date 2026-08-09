@@ -335,6 +335,42 @@
         <DataTable title="Most stale apps" :data="staleApps" :columns="adoptionCols" :loading="loading.adoption" />
       </section>
     </div>
+
+    <!-- ═══ Security posture Tab ═══════════════════ -->
+    <div v-if="activeTab === 'security'" class="page-stack">
+      <!-- macOS posture (security_posture table, fleet-filter aware) -->
+      <section class="section">
+        <div class="metrics-row four-col">
+          <MetricCard label="FileVault" :value="ofN(macPostureSummary.disk_encrypted_count, macPostureSummary.posture_hosts)" :loading="loading.security" />
+          <MetricCard label="Firewall" :value="ofN(macPostureSummary.firewall_enabled_count, macPostureSummary.posture_hosts)" :loading="loading.security" />
+          <MetricCard label="Gatekeeper" :value="ofN(macPostureSummary.gatekeeper_enabled_count, macPostureSummary.posture_hosts)" :loading="loading.security" />
+          <MetricCard label="SIP" :value="ofN(macPostureSummary.sip_enabled_count, macPostureSummary.posture_hosts)" :loading="loading.security" />
+        </div>
+      </section>
+
+      <section class="section">
+        <DataTable title="macOS posture by host (worst first)" :data="macPosture" :columns="macPostureCols" :loading="loading.security" :maxRows="15" />
+      </section>
+
+      <!-- Windows posture (win_* normalization tables) -->
+      <section class="section">
+        <div class="metrics-row four-col">
+          <MetricCard label="BitLocker" :value="winStat('disk_encrypted')" :loading="loading.security" />
+          <MetricCard label="Secure Boot" :value="winStat('secure_boot_enabled')" :loading="loading.security" />
+          <MetricCard label="UAC healthy" :value="winStat('uac_ok')" :loading="loading.security" />
+          <MetricCard label="TPM ready" :value="winStat('tpm_ready')" :loading="loading.security" />
+        </div>
+      </section>
+
+      <section class="section">
+        <DataTable title="Windows posture by host (worst first)" :data="winPosture" :columns="winPostureCols" :loading="loading.security" />
+        <p class="posture-footnote">
+          Windows rows come from the win_* normalization tables and are not scoped by the fleet
+          filter — every reporting Windows host is shown, including hosts absent from hardware
+          inventory. Signal age is visible in the last-seen column.
+        </p>
+      </section>
+    </div>
   </div>
 </template>
 
@@ -390,7 +426,7 @@ const route = useRoute()
 const router = useRouter()
 const activeTab = ref('overview')
 const fetchedTabs = ref(new Set())
-const loading = ref({ wifi: false, apps: false, hw: false, fleetd: false, health: false, vpn: false, crashes: false, adoption: false })
+const loading = ref({ wifi: false, apps: false, hw: false, fleetd: false, health: false, vpn: false, crashes: false, adoption: false, security: false })
 
 const tabs = [
   { id: 'overview', label: 'Overview' },
@@ -402,6 +438,7 @@ const tabs = [
   { id: 'vpn', label: 'VPN' },
   { id: 'crashes', label: 'Crashes' },
   { id: 'adoption', label: 'Adoption' },
+  { id: 'security', label: 'Security' },
 ]
 // Shape the existing tab list for the Tabs primitive ({value,label}).
 const tabItems = tabs.map(t => ({ value: t.id, label: t.label }))
@@ -574,6 +611,46 @@ const adoptionCols = [
   { key: 'usage_tier', label: 'Tier' },
 ]
 
+// ── Security posture data ──────────────────────────
+const macPostureSummary = ref({})
+const macPosture = ref([])
+const winPosture = ref([])
+
+// Booleans render as tinted on/off words, never raw 0/1.
+const onOff = (v) => (v == null ? null : Number(v) === 1 ? 'on' : 'off')
+const boolTone = (v) => (v === 'on' ? 'good' : v === 'off' ? 'critical' : null)
+
+// "n of N" tile value; em-dash until both numbers exist.
+function ofN(n, total) {
+  if (n == null || total == null || Number(total) === 0) return '—'
+  return `${n} of ${total}`
+}
+function winStat(key) {
+  if (!winPosture.value.length) return '—'
+  const ok = winPosture.value.filter(r => r[key] === 'on').length
+  return `${ok} of ${winPosture.value.length}`
+}
+
+const macPostureCols = [
+  { key: 'hostname', label: 'Hostname' },
+  { key: 'disk_encrypted', label: 'FileVault', tone: boolTone },
+  { key: 'firewall_enabled', label: 'Firewall', tone: boolTone },
+  { key: 'gatekeeper_enabled', label: 'Gatekeeper', tone: boolTone },
+  { key: 'sip_enabled', label: 'SIP', tone: boolTone },
+  { key: 'last_seen', label: 'Last seen', type: 'datetime' },
+]
+const winPostureCols = [
+  { key: 'hostname', label: 'Hostname' },
+  { key: 'disk_encrypted', label: 'BitLocker', tone: boolTone },
+  { key: 'encryption_method', label: 'Method' },
+  { key: 'firewall_ok', label: 'Firewall', tone: boolTone },
+  { key: 'antivirus_ok', label: 'Antivirus', tone: boolTone },
+  { key: 'uac_ok', label: 'UAC', tone: boolTone },
+  { key: 'secure_boot_enabled', label: 'Secure Boot', tone: boolTone },
+  { key: 'tpm_ready', label: 'TPM', tone: boolTone },
+  { key: 'last_seen', label: 'Last seen', type: 'datetime' },
+]
+
 // ── Tab switching ───────────────────────────────────
 async function switchTab(tab) {
   activeTab.value = tab
@@ -709,6 +786,28 @@ async function fetchTab(tab) {
       crashSevDist.value = sev
       topCrashers.value = top
       loading.value.crashes = false
+    }
+    else if (tab === 'security') {
+      loading.value.security = true
+      const [ms, macList, winList] = await Promise.all([
+        query('firehose.security.posture_summary', { ...fp() }),
+        query('firehose.security.macos_posture_list', { limit: 200, ...fp() }),
+        query('firehose.security.windows_posture', {}),
+      ])
+      macPostureSummary.value = ms[0] || {}
+      const boolKeysMac = ['disk_encrypted', 'firewall_enabled', 'gatekeeper_enabled', 'sip_enabled']
+      macPosture.value = withDisplayHost(macList).map(r => {
+        const out = { ...r }
+        for (const k of boolKeysMac) out[k] = onOff(r[k])
+        return out
+      })
+      const boolKeysWin = ['disk_encrypted', 'firewall_ok', 'antivirus_ok', 'uac_ok', 'secure_boot_enabled', 'tpm_ready']
+      winPosture.value = (winList || []).map(r => {
+        const out = { ...r }
+        for (const k of boolKeysWin) out[k] = onOff(r[k])
+        return out
+      })
+      loading.value.security = false
     }
     else if (tab === 'adoption') {
       loading.value.adoption = true
@@ -1001,12 +1100,14 @@ watch(filterParams, () => {
 .daemon-gap-name { font-size: var(--font-size-base); font-weight: 600; color: var(--fleet-black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .daemon-gap-bundle { font-family: var(--font-mono); font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .daemon-gap-count { font-family: var(--font-mono); font-size: var(--font-size-sm); font-weight: 600; color: var(--fleet-black-75); text-align: right; }
-.daemon-footnote {
+.daemon-footnote,
+.posture-footnote {
   margin: 0;
   font-size: var(--font-size-sm);
   color: var(--fleet-black-50);
   text-wrap: pretty;
 }
+.posture-footnote { margin-top: var(--pad-small); }
 @media (max-width: 900px) {
   .daemon-gap-row { grid-template-columns: 1fr 90px; }
   .daemon-gap-row .meter-bar { display: none; }
