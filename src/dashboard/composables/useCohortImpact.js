@@ -150,14 +150,17 @@ export async function buildImpactRows(candidates, windowDays = 14) {
       return { ...m, ...(stat || { effect: null, ciLow: null, ciHigh: null, p: null }), verdict }
     })
 
-    // Headline metric: the most-moved one whose interval clears zero
-    // (likely/wide), else the composite. Composite stays the reference so a
-    // fished-up category can never masquerade as the primary read — the UI
-    // labels which sub-score it is and the method notes all were checked.
+    // Headline metric: only a category with a STRONG signal ('likely') may
+    // replace the composite. A merely 'wide'/unclear category is exactly
+    // where multiple-comparison noise lives — the most-moved of five
+    // sub-scores will often be a coincidental co-movement with no plausible
+    // mechanism (e.g. a Fleet-agent update "lowering" OS security posture).
+    // Those fall back to the composite so the page never headlines an
+    // implausible thin correlation.
     const composite = byMetric[0]
-    const significant = byMetric.filter(m => m.verdict.key === 'likely' || m.verdict.key === 'wide')
-    const headline = significant.length
-      ? significant.reduce((a, b) => (Math.abs(b.effect) > Math.abs(a.effect) ? b : a))
+    const strongCats = byMetric.filter((m, i) => i > 0 && m.verdict.key === 'likely')
+    const headline = strongCats.length
+      ? strongCats.reduce((a, b) => (Math.abs(b.effect) > Math.abs(a.effect) ? b : a))
       : composite
 
     // Near-universal reframe: when impact can't be measured only because

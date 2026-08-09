@@ -236,7 +236,7 @@
         <EmptyState v-else-if="!impactRows.length" small title="No rollouts in the 14-day window to judge." />
         <div v-for="row in impactRows" :key="row.id" class="impact-row">
           <div class="impact-main">
-            <span class="impact-name">{{ row.label }}</span>
+            <span class="impact-name">{{ row.label }}<span v-if="row.versionTo" class="impact-version mono">{{ row.versionFrom ? row.versionFrom + ' → ' : '→ ' }}{{ row.versionTo }}</span></span>
             <span class="impact-reading-text">{{ readingSentence(row) }}</span>
           </div>
           <div class="impact-side">
@@ -244,7 +244,7 @@
             <span v-if="row.exposedN != null" class="impact-counts mono">{{ row.exposedN }} updated · {{ row.controlN }} waiting</span>
           </div>
         </div>
-        <div class="impact-foot">Judged over 7 days on the overall score and each sub-score (memory, security, device health, app health); the most-moved one is shown. "Likely" is the strongest word this list uses.</div>
+        <div class="impact-foot">Version shows the largest wave in the window; the cohort is any host that updated this app in the last 14 days. Judged over 7 days on the overall score and each sub-score — a sub-score is only named when its own signal is strong, so a coincidental co-movement isn't reported as a finding. "Likely" is the strongest word this list uses.</div>
       </div>
     </section>
 
@@ -453,7 +453,17 @@ async function computeImpact() {
     const sw = String(b.software_name)
     if (seen.has(sw.toLowerCase())) continue
     seen.add(sw.toLowerCase())
-    candidates.push({ id: `rollout-${sw}`, label: `${sw} rollout`, software: sw })
+    // Version transition of the dominant wave (this software's biggest bucket
+    // in the window). The cohort itself is version-agnostic — any update to
+    // this app in the window — so this labels the main wave, not a strict
+    // filter; the footer says so.
+    candidates.push({
+      id: `rollout-${sw}`,
+      label: `${sw} rollout`,
+      software: sw,
+      versionFrom: b.earliest_from || '',
+      versionTo: b.latest_to || '',
+    })
   }
   impactRows.value = await buildImpactRows(candidates, 14)
   impactLoading.value = false
@@ -754,6 +764,7 @@ onMounted(async () => {
 }
 .impact-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .impact-name { font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); }
+.impact-version { margin-left: 8px; font-size: var(--font-size-sm); font-weight: 500; color: var(--fleet-black-50); }
 .impact-reading-text { font-size: var(--font-size-sm); color: var(--fleet-black-75); line-height: 1.5; text-wrap: pretty; }
 .impact-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; white-space: nowrap; }
 .impact-counts { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
