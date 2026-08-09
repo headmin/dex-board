@@ -464,6 +464,7 @@ function verdictLabel(row) {
     case 'likely': return row.effect > 0 ? 'Likely helped' : 'Likely hurt'
     case 'wide': return 'Unclear'
     case 'none': return 'No effect found'
+    case 'rolled-out': return 'Rolled out'
     default: return "Can't be measured"
   }
 }
@@ -493,6 +494,9 @@ function readingSentence(row) {
     return `The ${metric} moved ${dir} ${mag} points, but too few hosts to say it with confidence.`
   }
   if (v === 'none') return 'No measurable difference on any score — overall or by category.'
+  if (v === 'rolled-out') {
+    return `${row.exposedN} machines picked up this update — the rollout's essentially complete, so there's no waiting group left to measure impact against.`
+  }
   if (row.controlN != null && row.controlN > 0 && row.controlN < RULES.MIN_CONTROL) {
     return `Nearly everyone already has it — only ${row.controlN} host${row.controlN === 1 ? '' : 's'} left to compare against.`
   }
@@ -759,6 +763,7 @@ onMounted(async () => {
 .verdict--wide { background: var(--status-fair-bg); color: var(--status-fair-text); }
 .verdict--none { background: var(--fleet-black-5); color: var(--fleet-black-75); }
 .verdict--not-measurable { background: var(--fleet-black-10); color: var(--fleet-black-75); }
+.verdict--rolled-out { background: var(--info-tint); color: var(--fleet-info); }
 .impact-foot { padding: 12px var(--pad-large); background: var(--fleet-off-white); font-size: var(--font-size-sm); color: var(--fleet-black-50); }
 
 /* ─── Lever rows ───────────────────────────────── */

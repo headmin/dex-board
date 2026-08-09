@@ -160,6 +160,21 @@ export async function buildImpactRows(candidates, windowDays = 14) {
       ? significant.reduce((a, b) => (Math.abs(b.effect) > Math.abs(a.effect) ? b : a))
       : composite
 
+    // Near-universal reframe: when impact can't be measured only because
+    // almost everyone already has it (tiny control, broad exposure), that's
+    // a successful rollout, not a failure. Report it as coverage instead of
+    // a dead "can't be measured". We deliberately give NO percentage — the
+    // control set is "scored hosts that didn't patch in the window", which
+    // isn't a clean install-base denominator (some may not run the app, and
+    // the event stream can't tell us who's on which version). So we state
+    // only what's directly observed: how many updated, how few didn't.
+    let verdict = headline.verdict
+    const rolledOut = verdict.key === 'not-measurable' &&
+      controlN > 0 && controlN < COHORT_RULES.MIN_CONTROL && exposedN >= COHORT_RULES.MIN_CONTROL
+    if (rolledOut) {
+      verdict = { key: 'rolled-out', label: 'Rolled out', note: `${exposedN} updated, ${controlN} not` }
+    }
+
     // Confounders: other candidate changes reaching most of the same hosts.
     const confounders = softwares.filter(other => {
       if (other === c.software) return false
@@ -180,7 +195,7 @@ export async function buildImpactRows(candidates, windowDays = 14) {
       ciLow: headline.ciLow,
       ciHigh: headline.ciHigh,
       p: headline.p,
-      verdict: headline.verdict,
+      verdict,
       // Composite reference + the strongest category, for the reading line.
       compositeEffect: composite.effect,
       byMetric,
