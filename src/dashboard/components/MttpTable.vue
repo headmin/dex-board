@@ -18,7 +18,13 @@
       <tbody>
         <tr v-for="r in rows" :key="rowKey(r)">
           <td class="mttp-col-app">{{ r.software_name }}</td>
-          <td class="mttp-col-num"><strong>{{ r.hosts }}</strong></td>
+          <td class="mttp-col-num">
+            <strong>{{ r.hosts }}</strong><span
+              v-if="r.eligible_hosts != null && r.eligible_hosts >= r.hosts"
+              class="mttp-eligible"
+              :title="`${r.hosts} hosts patched of ${r.eligible_hosts} reporting this app installed (14d)`"
+            > of {{ r.eligible_hosts }}</span>
+          </td>
           <td class="mttp-col-num"><span :class="lagClass(r)">{{ r.avg_lag }}d</span></td>
           <td class="mttp-col-range mono">{{ r.min_lag }}–{{ r.max_lag }}d</td>
           <td class="mttp-col-num" v-if="showDistinct">{{ r.distinct_lags }}</td>
@@ -30,7 +36,9 @@
     </table>
     <p v-if="slaDays" class="mttp-caption">
       MTTP is fleet-internal adoption lag (first host patched → this host patched),
-      not vendor-disclosure-to-patched. Severity weighting needs a CVE feed (not integrated).
+      not vendor-disclosure-to-patched. "N of M" = hosts patched of hosts reporting
+      the app installed in the last 14 days — hosts still waiting are the gap.
+      Severity weighting needs a CVE feed (not integrated).
     </p>
   </div>
 </template>
@@ -112,6 +120,7 @@ const slaSummary = computed(() => {
 .mttp-table .mttp-col-app { font-weight: 500; color: var(--fleet-black); }
 .mttp-table .mttp-col-num { text-align: right; font-family: var(--font-mono); white-space: nowrap; }
 .mttp-table .mttp-col-num strong { color: var(--fleet-black); font-weight: 700; }
+.mttp-eligible { color: var(--fleet-black-50); }
 .mttp-table .mttp-col-range { text-align: right; color: var(--fleet-black-50); white-space: nowrap; }
 .mttp-table .mono { font-family: var(--font-mono); }
 .mttp-empty {

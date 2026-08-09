@@ -39,7 +39,7 @@ export function usePatchVelocity() {
     const start = new Date(end.getTime() - 30 * 24 * 3600 * 1000)
     const fmt = (d) => d.toISOString().slice(0, 19).replace('T', ' ')
 
-    const [s90, c7, p7, types, appRows, hostRows, weekRows, hw] = await Promise.all([
+    const [s90, c7, p7, types, appRows, hostRows, weekRows, hw, eligibleRows] = await Promise.all([
       one({ windowDays: 90 }),
       one({ windowDays: 7 }),
       one({ windowDays: 7, offsetDays: 7 }),
@@ -49,6 +49,7 @@ export function usePatchVelocity() {
       query('firehose.scores.mttp_weekly', { windowDays: 90, excludeSoftware, ...filterParams }).catch(() => []),
       query('firehose.scores.mttp_host_weighted', { windowDays: 90, excludeSoftware, ...filterParams })
         .then(rows => rows?.[0] || null).catch(() => null),
+      query('firehose.scores.app_eligible_hosts', { ...filterParams }).catch(() => []),
     ])
     summary90.value = s90
     current7.value = c7
@@ -60,7 +61,16 @@ export function usePatchVelocity() {
     // has no exclusion param — drop excluded titles here so the app list
     // matches the server-side numbers above.
     const cleanApp = (appRows || []).filter(r => !isExcludedSoftware(r.software_name))
-    byApp.value = aggregatePatchRowsBySoftware(cleanApp, 25)
+    // Eligible-cohort denominator: hosts reporting the app installed in the
+    // last 14 days (adoption_gap). Turns "N hosts patched" into "N of M that
+    // have the app" — the censored never-patched population becomes visible.
+    const eligible = new Map(
+      (eligibleRows || []).map(r => [String(r.software_name).toLowerCase(), Number(r.eligible_hosts)])
+    )
+    byApp.value = aggregatePatchRowsBySoftware(cleanApp, 25).map(r => ({
+      ...r,
+      eligible_hosts: eligible.get(String(r.software_name).toLowerCase()) ?? null,
+    }))
     byHost.value = hostRows || []
     loading.value = false
   }

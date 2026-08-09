@@ -1291,6 +1291,23 @@ export const firehoseScoreQueries: QueryConfig[] = [
     `,
   },
   {
+    name: 'firehose.scores.app_eligible_hosts',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'Per-app installed base (hosts reporting the app in adoption_gap, 14d) — the eligible-cohort denominator for patch coverage',
+    params: [...FILTER_PARAMS],
+    sql: `
+      WITH ${FILTERED_HOSTS_CTE}
+      SELECT
+        app_name AS software_name,
+        uniqExact(host_id) AS eligible_hosts
+      FROM adoption_gap
+      WHERE timestamp > now() - INTERVAL 14 DAY
+        AND host_id IN (SELECT host_id FROM filtered_hosts)
+      GROUP BY app_name
+    `,
+  },
+  {
     name: 'firehose.scores.mttp_weekly',
     domain: 'scores',
     client: 'core' as const,
