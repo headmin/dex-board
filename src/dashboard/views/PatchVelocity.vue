@@ -60,13 +60,28 @@
           </div>
         </div>
       </div>
-      <p class="hero-headline">
-        <template v-if="p50_90 != null && p90_90 != null">
-          The first half is fine. <span class="hl-fair">The stragglers take {{ Math.round(p90_90 - p50_90) }} more days</span> — and that is where the risk lives.
-        </template>
-        <template v-else-if="!loading">No updates observed in the last 90 days — nothing to measure.</template>
-        <template v-else>Measuring…</template>
-      </p>
+      <div class="hero-right">
+        <p class="hero-headline">
+          <template v-if="p50_90 != null && p90_90 != null">
+            The first half is fine. <span class="hl-fair">The stragglers take {{ Math.round(p90_90 - p50_90) }} more days</span> — and that is where the risk lives.
+          </template>
+          <template v-else-if="!loading">No updates observed in the last 90 days — nothing to measure.</template>
+          <template v-else>Measuring…</template>
+        </p>
+        <p v-if="weekTrend" class="hero-trend">
+          <template v-if="weekTrend.flat">This week's typical patch is holding steady at {{ fmtLag(weekTrend.current) }}.</template>
+          <template v-else>This week's typical patch is <span :class="weekTrend.faster ? 'hl-good' : 'hl-fair'">{{ Math.abs(weekTrend.delta).toFixed(1) }}d {{ weekTrend.faster ? 'faster' : 'slower' }}</span> than last week.</template>
+        </p>
+      </div>
+    </section>
+
+    <!-- ─── Stat band ───────────────────────────────────────── -->
+    <section v-if="statBand.length" class="stat-band">
+      <div v-for="s in statBand" :key="s.key" class="stat-cell">
+        <span class="stat-value" :class="s.tone ? `stat-value--${s.tone}` : ''">{{ s.value }}</span>
+        <span class="stat-label">{{ s.label }}</span>
+        <span class="stat-sub">{{ s.sub }}</span>
+      </div>
     </section>
 
     <!-- ─── Coverage after a version ships ──────────────────── -->
@@ -91,6 +106,31 @@
         <text v-for="d in [0, 7, 14, 21, 30]" :key="'cx' + d" :x="covX(d)" y="232" text-anchor="middle" class="curve-tick" :class="{ 'curve-tick--bold': d === 7 }">{{ d === 0 ? 'day 0' : d }}</text>
       </svg>
       <EmptyState v-else small title="No updates in the window." />
+    </section>
+
+    <!-- ─── OS vs app updates (only when both paths carry data) ─ -->
+    <section v-if="osVsApp.length >= 2" class="type-grid">
+      <div v-for="t in osVsApp" :key="t.type" class="type-card">
+        <div class="type-head">
+          <h3>{{ t.title }}</h3>
+          <span class="type-count">{{ t.events.toLocaleString() }} update{{ t.events === 1 ? '' : 's' }} · {{ t.hosts }} host{{ t.hosts === 1 ? '' : 's' }}</span>
+        </div>
+        <div class="type-stats">
+          <div class="type-stat">
+            <span class="type-stat-value" :style="{ color: t.p50 != null ? lagColor(t.p50) : 'var(--fleet-black-50)' }">{{ t.p50 != null ? fmtLag(t.p50) : '—' }}</span>
+            <span class="type-stat-key">typical (p50)</span>
+          </div>
+          <div class="type-stat">
+            <span class="type-stat-value" :style="{ color: t.p90 != null ? lagColor(t.p90) : 'var(--fleet-black-50)' }">{{ t.p90 != null ? fmtLag(t.p90) : '—' }}</span>
+            <span class="type-stat-key">slowest tenth (p90)</span>
+          </div>
+          <div class="type-stat">
+            <span class="type-stat-value">{{ t.apps || '—' }}</span>
+            <span class="type-stat-key">{{ t.type === 'os' ? 'OS builds' : 'titles' }}</span>
+          </div>
+        </div>
+      </div>
+      <p class="type-foot">OS updates and app updates travel different paths — OS waits on a reboot, apps on a relaunch. Split so one can't hide the other.</p>
     </section>
 
     <!-- ─── App by app ──────────────────────────────────────── -->
@@ -147,6 +187,29 @@
           <span class="apps-col-foot">Averaging these into one number would hide every one of them.</span>
         </div>
       </div>
+      <p v-if="excludedLabel" class="apps-excluded">{{ excludedLabel }} is left out — it ships with macOS and updates on Apple's schedule, not the fleet's.</p>
+    </section>
+
+    <!-- ─── Machines dragging the tail ──────────────────────── -->
+    <section class="who-card">
+      <div class="who-head">
+        <h3>Machines dragging the tail</h3>
+        <span class="curve-sub">slowest to apply their updates · 30d · click through for the full host picture</span>
+      </div>
+      <div v-if="slowHosts.length" class="who-rows">
+        <div v-for="h in slowHosts" :key="h.host_identifier" class="who-row" :title="`Open ${h.name} — full host detail`" @click="openHost(h.host_identifier)">
+          <div class="who-row-label">
+            <span class="who-name">{{ h.name }}</span>
+            <span class="who-sub">{{ h.n_patches }} update{{ h.n_patches === 1 ? '' : 's' }} · {{ h.n_apps }} title{{ h.n_apps === 1 ? '' : 's' }}<span v-if="Number(h.n_patches) === 1" class="who-single"> · single event</span></span>
+          </div>
+          <div class="who-meter">
+            <div class="who-fill" :style="{ width: hostBarPct(h) + '%', background: lagColor(h.avg) }"></div>
+          </div>
+          <span class="who-value mono" :style="{ color: lagColor(h.avg) }">{{ h.avg.toFixed(1) }}d</span>
+        </div>
+      </div>
+      <EmptyState v-else small title="No per-host patch data in the window." />
+      <div class="who-footer">Mean days-to-apply per machine — usually offline windows and deferred restarts, a pattern to chase rather than a verdict.</div>
     </section>
 
     <!-- ─── The blind spot, in plain words ──────────────────── -->
@@ -215,22 +278,26 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import BaseButton from '../components/base/BaseButton.vue'
 import EmptyState from '../components/base/EmptyState.vue'
 import { useAppConfig } from '../composables/useAppConfig'
 import { usePatchVelocity } from '../composables/usePatchVelocity'
 import { usePatchEvents } from '../composables/usePatchEvents'
 import { buildImpactRows, COHORT_RULES } from '../composables/useCohortImpact'
+import { PATCH_EXCLUSIONS, PATCH_EXCLUSIONS_PARAM } from '../composables/patchExclusions'
 import { query } from '../services/api'
+import { displayHost } from '../composables/displayName'
 import { palette } from '../composables/uiPalette'
 
 const RULES = COHORT_RULES
+const router = useRouter()
 const { config } = useAppConfig()
 const error = ref(null)
 const showMethod = ref(false)
 
 // ─── Core MTTP data ───────────────────────────────────────────
-const { summary90, byApp, byHost, loading, fetchAll } = usePatchVelocity()
+const { summary90, current7, prior7, byType, byApp, byHost, loading, fetchAll } = usePatchVelocity()
 const { fetchPatchSummaryBucketed } = usePatchEvents()
 
 const p50_90 = computed(() => summary90.value?.p50_lag != null ? Number(summary90.value.p50_lag) : null)
@@ -240,6 +307,58 @@ const mean90 = computed(() => summary90.value?.avg_lag != null ? Number(summary9
 // Big numbers read in whole units where possible: "22 hours" beats "0.9".
 function fmtDays(d) { return d < 1.5 ? Math.round(d * 24) : (d < 10 ? d.toFixed(1) : Math.round(d)) }
 function unitFor(d) { return d < 1.5 ? 'hours' : 'days' }
+function fmtLag(d) { return d < 1.5 ? Math.round(d * 24) + 'h' : d.toFixed(1) + 'd' }
+
+// ─── Stat band (volume + week-over-week, from data already fetched) ──
+const excludedLabel = PATCH_EXCLUSIONS.map(s => s.replace(/\.app$/, '')).join(', ')
+
+const weekTrend = computed(() => {
+  const c = current7.value?.p50_lag
+  const p = prior7.value?.p50_lag
+  if (c == null || p == null) return null
+  const delta = +(Number(c) - Number(p)).toFixed(1)
+  return { current: Number(c), delta, faster: delta < 0, flat: Math.abs(delta) < 0.1 }
+})
+
+const statBand = computed(() => {
+  const s = summary90.value
+  if (!s) return []
+  return [
+    { key: 'events', label: 'Updates observed', value: s.n_events != null ? Number(s.n_events).toLocaleString() : '—', sub: '90 days' },
+    { key: 'hosts', label: 'Machines patched', value: s.n_hosts != null ? Number(s.n_hosts).toLocaleString() : '—', sub: 'at least one update' },
+    { key: 'apps', label: 'Titles updated', value: s.n_apps != null ? Number(s.n_apps).toLocaleString() : '—', sub: 'distinct apps + OS' },
+    { key: 'sla', label: 'Within target', value: s.pct_within_sla != null ? s.pct_within_sla + '%' : '—', sub: `≤ ${config.value.patchSlaDays}-day SLA`, tone: s.pct_within_sla >= 90 ? 'good' : s.pct_within_sla >= 75 ? 'fair' : 'bad' },
+  ]
+})
+
+// ─── OS updates vs app updates (byType, previously unused) ────
+const osVsApp = computed(() => {
+  const label = (t) => (t === 'os' ? 'OS updates' : t === 'app' ? 'App updates' : t)
+  return byType.value
+    .map(r => ({
+      type: r.patch_type,
+      title: label(r.patch_type),
+      p50: r.p50_lag != null ? Number(r.p50_lag) : null,
+      p90: r.p90_lag != null ? Number(r.p90_lag) : null,
+      events: Number(r.n_events) || 0,
+      hosts: Number(r.n_hosts) || 0,
+      apps: Number(r.n_apps) || 0,
+    }))
+    .sort((a, b) => b.events - a.events)
+})
+
+// ─── Slowest machines (byHost, previously only used in a calc) ──
+const slowHosts = computed(() => byHost.value
+  .filter(h => Number(h.n_patches) >= 1)
+  .slice(0, 6)
+  .map(h => ({
+    ...h,
+    name: displayHost({ hostname: h.hostname, computer_name: h.computer_name, host_id: h.host_identifier }),
+    avg: Number(h.avg_lag),
+  })))
+const slowHostMax = computed(() => Math.max(...slowHosts.value.map(h => h.avg), 0.1))
+function hostBarPct(h) { return Math.max(3, (h.avg / slowHostMax.value) * 100) }
+function openHost(id) { if (id) router.push(`/hosts/${id}`) }
 
 // ─── Coverage curve (share of observed updates completed) ─────
 const survivalRows = ref([])
@@ -405,7 +524,7 @@ onMounted(async () => {
   await Promise.all([
     fetchAll(sla),
     fetchPatchSummaryBucketed(fmt(start), fmt(end), 1).then(rows => { patchBuckets.value = rows || [] }).catch(() => {}),
-    query('firehose.scores.mttp_survival', { windowDays: 90 }).then(rows => { survivalRows.value = rows || [] }).catch(() => {}),
+    query('firehose.scores.mttp_survival', { windowDays: 90, excludeSoftware: PATCH_EXCLUSIONS_PARAM }).then(rows => { survivalRows.value = rows || [] }).catch(() => {}),
   ])
   await computeImpact()
 })
@@ -453,11 +572,81 @@ onMounted(async () => {
 .hero-count--good { color: var(--status-good-soft); }
 .hero-count--bad { color: #ff9a9a; }
 .hero-count-of { font-size: 16px; color: var(--fleet-black-33); }
-.hero-headline {
-  margin: 0; font-size: 20px; font-weight: 600; line-height: 1.4; text-wrap: pretty;
-  border-left: 1px solid var(--fleet-blue); padding-left: 40px;
-}
+.hero-right { border-left: 1px solid var(--fleet-blue); padding-left: 40px; display: flex; flex-direction: column; gap: 10px; }
+.hero-headline { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.4; text-wrap: pretty; }
+.hero-trend { margin: 0; font-size: var(--font-size-base); color: var(--fleet-black-33); }
 .hl-fair { color: var(--status-fair); }
+.hl-good { color: var(--status-good-soft); }
+
+/* ─── Stat band ────────────────────────────────── */
+.stat-band {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--fleet-black-10);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+  overflow: hidden;
+}
+.stat-cell {
+  background: var(--fleet-white);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stat-value { font-size: 24px; font-weight: 700; color: var(--fleet-black); font-variant-numeric: tabular-nums; }
+.stat-value--good { color: var(--status-good); }
+.stat-value--fair { color: var(--status-fair-text); }
+.stat-value--bad { color: var(--status-critical); }
+.stat-label { font-size: var(--font-size-base); font-weight: 600; color: var(--fleet-black-75); }
+.stat-sub { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
+
+/* ─── OS vs app ────────────────────────────────── */
+.type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--pad-medium); }
+.type-card {
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+  padding: var(--pad-large) var(--pad-xlarge);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.type-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.type-head h3 { margin: 0; font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); }
+.type-count { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
+.type-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.type-stat { display: flex; flex-direction: column; gap: 3px; }
+.type-stat-value { font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: var(--fleet-black); }
+.type-stat-key { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
+.type-foot { grid-column: 1 / -1; margin: 0; font-size: var(--font-size-sm); color: var(--fleet-black-50); text-wrap: pretty; }
+
+.apps-excluded { margin: 0; font-size: var(--font-size-sm); color: var(--fleet-black-50); font-style: italic; text-wrap: pretty; }
+
+/* ─── Machines dragging the tail ───────────────── */
+.who-card {
+  background: var(--fleet-white);
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius-large);
+  padding: var(--pad-large) var(--pad-xlarge);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.who-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.who-head h3 { margin: 0; font-size: var(--font-size-md); font-weight: 700; color: var(--fleet-black); }
+.who-rows { display: flex; flex-direction: column; gap: 11px; }
+.who-row { display: grid; grid-template-columns: 220px 1fr 60px; align-items: center; gap: 16px; cursor: pointer; }
+.who-row:hover .who-name { color: var(--fleet-green-down); }
+.who-row-label { display: flex; flex-direction: column; min-width: 0; }
+.who-name { font-size: var(--font-size-base); font-weight: 500; color: var(--fleet-black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.who-sub { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
+.who-single { color: var(--fleet-black-33); font-style: italic; }
+.who-meter { height: 8px; background: var(--fleet-black-5); border-radius: var(--radius-full); overflow: hidden; }
+.who-fill { height: 100%; transition: width 400ms ease-out; }
+.who-value { font-size: var(--font-size-base); font-weight: 700; text-align: right; }
+.who-footer { padding-top: 12px; border-top: 1px solid var(--fleet-black-10); font-size: var(--font-size-sm); color: var(--fleet-black-50); text-wrap: pretty; }
 
 /* ─── Shared card heads ────────────────────────── */
 .curve-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }

@@ -50,6 +50,14 @@ const AS_OF_HOURS_PARAM = {
 }
 const SCORE_PARAMS = [...FILTER_PARAMS, AS_OF_PARAM, AS_OF_HOURS_PARAM]
 
+// Patch-velocity exclusion: a comma-separated list of software_name values
+// (e.g. "safari.app") whose patch cadence isn't controllable through the
+// fleet and would distort velocity numbers. Empty default excludes nothing
+// (splitByChar(',', '') → [''], which never matches a real lowercased name).
+const EXCLUDE_SOFTWARE_PARAM = { name: 'excludeSoftware', type: 'string' as const, required: false, default: '' }
+const excludeClause = (col: string) =>
+  `AND NOT has(splitByChar(',', lower({excludeSoftware:String})), lower(${col}))`
+
 // Drill-down queries (distributions, dimensions, biggest movers, device list)
 // additionally take a timeRange (in hours) that scopes the result to hosts seen
 // within the window — "of hosts active in the last N hours, here's the
@@ -1040,6 +1048,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
       { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 365, default: 7 },
       { name: 'offsetDays', type: 'number' as const, required: false, min: 0, max: 365, default: 0 },
       { name: 'slaDays', type: 'number' as const, required: false, min: 1, max: 365, default: 14 },
+      EXCLUDE_SOFTWARE_PARAM,
     ],
     sql: `
       SELECT
@@ -1054,6 +1063,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
       FROM dex_patch_events FINAL
       WHERE event_time >= now() - toIntervalDay({windowDays:UInt32} + {offsetDays:UInt32})
         AND event_time <  now() - toIntervalDay({offsetDays:UInt32})
+        ${excludeClause('software_name')}
     `,
   },
   // Every (software, new_version) pair seen patching in the window — ONE
@@ -1101,6 +1111,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     description: 'Histogram of days_to_patch (per whole day, by patch_type) for the adoption curve',
     params: [
       { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 365, default: 90 },
+      EXCLUDE_SOFTWARE_PARAM,
     ],
     sql: `
       SELECT
@@ -1109,6 +1120,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
         count()                        AS n_events
       FROM dex_patch_events FINAL
       WHERE event_time >= now() - toIntervalDay({windowDays:UInt32})
+        ${excludeClause('software_name')}
       GROUP BY patch_type, day_bucket
       ORDER BY patch_type, day_bucket
     `,
@@ -1120,16 +1132,20 @@ export const firehoseScoreQueries: QueryConfig[] = [
     description: 'MTTP split by patch_type (app vs os) over a trailing window',
     params: [
       { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 365, default: 30 },
+      EXCLUDE_SOFTWARE_PARAM,
     ],
     sql: `
       SELECT
         patch_type,
         count()                                AS n_events,
         countDistinct(host_identifier)         AS n_hosts,
+        countDistinct(software_name)           AS n_apps,
         round(avg(days_to_patch), 2)           AS avg_lag,
-        round(quantile(0.5)(days_to_patch), 2) AS p50_lag
+        round(quantile(0.5)(days_to_patch), 2) AS p50_lag,
+        round(quantile(0.9)(days_to_patch), 2) AS p90_lag
       FROM dex_patch_events FINAL
       WHERE event_time >= now() - toIntervalDay({windowDays:UInt32})
+        ${excludeClause('software_name')}
       GROUP BY patch_type
       ORDER BY p50_lag DESC
     `,
@@ -1142,6 +1158,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     params: [
       { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 365, default: 30 },
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 15 },
+      EXCLUDE_SOFTWARE_PARAM,
     ],
     sql: `
       SELECT
@@ -1162,6 +1179,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
         FROM hardware_inventory GROUP BY host_id
       ) hi ON e.host_identifier = hi.host_id
       WHERE e.event_time >= now() - toIntervalDay({windowDays:UInt32})
+        ${excludeClause('e.software_name')}
       GROUP BY e.host_identifier, hi.hostname, hi.computer_name, hi.hardware_model
       ORDER BY avg_lag DESC
       {{LIMIT}}
