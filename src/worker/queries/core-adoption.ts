@@ -202,6 +202,33 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
     `,
   },
   {
+    name: 'firehose.adoption.unused_hosts_for_app',
+    domain: 'software',
+    client: 'core',
+    description: 'Hosts holding an idle seat for one app (unused 90d+/never opened), latest snapshot — the reclaim-list drill-down. Predicates match license_waste exactly so the host list always sums to the row count.',
+    params: [
+      ...FILTER_PARAMS,
+      { name: 'appName', type: 'string' as const, required: true },
+    ],
+    sql: `
+      WITH ${FILTERED_HOSTS_CTE}
+      SELECT
+        host_id,
+        hostname,
+        version,
+        days_since_opened,
+        usage_tier
+      FROM adoption_gap
+      WHERE host_id IN (SELECT host_id FROM filtered_hosts)
+        AND app_name = {appName:String}
+        AND usage_tier IN ('stale_90d', 'stale_90d_plus', 'never_opened')
+        AND (host_id, timestamp) IN (
+          SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id
+        )
+      ORDER BY days_since_opened DESC
+    `,
+  },
+  {
     name: 'firehose.adoption.waste_by_category',
     domain: 'software',
     client: 'core',

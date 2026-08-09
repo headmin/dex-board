@@ -101,18 +101,42 @@
                 <span class="sw-group-hint">{{ g.hint }}</span>
               </td>
             </tr>
-            <tr v-for="a in g.rows" :key="a.app_name">
-              <td class="sw-app">{{ a.app_name }}</td>
-              <td class="sw-cat">{{ prettyCategory(a.category) }}</td>
-              <td class="num">{{ a.installs }}</td>
-              <td class="num"><strong>{{ a.unused_hosts }}</strong></td>
-              <td class="sw-bar-col">
-                <div class="sw-bar-row">
-                  <MeterBar class="sw-bar" height="var(--bar-height)" :value="a.pct_unused" :color="shareColor(a.pct_unused)" />
-                  <span class="sw-bar-label">{{ a.pct_unused }}%</span>
-                </div>
-              </td>
-            </tr>
+            <template v-for="a in g.rows" :key="a.app_name">
+              <tr
+                :class="{ 'sw-row--clickable': !wcMode, 'sw-row--open': drillApp === a.app_name }"
+                :title="wcMode ? undefined : `Show the ${a.unused_hosts} hosts with an idle seat`"
+                @click="!wcMode && toggleDrill(a.app_name)"
+              >
+                <td class="sw-app"><span v-if="!wcMode" class="sw-drill-arrow">{{ drillApp === a.app_name ? '▾' : '▸' }}</span>{{ a.app_name }}</td>
+                <td class="sw-cat">{{ prettyCategory(a.category) }}</td>
+                <td class="num">{{ a.installs }}</td>
+                <td class="num"><strong>{{ a.unused_hosts }}</strong></td>
+                <td class="sw-bar-col">
+                  <div class="sw-bar-row">
+                    <MeterBar class="sw-bar" height="var(--bar-height)" :value="a.pct_unused" :color="shareColor(a.pct_unused)" />
+                    <span class="sw-bar-label">{{ a.pct_unused }}%</span>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="drillApp === a.app_name && !wcMode" class="sw-drill-row">
+                <td colspan="5">
+                  <div v-if="drillLoading" class="sw-drill-loading">Loading hosts…</div>
+                  <div v-else-if="drillHosts === null" class="sw-drill-loading">Host list unavailable — the query failed.</div>
+                  <div v-else class="sw-drill-list">
+                    <router-link
+                      v-for="h in drillHosts"
+                      :key="h.host_id"
+                      :to="`/hosts/${h.host_id}`"
+                      class="sw-drill-host"
+                    >
+                      <span class="sw-drill-name">{{ displayHost(h) }}</span>
+                      <span class="sw-drill-version">{{ h.version ? 'v' + h.version : '—' }}</span>
+                      <span class="sw-drill-days">{{ drillDaysLabel(h) }}</span>
+                    </router-link>
+                  </div>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </table>
       </div>
@@ -128,7 +152,10 @@ import MeterBar from '../components/base/MeterBar.vue'
 import EmptyState from '../components/base/EmptyState.vue'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { useSort } from '../composables/useSort'
+import { useWorkersCouncil } from '../composables/useWorkersCouncil'
+import { displayHost } from '../composables/displayName'
 
+const { wcMode } = useWorkersCouncil()
 const { filterParams } = useFleetFilter()
 const fp = () => ({ ...filterParams.value })
 
@@ -185,6 +212,30 @@ const clusters = computed(() => {
   return [...groups, support].filter(g => g.rows.length)   // never render an empty group
 })
 
+// ─── Per-app drill-down: who holds the idle seats? ────────────
+// Hidden entirely in Workers Council mode — the drill is a per-host list.
+// drillHosts: null = fetch failed (distinct from an empty list).
+const drillApp = ref(null)
+const drillHosts = ref([])
+const drillLoading = ref(false)
+
+async function toggleDrill(appName) {
+  if (drillApp.value === appName) { drillApp.value = null; return }
+  drillApp.value = appName
+  drillLoading.value = true
+  drillHosts.value = await query('firehose.adoption.unused_hosts_for_app', { ...fp(), appName })
+    .catch(() => null)
+  drillLoading.value = false
+}
+
+function drillDaysLabel(h) {
+  if (h.usage_tier === 'never_opened') return 'never opened'
+  const d = Number(h.days_since_opened)
+  // days = 0 with a stale tier means the app has no last-opened timestamp
+  // at all — say that, instead of a dash that reads like missing data.
+  return isFinite(d) && d > 0 ? `${Math.round(d)}d since opened` : 'no open on record'
+}
+
 // Chip filter: null = all groups. A stale selection (group emptied by the
 // fleet filter) renders the honest empty state rather than silently resetting.
 const clusterFilter = ref(null)
@@ -233,6 +284,9 @@ async function load() {
     summary.value = s[0] || {}
     apps.value = list || []
     wasteByCategory.value = cats || []
+    // A drill fetched under the previous fleet filter no longer matches the
+    // row counts — close it rather than show a stale host list.
+    drillApp.value = null
   } catch (e) {
     error.value = e.message
   }
@@ -402,6 +456,27 @@ watch(filterParams, load, { deep: true })
   margin-right: 10px;
 }
 .sw-group-hint { font-size: var(--font-size-xs); color: var(--fleet-black-50); }
+
+/* ─── Idle-seat drill-down ─────────────────────── */
+.sw-row--clickable { cursor: pointer; }
+.sw-row--open td { background: var(--fleet-off-white); }
+.sw-drill-arrow { display: inline-block; width: 16px; color: var(--fleet-black-33); font-size: var(--font-size-xs); }
+.sw-drill-row td { background: var(--fleet-off-white); padding: 6px 14px 12px 30px; }
+.sw-drill-loading { font-size: var(--font-size-sm); color: var(--fleet-black-50); font-style: italic; }
+.sw-drill-list { display: flex; flex-direction: column; gap: 2px; }
+.sw-drill-host {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) 120px 160px;
+  gap: 12px;
+  align-items: baseline;
+  padding: 3px 8px;
+  border-radius: var(--radius);
+  text-decoration: none;
+}
+.sw-drill-host:hover { background: var(--fleet-white); }
+.sw-drill-name { font-size: var(--font-size-sm); font-weight: 500; color: var(--fleet-black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sw-drill-version { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); }
+.sw-drill-days { font-size: var(--font-size-xs); color: var(--fleet-black-50); text-align: right; font-variant-numeric: tabular-nums; }
 
 .sw-bar-col { width: 200px; }
 .sw-bar-row { display: flex; align-items: center; gap: 10px; }
