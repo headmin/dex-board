@@ -1192,7 +1192,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     name: 'firehose.scores.host_deltas',
     domain: 'scores',
     client: 'core' as const,
-    description: 'Per-host composite score now vs 7 days ago for all scored hosts (cohort-comparison raw material)',
+    description: 'Per-host score now vs 7 days ago — composite plus each category (memory/performance, security, device health, software) so cohort impact can be judged on the metric a change actually moved',
     params: [
       ...WINDOWED_SCORE_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 1000, default: 500 },
@@ -1204,7 +1204,11 @@ export const firehoseScoreQueries: QueryConfig[] = [
         curr.host_id         AS host_id,
         curr.composite_score AS curr_score,
         prev.composite_score AS prev_score,
-        curr.composite_score - prev.composite_score AS delta
+        curr.composite_score     - prev.composite_score     AS delta,
+        curr.performance_score   - prev.performance_score    AS delta_performance,
+        curr.security_score      - prev.security_score       AS delta_security,
+        curr.device_health_score - prev.device_health_score  AS delta_device_health,
+        curr.software_score      - prev.software_score       AS delta_software
       FROM scored curr
       INNER JOIN prior_scored prev ON curr.host_id = prev.host_id
       {{LIMIT}}

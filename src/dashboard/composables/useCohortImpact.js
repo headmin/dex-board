@@ -26,6 +26,22 @@ export const COHORT_RULES = {
   CONFOUNDER_OVERLAP: 0.5,
 }
 
+/**
+ * Metrics the impact engine can judge a rollout on. Cohort membership is
+ * identical across all of them (who got the update vs who's waiting); only
+ * the per-host delta changes. The composite is the primary/headline metric
+ * — categories are checked so a change that moved one sub-score (a memory
+ * fix, a crash fix) is still visible when the composite stays flat. All are
+ * higher-is-better, so a positive effect = the exposed cohort improved more.
+ */
+export const IMPACT_METRICS = [
+  { key: 'delta',               label: 'overall score' },
+  { key: 'delta_performance',   label: 'memory & responsiveness' },
+  { key: 'delta_security',      label: 'security posture' },
+  { key: 'delta_device_health', label: 'device health' },
+  { key: 'delta_software',      label: 'app health' },
+]
+
 function meanStd(xs) {
   const n = xs.length
   if (!n) return { n: 0, mean: null, sd: null }
@@ -85,14 +101,15 @@ export async function buildImpactRows(candidates, windowDays = 14) {
   const list = (candidates || []).filter(c => c.software)
   if (!list.length) return []
 
-  // Per-host composite deltas (now vs 7d ago) for every scored host.
+  // Per-host deltas (now vs 7d ago) for every scored host: composite plus
+  // each category, so a rollout can be judged on the metric it actually moved.
   const deltaRows = await query('firehose.scores.host_deltas', { limit: 1000 }).catch(() => [])
-  const deltaByHost = new Map(deltaRows.map(r => [r.host_id, Number(r.delta)]))
+  const deltaByHost = new Map(deltaRows.map(r => [r.host_id, r]))
   if (!deltaByHost.size) {
     return list.map(c => ({
-      ...c, exposedN: null, controlN: null, effect: null,
+      ...c, exposedN: null, controlN: null, effect: null, metric: 'delta', metricLabel: 'overall score',
       verdict: { key: 'not-measurable', label: 'Not measurable', note: 'no per-host score history available' },
-      confounders: [],
+      confounders: [], byMetric: [],
     }))
   }
 
@@ -108,14 +125,40 @@ export async function buildImpactRows(candidates, windowDays = 14) {
 
   return list.map(c => {
     const exposedSet = exposedSets.get(c.software) || new Set()
-    const exposed = []
-    const control = []
+    const exposedRows = []
+    const controlRows = []
     for (const h of allHosts) {
-      if (exposedSet.has(h)) exposed.push(deltaByHost.get(h))
-      else control.push(deltaByHost.get(h))
+      ;(exposedSet.has(h) ? exposedRows : controlRows).push(deltaByHost.get(h))
     }
-    const stat = cohortCompare(exposed, control)
-    const verdict = verdictFor(stat, exposed.length, control.length)
+    const exposedN = exposedRows.length
+    const controlN = controlRows.length
+
+    // Cohort-size gates are metric-independent — check once. If the cohort
+    // is too small, NO metric is measurable (a near-universal app has no
+    // control group left, whatever score you look at).
+    const sizeGate = verdictFor(null, exposedN, controlN)
+    const cohortTooSmall = sizeGate.key === 'not-measurable' &&
+      (controlN === 0 || controlN < COHORT_RULES.MIN_CONTROL || exposedN < COHORT_RULES.MIN_EXPOSED)
+
+    // Compute every metric on the same cohort.
+    const num = (r, k) => { const v = Number(r[k]); return isFinite(v) ? v : null }
+    const byMetric = IMPACT_METRICS.map(m => {
+      const e = exposedRows.map(r => num(r, m.key)).filter(v => v != null)
+      const ctrl = controlRows.map(r => num(r, m.key)).filter(v => v != null)
+      const stat = cohortCompare(e, ctrl)
+      const verdict = cohortTooSmall ? sizeGate : verdictFor(stat, exposedN, controlN)
+      return { ...m, ...(stat || { effect: null, ciLow: null, ciHigh: null, p: null }), verdict }
+    })
+
+    // Headline metric: the most-moved one whose interval clears zero
+    // (likely/wide), else the composite. Composite stays the reference so a
+    // fished-up category can never masquerade as the primary read — the UI
+    // labels which sub-score it is and the method notes all were checked.
+    const composite = byMetric[0]
+    const significant = byMetric.filter(m => m.verdict.key === 'likely' || m.verdict.key === 'wide')
+    const headline = significant.length
+      ? significant.reduce((a, b) => (Math.abs(b.effect) > Math.abs(a.effect) ? b : a))
+      : composite
 
     // Confounders: other candidate changes reaching most of the same hosts.
     const confounders = softwares.filter(other => {
@@ -129,13 +172,18 @@ export async function buildImpactRows(candidates, windowDays = 14) {
 
     return {
       ...c,
-      exposedN: exposed.length,
-      controlN: control.length,
-      effect: stat?.effect ?? null,
-      ciLow: stat?.ciLow ?? null,
-      ciHigh: stat?.ciHigh ?? null,
-      p: stat?.p ?? null,
-      verdict,
+      exposedN,
+      controlN,
+      metric: headline.key,
+      metricLabel: headline.label,
+      effect: headline.effect,
+      ciLow: headline.ciLow,
+      ciHigh: headline.ciHigh,
+      p: headline.p,
+      verdict: headline.verdict,
+      // Composite reference + the strongest category, for the reading line.
+      compositeEffect: composite.effect,
+      byMetric,
       confounders,
     }
   })

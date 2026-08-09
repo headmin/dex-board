@@ -23,7 +23,8 @@
         <h3>How "did it help" is judged</h3>
         <p>A staged rollout is a natural experiment: hosts that got the update vs. hosts still waiting, compared on composite-score change over 7 days.</p>
         <ul>
-          <li>Fewer than {{ RULES.MIN_CONTROL }} hosts waiting → "can't be measured".</li>
+          <li>Fewer than {{ RULES.MIN_CONTROL }} hosts waiting → "can't be measured" — a near-universal app has no control group left.</li>
+          <li>Checked on the overall score and each sub-score (memory, security, device health, app health); the most-moved one is reported, so a fix the composite hides still shows.</li>
           <li>Other changes reaching the same hosts are named as confounders.</li>
           <li>"Likely" is the strongest word used — never "proved".</li>
         </ul>
@@ -239,11 +240,11 @@
             <span class="impact-reading-text">{{ readingSentence(row) }}</span>
           </div>
           <div class="impact-side">
-            <span class="verdict-badge" :class="`verdict--${row.verdict.key}`">{{ verdictLabel(row) }}</span>
+            <span class="verdict-badge" :class="`verdict--${row.verdict.key}`">{{ verdictLabel(row) }}<span v-if="metricTag(row)" class="verdict-metric"> · {{ metricTag(row) }}</span></span>
             <span v-if="row.exposedN != null" class="impact-counts mono">{{ row.exposedN }} updated · {{ row.controlN }} waiting</span>
           </div>
         </div>
-        <div class="impact-foot">Judged on composite-score change over 7 days. "Likely" is the strongest word this list uses.</div>
+        <div class="impact-foot">Judged over 7 days on the overall score and each sub-score (memory, security, device health, app health); the most-moved one is shown. "Likely" is the strongest word this list uses.</div>
       </div>
     </section>
 
@@ -467,16 +468,34 @@ function verdictLabel(row) {
   }
 }
 
+// Small metric tag shown next to a likely/wide verdict when the signal is
+// in a category rather than the overall score.
+function metricTag(row) {
+  if (!row.metric || row.metric === 'delta') return ''
+  if (row.verdict.key !== 'likely' && row.verdict.key !== 'wide') return ''
+  return row.metricLabel
+}
+
 function readingSentence(row) {
   const v = row.verdict.key
+  const metric = row.metricLabel || 'overall score'
+  const dir = (row.effect || 0) > 0 ? 'up' : 'down'
+  const mag = Math.abs(row.effect || 0).toFixed(1)
+  const shared = row.confounders?.length ? ` — but ${row.confounders[0]} reached the same hosts, so the credit is shared` : ''
   if (v === 'likely') {
-    return `Scores of updated hosts moved ${row.effect > 0 ? 'up' : 'down'} ${Math.abs(row.effect).toFixed(1)} points vs. hosts still waiting${row.confounders.length ? ` — but ${row.confounders[0]} rolled out to the same hosts, so the credit is shared` : ''}.`
+    // Name the sub-score when the signal is in a category the composite hid.
+    if (row.metric && row.metric !== 'delta') {
+      return `The ${metric} of updated hosts moved ${dir} ${mag} points vs. hosts still waiting, while the overall score barely changed${shared}.`
+    }
+    return `The overall score of updated hosts moved ${dir} ${mag} points vs. hosts still waiting${shared}.`
   }
   if (v === 'wide') {
-    return `Scores moved ${row.effect > 0 ? 'up' : 'down'} ${Math.abs(row.effect).toFixed(1)} points, but too few hosts to say it with confidence.`
+    return `The ${metric} moved ${dir} ${mag} points, but too few hosts to say it with confidence.`
   }
-  if (v === 'none') return 'No measurable difference between updated and waiting hosts.'
-  if (row.controlN != null && row.controlN < RULES.MIN_CONTROL) return `Nearly everyone already has it — only ${row.controlN} host${row.controlN === 1 ? '' : 's'} left to compare against.`
+  if (v === 'none') return 'No measurable difference on any score — overall or by category.'
+  if (row.controlN != null && row.controlN > 0 && row.controlN < RULES.MIN_CONTROL) {
+    return `Nearly everyone already has it — only ${row.controlN} host${row.controlN === 1 ? '' : 's'} left to compare against.`
+  }
   return row.verdict.note + '.'
 }
 
@@ -735,6 +754,7 @@ onMounted(async () => {
 .impact-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; white-space: nowrap; }
 .impact-counts { font-size: var(--font-size-xxsmall); color: var(--fleet-black-50); }
 .verdict-badge { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 3px; font-size: var(--font-size-xxsmall); font-weight: 700; }
+.verdict-metric { font-weight: 500; opacity: 0.85; }
 .verdict--likely { background: var(--status-good-bg); color: var(--status-good-text); }
 .verdict--wide { background: var(--status-fair-bg); color: var(--status-fair-text); }
 .verdict--none { background: var(--fleet-black-5); color: var(--fleet-black-75); }
