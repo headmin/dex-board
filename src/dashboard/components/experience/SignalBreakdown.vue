@@ -49,6 +49,7 @@
         <div class="method-footer">
           <p><strong>Composite = 25% Device Health + 35% Performance + 20% Security + 20% Software.</strong> Grades: A ≥ 90 · B ≥ 75 · C ≥ 60 · D ≥ 40 · F below 40.</p>
           <p><strong>Missing data never penalizes:</strong> a host absent from a signal's table scores that signal's neutral default, not zero. The signal bars above summarize each input across the fleet — they contextualize the category score rather than sum to it exactly.</p>
+          <p><strong>Platform coverage:</strong> Windows hosts are scored on Security (BitLocker 25% + firewall 20% + Secure Boot 15% + TPM 10% + antivirus 15% + UAC 15%) and Software (crash events only), with composite weights renormalized over what was measured; unmeasured categories show "—".</p>
         </div>
       </div>
 

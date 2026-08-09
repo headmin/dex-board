@@ -35,11 +35,12 @@
       </svg>
       <span v-if="sparkline" class="hero-spark-caption">{{ sparkline.caption }}</span>
       <span v-if="fleet.deviceCount" class="hero-hosts">{{ fleet.deviceCount }} hosts scored</span>
-      <!-- Coverage disclosure: the score's base table is macOS-fed, so hosts
-           seen in other telemetry but not scored must not read as covered.
-           Coverage numbers are fleet-wide (unfiltered) by design. -->
+      <!-- Coverage disclosure: hosts seen in telemetry but not scored must
+           not read as covered. Coverage numbers are fleet-wide (unfiltered)
+           by design. Windows hosts are scored on the categories they
+           report (Security + Software) with weights renormalized. -->
       <span v-if="coverageGap" class="hero-coverage">
-        {{ coverage.scored_hosts }} of {{ coverage.known_hosts }} hosts seen this week are scored — macOS scoring only
+        {{ coverage.scored_hosts }} of {{ coverage.known_hosts }} hosts seen this week are scored — non-macOS hosts on a category subset
       </span>
     </div>
 

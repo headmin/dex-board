@@ -94,10 +94,82 @@ const WINDOW_WHERE = `AND timestamp >= now() - toIntervalHour({timeRange:UInt32}
 const buildScoresCTE = (hostWindow = '') => `
 WITH
 ${FILTERED_HOSTS_CTE},
+-- macOS scoring base: hosts with device_health telemetry.
+mac_h AS (
+  SELECT host_id, argMax(hostname, timestamp) AS hostname,
+    argMax(cpu_class, timestamp) AS cpu_class,
+    argMax(ram_tier, timestamp) AS ram_tier,
+    argMax(battery_health_score, timestamp) AS battery_health_score,
+    argMax(swap_pressure, timestamp) AS swap_pressure,
+    argMax(compression_pressure, timestamp) AS compression_pressure
+  FROM device_health
+  WHERE host_id IN (SELECT host_id FROM filtered_hosts)
+    AND ${AS_OF_WHERE}
+    ${hostWindow}
+  GROUP BY host_id
+),
+-- Windows scoring base: latest posture as of the same time-travel point,
+-- gated to hosts whose BitLocker signal is fresh within 14 days of it —
+-- WITHOUT the as-of clauses the sparkline would paint today's posture onto
+-- every historical day.
+win_p AS (
+  SELECT
+    b.host_id AS host_id,
+    b.hostname AS hostname,
+    b.disk_encrypted AS disk_encrypted,
+    sc.firewall_ok AS firewall_ok,
+    sc.antivirus_ok AS antivirus_ok,
+    sc.uac_ok AS uac_ok,
+    sb.secure_boot_enabled AS secure_boot_enabled,
+    tpm.tpm_ready AS tpm_ready
+  FROM (
+    SELECT host_id,
+      argMax(hostname, timestamp) AS hostname,
+      argMax(protection_status, timestamp) AS disk_encrypted
+    FROM win_bitlocker
+    WHERE host_id IN (SELECT host_id FROM filtered_hosts)
+      AND ${AS_OF_WHERE}
+      ${hostWindow}
+    GROUP BY host_id
+    HAVING max(timestamp) > now() - toIntervalDay({asOfDaysAgo:UInt32}) - toIntervalHour({asOfHoursAgo:UInt32}) - INTERVAL 14 DAY
+  ) b
+  LEFT JOIN (
+    SELECT host_id,
+      argMax(firewall, timestamp) = 'Good' AS firewall_ok,
+      argMax(antivirus, timestamp) = 'Good' AS antivirus_ok,
+      argMax(user_account_control, timestamp) = 'Good' AS uac_ok
+    FROM win_security_center WHERE ${AS_OF_WHERE} GROUP BY host_id
+  ) sc ON b.host_id = sc.host_id
+  LEFT JOIN (
+    SELECT host_id, argMax(secure_boot_enabled, timestamp) AS secure_boot_enabled
+    FROM win_secure_boot WHERE ${AS_OF_WHERE} GROUP BY host_id
+  ) sb ON b.host_id = sb.host_id
+  LEFT JOIN (
+    SELECT host_id, argMax(activated, timestamp) AND argMax(enabled, timestamp) AS tpm_ready
+    FROM win_tpm WHERE ${AS_OF_WHERE} GROUP BY host_id
+  ) tpm ON b.host_id = tpm.host_id
+),
+-- Distinct WER failure events in the 7 days before the as-of point.
+win_crash AS (
+  SELECT host_id, uniqExact(event_time) AS crashes_7d
+  FROM win_app_crashes
+  WHERE event_time <= now() - toIntervalDay({asOfDaysAgo:UInt32}) - toIntervalHour({asOfHoursAgo:UInt32})
+    AND event_time >  now() - toIntervalDay({asOfDaysAgo:UInt32}) - toIntervalHour({asOfHoursAgo:UInt32}) - INTERVAL 7 DAY
+  GROUP BY host_id
+),
+-- Every scorable host, tagged by platform. A host with macOS telemetry is
+-- scored the macOS way even if it somehow appears in both sets.
+base_hosts AS (
+  SELECT host_id, hostname, 'macos' AS platform FROM mac_h
+  UNION ALL
+  SELECT host_id, hostname, 'windows' AS platform FROM win_p
+  WHERE host_id NOT IN (SELECT host_id FROM mac_h)
+),
 device_scores AS (
   SELECT
-    h.host_id AS host_id,
-    h.hostname AS hostname,
+    bh.host_id AS host_id,
+    bh.hostname AS hostname,
+    bh.platform AS platform,
     h.cpu_class AS cpu_class,
     h.ram_tier AS ram_tier,
 
@@ -110,8 +182,10 @@ device_scores AS (
     + CASE WHEN a.host_id != '' THEN 1 ELSE 0 END
     + CASE WHEN sp.host_id != '' THEN 1 ELSE 0 END) AS data_sources,
 
-    -- Device Health Score (0-100)
-    round(
+    -- Device Health Score (0-100). NULL — not a defaulted number — for
+    -- platforms with no device_health telemetry: an unmeasured category
+    -- must never read as an average one.
+    if(bh.platform = 'macos', round(
       0.30 * (CASE h.cpu_class
         WHEN 'apple_m5' THEN 100 WHEN 'apple_m4' THEN 95 WHEN 'apple_m3' THEN 90
         WHEN 'apple_m2' THEN 85  WHEN 'apple_m1' THEN 80
@@ -123,11 +197,11 @@ device_scores AS (
         WHEN 'good' THEN 100 WHEN 'degraded' THEN 60 WHEN 'replace' THEN 20 ELSE 80 END)
     + 0.20 * (CASE h.swap_pressure
         WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 WHEN 'severe' THEN 30 ELSE 75 END)
-    ) AS device_health_score,
+    ), NULL) AS device_health_score,
 
     -- Performance Score (0-100)
     -- Compression: macOS aggressively compresses as normal behavior, so "high" ≠ bad
-    round(
+    if(bh.platform = 'macos', round(
       0.35 * (CASE h.swap_pressure
         WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 WHEN 'severe' THEN 30 ELSE 75 END)
     + 0.30 * (CASE h.compression_pressure
@@ -140,12 +214,12 @@ device_scores AS (
     + 0.15 * (CASE ifNull(o.uptime_risk, 'normal')
         WHEN 'just_rebooted' THEN 100 WHEN 'fresh' THEN 100
         WHEN 'normal' THEN 90 WHEN 'stale_7d' THEN 60 WHEN 'stale_14d' THEN 30 ELSE 80 END)
-    ) AS performance_score,
+    ), NULL) AS performance_score,
 
     -- Network Score (0-100, informational — excluded from composite)
     -- Guard: rssi/snr/transmit_rate = 0 is the toXOrZero sentinel for missing
     -- data, not a real reading. Treat 0 as NULL → use default.
-    round(
+    if(bh.platform = 'macos', round(
       0.40 * (CASE
         WHEN w.rssi IS NULL OR w.rssi = 0 THEN 75
         WHEN w.rssi >= -50 THEN 100 WHEN w.rssi >= -60 THEN 85
@@ -160,7 +234,7 @@ device_scores AS (
         WHEN w.transmit_rate >= 100 THEN 60 ELSE 30 END)
     + 0.10 * (CASE ifNull(v.network_confidence, 'direct_connected')
         WHEN 'tunnel_active' THEN 100 WHEN 'direct_connected' THEN 80 ELSE 20 END)
-    ) AS network_score,
+    ), NULL) AS network_score,
 
     -- Security Score (0-100)
     -- Full posture formula when security_posture has a row for this host
@@ -169,7 +243,17 @@ device_scores AS (
     -- the pack hasn't reached yet) fall back to the OS-only formula so they
     -- aren't penalised for unreported booleans.
     round(
-      CASE WHEN sp.host_id != '' THEN
+      CASE WHEN bh.platform = 'windows' THEN
+          -- Windows-native posture from the win_* normalization tables:
+          -- BitLocker 25% + firewall 20% + Secure Boot 15% + TPM 10%
+          -- + antivirus 15% + UAC 15%.
+          0.25 * (CASE WHEN wp.disk_encrypted      = 1 THEN 100 ELSE 0 END)
+        + 0.20 * (CASE WHEN wp.firewall_ok         = 1 THEN 100 ELSE 0 END)
+        + 0.15 * (CASE WHEN wp.secure_boot_enabled = 1 THEN 100 ELSE 0 END)
+        + 0.10 * (CASE WHEN wp.tpm_ready           = 1 THEN 100 ELSE 0 END)
+        + 0.15 * (CASE WHEN wp.antivirus_ok        = 1 THEN 100 ELSE 0 END)
+        + 0.15 * (CASE WHEN wp.uac_ok              = 1 THEN 100 ELSE 0 END)
+      WHEN sp.host_id != '' THEN
           0.25 * (CASE WHEN sp.disk_encrypted     = 1 THEN 100 ELSE 0 END)
         + 0.20 * (CASE WHEN sp.firewall_enabled   = 1 THEN 100 ELSE 0 END)
         + 0.15 * (CASE WHEN sp.gatekeeper_enabled = 1 THEN 100 ELSE 0 END)
@@ -190,55 +274,54 @@ device_scores AS (
       END
     ) AS security_score,
 
-    -- Software Score (0-100)
+    -- Software Score (0-100). Windows hosts have no adoption/app-count
+    -- telemetry yet, so their Software score is the crash ladder alone —
+    -- a narrower measure of the same category, never a defaulted average.
     round(
-      0.40 * (CASE
-        WHEN ifNull(c.total_crashes, 0) = 0 THEN 100 WHEN c.total_crashes = 1 THEN 85
-        WHEN c.total_crashes <= 4 THEN 65  WHEN c.total_crashes <= 9 THEN 40 ELSE 20 END)
-    + 0.35 * (CASE
-        WHEN ifNull(a.active_pct, 70) >= 80 THEN 100 WHEN a.active_pct >= 60 THEN 80
-        WHEN a.active_pct >= 40 THEN 60 ELSE 40 END)
-    + 0.25 * (CASE
-        WHEN ifNull(a.app_count, 50) < 80 THEN 100 WHEN a.app_count < 120 THEN 80
-        WHEN a.app_count < 160 THEN 60 ELSE 40 END)
+      CASE WHEN bh.platform = 'windows' THEN
+        (CASE
+          WHEN ifNull(wc.crashes_7d, 0) = 0 THEN 100 WHEN wc.crashes_7d = 1 THEN 85
+          WHEN wc.crashes_7d <= 4 THEN 65 WHEN wc.crashes_7d <= 9 THEN 40 ELSE 20 END)
+      ELSE
+        0.40 * (CASE
+          WHEN ifNull(c.total_crashes, 0) = 0 THEN 100 WHEN c.total_crashes = 1 THEN 85
+          WHEN c.total_crashes <= 4 THEN 65  WHEN c.total_crashes <= 9 THEN 40 ELSE 20 END)
+      + 0.35 * (CASE
+          WHEN ifNull(a.active_pct, 70) >= 80 THEN 100 WHEN a.active_pct >= 60 THEN 80
+          WHEN a.active_pct >= 40 THEN 60 ELSE 40 END)
+      + 0.25 * (CASE
+          WHEN ifNull(a.app_count, 50) < 80 THEN 100 WHEN a.app_count < 120 THEN 80
+          WHEN a.app_count < 160 THEN 60 ELSE 40 END)
+      END
     ) AS software_score
 
-  FROM (
-    SELECT host_id, argMax(hostname, timestamp) AS hostname,
-      argMax(cpu_class, timestamp) AS cpu_class,
-      argMax(ram_tier, timestamp) AS ram_tier,
-      argMax(battery_health_score, timestamp) AS battery_health_score,
-      argMax(swap_pressure, timestamp) AS swap_pressure,
-      argMax(compression_pressure, timestamp) AS compression_pressure
-    FROM device_health
-    WHERE host_id IN (SELECT host_id FROM filtered_hosts)
-      AND ${AS_OF_WHERE}
-      ${hostWindow}
-    GROUP BY host_id
-  ) h
+  FROM base_hosts bh
+  LEFT JOIN mac_h h ON bh.host_id = h.host_id
+  LEFT JOIN win_p wp ON bh.host_id = wp.host_id
+  LEFT JOIN win_crash wc ON bh.host_id = wc.host_id
   LEFT JOIN (
     SELECT host_id,
       argMax(os_currency, timestamp) AS os_currency,
       argMax(uptime_risk, timestamp) AS uptime_risk,
       argMax(dex_os_health, timestamp) AS dex_os_health
     FROM os_health WHERE ${AS_OF_WHERE} GROUP BY host_id
-  ) o ON h.host_id = o.host_id
+  ) o ON bh.host_id = o.host_id
   LEFT JOIN (
     SELECT host_id, max(rss_mb) AS max_rss_mb
     FROM process_health WHERE ${AS_OF_WHERE} GROUP BY host_id
-  ) p ON h.host_id = p.host_id
+  ) p ON bh.host_id = p.host_id
   LEFT JOIN (
     SELECT host_id,
       argMax(rssi, timestamp) AS rssi,
       argMax(snr, timestamp) AS snr,
       argMax(transmit_rate, timestamp) AS transmit_rate
     FROM wifi_signal WHERE ${AS_OF_WHERE} GROUP BY host_id
-  ) w ON h.host_id = w.host_id
+  ) w ON bh.host_id = w.host_id
   LEFT JOIN (
     SELECT host_id,
       argMax(network_confidence, timestamp) AS network_confidence
     FROM vpn_gate WHERE ${AS_OF_WHERE} GROUP BY host_id
-  ) v ON h.host_id = v.host_id
+  ) v ON bh.host_id = v.host_id
   LEFT JOIN (
     SELECT host_id, sum(crash_count_7d) AS total_crashes
     FROM crash_summary
@@ -248,7 +331,7 @@ device_scores AS (
         WHERE ${AS_OF_WHERE} GROUP BY host_id
       )
     GROUP BY host_id
-  ) c ON h.host_id = c.host_id
+  ) c ON bh.host_id = c.host_id
   LEFT JOIN (
     SELECT host_id,
       count() AS app_count,
@@ -260,7 +343,7 @@ device_scores AS (
         WHERE ${AS_OF_WHERE} GROUP BY host_id
       )
     GROUP BY host_id
-  ) a ON h.host_id = a.host_id
+  ) a ON bh.host_id = a.host_id
   LEFT JOIN (
     SELECT host_id,
       argMax(disk_encrypted,     timestamp) AS disk_encrypted,
@@ -268,19 +351,39 @@ device_scores AS (
       argMax(gatekeeper_enabled, timestamp) AS gatekeeper_enabled,
       argMax(sip_enabled,        timestamp) AS sip_enabled
     FROM security_posture WHERE ${AS_OF_WHERE} GROUP BY host_id
-  ) sp ON h.host_id = sp.host_id
+  ) sp ON bh.host_id = sp.host_id
 ),
 scored AS (
+  -- Coverage-aware composite: weights renormalize over the categories the
+  -- platform actually reports. macOS hosts have all four (denominator 1.0 —
+  -- identical to the historical fixed formula); Windows hosts today carry
+  -- Security + Software, so composite = (0.20*sec + 0.20*sw) / 0.40.
+  -- scored_categories discloses how much of the formula was measured.
   SELECT *,
-    round(0.25 * device_health_score + 0.35 * performance_score + 0.20 * security_score + 0.20 * software_score) AS composite_score,
     CASE
-      WHEN round(0.25 * device_health_score + 0.35 * performance_score + 0.20 * security_score + 0.20 * software_score) >= 90 THEN 'A'
-      WHEN round(0.25 * device_health_score + 0.35 * performance_score + 0.20 * security_score + 0.20 * software_score) >= 75 THEN 'B'
-      WHEN round(0.25 * device_health_score + 0.35 * performance_score + 0.20 * security_score + 0.20 * software_score) >= 60 THEN 'C'
-      WHEN round(0.25 * device_health_score + 0.35 * performance_score + 0.20 * security_score + 0.20 * software_score) >= 40 THEN 'D'
+      WHEN composite_score >= 90 THEN 'A'
+      WHEN composite_score >= 75 THEN 'B'
+      WHEN composite_score >= 60 THEN 'C'
+      WHEN composite_score >= 40 THEN 'D'
       ELSE 'F'
     END AS composite_grade
-  FROM device_scores
+  FROM (
+    SELECT *,
+      round(
+        (0.25 * ifNull(device_health_score, 0)
+       + 0.35 * ifNull(performance_score, 0)
+       + 0.20 * ifNull(security_score, 0)
+       + 0.20 * ifNull(software_score, 0))
+        /
+        (0.25 * isNotNull(device_health_score)
+       + 0.35 * isNotNull(performance_score)
+       + 0.20 * isNotNull(security_score)
+       + 0.20 * isNotNull(software_score))
+      ) AS composite_score,
+      (isNotNull(device_health_score) + isNotNull(performance_score)
+     + isNotNull(security_score) + isNotNull(software_score)) AS scored_categories
+    FROM device_scores
+  )
 )
 `
 
@@ -551,6 +654,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
         hostname,
         cpu_class,
         ram_tier,
+        platform,
         device_health_score,
         performance_score,
         network_score,
@@ -558,6 +662,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
         software_score,
         composite_score,
         composite_grade,
+        scored_categories,
         data_sources
       FROM scored
       ORDER BY composite_score ASC
@@ -706,7 +811,9 @@ export const firehoseScoreQueries: QueryConfig[] = [
     sql: `
       ${DEVICE_SCORES_CTE_WINDOWED}
       SELECT
-        s.ram_tier AS dimension,
+        -- Hosts without macOS hardware telemetry get their platform as the
+        -- bucket label instead of an unreadable empty string.
+        if(s.ram_tier = '', s.platform, s.ram_tier) AS dimension,
         round(avg(s.composite_score), 1) AS avg_score,
         round(avg(s.device_health_score), 1) AS avg_device_health,
         round(avg(s.performance_score), 1) AS avg_performance,
@@ -715,7 +822,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
         round(avg(s.software_score), 1) AS avg_software,
         count() AS device_count
       FROM scored s
-      GROUP BY s.ram_tier
+      GROUP BY dimension
       ORDER BY avg_score DESC
     `,
   },
@@ -728,7 +835,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     sql: `
       ${DEVICE_SCORES_CTE_WINDOWED}
       SELECT
-        s.cpu_class AS dimension,
+        if(s.cpu_class = '', s.platform, s.cpu_class) AS dimension,
         round(avg(s.composite_score), 1) AS avg_score,
         round(avg(s.device_health_score), 1) AS avg_device_health,
         round(avg(s.performance_score), 1) AS avg_performance,
@@ -737,7 +844,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
         round(avg(s.software_score), 1) AS avg_software,
         count() AS device_count
       FROM scored s
-      GROUP BY s.cpu_class
+      GROUP BY dimension
       ORDER BY avg_score DESC
     `,
   },
@@ -979,11 +1086,16 @@ export const firehoseScoreQueries: QueryConfig[] = [
     params: [],
     sql: `
       SELECT
-        (SELECT uniqExact(host_id) FROM device_health
-          WHERE timestamp > now() - INTERVAL 7 DAY) AS scored_hosts,
+        (SELECT uniqExact(host_id) FROM (
+          SELECT host_id FROM device_health WHERE timestamp > now() - INTERVAL 7 DAY
+          UNION ALL
+          SELECT host_id FROM win_bitlocker  WHERE timestamp > now() - INTERVAL 14 DAY
+        )) AS scored_hosts,
         uniqExact(host_id) AS known_hosts
       FROM (
         SELECT host_id FROM device_health      WHERE timestamp > now() - INTERVAL 7 DAY
+        UNION ALL
+        SELECT host_id FROM win_bitlocker      WHERE timestamp > now() - INTERVAL 14 DAY
         UNION ALL
         SELECT host_id FROM hardware_inventory WHERE timestamp > now() - INTERVAL 7 DAY
         UNION ALL

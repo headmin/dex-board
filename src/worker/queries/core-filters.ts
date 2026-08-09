@@ -45,11 +45,26 @@ filtered_hosts AS (
       argMax(hardware_serial, timestamp) AS hardware_serial,
       argMax(memory_gb, timestamp) AS memory_gb
     FROM hardware_inventory GROUP BY host_id
+    UNION ALL
+    -- Windows hosts that never landed in hardware_inventory (its feeder
+    -- query reaches only part of the fleet) but do report Windows posture —
+    -- without this branch they are invisible to every filtered query.
+    SELECT host_id,
+      argMax(hostname, timestamp) AS hostname,
+      '' AS hardware_model,
+      '' AS hardware_serial,
+      0  AS memory_gb
+    FROM win_bitlocker
+    WHERE host_id NOT IN (SELECT DISTINCT host_id FROM hardware_inventory)
+    GROUP BY host_id
   ) hi
   LEFT JOIN (
     SELECT host_id, argMax(platform, timestamp) AS platform
     FROM fleetd_info GROUP BY host_id
   ) fi ON hi.host_id = fi.host_id
+  LEFT JOIN (
+    SELECT DISTINCT host_id, 1 AS is_windows FROM win_bitlocker
+  ) wb ON hi.host_id = wb.host_id
   LEFT JOIN (
     SELECT host_id, argMax(team_id, last_seen) AS team_id
     FROM host_teams GROUP BY host_id
@@ -62,11 +77,15 @@ filtered_hosts AS (
       OR hi.hardware_model LIKE concat('%', {filterSearch:String}, '%'),
       true)
     AND if({filterModel:String} != '', hi.hardware_model = {filterModel:String}, true)
-    AND if({filterOs:String} != '', fi.platform = {filterOs:String}, true)
+    -- Platform: presence in the Windows normalization tables is authoritative
+    -- ('windows' even when fleetd_info has no row — that feed died 2026-04-18);
+    -- everything else falls back to fleetd_info's last-known platform.
+    AND if({filterOs:String} != '', multiIf(wb.is_windows = 1, 'windows', fi.platform) = {filterOs:String}, true)
     AND if({filterTeam:String} != '', ht.team_id = {filterTeam:String}, true)
     -- RAM filter is "at most N GB" (inclusive) — selecting 24GB returns
-    -- hosts with <= 24GB (i.e. 8, 16, 18, 24). "128GB+" effectively matches all.
-    AND if({filterRamTier:String} != '', hi.memory_gb <= multiIf(
+    -- hosts with <= 24GB (i.e. 8, 16, 18, 24). "128GB+" effectively matches
+    -- all. memory_gb = 0 means unknown, which must not match a RAM filter.
+    AND if({filterRamTier:String} != '', hi.memory_gb > 0 AND hi.memory_gb <= multiIf(
       {filterRamTier:String} = '8GB', 8,
       {filterRamTier:String} = '16GB', 16,
       {filterRamTier:String} = '18GB', 18,
