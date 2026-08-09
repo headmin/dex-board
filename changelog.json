@@ -1,5 +1,58 @@
 [
   {
+    "sha": "cc9f8e4891d6b8755678ac921fe725bd8888d14a",
+    "short_sha": "cc9f8e4891",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Dogfood: drop platform prefix from policy names (#50658)",
+    "timestamp": "2026-08-06T14:08:21-05:00",
+    "files": [
+      "it-and-security/lib/all/labels/macos-screen-lock-exclusions.yml",
+      "it-and-security/lib/all/labels/windows-screen-lock-exclusions.yml",
+      "it-and-security/lib/all/policies/npm-user-npmrc-min-release-age.yml",
+      "it-and-security/lib/linux/policies/check-fleet-desktop-extension-enabled.yml",
+      "it-and-security/lib/linux/policies/disk-encryption-check.yml",
+      "it-and-security/lib/linux/policies/disk-space-check.yml",
+      "it-and-security/lib/linux/policies/removable-storage-read-only.yml",
+      "it-and-security/lib/linux/policies/sshd-permitrootlogin-restricted.yml",
+      "it-and-security/lib/macos/policies/1password-emergency-kit-check.yml",
+      "it-and-security/lib/macos/policies/1password-installed.yml",
+      "it-and-security/lib/macos/policies/all-software-updates-installed.yml",
+      "it-and-security/lib/macos/policies/battery-health-check.yml",
+      "it-and-security/lib/macos/policies/disk-encryption-check.yml",
+      "it-and-security/lib/macos/policies/disk-space-check.yml",
+      "it-and-security/lib/macos/policies/firewall-enabled.yml",
+      "it-and-security/lib/macos/policies/gatekeeper-enabled.yml",
+      "it-and-security/lib/macos/policies/install-fleet-desktop-launch-agent.yml",
+      "it-and-security/lib/macos/policies/install-nudge-assets.yml",
+      "it-and-security/lib/macos/policies/install-santa-extension.yml",
+      "it-and-security/lib/macos/policies/latest-macos.yml",
+      "it-and-security/lib/macos/policies/local-admin-count-reasonable.yml",
+      "it-and-security/lib/macos/policies/nudge-installed.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/macos/policies/remote-login-disabled.yml",
+      "it-and-security/lib/macos/policies/santa-endpoint-security-extension-active.yml",
+      "it-and-security/lib/macos/policies/screen-lock-inactivity.yml",
+      "it-and-security/lib/macos/policies/sip-enabled.yml",
+      "it-and-security/lib/macos/policies/update-claude.yml",
+      "it-and-security/lib/macos/policies/update-safari.yml",
+      "it-and-security/lib/macos/policies/update-slack.yml",
+      "it-and-security/lib/windows/policies/1password-installed.yml",
+      "it-and-security/lib/windows/policies/all-windows-updates-installed.yml",
+      "it-and-security/lib/windows/policies/antivirus-signatures-up-to-date.yml",
+      "it-and-security/lib/windows/policies/battery-health-check.yml",
+      "it-and-security/lib/windows/policies/disk-encryption-check.yml",
+      "it-and-security/lib/windows/policies/disk-space-check.yml",
+      "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/windows/policies/remote-desktop-disabled.yml",
+      "it-and-security/lib/windows/policies/screen-lock-timeout-configured.yml",
+      "it-and-security/lib/windows/policies/secure-boot-enabled.yml",
+      "it-and-security/lib/windows/policies/update-claude.yml",
+      "it-and-security/lib/windows/policies/update-slack.yml",
+      "it-and-security/lib/windows/policies/windows-defender-compliance-check.yml"
+    ]
+  },
+  {
     "sha": "958fe8b9aaa35c09a5b4c35c540b1eedd6228f10",
     "short_sha": "958fe8b9aa",
     "author": "Noah Talerman",
@@ -6376,18 +6429,6 @@
     "files": [
       "it-and-security/teams/company-owned-ipads.yml",
       "it-and-security/teams/company-owned-iphones.yml"
-    ]
-  },
-  {
-    "sha": "256bb67f952ad1aa8d4a1c5a47370585d3f45a10",
-    "short_sha": "256bb67f95",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Dogfood: enforce macOS 15.2 (#24753)",
-    "timestamp": "2024-12-13T15:57:07-05:00",
-    "files": [
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]

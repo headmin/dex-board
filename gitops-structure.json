@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-02T00:24:10Z",
+  "generated": "2026-08-09T00:55:13Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "958fe8b9aaa35c09a5b4c35c540b1eedd6228f10",
-    "short_sha": "958fe8b9aa",
-    "message": "Add macOS apps to fleet maintained apps for testing & QA (#49983)",
-    "timestamp": "2026-07-27T13:16:01-04:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/958fe8b9aaa35c09a5b4c35c540b1eedd6228f10"
+    "sha": "cc9f8e4891d6b8755678ac921fe725bd8888d14a",
+    "short_sha": "cc9f8e4891",
+    "message": "Dogfood: drop platform prefix from policy names (#50658)",
+    "timestamp": "2026-08-06T14:08:21-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/cc9f8e4891d6b8755678ac921fe725bd8888d14a"
   },
   "fleets": [
     {
