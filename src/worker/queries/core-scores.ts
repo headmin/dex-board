@@ -328,12 +328,28 @@ const PRIOR_SCORES_CTES = `      -- Prior period: scores from data before 7 days
               WHEN 'normal' THEN 90 WHEN 'stale_7d' THEN 60 WHEN 'stale_14d' THEN 30 ELSE 80 END)
           ) AS performance_score,
 
+          -- Same posture-aware formula as the current-period CTE — the two
+          -- MUST stay in lockstep, or posture hosts show phantom security
+          -- deltas that are formula artifacts, not real changes.
           round(
-            0.50 * (CASE ifNull(o.os_currency, 'current')
-              WHEN 'current' THEN 100 WHEN 'n_minus_1' THEN 70
-              WHEN 'n_minus_2' THEN 40 WHEN 'legacy' THEN 20 ELSE 80 END)
-          + 0.50 * (CASE ifNull(o.dex_os_health, 'acceptable')
-              WHEN 'healthy' THEN 100 WHEN 'acceptable' THEN 70 WHEN 'degraded' THEN 30 ELSE 70 END)
+            CASE WHEN sp.host_id != '' THEN
+                0.25 * (CASE WHEN sp.disk_encrypted     = 1 THEN 100 ELSE 0 END)
+              + 0.20 * (CASE WHEN sp.firewall_enabled   = 1 THEN 100 ELSE 0 END)
+              + 0.15 * (CASE WHEN sp.gatekeeper_enabled = 1 THEN 100 ELSE 0 END)
+              + 0.10 * (CASE WHEN sp.sip_enabled        = 1 THEN 100 ELSE 0 END)
+              + 0.15 * (CASE ifNull(o.os_currency, 'current')
+                  WHEN 'current' THEN 100 WHEN 'n_minus_1' THEN 70
+                  WHEN 'n_minus_2' THEN 40 WHEN 'legacy' THEN 20 ELSE 80 END)
+              + 0.15 * (CASE ifNull(o.dex_os_health, 'acceptable')
+                  WHEN 'healthy' THEN 100 WHEN 'acceptable' THEN 70
+                  WHEN 'degraded' THEN 30 ELSE 70 END)
+            ELSE
+                0.50 * (CASE ifNull(o.os_currency, 'current')
+                  WHEN 'current' THEN 100 WHEN 'n_minus_1' THEN 70
+                  WHEN 'n_minus_2' THEN 40 WHEN 'legacy' THEN 20 ELSE 80 END)
+              + 0.50 * (CASE ifNull(o.dex_os_health, 'acceptable')
+                  WHEN 'healthy' THEN 100 WHEN 'acceptable' THEN 70 WHEN 'degraded' THEN 30 ELSE 70 END)
+            END
           ) AS security_score,
 
           round(
@@ -393,6 +409,14 @@ const PRIOR_SCORES_CTES = `      -- Prior period: scores from data before 7 days
             )
           GROUP BY host_id
         ) a ON h.host_id = a.host_id
+        LEFT JOIN (
+          SELECT host_id,
+            argMax(disk_encrypted,     timestamp) AS disk_encrypted,
+            argMax(firewall_enabled,   timestamp) AS firewall_enabled,
+            argMax(gatekeeper_enabled, timestamp) AS gatekeeper_enabled,
+            argMax(sip_enabled,        timestamp) AS sip_enabled
+          FROM security_posture WHERE timestamp < now() - INTERVAL 7 DAY GROUP BY host_id
+        ) sp ON h.host_id = sp.host_id
       ),
       prior_scored AS (
         SELECT *,
@@ -547,6 +571,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     description: 'Average days-to-patch per software for one host (compare view)',
     params: [
       { name: 'hostIdentifier', type: 'string' as const, required: true },
+      EXCLUDE_SOFTWARE_PARAM,
     ],
     sql: `
       SELECT
@@ -554,6 +579,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
         round(avg(days_to_patch), 2) AS avg_lag
       FROM dex_patch_events FINAL
       WHERE host_identifier = {filterHostId:String}
+        ${excludeClause('software_name')}
       GROUP BY software_name
       ORDER BY avg_lag DESC
     `,
@@ -565,6 +591,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
     description: 'Host-level mean time to patch — one aggregate row across all patch events for a host',
     params: [
       { name: 'hostIdentifier', type: 'string' as const, required: true },
+      EXCLUDE_SOFTWARE_PARAM,
     ],
     sql: `
       SELECT
@@ -574,6 +601,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
         max(days_to_patch)           AS max_lag
       FROM dex_patch_events FINAL
       WHERE host_identifier = {filterHostId:String}
+        ${excludeClause('software_name')}
     `,
   },
   {
@@ -938,6 +966,42 @@ export const firehoseScoreQueries: QueryConfig[] = [
     `,
   },
 
+  // ── Scoring coverage ────────────────────────────────────
+  // The composite's base table is device_health, which only macOS hosts
+  // populate today — hosts seen in other telemetry tables but absent from
+  // device_health are invisible to every score. This query provides the
+  // honest denominator for "N of M hosts scored" disclosures.
+  {
+    name: 'firehose.scores.coverage',
+    domain: 'scores',
+    client: 'core',
+    description: 'Scored hosts vs all hosts seen in any telemetry table (7d) — the gap is the unscored population',
+    params: [],
+    sql: `
+      SELECT
+        (SELECT uniqExact(host_id) FROM device_health
+          WHERE timestamp > now() - INTERVAL 7 DAY) AS scored_hosts,
+        uniqExact(host_id) AS known_hosts
+      FROM (
+        SELECT host_id FROM device_health      WHERE timestamp > now() - INTERVAL 7 DAY
+        UNION ALL
+        SELECT host_id FROM hardware_inventory WHERE timestamp > now() - INTERVAL 7 DAY
+        UNION ALL
+        SELECT host_id FROM os_health          WHERE timestamp > now() - INTERVAL 7 DAY
+        UNION ALL
+        SELECT host_id FROM process_health     WHERE timestamp > now() - INTERVAL 7 DAY
+        UNION ALL
+        SELECT host_id FROM wifi_signal        WHERE timestamp > now() - INTERVAL 7 DAY
+        UNION ALL
+        SELECT host_id FROM vpn_gate           WHERE timestamp > now() - INTERVAL 7 DAY
+        UNION ALL
+        SELECT host_id FROM security_posture   WHERE timestamp > now() - INTERVAL 7 DAY
+        UNION ALL
+        SELECT host_id FROM adoption_gap       WHERE timestamp > now() - INTERVAL 7 DAY
+      )
+    `,
+  },
+
   // ─── Patch events (ported from the retired legacy scores.ts lane) ───
   {
     name: 'firehose.scores.timeline_patches',
@@ -993,6 +1057,9 @@ export const firehoseScoreQueries: QueryConfig[] = [
         round(max(days_to_patch), 2) AS max_lag,
         round(min(days_to_patch), 2) AS min_lag,
         countDistinct(days_to_patch) AS distinct_lags,
+        -- Raw distinct lag values — lets clients union across day rows
+        -- exactly instead of guessing from per-day counts.
+        groupUniqArray(days_to_patch) AS lag_values,
         min(event_time) AS first_applied,
         max(event_time) AS last_applied
       FROM dex_patch_events
@@ -1049,8 +1116,10 @@ export const firehoseScoreQueries: QueryConfig[] = [
       { name: 'offsetDays', type: 'number' as const, required: false, min: 0, max: 365, default: 0 },
       { name: 'slaDays', type: 'number' as const, required: false, min: 1, max: 365, default: 14 },
       EXCLUDE_SOFTWARE_PARAM,
+      ...FILTER_PARAMS,
     ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         count()                                        AS n_events,
         countDistinct(host_identifier)                 AS n_hosts,
@@ -1059,10 +1128,14 @@ export const firehoseScoreQueries: QueryConfig[] = [
         round(quantile(0.5)(days_to_patch), 2)         AS p50_lag,
         round(quantile(0.9)(days_to_patch), 2)         AS p90_lag,
         round(quantile(0.95)(days_to_patch), 2)        AS p95_lag,
-        round(100.0 * countIf(days_to_patch <= {slaDays:UInt32}) / nullIf(count(), 0), 1) AS pct_within_sla
+        round(100.0 * countIf(days_to_patch <= {slaDays:UInt32}) / nullIf(count(), 0), 1) AS pct_within_sla,
+        -- Table-wide ingest start (not window-scoped): lets the UI say
+        -- "data since <date>" instead of implying the full window exists.
+        (SELECT toDate(min(event_time)) FROM dex_patch_events) AS data_start
       FROM dex_patch_events FINAL
       WHERE event_time >= now() - toIntervalDay({windowDays:UInt32} + {offsetDays:UInt32})
         AND event_time <  now() - toIntervalDay({offsetDays:UInt32})
+        AND host_identifier IN (SELECT host_id FROM filtered_hosts)
         ${excludeClause('software_name')}
     `,
   },
@@ -1112,14 +1185,17 @@ export const firehoseScoreQueries: QueryConfig[] = [
     params: [
       { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 365, default: 90 },
       EXCLUDE_SOFTWARE_PARAM,
+      ...FILTER_PARAMS,
     ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         patch_type,
         toUInt32(floor(days_to_patch)) AS day_bucket,
         count()                        AS n_events
       FROM dex_patch_events FINAL
       WHERE event_time >= now() - toIntervalDay({windowDays:UInt32})
+        AND host_identifier IN (SELECT host_id FROM filtered_hosts)
         ${excludeClause('software_name')}
       GROUP BY patch_type, day_bucket
       ORDER BY patch_type, day_bucket
@@ -1133,8 +1209,10 @@ export const firehoseScoreQueries: QueryConfig[] = [
     params: [
       { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 365, default: 30 },
       EXCLUDE_SOFTWARE_PARAM,
+      ...FILTER_PARAMS,
     ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         patch_type,
         count()                                AS n_events,
@@ -1145,6 +1223,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
         round(quantile(0.9)(days_to_patch), 2) AS p90_lag
       FROM dex_patch_events FINAL
       WHERE event_time >= now() - toIntervalDay({windowDays:UInt32})
+        AND host_identifier IN (SELECT host_id FROM filtered_hosts)
         ${excludeClause('software_name')}
       GROUP BY patch_type
       ORDER BY p50_lag DESC
@@ -1159,8 +1238,10 @@ export const firehoseScoreQueries: QueryConfig[] = [
       { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 365, default: 30 },
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 15 },
       EXCLUDE_SOFTWARE_PARAM,
+      ...FILTER_PARAMS,
     ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         e.host_identifier                  AS host_identifier,
         hi.hostname                        AS hostname,
@@ -1179,6 +1260,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
         FROM hardware_inventory GROUP BY host_id
       ) hi ON e.host_identifier = hi.host_id
       WHERE e.event_time >= now() - toIntervalDay({windowDays:UInt32})
+        AND e.host_identifier IN (SELECT host_id FROM filtered_hosts)
         ${excludeClause('e.software_name')}
       GROUP BY e.host_identifier, hi.hostname, hi.computer_name, hi.hardware_model
       ORDER BY avg_lag DESC
