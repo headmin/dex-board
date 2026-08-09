@@ -6,6 +6,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Dogfood: drop platform prefix from policy names (#50658)",
     "timestamp": "2026-08-06T14:08:21-05:00",
+    "insertions": 86,
+    "deletions": 86,
     "files": [
       "it-and-security/lib/all/labels/macos-screen-lock-exclusions.yml",
       "it-and-security/lib/all/labels/windows-screen-lock-exclusions.yml",
@@ -59,6 +61,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Add macOS apps to fleet maintained apps for testing & QA (#49983)",
     "timestamp": "2026-07-27T13:16:01-04:00",
+    "insertions": 8,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/testing-and-qa.yml"
     ]
@@ -70,6 +74,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Use snapshot logging for Windows 11 hardware readiness report (#49943)",
     "timestamp": "2026-07-25T22:01:50-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/windows/reports/collect-windows-11-hardware-readiness.yml"
     ]
@@ -81,6 +87,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Windows 11 hardware readiness report to dogfood GitOps (#49921)",
     "timestamp": "2026-07-24T22:02:34-05:00",
+    "insertions": 47,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/testing-and-qa.yml",
       "it-and-security/fleets/workstations.yml",
@@ -94,6 +102,8 @@
     "email": "myselfjake@gmail.com",
     "message": "Fix Linux uninstall script failing with a relative path (#49592)",
     "timestamp": "2026-07-21T07:28:35-07:00",
+    "insertions": 3,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/linux/scripts/uninstall-fleetd-linux.sh"
     ]
@@ -105,6 +115,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Set byod_fleet for dogfood Apple Business Manager tokens (#49564)",
     "timestamp": "2026-07-20T09:41:33-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -116,6 +128,8 @@
     "email": "2685025+getvictor@users.noreply.github.com",
     "message": "Add host 1310 to Macs excluded from external storage restrictions (#49545)",
     "timestamp": "2026-07-19T15:40:09-05:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml"
     ]
@@ -127,6 +141,8 @@
     "email": "luke@fleetdm.com",
     "message": "Handbook: continuous flow for all product groups (4.91.0) (#49500)",
     "timestamp": "2026-07-17T15:23:16-07:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -138,6 +154,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update Zoom Workplace label query (#49317)",
     "timestamp": "2026-07-14T20:46:35-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/all/labels/windows-with-fleet-maintained-apps-installed.yml"
     ]
@@ -149,6 +167,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Entra client ID to default controls (#49302)",
     "timestamp": "2026-07-14T20:40:57-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -160,6 +180,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Auto-install 1Password patches on Workstations (#48585)",
     "timestamp": "2026-07-13T09:28:23-05:00",
+    "insertions": 4,
+    "deletions": 6,
     "files": [
       "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
       "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml"
@@ -172,6 +194,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Install Okta Verify on Windows workstations via Fleet-maintained app (#48952)",
     "timestamp": "2026-07-08T10:41:49-05:00",
+    "insertions": 20,
+    "deletions": 135,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/windows-with-fleet-maintained-apps-installed.yml",
@@ -188,6 +212,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Revert \"Update apps when closed\" (#48758)",
     "timestamp": "2026-07-06T08:20:26-05:00",
+    "insertions": 71,
+    "deletions": 211,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/misc/pre-install-queries/is-1password-running.yml",
@@ -240,6 +266,8 @@
     "email": "83164494+marko-lisica@users.noreply.github.com",
     "message": "Update apps when closed (#48662)",
     "timestamp": "2026-07-06T04:54:04+02:00",
+    "insertions": 211,
+    "deletions": 71,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/misc/pre-install-queries/is-1password-running.yml",
@@ -292,6 +320,8 @@
     "email": "georgekarrv@users.noreply.github.com",
     "message": "Updating team host id's and new group names for labels in dogfood (#48569)",
     "timestamp": "2026-07-01T10:47:06-05:00",
+    "insertions": 22,
+    "deletions": 23,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/team-g-apple-at-work.yml",
@@ -307,6 +337,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Update Chrome managed bookmarks (#48547)",
     "timestamp": "2026-07-01T09:25:48-04:00",
+    "insertions": 10,
+    "deletions": 4,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -318,6 +350,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Add \"DRIs\" to managed Chrome bookmarks (#48424)",
     "timestamp": "2026-06-30T08:56:41-04:00",
+    "insertions": 6,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -329,6 +363,8 @@
     "email": "43040593+dantecatalfamo@users.noreply.github.com",
     "message": "Add host '921' to read-only device excluded list (#48436)",
     "timestamp": "2026-06-30T08:56:13-04:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml"
     ]
@@ -340,6 +376,8 @@
     "email": "3100993+spalmesano0@users.noreply.github.com",
     "message": "Add external storage exclusion for Steven (#48411)",
     "timestamp": "2026-06-29T09:38:24-05:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml"
     ]
@@ -351,6 +389,8 @@
     "email": "lucas@fleetdm.com",
     "message": "Add external storage exclusion for Lucas' macOS workstation (#48263)",
     "timestamp": "2026-06-25T10:06:08-03:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml"
     ]
@@ -362,6 +402,8 @@
     "email": "87822796+AndreyKizimenko@users.noreply.github.com",
     "message": "Update Macs excluded from external storage restrictions (#48039)",
     "timestamp": "2026-06-22T13:23:58-05:00",
+    "insertions": 6,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml"
     ]
@@ -373,6 +415,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Revert \"Clear categories in workstations.yml\" (#48025)",
     "timestamp": "2026-06-22T11:04:03-05:00",
+    "insertions": 109,
+    "deletions": 54,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -384,6 +428,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Clear categories in workstations.yml (#48022)",
     "timestamp": "2026-06-22T10:58:57-05:00",
+    "insertions": 54,
+    "deletions": 109,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -395,6 +441,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Revert \"Unblock workstations GitOps by temporarily removing software categories\" (#47988)",
     "timestamp": "2026-06-21T23:03:16-05:00",
+    "insertions": 109,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -406,6 +454,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Unblock workstations GitOps by temporarily removing software categories (#47986)",
     "timestamp": "2026-06-21T22:45:19-05:00",
+    "insertions": 0,
+    "deletions": 109,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -417,6 +467,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Revert \"Unblock mobile GitOps by temporarily removing app store categories\" (#47985)",
     "timestamp": "2026-06-21T22:31:01-05:00",
+    "insertions": 62,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/company-owned-mobile-devices.yml",
       "it-and-security/fleets/personal-mobile-devices.yml"
@@ -429,6 +481,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Unblock mobile GitOps by temporarily removing app store categories (#47984)",
     "timestamp": "2026-06-21T22:24:08-05:00",
+    "insertions": 0,
+    "deletions": 62,
     "files": [
       "it-and-security/fleets/company-owned-mobile-devices.yml",
       "it-and-security/fleets/personal-mobile-devices.yml"
@@ -441,6 +495,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Remove platform field from Linux exclusion label (#47982)",
     "timestamp": "2026-06-21T21:47:39-05:00",
+    "insertions": 0,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/all/labels/linux-excluded-from-external-storage-restrictions.yml"
     ]
@@ -452,6 +508,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add hosts to external storage exclusion labels (#47980)",
     "timestamp": "2026-06-21T21:44:29-05:00",
+    "insertions": 4,
+    "deletions": 4,
     "files": [
       "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml",
       "it-and-security/lib/all/labels/windows-excluded-from-external-storage-restrictions.yml"
@@ -464,6 +522,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add disk management profile and exclusion label (#44235)",
     "timestamp": "2026-06-21T20:58:20-05:00",
+    "insertions": 96,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/fleets/workstations.yml",
@@ -483,6 +543,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Fix unenroll Windows instructions (#47725)",
     "timestamp": "2026-06-19T13:15:00-04:00",
+    "insertions": 0,
+    "deletions": 230,
     "files": [
       "it-and-security/fleets/testing-and-qa.yml",
       "it-and-security/fleets/workstations.yml",
@@ -497,6 +559,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Enable macOS EndpointSecurity and FDE profile (#47448)",
     "timestamp": "2026-06-11T21:04:22-05:00",
+    "insertions": 10,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/testing-and-qa.yml",
       "it-and-security/fleets/workstations.yml"
@@ -509,6 +573,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update battery-health-check.yml (#47307)",
     "timestamp": "2026-06-10T09:36:28-05:00",
+    "insertions": 11,
+    "deletions": 9,
     "files": [
       "it-and-security/lib/macos/policies/battery-health-check.yml"
     ]
@@ -520,6 +586,8 @@
     "email": "38767391+harrisonravazzolo@users.noreply.github.com",
     "message": "Add DEX queries for Windows (#46607)",
     "timestamp": "2026-06-01T18:56:16-07:00",
+    "insertions": 309,
+    "deletions": 7,
     "files": [
       "it-and-security/lib/all/reports/dex-queries.yml"
     ]
@@ -531,6 +599,8 @@
     "email": "38767391+harrisonravazzolo@users.noreply.github.com",
     "message": "Adding sec posture query, expand dex queries to testing & qa team (#46021)",
     "timestamp": "2026-05-21T14:06:22-07:00",
+    "insertions": 13,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/testing-and-qa.yml",
       "it-and-security/lib/all/reports/dex-queries.yml"
@@ -543,6 +613,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update npm supply chain compromised packages list (#45817)",
     "timestamp": "2026-05-19T11:16:53-05:00",
+    "insertions": 1052,
+    "deletions": 177,
     "files": [
       "it-and-security/lib/all/policies/npm-supply-chain-compromised-packages.yml"
     ]
@@ -554,6 +626,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update icon for Fleet Desktop (#45508)",
     "timestamp": "2026-05-14T12:47:21-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -565,6 +639,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add custom icon to Touch ID script-only package (#44477)",
     "timestamp": "2026-05-14T11:13:18-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -576,6 +652,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Remove quotes from policy resolution text (#45390)",
     "timestamp": "2026-05-13T11:25:26-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/all/policies/npm-supply-chain-compromised-packages.yml"
     ]
@@ -587,6 +665,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Remove platform constraint from npm package label (#45382)",
     "timestamp": "2026-05-13T11:15:01-05:00",
+    "insertions": 0,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/all/labels/hosts-with-npm-package-inventory.yml"
     ]
@@ -598,6 +678,8 @@
     "email": "luke+fleetbot@fleetdm.com",
     "message": "Add compromised npm package detection policy to Workstations (#45264)",
     "timestamp": "2026-05-13T10:10:42-05:00",
+    "insertions": 606,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/fleets/workstations.yml",
@@ -615,6 +697,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update Okta Verify policy resolution and install flag (#45185)",
     "timestamp": "2026-05-11T15:20:38-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
     ]
@@ -626,6 +710,8 @@
     "email": "2685025+getvictor@users.noreply.github.com",
     "message": "Improve error handling in `create-admin-user.ps1` script (#45176)",
     "timestamp": "2026-05-11T14:59:52-05:00",
+    "insertions": 2,
+    "deletions": 5,
     "files": [
       "it-and-security/lib/windows/scripts/create-admin-user.ps1"
     ]
@@ -637,6 +723,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Move Safari report to macOS and remove mappings (#45153)",
     "timestamp": "2026-05-11T11:44:08-05:00",
+    "insertions": 1,
+    "deletions": 13,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/reports/collect-chromium-browser-extensions.yml",
@@ -644,7 +732,7 @@
       "it-and-security/lib/all/reports/collect-listening-ports.yml",
       "it-and-security/lib/all/reports/collect-local-user-accounts.yml",
       "it-and-security/lib/all/reports/collect-usb-devices.yml",
-      "it-and-security/lib/macos/reports/collect-safari-browser-extensions.yml"
+      "it-and-security/lib/{all => macos}/reports/collect-safari-browser-extensions.yml"
     ]
   },
   {
@@ -654,6 +742,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Disable auto-updates for new macOS hosts (#44957)",
     "timestamp": "2026-05-07T13:08:06-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -665,6 +755,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Enable Apple hardware attestation for workstations (#44860)",
     "timestamp": "2026-05-06T13:04:07-05:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -676,6 +768,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Re-add install policies for 1Password and Nudge (#44755)",
     "timestamp": "2026-05-05T12:47:03-05:00",
+    "insertions": 3,
+    "deletions": 3,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -687,6 +781,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Remove 1Password custom package (#44751)",
     "timestamp": "2026-05-05T12:10:49-05:00",
+    "insertions": 0,
+    "deletions": 6,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/software/1password.yml"
@@ -699,6 +795,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update policy that checks launch agent plist file presence (#44731)",
     "timestamp": "2026-05-05T09:01:35-05:00",
+    "insertions": 3,
+    "deletions": 3,
     "files": [
       "it-and-security/lib/macos/policies/install-fleet-desktop-launch-agent.yml"
     ]
@@ -710,6 +808,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add macOS configuration for Fleet Desktop launch agent (#44693)",
     "timestamp": "2026-05-04T14:33:37-05:00",
+    "insertions": 84,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/fleets/workstations.yml",
@@ -726,6 +826,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Revert \"Add Fleet Desktop launch agent configuration profile\" (#44688)",
     "timestamp": "2026-05-04T13:40:09-05:00",
+    "insertions": 0,
+    "deletions": 84,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/fleets/workstations.yml",
@@ -742,6 +844,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Fleet Desktop launch agent configuration profile (#44679)",
     "timestamp": "2026-05-04T13:29:12-05:00",
+    "insertions": 84,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/fleets/workstations.yml",
@@ -758,6 +862,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Remove enrollment profile policy and test label (#44683)",
     "timestamp": "2026-05-04T13:15:58-05:00",
+    "insertions": 0,
+    "deletions": 31,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/fleets/testing-and-qa.yml",
@@ -773,6 +879,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Remove Fleet Desktop login item profile (#44673)",
     "timestamp": "2026-05-04T10:56:42-05:00",
+    "insertions": 0,
+    "deletions": 45,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/configuration-profiles/fleet-desktop-login-item.mobileconfig"
@@ -785,6 +893,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Convert Fleet Desktop.app to FMA and patch policy (#44654)",
     "timestamp": "2026-05-04T09:50:43-05:00",
+    "insertions": 16,
+    "deletions": 23,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/macs-with-fleet-desktop-installed.yml",
@@ -800,6 +910,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Enable host expiry (90 days) for Workstations and mobile device teams (#44650)",
     "timestamp": "2026-05-04T09:20:11-05:00",
+    "insertions": 6,
+    "deletions": 6,
     "files": [
       "it-and-security/fleets/company-owned-mobile-devices.yml",
       "it-and-security/fleets/personal-mobile-devices.yml",
@@ -813,6 +925,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Enable host expiry for Testing & QA team (30 days) (#44649)",
     "timestamp": "2026-05-04T09:13:09-05:00",
+    "insertions": 3,
+    "deletions": 3,
     "files": [
       "it-and-security/fleets/testing-and-qa.yml"
     ]
@@ -824,6 +938,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add screen-lock MDM profiles and exclusion labels (#44581)",
     "timestamp": "2026-05-03T21:57:32-05:00",
+    "insertions": 87,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/fleets/workstations.yml",
@@ -842,6 +958,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Pin appindicator extension, verify tarball & timeout (#44631)",
     "timestamp": "2026-05-01T23:54:36-05:00",
+    "insertions": 34,
+    "deletions": 7,
     "files": [
       "it-and-security/lib/linux/scripts/install-fleet-desktop-required-extension.sh"
     ]
@@ -853,6 +971,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Fix Fleet Desktop not launching on OpenSUSE 16 (#44482)",
     "timestamp": "2026-05-01T23:26:56-05:00",
+    "insertions": 150,
+    "deletions": 24,
     "files": [
       "it-and-security/lib/linux/scripts/install-fleet-desktop-required-extension.sh"
     ]
@@ -864,6 +984,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Patch Adobe Acrobat automatically on workstation devices (#44316)",
     "timestamp": "2026-04-29T20:30:27-05:00",
+    "insertions": 60,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
@@ -879,6 +1001,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add spacing to report description blocks (#44409)",
     "timestamp": "2026-04-29T12:13:45-05:00",
+    "insertions": 8,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/reports/collect-chromium-browser-extensions.yml",
       "it-and-security/lib/all/reports/collect-firefox-browser-extensions.yml",
@@ -895,6 +1019,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add security policies and reports to Workstations (#43457)",
     "timestamp": "2026-04-29T11:00:42-05:00",
+    "insertions": 301,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/reports/collect-chromium-browser-extensions.yml",
@@ -922,6 +1048,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Enable osquery eventing and macOS FIM config (#44215)",
     "timestamp": "2026-04-27T13:17:47-05:00",
+    "insertions": 90,
+    "deletions": 16,
     "files": [
       "it-and-security/fleets/testing-and-qa.yml",
       "it-and-security/fleets/workstations.yml"
@@ -934,6 +1062,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Fix deprecation warnings (#44186)",
     "timestamp": "2026-04-24T23:24:04-05:00",
+    "insertions": 24,
+    "deletions": 24,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/fleets/company-owned-mobile-devices.yml",
@@ -951,6 +1081,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Santa system extension policy and script (#43498)",
     "timestamp": "2026-04-24T23:04:24-05:00",
+    "insertions": 52,
+    "deletions": 2,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
@@ -967,6 +1099,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Enable Nudge auto-install and comment policy (#44185)",
     "timestamp": "2026-04-24T22:39:28-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
@@ -979,6 +1113,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Enable 1Password in fleets and patch policies (#44182)",
     "timestamp": "2026-04-24T22:20:57-05:00",
+    "insertions": 29,
+    "deletions": 29,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
@@ -992,6 +1128,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Disable 1Password auto-install and patch checks (#44181)",
     "timestamp": "2026-04-24T22:10:07-05:00",
+    "insertions": 32,
+    "deletions": 32,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/policies/1password-installed.yml",
@@ -1007,6 +1145,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Revert \"Comment out 1Password fleet policy and app\" (#44180)",
     "timestamp": "2026-04-24T21:55:25-05:00",
+    "insertions": 16,
+    "deletions": 16,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
@@ -1019,6 +1159,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Comment out 1Password fleet policy and app (#44178)",
     "timestamp": "2026-04-24T21:41:43-05:00",
+    "insertions": 16,
+    "deletions": 16,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
@@ -1031,6 +1173,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Transition 1Password to Fleet-maintained app version (#44177)",
     "timestamp": "2026-04-24T21:21:00-05:00",
+    "insertions": 35,
+    "deletions": 28,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/windows-with-fleet-maintained-apps-installed.yml",
@@ -1049,6 +1193,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Transition Nudge to Fleet-maintained app (#44176)",
     "timestamp": "2026-04-24T21:13:59-05:00",
+    "insertions": 36,
+    "deletions": 180,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
@@ -1066,6 +1212,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update santa-configuration.mobileconfig (#44175)",
     "timestamp": "2026-04-24T20:56:54-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/santa-configuration.mobileconfig"
     ]
@@ -1077,6 +1225,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update slack-logo.png (#44117)",
     "timestamp": "2026-04-24T09:18:36-05:00",
+    "insertions": 0,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/icons/slack-logo.png"
     ]
@@ -1088,6 +1238,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add macOS report to collect default browser (#44116)",
     "timestamp": "2026-04-24T09:09:33-05:00",
+    "insertions": 22,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/reports/collect-default-browser.yml"
@@ -1100,6 +1252,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Slack icon and update Linux package URLs (#44115)",
     "timestamp": "2026-04-24T09:04:59-05:00",
+    "insertions": 6,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/all/icons/slack-logo.png",
       "it-and-security/lib/linux/software/slack-deb.yml",
@@ -1113,6 +1267,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Fleet Desktop login item profile (#43956)",
     "timestamp": "2026-04-22T10:55:28-05:00",
+    "insertions": 45,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/configuration-profiles/fleet-desktop-login-item.mobileconfig"
@@ -1125,6 +1281,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Fix display name formatting for Touch ID script (#43882)",
     "timestamp": "2026-04-21T13:39:26-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -1136,6 +1294,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update enable-touch-id-sudo.sh (#43880)",
     "timestamp": "2026-04-21T13:31:27-05:00",
+    "insertions": 15,
+    "deletions": 24,
     "files": [
       "it-and-security/lib/macos/scripts/enable-touch-id-sudo.sh"
     ]
@@ -1147,6 +1307,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add display_name for Touch ID sudo script (#43852)",
     "timestamp": "2026-04-21T10:52:04-05:00",
+    "insertions": 3,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/icons/touch-id.png"
@@ -1159,6 +1321,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Touch ID sudo script and icon (#43848)",
     "timestamp": "2026-04-21T10:10:51-05:00",
+    "insertions": 47,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/icons/touch-id.png",
@@ -1172,6 +1336,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update 1Password policy versions (#43840)",
     "timestamp": "2026-04-21T08:11:54-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -1183,6 +1349,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add macOS Fleet Desktop label and attach to policy (#43760)",
     "timestamp": "2026-04-20T09:39:50-05:00",
+    "insertions": 9,
+    "deletions": 1,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/macs-with-fleet-desktop-installed.yml",
@@ -1196,6 +1364,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add battery capacity ratio check (#43758)",
     "timestamp": "2026-04-20T09:23:40-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/policies/battery-health-check.yml"
     ]
@@ -1207,6 +1377,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update custom icon assets (#43753)",
     "timestamp": "2026-04-20T08:55:50-05:00",
+    "insertions": 0,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/icons/fleet-desktop-icon.png",
       "it-and-security/lib/all/icons/keynote-theme-swan.png"
@@ -1219,6 +1391,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated scoping of Fleet-maintained apps on Workstations (#43752)",
     "timestamp": "2026-04-20T08:48:55-05:00",
+    "insertions": 3,
+    "deletions": 20,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
@@ -1232,6 +1406,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Use app-specific labels for macOS software (#43751)",
     "timestamp": "2026-04-20T08:39:11-05:00",
+    "insertions": 43,
+    "deletions": 3,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -1243,6 +1419,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Fleet Desktop update policy and bump package (#43750)",
     "timestamp": "2026-04-20T08:19:16-05:00",
+    "insertions": 13,
+    "deletions": 4,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
@@ -1258,6 +1436,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update workstations.yml (#43620)",
     "timestamp": "2026-04-15T11:41:52-05:00",
+    "insertions": 0,
+    "deletions": 4,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -1269,6 +1449,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update patch-fleet-maintained-apps.yml (#43618)",
     "timestamp": "2026-04-15T10:46:12-05:00",
+    "insertions": 128,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
     ]
@@ -1280,6 +1462,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update patch-fleet-maintained-apps.yml (#43617)",
     "timestamp": "2026-04-15T10:39:26-05:00",
+    "insertions": 0,
+    "deletions": 8,
     "files": [
       "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
     ]
@@ -1291,6 +1475,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update patch-fleet-maintained-apps.yml (#43615)",
     "timestamp": "2026-04-15T10:24:09-05:00",
+    "insertions": 80,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
     ]
@@ -1302,6 +1488,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update patch-fleet-maintained-apps.yml (#43614)",
     "timestamp": "2026-04-15T10:18:09-05:00",
+    "insertions": 0,
+    "deletions": 208,
     "files": [
       "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
     ]
@@ -1313,6 +1501,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Revert \"Temporarily disable FMA patch policies\" (#43612)",
     "timestamp": "2026-04-15T09:53:51-05:00",
+    "insertions": 2,
+    "deletions": 4,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -1324,6 +1514,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Temporarily disable FMA patch policies (#43611)",
     "timestamp": "2026-04-15T09:49:53-05:00",
+    "insertions": 4,
+    "deletions": 2,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -1335,6 +1527,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Remove several x86 Windows apps, labels and policies (#43608)",
     "timestamp": "2026-04-15T09:26:38-05:00",
+    "insertions": 0,
+    "deletions": 169,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/windows-with-fleet-maintained-apps-installed.yml",
@@ -1348,6 +1542,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Re-add iMazing Profile Editor as a macOS FMA (#43574)",
     "timestamp": "2026-04-14T15:29:40-05:00",
+    "insertions": 9,
+    "deletions": 9,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
@@ -1361,6 +1557,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Rename iMazing Profile Editor to iMazing in the FMA library (#43555)",
     "timestamp": "2026-04-14T14:57:24-05:00",
+    "insertions": 9,
+    "deletions": 9,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
@@ -1374,6 +1572,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Remove Edge and Suspicious Package entries (#43509)",
     "timestamp": "2026-04-13T22:15:24-05:00",
+    "insertions": 0,
+    "deletions": 34,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
@@ -1387,6 +1587,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add fleet apps, labels, and patch policies (#43473)",
     "timestamp": "2026-04-13T14:18:06-05:00",
+    "insertions": 500,
+    "deletions": 8,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
@@ -1402,6 +1604,8 @@
     "email": "headmin@users.noreply.github.com",
     "message": "Add updated DEX queries (#43451)",
     "timestamp": "2026-04-13T21:11:24+02:00",
+    "insertions": 411,
+    "deletions": 17,
     "files": [
       "it-and-security/lib/all/reports/dex-queries.yml"
     ]
@@ -1413,6 +1617,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update macOS policy versions (#43398)",
     "timestamp": "2026-04-10T09:31:16-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -1424,6 +1630,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add AWS VPN Client label, app, and patch policy (#43285)",
     "timestamp": "2026-04-08T14:37:03-05:00",
+    "insertions": 26,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/fleets/workstations.yml",
@@ -1439,6 +1647,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Remove uninstall suggestion from some patch policies (#43280)",
     "timestamp": "2026-04-08T14:14:10-05:00",
+    "insertions": 7,
+    "deletions": 7,
     "files": [
       "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
       "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml"
@@ -1451,6 +1661,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update 1Password policy versions (#43213)",
     "timestamp": "2026-04-08T10:03:52-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -1462,6 +1674,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Re-add Zoom patch policies (#43175)",
     "timestamp": "2026-04-07T15:22:54-05:00",
+    "insertions": 26,
+    "deletions": 30,
     "files": [
       "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
       "it-and-security/lib/all/labels/windows-with-fleet-maintained-apps-installed.yml",
@@ -1476,6 +1690,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Re-add Zoom FMAs (#43173)",
     "timestamp": "2026-04-07T15:09:02-05:00",
+    "insertions": 13,
+    "deletions": 13,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -1487,6 +1703,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Disable Zoom FMA and related labels/policies (#43169)",
     "timestamp": "2026-04-07T14:51:17-05:00",
+    "insertions": 43,
+    "deletions": 39,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
@@ -1502,6 +1720,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Re-enable Zoom patch policies (#43164)",
     "timestamp": "2026-04-07T14:24:16-05:00",
+    "insertions": 26,
+    "deletions": 34,
     "files": [
       "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
       "it-and-security/lib/all/labels/windows-with-fleet-maintained-apps-installed.yml",
@@ -1516,6 +1736,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Comment out Zoom FMA labels and patch policies (#43157)",
     "timestamp": "2026-04-07T13:42:45-05:00",
+    "insertions": 34,
+    "deletions": 26,
     "files": [
       "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
       "it-and-security/lib/all/labels/windows-with-fleet-maintained-apps-installed.yml",
@@ -1530,6 +1752,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Switch Zoom to Fleet-maintained app version and patch policy (#43149)",
     "timestamp": "2026-04-07T13:03:14-05:00",
+    "insertions": 39,
+    "deletions": 19,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/icons/zoom-logo.png",
@@ -1548,6 +1772,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Disable locking of end-user info in macOS setup (#43147)",
     "timestamp": "2026-04-07T12:52:35-05:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -1559,6 +1785,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Consolidate department labels into departments.yml (#43121)",
     "timestamp": "2026-04-07T10:10:13-05:00",
+    "insertions": 63,
+    "deletions": 63,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/department-customer-success.yml",
@@ -1580,6 +1808,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Claude to iOS and Android (#43118)",
     "timestamp": "2026-04-07T10:06:35-05:00",
+    "insertions": 93,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/company-owned-mobile-devices.yml",
       "it-and-security/fleets/personal-mobile-devices.yml"
@@ -1592,6 +1822,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Use Fleet-maintained Firefox and remove legacy files (#43119)",
     "timestamp": "2026-04-07T10:01:42-05:00",
+    "insertions": 18,
+    "deletions": 21,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
@@ -1608,6 +1840,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Fleet-maintained app labels and patch policies (#43040)",
     "timestamp": "2026-04-05T22:53:50-05:00",
+    "insertions": 199,
+    "deletions": 5,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/fleets/workstations.yml",
@@ -1624,6 +1858,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Converted to webhooks_and_tickets_enabled key for policies (#42950)",
     "timestamp": "2026-04-02T21:09:30-05:00",
+    "insertions": 3,
+    "deletions": 4,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/linux/policies/disk-encryption-check.yml",
@@ -1638,6 +1874,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Remove display_name from FMA (#42949)",
     "timestamp": "2026-04-02T20:50:51-05:00",
+    "insertions": 0,
+    "deletions": 1,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -1649,6 +1887,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Update Claude desktop app policy versions to latest (#42659)",
     "timestamp": "2026-03-30T10:43:13-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/policies/update-claude.yml",
       "it-and-security/lib/windows/policies/update-claude.yml"
@@ -1661,6 +1901,8 @@
     "email": "scottmgress@gmail.com",
     "message": "Fix test-packaging.yml action (#42570)",
     "timestamp": "2026-03-30T07:25:07-05:00",
+    "insertions": 0,
+    "deletions": 66,
     "files": [
       "it-and-security/lib/macos/scripts/install-wine.sh"
     ]
@@ -1672,6 +1914,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update battery-health-check.yml (#42401)",
     "timestamp": "2026-03-25T13:57:51-05:00",
+    "insertions": 9,
+    "deletions": 4,
     "files": [
       "it-and-security/lib/macos/policies/battery-health-check.yml"
     ]
@@ -1683,6 +1927,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Add battery health check policies for macOS and Windows workstations (#42388)",
     "timestamp": "2026-03-25T11:23:49-05:00",
+    "insertions": 28,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/policies/battery-health-check.yml",
@@ -1696,6 +1942,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Cleaning up duplicate policies (#42382)",
     "timestamp": "2026-03-25T10:15:11-05:00",
+    "insertions": 0,
+    "deletions": 16,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/policies/filevault-enabled.yml",
@@ -1709,6 +1957,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Enable calendar integration for Windows 1Password and Firefox update policies (#42381)",
     "timestamp": "2026-03-25T10:14:49-05:00",
+    "insertions": 6,
+    "deletions": 4,
     "files": [
       "it-and-security/lib/windows/policies/update-1password.yml",
       "it-and-security/lib/windows/policies/update-firefox.yml"
@@ -1721,6 +1971,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Enable Claude install during setup experience for Workstations team (#42378)",
     "timestamp": "2026-03-25T10:06:23-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -1732,6 +1984,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Cleaning up scripts (#42371)",
     "timestamp": "2026-03-25T09:12:56-05:00",
+    "insertions": 0,
+    "deletions": 3518,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/fleets/workstations.yml",
@@ -1761,6 +2015,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update Safari policy version (#42366)",
     "timestamp": "2026-03-25T08:47:22-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-safari.yml"
     ]
@@ -1772,6 +2028,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Add FileVault and BitLocker disk encryption policies for Workstations team (#42340)",
     "timestamp": "2026-03-24T20:45:50-05:00",
+    "insertions": 16,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/policies/filevault-enabled.yml",
@@ -1785,6 +2043,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update macOS policy versions (#42356)",
     "timestamp": "2026-03-24T20:44:30-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -1796,6 +2056,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Update Firefox to 149.0 for Workstations team (#42315)",
     "timestamp": "2026-03-24T10:50:53-05:00",
+    "insertions": 3,
+    "deletions": 3,
     "files": [
       "it-and-security/lib/macos/policies/update-firefox.yml",
       "it-and-security/lib/macos/software/mozilla-firefox.yml",
@@ -1809,6 +2071,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add display_name for Mozilla Firefox (#42286)",
     "timestamp": "2026-03-23T22:20:34-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -1820,6 +2084,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Remove WhatsApp block rule and deploy Santa profiles to all Workstations Macs (#42285)",
     "timestamp": "2026-03-23T22:09:18-05:00",
+    "insertions": 0,
+    "deletions": 29,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/fleets/workstations.yml",
@@ -1836,6 +2102,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Update Firefox macOS policy to enable scheduled maintenance (#42283)",
     "timestamp": "2026-03-23T21:35:20-05:00",
+    "insertions": 3,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/policies/update-firefox.yml"
     ]
@@ -1847,6 +2115,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Enable calendar events on Workstations fleet (#42284)",
     "timestamp": "2026-03-23T21:33:51-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -1858,6 +2128,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS policy to enable scheduled maintenance (#41932)",
     "timestamp": "2026-03-23T21:04:20-05:00",
+    "insertions": 3,
+    "deletions": 3,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -1869,6 +2141,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS 27 incompatible apps report (#42217)",
     "timestamp": "2026-03-21T21:30:49-05:00",
+    "insertions": 4,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/reports/collect-macos-27-incompatible-apps.yml"
     ]
@@ -1880,6 +2154,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add macOS 27 incompatible apps report (#42214)",
     "timestamp": "2026-03-21T21:15:35-05:00",
+    "insertions": 25,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/reports/collect-macos-27-incompatible-apps.yml"
@@ -1892,6 +2168,8 @@
     "email": "luke+fleetbot@fleetdm.com",
     "message": "Fix duplicate labels_include_any key on claude/windows (#41955)",
     "timestamp": "2026-03-18T13:17:03-05:00",
+    "insertions": 0,
+    "deletions": 2,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -1903,6 +2181,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add secrets in dogfood-gitops workflow to support Okta SSO (#41928)",
     "timestamp": "2026-03-18T10:37:46-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -1914,6 +2194,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Switch dogfood SSO to Okta and add metadata URL (#41900)",
     "timestamp": "2026-03-17T21:27:33-05:00",
+    "insertions": 6,
+    "deletions": 10,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -1925,6 +2207,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Fix CVE-2025-2857: Add Windows Firefox update policy and maintained app (#41882)",
     "timestamp": "2026-03-17T16:45:10-05:00",
+    "insertions": 13,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/windows/policies/update-firefox.yml"
@@ -1937,6 +2221,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update 1Password policy versions (#41869)",
     "timestamp": "2026-03-17T15:00:05-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -1948,6 +2234,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Add Microsoft Entra ID environment variable for Dogfood GitOps (#41522)",
     "timestamp": "2026-03-16T12:57:22-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -1959,6 +2247,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Add Slack update policy for macOS and Windows workstations (#41687)",
     "timestamp": "2026-03-13T16:19:38-05:00",
+    "insertions": 14,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/policies/update-slack.yml",
@@ -1972,6 +2262,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Deploy Slack across all workstation platforms (#41684)",
     "timestamp": "2026-03-13T16:07:51-05:00",
+    "insertions": 26,
+    "deletions": 0,
     "files": [
       "it-and-security/fleets/workstations.yml"
     ]
@@ -1983,6 +2275,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Removing Slack to prep for demo (#41679)",
     "timestamp": "2026-03-13T15:50:40-05:00",
+    "insertions": 0,
+    "deletions": 36,
     "files": [
       "it-and-security/fleets/workstations.yml",
       "it-and-security/lib/macos/policies/update-slack.yml"
@@ -1995,6 +2289,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update support URL (#41430)",
     "timestamp": "2026-03-11T08:53:23-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -2006,6 +2302,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update macOS and 1Password policy versions (#41435)",
     "timestamp": "2026-03-11T08:51:40-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml",
       "it-and-security/lib/macos/policies/update-1password.yml"
@@ -2018,6 +2316,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update Firefox configuration in update-firefox.yml (#41365)",
     "timestamp": "2026-03-10T12:37:02-05:00",
+    "insertions": 0,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/policies/update-firefox.yml"
     ]
@@ -2029,6 +2329,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Update Firefox to 148.0.2 (#41352)",
     "timestamp": "2026-03-10T11:47:47-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/policies/update-firefox.yml",
       "it-and-security/lib/macos/software/mozilla-firefox.yml"
@@ -2041,8 +2343,10 @@
     "email": "luke@fleetdm.com",
     "message": "Rename no-teams.yml to unassigned.yml (#41306)",
     "timestamp": "2026-03-09T18:23:18-05:00",
+    "insertions": 0,
+    "deletions": 0,
     "files": [
-      "it-and-security/fleets/unassigned.yml"
+      "it-and-security/fleets/{no-team.yml => unassigned.yml}"
     ]
   },
   {
@@ -2052,27 +2356,29 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Migrating teams to fleets and queries to reports (#40726)",
     "timestamp": "2026-03-09T17:45:55-05:00",
+    "insertions": 29,
+    "deletions": 34,
     "files": [
       "it-and-security/default.yml",
-      "it-and-security/fleets/company-owned-mobile-devices.yml",
-      "it-and-security/fleets/no-team.yml",
-      "it-and-security/fleets/personal-mobile-devices.yml",
-      "it-and-security/fleets/servers.yml",
-      "it-and-security/fleets/testing-and-qa.yml",
-      "it-and-security/fleets/workstations.yml",
-      "it-and-security/lib/all/reports/collect-fleetd-information.yml",
-      "it-and-security/lib/all/reports/collect-known-vulnerable-chrome-extensions.yml",
-      "it-and-security/lib/all/reports/collect-operating-system-information.yml",
-      "it-and-security/lib/all/reports/dex-queries.yml",
-      "it-and-security/lib/linux/reports/all-deb-hosts.yml",
-      "it-and-security/lib/linux/reports/all-rpm-hosts.yml",
-      "it-and-security/lib/macos/reports/collect-macos-compatibility-data.yml",
-      "it-and-security/lib/macos/reports/collect-santa-denied-logs.yml",
-      "it-and-security/lib/macos/reports/collect-xprotect-reports.yml",
-      "it-and-security/lib/macos/reports/detect-apns-certificate.yml",
-      "it-and-security/lib/macos/reports/detect-apple-intelligence.yml",
-      "it-and-security/lib/windows/reports/all-arm-hosts.yml",
-      "it-and-security/lib/windows/reports/all-x86-hosts.yml"
+      "it-and-security/{teams => fleets}/company-owned-mobile-devices.yml",
+      "it-and-security/{teams => fleets}/no-team.yml",
+      "it-and-security/{teams => fleets}/personal-mobile-devices.yml",
+      "it-and-security/{teams => fleets}/servers.yml",
+      "it-and-security/{teams => fleets}/testing-and-qa.yml",
+      "it-and-security/{teams => fleets}/workstations.yml",
+      "it-and-security/lib/all/{queries => reports}/collect-fleetd-information.yml",
+      "it-and-security/lib/all/{queries => reports}/collect-known-vulnerable-chrome-extensions.yml",
+      "it-and-security/lib/all/{queries => reports}/collect-operating-system-information.yml",
+      "it-and-security/lib/all/{queries => reports}/dex-queries.yml",
+      "it-and-security/lib/linux/{queries => reports}/all-deb-hosts.yml",
+      "it-and-security/lib/linux/{queries => reports}/all-rpm-hosts.yml",
+      "it-and-security/lib/macos/{queries => reports}/collect-macos-compatibility-data.yml",
+      "it-and-security/lib/macos/{queries => reports}/collect-santa-denied-logs.yml",
+      "it-and-security/lib/macos/{queries => reports}/collect-xprotect-reports.yml",
+      "it-and-security/lib/macos/{queries => reports}/detect-apns-certificate.yml",
+      "it-and-security/lib/macos/{queries => reports}/detect-apple-intelligence.yml",
+      "it-and-security/lib/windows/{queries => reports}/all-arm-hosts.yml",
+      "it-and-security/lib/windows/{queries => reports}/all-x86-hosts.yml"
     ]
   },
   {
@@ -2082,6 +2388,8 @@
     "email": "mikermcneil@users.noreply.github.com",
     "message": "Add README template (#41269)",
     "timestamp": "2026-03-09T14:03:54-05:00",
+    "insertions": 17,
+    "deletions": 0,
     "files": [
       "it-and-security/README.md"
     ]
@@ -2093,6 +2401,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Update Claude Desktop version policies (#41259)",
     "timestamp": "2026-03-09T10:37:28-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/policies/update-claude.yml",
       "it-and-security/lib/windows/policies/update-claude.yml"
@@ -2105,6 +2415,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Remove Company Portal and extensible SSO from Workstations team (#41253)",
     "timestamp": "2026-03-09T10:01:09-05:00",
+    "insertions": 0,
+    "deletions": 159,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/conditional-access-test-group.yml",
@@ -2124,6 +2436,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Add Okta Verify for Windows workstations (#41203)",
     "timestamp": "2026-03-08T22:13:58-05:00",
+    "insertions": 135,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/windows/scripts/okta_verify_install.ps1",
       "it-and-security/lib/windows/scripts/okta_verify_uninstall.ps1",
@@ -2138,6 +2452,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update Workstations configuration (#41237)",
     "timestamp": "2026-03-08T20:53:16-05:00",
+    "insertions": 4,
+    "deletions": 1,
     "files": [
       "it-and-security/teams/workstations.yml"
     ]
@@ -2149,6 +2465,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Claude Desktop to Workstations team (#40675)",
     "timestamp": "2026-03-07T20:40:18-06:00",
+    "insertions": 24,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/policies/update-claude.yml",
       "it-and-security/lib/windows/policies/update-claude.yml",
@@ -2162,6 +2480,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Add disk space check policies for workstations (#41212)",
     "timestamp": "2026-03-07T19:52:02-06:00",
+    "insertions": 45,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/linux/policies/disk-space-check.yml",
       "it-and-security/lib/macos/policies/disk-space-check.yml",
@@ -2176,6 +2496,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Disable bypass for conditional access (#41211)",
     "timestamp": "2026-03-07T19:31:49-06:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -2187,6 +2509,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update workstations configuration (#41210)",
     "timestamp": "2026-03-07T19:13:07-06:00",
+    "insertions": 1,
+    "deletions": 3,
     "files": [
       "it-and-security/teams/workstations.yml"
     ]
@@ -2198,6 +2522,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Disable calendar events for macOS 1Password and enrollment profile policies (#41209)",
     "timestamp": "2026-03-07T19:02:50-06:00",
+    "insertions": 2,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -2209,6 +2535,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Restore Google Calendar integration settings (#41208)",
     "timestamp": "2026-03-07T18:47:24-06:00",
+    "insertions": 11,
+    "deletions": 9,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -2220,6 +2548,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Remove Okta Verify from Windows workstations (#41201)",
     "timestamp": "2026-03-07T17:07:05-06:00",
+    "insertions": 0,
+    "deletions": 7,
     "files": [
       "it-and-security/teams/workstations.yml"
     ]
@@ -2231,6 +2561,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update macOS, 1Password, and Safari policy versions (#41187)",
     "timestamp": "2026-03-06T20:37:24-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -2242,6 +2574,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update Windows Defender compliance check configuration (#40759)",
     "timestamp": "2026-02-27T22:52:22-06:00",
+    "insertions": 45,
+    "deletions": 29,
     "files": [
       "it-and-security/lib/windows/policies/windows-defender-compliance-check.yml"
     ]
@@ -2253,6 +2587,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Add XProtect reports query for Workstations team (#40755)",
     "timestamp": "2026-02-27T21:37:58-06:00",
+    "insertions": 10,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/macos/queries/collect-xprotect-reports.yml"
@@ -2265,6 +2601,8 @@
     "email": "240665456+kilo-code-bot[bot]@users.noreply.github.com",
     "message": "Update Firefox to 148.0 and add auto-remediation to update policy (#40743)",
     "timestamp": "2026-02-27T21:06:35-06:00",
+    "insertions": 5,
+    "deletions": 3,
     "files": [
       "it-and-security/lib/macos/policies/update-firefox.yml",
       "it-and-security/lib/macos/software/mozilla-firefox.yml"
@@ -2277,6 +2615,8 @@
     "email": "r@rachael.wtf",
     "message": "Update resolution instructions for \"macOS - All available software updates installed\" (#40700)",
     "timestamp": "2026-02-27T13:59:33-06:00",
+    "insertions": 4,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/all-software-updates-installed.yml"
     ]
@@ -2288,6 +2628,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Remove hosts from conditional-access-test-group.yml (#40595)",
     "timestamp": "2026-02-26T22:27:37-06:00",
+    "insertions": 0,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/all/labels/conditional-access-test-group.yml"
     ]
@@ -2299,6 +2641,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update 1Password policy versions (#40674)",
     "timestamp": "2026-02-26T22:04:44-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -2310,6 +2654,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Fix typo in query name for Chrome extensions (#40494)",
     "timestamp": "2026-02-25T13:00:56-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/all/queries/collect-known-vulnerable-chrome-extensions.yml"
     ]
@@ -2321,6 +2667,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update 1Password policy versions (#40387)",
     "timestamp": "2026-02-24T08:45:57-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -2332,6 +2680,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Recategorize software (#40312)",
     "timestamp": "2026-02-23T12:55:20-06:00",
+    "insertions": 34,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/workstations.yml"
     ]
@@ -2343,6 +2693,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Okta Verify to Setup experience for \"Employee-issued mobile devices\" (#40310)",
     "timestamp": "2026-02-23T12:34:28-06:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml"
     ]
@@ -2354,6 +2706,8 @@
     "email": "240665456+kiloconnect[bot]@users.noreply.github.com",
     "message": "Add okta-verify/windows to Windows section of fleet_maintained_apps in workstations.yml (#40294)",
     "timestamp": "2026-02-23T10:08:43-06:00",
+    "insertions": 5,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/workstations.yml"
     ]
@@ -2365,6 +2719,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Adjust Okta Verify labels and setup flag (#40280)",
     "timestamp": "2026-02-23T09:25:00-06:00",
+    "insertions": 1,
+    "deletions": 4,
     "files": [
       "it-and-security/teams/workstations.yml"
     ]
@@ -2376,6 +2732,8 @@
     "email": "38767391+harrisonravazzolo@users.noreply.github.com",
     "message": "Add dex queries dogfood (#40085)",
     "timestamp": "2026-02-23T07:19:20-08:00",
+    "insertions": 66,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/queries/dex-queries.yml",
       "it-and-security/teams/workstations.yml"
@@ -2388,6 +2746,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update macOS, 1Password, and Safari policy versions (#39778)",
     "timestamp": "2026-02-12T12:37:27-06:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml",
       "it-and-security/lib/macos/policies/update-safari.yml"
@@ -2400,6 +2760,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add app display_names, fix 1Password, add .keep (#39742)",
     "timestamp": "2026-02-11T23:45:36-06:00",
+    "insertions": 24,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/all/icons/zoom-logo.png",
       "it-and-security/lib/android/managed-app-configurations/.keep",
@@ -2414,6 +2776,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Enable setup experience for Slack and Zoom on iPadOS (#39741)",
     "timestamp": "2026-02-11T23:20:54-06:00",
+    "insertions": 4,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml",
       "it-and-security/teams/personal-mobile-devices.yml"
@@ -2426,6 +2790,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add multi-platform mobile apps and macOS update (#39740)",
     "timestamp": "2026-02-11T22:56:02-06:00",
+    "insertions": 224,
+    "deletions": 38,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml",
       "it-and-security/teams/personal-mobile-devices.yml",
@@ -2440,6 +2806,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Set `platform` for Keynote App Store app (#39735)",
     "timestamp": "2026-02-11T21:40:58-06:00",
+    "insertions": 1,
+    "deletions": 2,
     "files": [
       "it-and-security/teams/workstations.yml"
     ]
@@ -2451,6 +2819,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update SHA256 for Fleet Desktop (#39734)",
     "timestamp": "2026-02-11T21:23:29-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/software/fleet-desktop.yml"
     ]
@@ -2462,6 +2832,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS Slack policy version to 4.47.72 (#39726)",
     "timestamp": "2026-02-11T16:51:00-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-slack.yml"
     ]
@@ -2473,6 +2845,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update display names for 1Password, Slack, and Zoom (#39703)",
     "timestamp": "2026-02-11T14:12:20-06:00",
+    "insertions": 9,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/linux/software/1password-deb.yml",
       "it-and-security/lib/linux/software/1password-rpm.yml",
@@ -2492,6 +2866,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add 1Password & update Zoom/Slack package URLs (#39698)",
     "timestamp": "2026-02-11T13:23:08-06:00",
+    "insertions": 24,
+    "deletions": 13,
     "files": [
       "it-and-security/lib/linux/software/1password-deb.yml",
       "it-and-security/lib/linux/software/1password-rpm.yml",
@@ -2511,6 +2887,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add .keep folder to android folder (#39681)",
     "timestamp": "2026-02-11T10:13:47-06:00",
+    "insertions": 0,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/android/.keep"
     ]
@@ -2522,6 +2900,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Android folder (#39680)",
     "timestamp": "2026-02-11T10:08:45-06:00",
+    "insertions": 0,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/android/configuration-profiles/.keep"
     ]
@@ -2533,6 +2913,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update SHA256 for Fleet Desktop (#39665)",
     "timestamp": "2026-02-10T21:45:52-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/software/fleet-desktop.yml"
     ]
@@ -2544,6 +2926,8 @@
     "email": "scottmgress@gmail.com",
     "message": "Remove duplicate VPP section from it-and-security default .yml (#39660)",
     "timestamp": "2026-02-10T17:26:48-06:00",
+    "insertions": 0,
+    "deletions": 15,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -2555,6 +2939,8 @@
     "email": "dale@fleetdm.com",
     "message": "Fix typos in firewall configuration profile (#39647)",
     "timestamp": "2026-02-10T17:33:33-05:00",
+    "insertions": 4,
+    "deletions": 4,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/firewall.mobileconfig"
     ]
@@ -2566,6 +2952,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Comment out Slack post_install_script (#39643)",
     "timestamp": "2026-02-10T14:46:12-06:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/teams/workstations.yml"
     ]
@@ -2577,6 +2965,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Bump Firefox version check to 147.0.3 (#39627)",
     "timestamp": "2026-02-10T13:18:12-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-firefox.yml"
     ]
@@ -2588,6 +2978,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update 1Password policy version (#39624)",
     "timestamp": "2026-02-10T13:11:04-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -2599,6 +2991,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update Fleet Desktop's SHA256 (#39592)",
     "timestamp": "2026-02-09T21:44:32-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/software/fleet-desktop.yml"
     ]
@@ -2610,6 +3004,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update SHA256 for Fleet Desktop (#39577)",
     "timestamp": "2026-02-09T14:49:50-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/software/fleet-desktop.yml"
     ]
@@ -2621,6 +3017,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update SHA256 for Fleet Desktop (#39560)",
     "timestamp": "2026-02-09T10:01:01-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/software/fleet-desktop.yml"
     ]
@@ -2632,6 +3030,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Fleet Desktop to Self-service for Workstations team (#39544)",
     "timestamp": "2026-02-08T23:37:05-06:00",
+    "insertions": 12,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/all/icons/fleet-desktop-icon.png",
       "it-and-security/lib/macos/software/fleet-desktop.yml",
@@ -2645,6 +3045,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Disable query automation (#39294)",
     "timestamp": "2026-02-07T23:34:11-06:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/queries/collect-macos-compatibility-data.yml",
       "it-and-security/lib/macos/queries/collect-santa-denied-logs.yml"
@@ -2657,6 +3059,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Restrict Keynote label to v14.x (#39240)",
     "timestamp": "2026-02-07T23:29:58-06:00",
+    "insertions": 8,
+    "deletions": 8,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/keynote-14-installed.yml",
@@ -2671,6 +3075,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Disable Google Calendar integration (#39532)",
     "timestamp": "2026-02-07T23:23:12-06:00",
+    "insertions": 1,
+    "deletions": 3,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -2682,6 +3088,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Standardize macOS app update queries and related automation (#39164)",
     "timestamp": "2026-02-03T17:52:07-06:00",
+    "insertions": 3,
+    "deletions": 3,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml",
       "it-and-security/lib/macos/policies/update-firefox.yml",
@@ -2695,6 +3103,8 @@
     "email": "108141731+Sampfluger88@users.noreply.github.com",
     "message": "Rename and update Go-To-Market groups to operations (#39187)",
     "timestamp": "2026-02-03T12:37:27-06:00",
+    "insertions": 7,
+    "deletions": 7,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -2706,6 +3116,8 @@
     "email": "2227948+tux234@users.noreply.github.com",
     "message": "Add Okta Verify to iOS self-service (#39168)",
     "timestamp": "2026-02-03T11:04:09-05:00",
+    "insertions": 9,
+    "deletions": 5,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml",
       "it-and-security/teams/personal-mobile-devices.yml"
@@ -2718,6 +3130,8 @@
     "email": "2227948+tux234@users.noreply.github.com",
     "message": "Add Okta Verify to IT workstations (#39145)",
     "timestamp": "2026-02-02T11:35:08-05:00",
+    "insertions": 4,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/workstations.yml"
     ]
@@ -2729,6 +3143,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update fleet-keynote-theme.yml (#39151)",
     "timestamp": "2026-02-02T10:33:28-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/software/fleet-keynote-theme.yml"
     ]
@@ -2740,6 +3156,8 @@
     "email": "2227948+tux234@users.noreply.github.com",
     "message": "Pilot deployment of Okta Verify (#38646)",
     "timestamp": "2026-01-28T17:24:21-05:00",
+    "insertions": 292,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/fleet-okta-conditional-access.mobileconfig",
       "it-and-security/lib/macos/configuration-profiles/okta-verify-settings.mobileconfig",
@@ -2753,6 +3171,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update workstations.yml (#38946)",
     "timestamp": "2026-01-28T15:42:13-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/teams/workstations.yml"
     ]
@@ -2764,6 +3184,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Rename \"\u2601\ufe0f IT servers\" (#38930)",
     "timestamp": "2026-01-28T11:47:46-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/teams/servers.yml"
     ]
@@ -2775,6 +3197,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Rename \"\ud83d\udcf1\ud83c\udfe2 Company-owned mobile devices\" to \"\ud83d\udcf1\ud83c\udfe2 Employee-issued mobile devices\" (#38907)",
     "timestamp": "2026-01-27T22:18:33-06:00",
+    "insertions": 24,
+    "deletions": 9,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/teams/company-owned-mobile-devices.yml"
@@ -2787,6 +3211,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Consolidate Workstations teams into a single team (#38906)",
     "timestamp": "2026-01-27T21:56:32-06:00",
+    "insertions": 51,
+    "deletions": 357,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/department-customer-success.yml",
@@ -2801,6 +3227,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Consolidate \"Servers\" teams into a single \"\u2601\ufe0f IT Servers\" team (#38851)",
     "timestamp": "2026-01-27T12:24:56-06:00",
+    "insertions": 1,
+    "deletions": 51,
     "files": [
       "it-and-security/lib/all/agent-options/servers-canary.agent-options.yml",
       "it-and-security/teams/servers-canary.yml",
@@ -2814,6 +3242,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add IdP department labels (#38783)",
     "timestamp": "2026-01-26T12:29:57-06:00",
+    "insertions": 56,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/department-engineering.yml",
@@ -2833,6 +3263,8 @@
     "email": "113355639+ireedy@users.noreply.github.com",
     "message": "Handbook: org and responsibilities update (#38527)",
     "timestamp": "2026-01-21T00:20:16Z",
+    "insertions": 9,
+    "deletions": 9,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig",
       "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig",
@@ -2846,6 +3278,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update 1Password and Safari policy versions (#38505)",
     "timestamp": "2026-01-20T07:44:10-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -2857,6 +3291,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update turn-off-mdm.ps1 (#38384)",
     "timestamp": "2026-01-16T10:31:05-06:00",
+    "insertions": 62,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/windows/scripts/turn-off-mdm.ps1"
     ]
@@ -2868,6 +3304,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update Safari policy version (#38278)",
     "timestamp": "2026-01-13T15:07:20-06:00",
+    "insertions": 1,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/policies/update-safari.yml"
     ]
@@ -2879,6 +3317,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update dogfood-policy-updater-latest-safari.sh (#38133)",
     "timestamp": "2026-01-13T15:04:36-06:00",
+    "insertions": 1,
+    "deletions": 11,
     "files": [
       "it-and-security/lib/macos/policies/update-safari.yml"
     ]
@@ -2890,6 +3330,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add automated Safari policy update and remediation (#35890)",
     "timestamp": "2026-01-08T11:00:31-06:00",
+    "insertions": 51,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/policies/update-safari.yml",
       "it-and-security/lib/macos/scripts/update-safari.sh"
@@ -2902,6 +3344,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update Docker slug for macOS FMA (#37965)",
     "timestamp": "2026-01-06T21:10:33-06:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
@@ -2914,6 +3358,8 @@
     "email": "iansltx@gmail.com",
     "message": "\ud83e\udd16 Move child process to separate cgroup for Linux uninstall script (#37131)",
     "timestamp": "2025-12-31T12:16:35-06:00",
+    "insertions": 17,
+    "deletions": 7,
     "files": [
       "it-and-security/lib/linux/scripts/uninstall-fleetd-linux.sh"
     ]
@@ -2925,6 +3371,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Rename bookmark from 'Sprint planning' to 'Release planning' (#37560)",
     "timestamp": "2025-12-19T13:33:51-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -2936,6 +3384,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update self-service.mobileconfig (#37551)",
     "timestamp": "2025-12-19T10:51:34-06:00",
+    "insertions": 1,
+    "deletions": 89,
     "files": [
       "it-and-security/lib/ios/configuration-profiles/self-service.mobileconfig"
     ]
@@ -2947,6 +3397,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add iOS Self-service apps (#37545)",
     "timestamp": "2025-12-19T10:13:32-06:00",
+    "insertions": 11,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/ios/configuration-profiles/self-service.mobileconfig",
       "it-and-security/teams/company-owned-mobile-devices.yml",
@@ -2960,6 +3412,8 @@
     "email": "2227948+tux234@users.noreply.github.com",
     "message": "Add Self-service webclip for BYO devices (#37510)",
     "timestamp": "2025-12-19T11:02:01-05:00",
+    "insertions": 129,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/ios/configuration-profiles/self-service.mobileconfig",
       "it-and-security/teams/company-owned-mobile-devices.yml",
@@ -2973,6 +3427,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update Santa package URL to version 2025.11 (#37372)",
     "timestamp": "2025-12-16T16:48:10-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/software/santa.yml"
     ]
@@ -2984,6 +3440,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Update bookmark name from 'Roadmap' to 'Sprint planning' (#37347)",
     "timestamp": "2025-12-16T13:41:01-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -2995,6 +3453,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Updating feature prioritization critieria & remove \ud83d\udc9d Customer requests (prioritized) project (#37205)",
     "timestamp": "2025-12-15T13:45:38-05:00",
+    "insertions": 0,
+    "deletions": 6,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -3006,6 +3466,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update macOS policy versions (#37221)",
     "timestamp": "2025-12-12T18:49:30-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -3017,6 +3479,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add ABM token for Mactivate LLC (#37201)",
     "timestamp": "2025-12-12T14:38:33-06:00",
+    "insertions": 4,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -3028,6 +3492,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Disable calendar events for enrollment profile policy (#36964)",
     "timestamp": "2025-12-09T10:25:20-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml"
     ]
@@ -3039,6 +3505,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update macOS policy versions (#36956)",
     "timestamp": "2025-12-09T07:57:35-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -3050,6 +3518,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Disable the Cloudflare DNS over HTTPS configuration profile (#36904)",
     "timestamp": "2025-12-08T12:39:23-06:00",
+    "insertions": 4,
+    "deletions": 2,
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
@@ -3062,6 +3532,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update workstations-canary.yml (#36853)",
     "timestamp": "2025-12-07T22:20:01-06:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/teams/workstations-canary.yml"
     ]
@@ -3073,6 +3545,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update workstations-canary.yml (#36852)",
     "timestamp": "2025-12-07T22:02:38-06:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/teams/workstations-canary.yml"
     ]
@@ -3084,6 +3558,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update migrate-slack-preferences.sh (#36850)",
     "timestamp": "2025-12-07T21:28:35-06:00",
+    "insertions": 4,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/scripts/migrate-slack-preferences.sh"
     ]
@@ -3095,6 +3571,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Better display names for apps in dogfood (#36764)",
     "timestamp": "2025-12-05T10:56:48-06:00",
+    "insertions": 14,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
@@ -3107,6 +3585,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Switch to using Slack FMA for macOS and Windows in dogfood (#36757)",
     "timestamp": "2025-12-05T10:24:41-06:00",
+    "insertions": 508,
+    "deletions": 26,
     "files": [
       "it-and-security/lib/macos/scripts/migrate-slack-preferences.sh",
       "it-and-security/lib/windows/software/slack.yml",
@@ -3121,6 +3601,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Switch to using Google Chrome FMA in dogfood (#36729)",
     "timestamp": "2025-12-04T21:29:10-06:00",
+    "insertions": 47,
+    "deletions": 268,
     "files": [
       "it-and-security/lib/macos/scripts/google-chrome-post-install.sh",
       "it-and-security/lib/macos/software/google-chrome.yml",
@@ -3136,6 +3618,8 @@
     "email": "georgekarrv@users.noreply.github.com",
     "message": "Update host ID in team-g-software.yml (#36714)",
     "timestamp": "2025-12-04T17:16:28-06:00",
+    "insertions": 1,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/all/labels/team-g-software.yml"
     ]
@@ -3147,6 +3631,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update 1Password policy versions (#36293)",
     "timestamp": "2025-11-25T12:42:32-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -3158,6 +3644,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add icon to Fleet Keynote Theme in Self-service (#36207)",
     "timestamp": "2025-11-24T11:01:05-06:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/icons/keynote-theme-swan.png",
       "it-and-security/lib/macos/software/fleet-keynote-theme.yml"
@@ -3170,6 +3658,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update testing-and-qa.yml (#36159)",
     "timestamp": "2025-11-21T15:10:50-06:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/testing-and-qa.yml"
     ]
@@ -3181,6 +3671,8 @@
     "email": "30472354+adassumpcao@users.noreply.github.com",
     "message": "Fix path escaping to properly handle script path with white spaces (#36065)",
     "timestamp": "2025-11-20T17:52:38Z",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/windows/scripts/uninstall-fleetd-windows.ps1"
     ]
@@ -3192,6 +3684,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update testing-and-qa.yml (#35989)",
     "timestamp": "2025-11-19T10:17:07-06:00",
+    "insertions": 0,
+    "deletions": 158,
     "files": [
       "it-and-security/teams/testing-and-qa.yml"
     ]
@@ -3203,6 +3697,8 @@
     "email": "41898282+github-actions[bot]@users.noreply.github.com",
     "message": "Update Testing & QA maintained apps (#35985)",
     "timestamp": "2025-11-19T09:37:03-06:00",
+    "insertions": 50,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/testing-and-qa.yml"
     ]
@@ -3214,6 +3710,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update testing-and-qa.yml (#35807)",
     "timestamp": "2025-11-15T22:27:48-06:00",
+    "insertions": 18,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/testing-and-qa.yml"
     ]
@@ -3225,6 +3723,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update company-owned-mobile-devices.yml (#35781)",
     "timestamp": "2025-11-14T13:38:54-06:00",
+    "insertions": 5,
+    "deletions": 6,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml"
     ]
@@ -3236,6 +3736,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update company-owned-mobile-devices.yml (#35773)",
     "timestamp": "2025-11-14T12:28:53-06:00",
+    "insertions": 6,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml"
     ]
@@ -3247,6 +3749,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add missing FMAs and `end_user_auth` to \ud83e\uddea Testing & QA team (#35753)",
     "timestamp": "2025-11-14T09:47:37-06:00",
+    "insertions": 12,
+    "deletions": 1,
     "files": [
       "it-and-security/teams/testing-and-qa.yml",
       "it-and-security/teams/workstations-canary.yml"
@@ -3259,6 +3763,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update FMAs in \ud83e\uddea Testing & QA team (#35752)",
     "timestamp": "2025-11-14T09:17:33-06:00",
+    "insertions": 16,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/testing-and-qa.yml"
     ]
@@ -3270,6 +3776,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.11.18 (#35683)",
     "timestamp": "2025-11-13T09:41:52-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -3281,6 +3789,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Add managed bookmarks for customer and prospect codenames (#35521)",
     "timestamp": "2025-11-11T23:33:20-05:00",
+    "insertions": 12,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -3292,6 +3802,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Update managed bookmarks (#35278)",
     "timestamp": "2025-11-06T10:58:35-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -3303,6 +3815,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update WhatsApp block rule in Santa profile (#35242)",
     "timestamp": "2025-11-05T15:40:58-06:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/santa-rules.mobileconfig"
     ]
@@ -3314,6 +3828,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update `macOS - Enrollment profile up to date` policy (#35160)",
     "timestamp": "2025-11-04T10:59:53-06:00",
+    "insertions": 5,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml"
     ]
@@ -3325,6 +3841,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update \ud83e\uddea Testing & QA team to include all currently available FMAs (#35106)",
     "timestamp": "2025-11-03T22:36:19-06:00",
+    "insertions": 71,
+    "deletions": 2,
     "files": [
       "it-and-security/teams/testing-and-qa.yml"
     ]
@@ -3336,6 +3854,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Update google-chrome-managed-bookmarks.mobileconfig (#35135)",
     "timestamp": "2025-11-03T23:09:20-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -3347,6 +3867,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update latest macOS versions to 26.1 and 15.7.2 (#35144)",
     "timestamp": "2025-11-03T21:35:23-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -3358,6 +3880,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update nudge-assets-logo.png (#35033)",
     "timestamp": "2025-10-30T22:45:11-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/all/icons/nudge-assets-logo.png",
       "it-and-security/lib/macos/software/fleet-keynote-theme.yml"
@@ -3370,6 +3894,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added custom icons for Nudge and Nudge Assets (#34978)",
     "timestamp": "2025-10-29T21:30:51-05:00",
+    "insertions": 4,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/icons/nudge-assets-logo.png",
       "it-and-security/lib/all/icons/nudge-logo.png",
@@ -3384,6 +3910,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Update manage bookmarks (#34957)",
     "timestamp": "2025-10-29T20:41:19-04:00",
+    "insertions": 24,
+    "deletions": 18,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -3395,6 +3923,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Update managed bookmarks (#34855)",
     "timestamp": "2025-10-29T08:40:38-04:00",
+    "insertions": 18,
+    "deletions": 6,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -3406,6 +3936,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added logo to Zoom custom package (#34493)",
     "timestamp": "2025-10-28T11:53:55-04:00",
+    "insertions": 3,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/all/icons/zoom-logo.png",
       "it-and-security/lib/macos/software/company-portal.yml",
@@ -3419,6 +3951,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.11.16 (#34850)",
     "timestamp": "2025-10-28T09:52:31-04:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -3430,6 +3964,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Add script to remove custom `santa` extension (#34828)",
     "timestamp": "2025-10-27T23:03:56-04:00",
+    "insertions": 246,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/scripts/uninstall-santa-extension.sh",
       "it-and-security/teams/workstations-canary.yml"
@@ -3442,6 +3978,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Correct capitalization in managed bookmarks (#34342)",
     "timestamp": "2025-10-16T10:50:51-04:00",
+    "insertions": 3,
+    "deletions": 3,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -3453,6 +3991,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.11.14 (#34234)",
     "timestamp": "2025-10-14T20:04:05-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -3464,6 +4004,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Fixed `org_logo_url` URLs (#34023)",
     "timestamp": "2025-10-08T19:53:58-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -3475,6 +4017,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Removing custom logos (#34022)",
     "timestamp": "2025-10-08T19:35:15-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -3486,6 +4030,8 @@
     "email": "r@rachael.wtf",
     "message": "Add padded logos for dogfood (#34000)",
     "timestamp": "2025-10-08T14:13:50-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -3497,6 +4043,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added Microsoft AutoUpdate configuration profile and label (#33998)",
     "timestamp": "2025-10-08T13:20:57-05:00",
+    "insertions": 55,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/macs-with-microsoft-autoupdate-installed.yml",
@@ -3512,6 +4060,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added URLs to Fleet logos (#33994)",
     "timestamp": "2025-10-08T11:39:31-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -3523,6 +4073,8 @@
     "email": "georgekarrv@users.noreply.github.com",
     "message": "Update team g-mdm hosts with new identifiers (#33792)",
     "timestamp": "2025-10-06T19:11:36-05:00",
+    "insertions": 19,
+    "deletions": 8,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/team-g-mdm.yml",
@@ -3536,6 +4088,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Migrating yaml to 4.74.0 requirements (#33915)",
     "timestamp": "2025-10-06T19:01:24-05:00",
+    "insertions": 166,
+    "deletions": 83,
     "files": [
       "it-and-security/lib/linux/software/slack-deb.yml",
       "it-and-security/lib/linux/software/slack-rpm.yml",
@@ -3568,6 +4122,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.11.12 (#33653)",
     "timestamp": "2025-09-30T15:00:54-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -3579,6 +4135,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update latest macOS versions to 26.0.1 and 15.7.1 (#33617)",
     "timestamp": "2025-09-30T01:15:37-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -3590,6 +4148,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added new Windows Defender policy & configuration profile (#32956)",
     "timestamp": "2025-09-23T14:02:44-05:00",
+    "insertions": 146,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/windows/configuration-profiles/Windows Defender compliance settings.xml",
       "it-and-security/lib/windows/policies/windows-defender-compliance-check.yml",
@@ -3604,6 +4164,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update Advanced PowerShell logging.xml (#33361)",
     "timestamp": "2025-09-23T13:26:30-05:00",
+    "insertions": 4,
+    "deletions": 4,
     "files": [
       "it-and-security/lib/windows/configuration-profiles/Advanced PowerShell logging.xml"
     ]
@@ -3615,6 +4177,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.11.10 (#33290)",
     "timestamp": "2025-09-22T13:30:07-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -3626,6 +4190,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Removing `minimum_version` to fix enrollment issues (#33258)",
     "timestamp": "2025-09-21T23:58:04-05:00",
+    "insertions": 4,
+    "deletions": 4,
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
@@ -3638,6 +4204,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Revert \"Update testing-and-qa.yml\" (#33223)",
     "timestamp": "2025-09-19T11:51:48-05:00",
+    "insertions": 0,
+    "deletions": 6,
     "files": [
       "it-and-security/teams/testing-and-qa.yml"
     ]
@@ -3649,6 +4217,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update testing-and-qa.yml (#33216)",
     "timestamp": "2025-09-19T11:43:52-05:00",
+    "insertions": 6,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/testing-and-qa.yml"
     ]
@@ -3660,6 +4230,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update install-nudge.yml (#33205)",
     "timestamp": "2025-09-18T21:54:52-05:00",
+    "insertions": 1,
+    "deletions": 3,
     "files": [
       "it-and-security/lib/macos/policies/install-nudge.yml"
     ]
@@ -3671,6 +4243,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Scoping Nudge to all workstations (#32909)",
     "timestamp": "2025-09-18T21:25:00-05:00",
+    "insertions": 12,
+    "deletions": 13,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig",
       "it-and-security/lib/macos/declaration-profiles/Software Update settings.json",
@@ -3687,6 +4261,8 @@
     "email": "1778532+cdcme@users.noreply.github.com",
     "message": "Update team-g-mdm.yml (#33130)",
     "timestamp": "2025-09-17T14:32:12-04:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/labels/team-g-mdm.yml"
     ]
@@ -3698,6 +4274,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update personal-mobile-devices.yml (#33093)",
     "timestamp": "2025-09-16T21:02:25-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/personal-mobile-devices.yml"
     ]
@@ -3709,6 +4287,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update mozilla-firefox.yml (#33067)",
     "timestamp": "2025-09-16T14:38:40-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/software/mozilla-firefox.yml"
     ]
@@ -3720,6 +4300,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version to 26.0 (includes stable fallback: 15.7) (#33036)",
     "timestamp": "2025-09-16T09:12:37-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -3731,6 +4313,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version to 15.7 (#33021)",
     "timestamp": "2025-09-15T20:07:41-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -3742,6 +4326,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update nudge-configuration.mobileconfig (#33012)",
     "timestamp": "2025-09-15T16:02:26-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig"
     ]
@@ -3753,6 +4339,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update nudge-configuration.mobileconfig (#32998)",
     "timestamp": "2025-09-15T12:51:39-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig"
     ]
@@ -3764,6 +4352,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Delete \"Compliance exclusions\" team (#32968)",
     "timestamp": "2025-09-14T20:50:21-05:00",
+    "insertions": 1,
+    "deletions": 58,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/teams/compliance-exclusions.yml"
@@ -3776,6 +4366,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Create testing-and-qa.yml (#32954)",
     "timestamp": "2025-09-14T20:37:59-05:00",
+    "insertions": 61,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/testing-and-qa.yml"
     ]
@@ -3787,6 +4379,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update set-lock-screen-message.sh (#32953)",
     "timestamp": "2025-09-12T20:54:47-05:00",
+    "insertions": 166,
+    "deletions": 361,
     "files": [
       "it-and-security/lib/macos/scripts/set-lock-screen-message.sh"
     ]
@@ -3798,6 +4392,8 @@
     "email": "2685025+getvictor@users.noreply.github.com",
     "message": "Fix agent options for darwin overrides -- all options must be set in overrides. (#32945)",
     "timestamp": "2025-09-12T20:28:18-05:00",
+    "insertions": 12,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/workstations-canary.yml"
     ]
@@ -3809,6 +4405,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added script to set lock screen message (#32820)",
     "timestamp": "2025-09-10T16:44:21-05:00",
+    "insertions": 983,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/scripts/set-lock-screen-message.sh",
       "it-and-security/teams/workstations-canary.yml",
@@ -3822,8 +4420,10 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated script and policy for OpenSUSE support (#32779)",
     "timestamp": "2025-09-09T14:11:56-05:00",
+    "insertions": 5,
+    "deletions": 3,
     "files": [
-      "it-and-security/lib/linux/policies/check-fleet-desktop-extension-enabled.yml",
+      "it-and-security/lib/linux/policies/{check-fleet-desktop-extension-exists.yml => check-fleet-desktop-extension-enabled.yml}",
       "it-and-security/teams/compliance-exclusions.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
@@ -3836,8 +4436,10 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update script and policy to support OpenSUSE (#32757)",
     "timestamp": "2025-09-08T20:51:12-05:00",
+    "insertions": 63,
+    "deletions": 18,
     "files": [
-      "it-and-security/lib/linux/policies/check-fleet-desktop-extension-exists.yml",
+      "it-and-security/lib/linux/policies/{check-fleet-desktop-extension-fedora-debian.yml => check-fleet-desktop-extension-exists.yml}",
       "it-and-security/lib/linux/scripts/install-fleet-desktop-required-extension.sh",
       "it-and-security/teams/compliance-exclusions.yml",
       "it-and-security/teams/workstations-canary.yml"
@@ -3850,6 +4452,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update nudge-configuration.mobileconfig (#32731)",
     "timestamp": "2025-09-08T12:38:46-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig"
     ]
@@ -3861,6 +4465,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added configuration profile for Google Updater (#32729)",
     "timestamp": "2025-09-08T12:10:03-05:00",
+    "insertions": 46,
+    "deletions": 240,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-updater-background-task.mobileconfig",
       "it-and-security/lib/macos/configuration-profiles/santa-configuration-moroz.mobileconfig",
@@ -3875,6 +4481,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added Google Chrome post-install script (#32700)",
     "timestamp": "2025-09-07T21:46:04-05:00",
+    "insertions": 229,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/scripts/google-chrome-post-install.sh",
       "it-and-security/lib/macos/software/google-chrome.yml"
@@ -3887,6 +4495,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update nudge-configuration.mobileconfig (#32699)",
     "timestamp": "2025-09-07T21:36:21-05:00",
+    "insertions": 0,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig"
     ]
@@ -3898,6 +4508,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update compliance-exclusions.yml (#32626)",
     "timestamp": "2025-09-04T15:42:13-07:00",
+    "insertions": 8,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/compliance-exclusions.yml"
     ]
@@ -3909,6 +4521,8 @@
     "email": "elijah.jordan.montgomery@gmail.com",
     "message": "Fix homebrew wine install (#32505)",
     "timestamp": "2025-09-02T11:05:46-04:00",
+    "insertions": 7,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/scripts/install-wine.sh"
     ]
@@ -3920,6 +4534,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Revert \"Update company-owned-mobile-devices.yml\" (#32372)",
     "timestamp": "2025-08-27T13:55:53-05:00",
+    "insertions": 0,
+    "deletions": 1,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml"
     ]
@@ -3931,6 +4547,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update company-owned-mobile-devices.yml (#32371)",
     "timestamp": "2025-08-27T13:46:07-05:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml"
     ]
@@ -3942,6 +4560,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.11.8 (#32337)",
     "timestamp": "2025-08-26T19:51:53-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -3953,6 +4573,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Fleet's bookmarks: Fix typo (#32291)",
     "timestamp": "2025-08-25T19:27:07-04:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -3964,6 +4586,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Adding scope to App Store updates mobileconfig (#32272)",
     "timestamp": "2025-08-25T13:07:07-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
@@ -3976,8 +4600,10 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Adding automatic App Store updates (#32265)",
     "timestamp": "2025-08-25T12:45:24-05:00",
+    "insertions": 9,
+    "deletions": 22,
     "files": [
-      "it-and-security/lib/macos/configuration-profiles/automatic-app-store-updates.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/{automatic-updates.mobileconfig => automatic-app-store-updates.mobileconfig}",
       "it-and-security/lib/macos/declaration-profiles/Software Update settings.json"
     ]
   },
@@ -3988,6 +4614,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update Software Update settings.json (#32264)",
     "timestamp": "2025-08-25T12:24:24-05:00",
+    "insertions": 2,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/declaration-profiles/Software Update settings.json"
     ]
@@ -3999,6 +4627,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update nudge-configuration.mobileconfig (#32225)",
     "timestamp": "2025-08-22T13:10:58-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig"
     ]
@@ -4010,6 +4640,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update nudge-configuration.mobileconfig (#32213)",
     "timestamp": "2025-08-22T10:53:30-05:00",
+    "insertions": 1,
+    "deletions": 5,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig",
       "it-and-security/lib/macos/policies/install-nudge.yml"
@@ -4022,6 +4654,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Revert \"Change Slack to pkg install\" (#32207)",
     "timestamp": "2025-08-22T09:56:41-05:00",
+    "insertions": 11,
+    "deletions": 15,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/macos/software/slack.yml",
@@ -4037,6 +4671,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Change Slack to pkg install (#32206)",
     "timestamp": "2025-08-22T09:46:39-05:00",
+    "insertions": 15,
+    "deletions": 11,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/macos/software/slack.yml",
@@ -4052,6 +4688,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Update Noah's hostname (#32200)",
     "timestamp": "2025-08-22T09:24:52-04:00",
+    "insertions": 3,
+    "deletions": 3,
     "files": [
       "it-and-security/lib/all/labels/conditional-access-test-group.yml",
       "it-and-security/lib/all/labels/nudge-test-devices.yml",
@@ -4065,6 +4703,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version to 15.6.1 (#32147)",
     "timestamp": "2025-08-20T19:45:13-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -4076,6 +4716,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.11.6 (#32079)",
     "timestamp": "2025-08-19T10:27:30-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -4087,6 +4729,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updating Nudge configuration and policy logic (#32074)",
     "timestamp": "2025-08-19T10:07:02-05:00",
+    "insertions": 4,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/all/labels/nudge-test-devices.yml",
       "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig",
@@ -4100,6 +4744,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Dogfood: Update \"Conditional access test group\" label (#32013)",
     "timestamp": "2025-08-18T09:27:58-04:00",
+    "insertions": 3,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/all/labels/conditional-access-test-group.yml",
       "it-and-security/lib/all/labels/nudge-test-devices.yml",
@@ -4113,6 +4759,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Adding EULA via GitOps (#32004)",
     "timestamp": "2025-08-16T21:26:11-05:00",
+    "insertions": 1,
+    "deletions": 2,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -4124,6 +4772,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update nudge-configuration.mobileconfig (#32003)",
     "timestamp": "2025-08-16T21:14:10-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig"
     ]
@@ -4135,6 +4785,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Dogfood: Add EULA (#31991)",
     "timestamp": "2025-08-15T19:16:03-04:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/macos/misc/eula.pdf"
@@ -4147,6 +4799,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added postinstall script to nudget-assets (#31976)",
     "timestamp": "2025-08-15T12:57:36-05:00",
+    "insertions": 44,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/scripts/nudge-postinstall.sh",
       "it-and-security/lib/macos/software/nudge-assets.yml"
@@ -4159,6 +4813,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update santa-configuration.mobileconfig (#31956)",
     "timestamp": "2025-08-14T22:52:22-05:00",
+    "insertions": 5,
+    "deletions": 5,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/santa-configuration.mobileconfig"
     ]
@@ -4170,6 +4826,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update install-nudge.yml (#31955)",
     "timestamp": "2025-08-14T22:35:15-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/install-nudge.yml"
     ]
@@ -4181,6 +4839,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Nudge configuration updates (#31953)",
     "timestamp": "2025-08-14T22:09:59-05:00",
+    "insertions": 27,
+    "deletions": 11,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig",
       "it-and-security/lib/macos/software/nudge-assets.yml",
@@ -4195,6 +4855,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added Nudge install policy and LaunchAgent (#31952)",
     "timestamp": "2025-08-14T21:24:42-05:00",
+    "insertions": 8,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/software/nudge-assets.yml",
       "it-and-security/lib/macos/software/nudge-launchagent.yml",
@@ -4208,6 +4870,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Adding configuration for Nudge testing (#31928)",
     "timestamp": "2025-08-14T20:00:39-05:00",
+    "insertions": 379,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/nudge-test-devices.yml",
@@ -4226,6 +4890,8 @@
     "email": "2227948+tux234@users.noreply.github.com",
     "message": "Add Google Apps for iOS devices (#31860)",
     "timestamp": "2025-08-14T20:44:38-04:00",
+    "insertions": 6,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml",
       "it-and-security/teams/personal-mobile-devices.yml"
@@ -4238,6 +4904,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update company-portal.yml (#31793)",
     "timestamp": "2025-08-11T14:01:18-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/software/company-portal.yml"
     ]
@@ -4249,6 +4917,8 @@
     "email": "108141731+Sampfluger88@users.noreply.github.com",
     "message": "Add \"My PRs\" to managed bookmarks (#31704)",
     "timestamp": "2025-08-07T12:24:48-05:00",
+    "insertions": 7,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
     ]
@@ -4260,6 +4930,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.11.4 (#31635)",
     "timestamp": "2025-08-05T19:26:49-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -4271,6 +4943,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added managed bookmarks for Google Chrome (macOS) (#31628)",
     "timestamp": "2025-08-05T16:10:05-05:00",
+    "insertions": 804,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig",
       "it-and-security/teams/workstations-canary.yml",
@@ -4284,6 +4958,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version to 15.6 (#31583)",
     "timestamp": "2025-08-04T14:56:07-05:00",
+    "insertions": 4,
+    "deletions": 4,
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
@@ -4296,6 +4972,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Update conditional-access-test-group.yml (#31524)",
     "timestamp": "2025-08-01T14:57:54-04:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/labels/conditional-access-test-group.yml"
     ]
@@ -4307,6 +4985,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update conditional-access-test-group.yml (#31510)",
     "timestamp": "2025-08-01T09:43:57-05:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/labels/conditional-access-test-group.yml"
     ]
@@ -4318,6 +4998,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version number to 15.6 (#31405)",
     "timestamp": "2025-07-29T19:32:43-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -4329,6 +5011,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Configuration for Entra conditional access demo (#31161)",
     "timestamp": "2025-07-22T20:47:02-05:00",
+    "insertions": 62,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/policies/entra-conditional-access-check.yml",
       "it-and-security/lib/macos/scripts/create-conditional-access-allow-file.sh",
@@ -4342,6 +5026,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.11.2 (#31142)",
     "timestamp": "2025-07-22T13:33:14-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -4353,6 +5039,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updating Windows installers (#31076)",
     "timestamp": "2025-07-20T00:30:12-05:00",
+    "insertions": 219,
+    "deletions": 129,
     "files": [
       "it-and-security/lib/windows/scripts/uninstall-slack.ps1",
       "it-and-security/lib/windows/software/slack.yml",
@@ -4367,6 +5055,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update uninstall-zoom.ps1 (#31072)",
     "timestamp": "2025-07-19T00:05:04-05:00",
+    "insertions": 46,
+    "deletions": 169,
     "files": [
       "it-and-security/lib/windows/scripts/uninstall-zoom.ps1"
     ]
@@ -4378,6 +5068,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Fix exe installer script (#31071)",
     "timestamp": "2025-07-18T23:14:29-05:00",
+    "insertions": 6,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/windows/scripts/default-exe-install-script.ps1"
     ]
@@ -4389,6 +5081,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update default-exe-install-script.ps1 (#31070)",
     "timestamp": "2025-07-18T22:51:40-05:00",
+    "insertions": 28,
+    "deletions": 28,
     "files": [
       "it-and-security/lib/windows/scripts/default-exe-install-script.ps1"
     ]
@@ -4400,6 +5094,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update compliance-exclusions.yml (#31067)",
     "timestamp": "2025-07-18T15:50:09-05:00",
+    "insertions": 4,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/compliance-exclusions.yml"
     ]
@@ -4411,6 +5107,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update santa.yml (#31031)",
     "timestamp": "2025-07-17T21:43:17-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/software/santa.yml"
     ]
@@ -4422,6 +5120,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated policies and scripts (#31030)",
     "timestamp": "2025-07-17T21:34:23-05:00",
+    "insertions": 55,
+    "deletions": 7,
     "files": [
       "it-and-security/lib/macos/policies/install-macos-compatibility-extension.yml",
       "it-and-security/lib/macos/policies/install-santa-extension.yml",
@@ -4436,6 +5136,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Setting up Entra conditional access (#30893)",
     "timestamp": "2025-07-15T14:31:39-05:00",
+    "insertions": 97,
+    "deletions": 61,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/conditional-access-test-group.yml",
@@ -4444,7 +5146,7 @@
       "it-and-security/lib/macos/policies/company-portal-installed.yml",
       "it-and-security/lib/macos/software/1password.yml",
       "it-and-security/lib/macos/software/company-portal.yml",
-      "it-and-security/lib/macos/software/fleet-keynote-theme.yml",
+      "it-and-security/lib/macos/software/{fleet_keynote_theme.yml => fleet-keynote-theme.yml}",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]
@@ -4456,6 +5158,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.11.1 (#30847)",
     "timestamp": "2025-07-14T15:28:57-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -4467,6 +5171,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Adding new label for g-mdm team (#30718)",
     "timestamp": "2025-07-09T23:39:57-05:00",
+    "insertions": 12,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/team-g-mdm.yml"
@@ -4479,6 +5185,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update company-owned-mobile-devices.yml (#30717)",
     "timestamp": "2025-07-09T23:23:11-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml"
     ]
@@ -4490,6 +5198,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update company-owned-mobile-devices.yml (#30701)",
     "timestamp": "2025-07-09T15:00:54-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml"
     ]
@@ -4501,8 +5211,10 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated script name (#30685)",
     "timestamp": "2025-07-09T10:53:59-05:00",
+    "insertions": 0,
+    "deletions": 0,
     "files": [
-      "it-and-security/lib/macos/scripts/refetch-host.sh"
+      "it-and-security/lib/macos/scripts/{refetch_host.sh => refetch-host.sh}"
     ]
   },
   {
@@ -4512,6 +5224,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.11.0 (#30646)",
     "timestamp": "2025-07-08T13:13:32-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -4523,6 +5237,8 @@
     "email": "44128041+jkatz01@users.noreply.github.com",
     "message": "30259 - fix linux uninstall script (#30488)",
     "timestamp": "2025-07-01T18:50:47-04:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/linux/scripts/uninstall-fleetd-linux.sh"
     ]
@@ -4534,6 +5250,8 @@
     "email": "2227948+tux234@users.noreply.github.com",
     "message": "Updating Firefox to 140.0.2 (#30468)",
     "timestamp": "2025-07-01T13:46:08-04:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/policies/update-firefox.yml",
       "it-and-security/lib/macos/software/mozilla-firefox.yml"
@@ -4546,6 +5264,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Dogfood: Revert custom packages => Fleet-maintained apps (#30366)",
     "timestamp": "2025-06-27T11:32:50-04:00",
+    "insertions": 2,
+    "deletions": 4,
     "files": [
       "it-and-security/teams/workstations-canary.yml"
     ]
@@ -4557,6 +5277,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update Password settings.xml (#30339)",
     "timestamp": "2025-06-26T10:48:06-05:00",
+    "insertions": 7,
+    "deletions": 32,
     "files": [
       "it-and-security/lib/windows/configuration-profiles/Password settings.xml"
     ]
@@ -4568,6 +5290,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Dogfood: Chrome & Firefox Fleet-maintained apps (#30312)",
     "timestamp": "2025-06-25T14:54:16-04:00",
+    "insertions": 4,
+    "deletions": 2,
     "files": [
       "it-and-security/teams/workstations-canary.yml"
     ]
@@ -4579,6 +5303,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.10.82 (#30283)",
     "timestamp": "2025-06-24T20:07:35-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -4590,6 +5316,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Update 1password.yml (#30251)",
     "timestamp": "2025-06-23T15:28:51-04:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/software/1password.yml"
     ]
@@ -4601,6 +5329,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added better `orbit` restart logic to scripts (#30224)",
     "timestamp": "2025-06-21T21:14:54-05:00",
+    "insertions": 52,
+    "deletions": 34,
     "files": [
       "it-and-security/lib/macos/scripts/install-macos-compatibility-extension.sh",
       "it-and-security/lib/macos/scripts/install-santa-extension.sh"
@@ -4613,6 +5343,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated scripts and queries (#30221)",
     "timestamp": "2025-06-20T22:49:22-05:00",
+    "insertions": 46,
+    "deletions": 214,
     "files": [
       "it-and-security/lib/macos/queries/collect-macos-compatibility-data.yml",
       "it-and-security/lib/macos/scripts/install-macos-compatibility-extension.sh",
@@ -4626,6 +5358,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update collect-macos-compatibility-data.yml (#30220)",
     "timestamp": "2025-06-20T21:59:46-05:00",
+    "insertions": 3,
+    "deletions": 1,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/queries/collect-operating-system-information.yml",
@@ -4639,6 +5373,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Expand scope of `macos_compatibility` extension (#30219)",
     "timestamp": "2025-06-20T21:48:41-05:00",
+    "insertions": 8,
+    "deletions": 4,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/macos-compatibility-extension-installed.yml",
@@ -4655,6 +5391,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Fixed restart orbit logic in some scripts (#30204)",
     "timestamp": "2025-06-20T13:56:31-05:00",
+    "insertions": 202,
+    "deletions": 92,
     "files": [
       "it-and-security/lib/macos/scripts/install-macos-compatibility-extension.sh",
       "it-and-security/lib/macos/scripts/install-santa-extension.sh"
@@ -4667,6 +5405,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added `macos_compatibility` extension (#30189)",
     "timestamp": "2025-06-20T11:18:43-05:00",
+    "insertions": 411,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/policies/install-macos-compatibility-extension.yml",
       "it-and-security/lib/macos/queries/collect-macos-compatibility-data.yml",
@@ -4681,6 +5421,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated labels to no longer include unsupported platform (#30108)",
     "timestamp": "2025-06-18T10:24:09-05:00",
+    "insertions": 0,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/all/labels/debian-based-linux-hosts.yml",
       "it-and-security/lib/all/labels/rpm-based-linux-hosts.yml"
@@ -4693,6 +5435,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated install santa extension script (#30100)",
     "timestamp": "2025-06-17T16:10:34-05:00",
+    "insertions": 290,
+    "deletions": 73,
     "files": [
       "it-and-security/lib/macos/scripts/install-santa-extension.sh"
     ]
@@ -4704,6 +5448,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated query logging (#30077)",
     "timestamp": "2025-06-16T22:05:38-05:00",
+    "insertions": 6,
+    "deletions": 6,
     "files": [
       "it-and-security/lib/all/queries/collect-known-vulnerable-chrome-extensions.yml",
       "it-and-security/lib/all/queries/collect-operating-system-information.yml",
@@ -4719,6 +5465,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added additional logic for Keynote theme installer (#30029)",
     "timestamp": "2025-06-15T21:54:48-05:00",
+    "insertions": 481,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/keynote-installed.yml",
@@ -4733,6 +5481,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add Fleet's Keynote them to self-service (#30008)",
     "timestamp": "2025-06-13T16:01:12-05:00",
+    "insertions": 5,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/software/fleet_keynote_theme.yml",
       "it-and-security/teams/workstations-canary.yml",
@@ -4746,6 +5496,8 @@
     "email": "lucas@fleetdm.com",
     "message": "Microsoft Compliance Partner backend changes (#29540)",
     "timestamp": "2025-06-11T14:22:46-03:00",
+    "insertions": 61,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/company-portal-single-signon-extension.mobileconfig",
       "it-and-security/lib/macos/scripts/user-enroll-entra-company-portal.sh"
@@ -4758,6 +5510,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update Santa configuration (#29900)",
     "timestamp": "2025-06-10T16:43:15-05:00",
+    "insertions": 91,
+    "deletions": 101,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/santa-configuration.mobileconfig"
     ]
@@ -4769,6 +5523,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.10.80 (#29876)",
     "timestamp": "2025-06-10T13:17:27-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -4780,6 +5536,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Add Microsoft Teams to self-service (#29858)",
     "timestamp": "2025-06-10T09:51:10-04:00",
+    "insertions": 12,
+    "deletions": 10,
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
@@ -4792,6 +5550,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update collect-santa-denied-logs.yml (#29807)",
     "timestamp": "2025-06-06T15:46:22-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/queries/collect-santa-denied-logs.yml"
     ]
@@ -4803,6 +5563,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Santa updates (#29801)",
     "timestamp": "2025-06-06T14:27:41-05:00",
+    "insertions": 11,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/santa-configuration.mobileconfig",
       "it-and-security/lib/macos/configuration-profiles/santa-rules.mobileconfig",
@@ -4816,6 +5578,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Santa deployment changes (#29799)",
     "timestamp": "2025-06-06T13:46:44-05:00",
+    "insertions": 513,
+    "deletions": 3,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/santa-configuration-moroz.mobileconfig",
       "it-and-security/lib/macos/configuration-profiles/santa-configuration.mobileconfig",
@@ -4834,13 +5598,15 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated profile names for better readability in Fleet UI (#29796)",
     "timestamp": "2025-06-06T11:27:33-05:00",
+    "insertions": 5,
+    "deletions": 5,
     "files": [
       "it-and-security/lib/ios/configuration-profiles/lock-screen-message.mobileconfig",
-      "it-and-security/lib/ios/declaration-profiles/Passcode settings.json",
-      "it-and-security/lib/ios/declaration-profiles/Software Update settings.json",
+      "it-and-security/lib/ios/declaration-profiles/{passcode-settings.json => Passcode settings.json}",
+      "it-and-security/lib/ios/declaration-profiles/{software-update-settings.json => Software Update settings.json}",
       "it-and-security/lib/ipados/configuration-profiles/lock-screen-message.mobileconfig",
-      "it-and-security/lib/ipados/declaration-profiles/Passcode settings.json",
-      "it-and-security/lib/ipados/declaration-profiles/Software Update settings.json",
+      "it-and-security/lib/ipados/declaration-profiles/{passcode-settings.json => Passcode settings.json}",
+      "it-and-security/lib/ipados/declaration-profiles/{software-update-settings.json => Software Update settings.json}",
       "it-and-security/teams/company-owned-mobile-devices.yml",
       "it-and-security/teams/personal-mobile-devices.yml"
     ]
@@ -4852,6 +5618,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update Password settings.xml (#29779)",
     "timestamp": "2025-06-05T16:04:16-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/windows/configuration-profiles/Password settings.xml"
     ]
@@ -4863,6 +5631,8 @@
     "email": "r@rachael.wtf",
     "message": "Label: Fix typo (#29723)",
     "timestamp": "2025-06-05T11:29:53-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/all/labels/macs-with-1password-installed.yml"
     ]
@@ -4874,14 +5644,16 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Renaming MacOS DDM and Windows policies so they appear cleaner in Fleet UI (#29697)",
     "timestamp": "2025-06-04T09:50:11-05:00",
+    "insertions": 15,
+    "deletions": 23,
     "files": [
-      "it-and-security/lib/macos/declaration-profiles/Passcode settings.json",
-      "it-and-security/lib/macos/declaration-profiles/Software Update settings.json",
-      "it-and-security/lib/windows/configuration-profiles/Advanced PowerShell logging.xml",
-      "it-and-security/lib/windows/configuration-profiles/Disable Guest account.xml",
-      "it-and-security/lib/windows/configuration-profiles/Disable OneDrive.xml",
-      "it-and-security/lib/windows/configuration-profiles/Enable firewall.xml",
-      "it-and-security/lib/windows/configuration-profiles/Password settings.xml",
+      "it-and-security/lib/macos/declaration-profiles/{passcode-settings.json => Passcode settings.json}",
+      "it-and-security/lib/macos/declaration-profiles/{software-update-settings.json => Software Update settings.json}",
+      "it-and-security/lib/windows/configuration-profiles/{advanced-logging-powershell.xml => Advanced PowerShell logging.xml}",
+      "it-and-security/lib/windows/configuration-profiles/{disable-guest-account.xml => Disable Guest account.xml}",
+      "it-and-security/lib/windows/configuration-profiles/{disable-onedrive.xml => Disable OneDrive.xml}",
+      "it-and-security/lib/windows/configuration-profiles/{enable-firewall-all-domains.xml => Enable firewall.xml}",
+      "it-and-security/lib/windows/configuration-profiles/{password.xml => Password settings.xml}",
       "it-and-security/lib/windows/configuration-profiles/autoset-time-date.xml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
@@ -4894,6 +5666,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Fix Windows configuration profile  (#29658)",
     "timestamp": "2025-05-30T21:37:29-05:00",
+    "insertions": 7,
+    "deletions": 13,
     "files": [
       "it-and-security/lib/windows/configuration-profiles/password.xml"
     ]
@@ -4905,6 +5679,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Self-service overhaul (#29598)",
     "timestamp": "2025-05-30T08:51:00-05:00",
+    "insertions": 65,
+    "deletions": 1,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/apple-silicon-macos-hosts.yml",
@@ -4919,6 +5695,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updating Windows configuration profiles (#29590)",
     "timestamp": "2025-05-29T13:31:44-05:00",
+    "insertions": 13,
+    "deletions": 27,
     "files": [
       "it-and-security/lib/windows/configuration-profiles/password.xml",
       "it-and-security/lib/windows/configuration-profiles/screen-lock.xml",
@@ -4932,6 +5710,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Self-service overhaul (#29566)",
     "timestamp": "2025-05-29T11:14:17-05:00",
+    "insertions": 39,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/linux/software/slack-deb.yml",
       "it-and-security/lib/linux/software/slack-rpm.yml",
@@ -4959,6 +5739,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update password.xml (#29565)",
     "timestamp": "2025-05-29T10:29:49-05:00",
+    "insertions": 4,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/windows/configuration-profiles/password.xml",
       "it-and-security/lib/windows/configuration-profiles/screen-lock.xml"
@@ -4971,6 +5753,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update password.xml (#29542)",
     "timestamp": "2025-05-28T21:29:12-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/windows/configuration-profiles/password.xml"
     ]
@@ -4982,6 +5766,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.10.78 (#29493)",
     "timestamp": "2025-05-27T17:07:52-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -4993,6 +5779,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated support contact URL (#29298)",
     "timestamp": "2025-05-22T08:57:26-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -5004,6 +5792,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated software and operating system version strings (#29273)",
     "timestamp": "2025-05-19T15:50:48-05:00",
+    "insertions": 18,
+    "deletions": 18,
     "files": [
       "it-and-security/lib/macos/policies/update-firefox.yml",
       "it-and-security/lib/macos/policies/update-slack.yml",
@@ -5024,6 +5814,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Uninstall fleetd scripts: \"fleetd\" (#29196)",
     "timestamp": "2025-05-15T18:48:14-04:00",
+    "insertions": 8,
+    "deletions": 8,
     "files": [
       "it-and-security/lib/linux/scripts/uninstall-fleetd-linux.sh",
       "it-and-security/lib/macos/scripts/uninstall-fleetd-macos.sh",
@@ -5037,6 +5829,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated target platforms on labels (#29167)",
     "timestamp": "2025-05-15T14:09:35-05:00",
+    "insertions": 6,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/labels/arm-based-windows-hosts.yml",
       "it-and-security/lib/all/labels/debian-based-linux-hosts.yml",
@@ -5053,6 +5847,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.10.76 (#29096)",
     "timestamp": "2025-05-13T13:20:32-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -5064,6 +5860,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version number to 15.5 (#29069)",
     "timestamp": "2025-05-12T19:30:00-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -5075,6 +5873,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update santa-test-devices.yml (#28804)",
     "timestamp": "2025-05-05T11:27:27-05:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/labels/santa-test-devices.yml"
     ]
@@ -5086,6 +5886,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update password.xml (#28802)",
     "timestamp": "2025-05-05T11:16:12-05:00",
+    "insertions": 29,
+    "deletions": 8,
     "files": [
       "it-and-security/lib/windows/configuration-profiles/password.xml"
     ]
@@ -5097,6 +5899,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.10.75 (#28716)",
     "timestamp": "2025-04-30T19:26:40-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -5108,6 +5912,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.10.74 (#28649)",
     "timestamp": "2025-04-29T13:57:19-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -5119,6 +5925,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update personal-mobile-devices.yml (#28633)",
     "timestamp": "2025-04-29T10:08:34-05:00",
+    "insertions": 0,
+    "deletions": 1,
     "files": [
       "it-and-security/teams/personal-mobile-devices.yml"
     ]
@@ -5130,6 +5938,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update santa-test-devices.yml (#28519)",
     "timestamp": "2025-04-24T09:55:43-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/all/labels/santa-test-devices.yml"
     ]
@@ -5141,6 +5951,8 @@
     "email": "lucas@fleetdm.com",
     "message": "Update SSO settings for dogfood (#28435)",
     "timestamp": "2025-04-22T12:40:34-03:00",
+    "insertions": 1,
+    "deletions": 4,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -5152,6 +5964,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated minimum OS versions (#28439)",
     "timestamp": "2025-04-22T09:17:54-05:00",
+    "insertions": 12,
+    "deletions": 13,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml",
       "it-and-security/teams/personal-mobile-devices.yml",
@@ -5166,6 +5980,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Testing cleanup of No team (#28418)",
     "timestamp": "2025-04-21T14:36:21-05:00",
+    "insertions": 0,
+    "deletions": 3,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/teams/no-team.yml"
@@ -5178,6 +5994,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update no-team.yml (#28416)",
     "timestamp": "2025-04-21T14:17:49-05:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/no-team.yml"
     ]
@@ -5189,6 +6007,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update team files to clean up No Team (#28258)",
     "timestamp": "2025-04-21T14:12:32-05:00",
+    "insertions": 3,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/teams/no-team.yml"
@@ -5201,6 +6021,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Removed query no longer needed (#28410)",
     "timestamp": "2025-04-21T13:33:45-05:00",
+    "insertions": 0,
+    "deletions": 23,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/macos/queries/collect-app-hashes.yml"
@@ -5213,6 +6035,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Santa reconfigured for sync server (#28407)",
     "timestamp": "2025-04-21T13:33:32-05:00",
+    "insertions": 245,
+    "deletions": 347,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/santa-configuration-moroz.mobileconfig",
       "it-and-security/lib/macos/configuration-profiles/santa-configuration-no-rules-or-sync-server.mobileconfig",
@@ -5231,6 +6055,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version number to 15.4.1 (#28318)",
     "timestamp": "2025-04-16T19:41:49-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -5242,6 +6068,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.10.72 (#28257)",
     "timestamp": "2025-04-15T13:15:56-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -5253,6 +6081,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated webhook settings (#28252)",
     "timestamp": "2025-04-15T13:05:30-05:00",
+    "insertions": 17,
+    "deletions": 5,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/teams/workstations-canary.yml",
@@ -5266,6 +6096,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Re-added label scoping to configuration profiles (#28106)",
     "timestamp": "2025-04-10T14:45:24-05:00",
+    "insertions": 15,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/workstations-canary.yml"
     ]
@@ -5277,6 +6109,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update santa-test-devices.yml (#28105)",
     "timestamp": "2025-04-10T14:37:54-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/all/labels/santa-test-devices.yml"
     ]
@@ -5288,6 +6122,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Re-add santa label (#28094)",
     "timestamp": "2025-04-10T13:31:17-05:00",
+    "insertions": 6,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/santa-test-devices.yml"
@@ -5300,6 +6136,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Delete santa-test-devices.yml (#28085)",
     "timestamp": "2025-04-10T10:47:32-05:00",
+    "insertions": 0,
+    "deletions": 23,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/santa-test-devices.yml",
@@ -5314,6 +6152,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Re-adding labels for scoping (#28084)",
     "timestamp": "2025-04-10T10:36:04-05:00",
+    "insertions": 39,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/linux/software/slack-deb.yml",
       "it-and-security/lib/linux/software/slack-rpm.yml",
@@ -5336,6 +6176,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Adding labels via GitOps (#28083)",
     "timestamp": "2025-04-10T10:26:01-05:00",
+    "insertions": 37,
+    "deletions": 39,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/labels/arm-based-windows-hosts.yml",
@@ -5366,6 +6208,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add query to collect app hashes (#28081)",
     "timestamp": "2025-04-10T09:34:47-05:00",
+    "insertions": 23,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/macos/queries/collect-app-hashes.yml"
@@ -5378,6 +6222,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated team names (#28078)",
     "timestamp": "2025-04-10T09:21:03-05:00",
+    "insertions": 6,
+    "deletions": 6,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/teams/company-owned-mobile-devices.yml",
@@ -5391,6 +6237,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Re-added app store apps (#28010)",
     "timestamp": "2025-04-08T18:37:19-05:00",
+    "insertions": 12,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml",
       "it-and-security/teams/personal-mobile-devices.yml",
@@ -5405,6 +6253,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Removed VPP references (#28011)",
     "timestamp": "2025-04-08T18:20:05-05:00",
+    "insertions": 0,
+    "deletions": 5,
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
@@ -5417,6 +6267,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Removed app_store_apps due to VPP race condition (#28009)",
     "timestamp": "2025-04-08T17:53:04-05:00",
+    "insertions": 0,
+    "deletions": 6,
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml",
       "it-and-security/teams/personal-mobile-devices.yml"
@@ -5429,11 +6281,13 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Renaming teams to support Android devices (#27991)",
     "timestamp": "2025-04-08T17:45:14-05:00",
+    "insertions": 14,
+    "deletions": 37,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/teams/company-owned-ipads.yml",
-      "it-and-security/teams/company-owned-mobile-devices.yml",
-      "it-and-security/teams/personal-mobile-devices.yml"
+      "it-and-security/teams/{company-owned-iphones.yml => company-owned-mobile-devices.yml}",
+      "it-and-security/teams/{personally-owned-iphones.yml => personal-mobile-devices.yml}"
     ]
   },
   {
@@ -5443,6 +6297,8 @@
     "email": "r@rachael.wtf",
     "message": "Update passcode-settings.json (#27938)",
     "timestamp": "2025-04-07T11:22:10-05:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/declaration-profiles/passcode-settings.json"
     ]
@@ -5454,6 +6310,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Help Rachael get back in to her Mac (#27934)",
     "timestamp": "2025-04-07T12:00:37-04:00",
+    "insertions": 0,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/declaration-profiles/passcode-settings.json"
     ]
@@ -5465,6 +6323,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updates for exe installers in gitops (#27924)",
     "timestamp": "2025-04-06T21:24:08-05:00",
+    "insertions": 385,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/windows/scripts/default-exe-install-script.ps1",
       "it-and-security/lib/windows/scripts/uninstall-slack.ps1",
@@ -5481,9 +6341,11 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated script and policy to match naming convention (#27858)",
     "timestamp": "2025-04-05T22:11:01-05:00",
+    "insertions": 6,
+    "deletions": 8,
     "files": [
-      "it-and-security/lib/linux/policies/check-fleet-desktop-extension-fedora-debian.yml",
-      "it-and-security/lib/linux/scripts/install-fleet-desktop-required-extension.sh",
+      "it-and-security/lib/linux/policies/{fedora-debian-check-fleet-desktop.yml => check-fleet-desktop-extension-fedora-debian.yml}",
+      "it-and-security/lib/linux/scripts/{fedora-debian-enable-fleet-desktop.sh => install-fleet-desktop-required-extension.sh}",
       "it-and-security/teams/compliance-exclusions.yml",
       "it-and-security/teams/servers-canary.yml",
       "it-and-security/teams/workstations-canary.yml"
@@ -5496,6 +6358,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update mozilla-firefox.yml (#27857)",
     "timestamp": "2025-04-03T14:55:55-05:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/policies/update-firefox.yml",
       "it-and-security/lib/macos/software/mozilla-firefox.yml"
@@ -5508,6 +6372,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update minimum os versions for macOS, iOS, and iPadOS (#27777)",
     "timestamp": "2025-04-02T09:59:31-05:00",
+    "insertions": 10,
+    "deletions": 10,
     "files": [
       "it-and-security/teams/company-owned-ipads.yml",
       "it-and-security/teams/company-owned-iphones.yml",
@@ -5523,6 +6389,8 @@
     "email": "lucas@fleetdm.com",
     "message": "Added `dconf_read` table and documentation to enable fleet desktop on Fedora and Debian (#27684)",
     "timestamp": "2025-04-01T18:54:22-03:00",
+    "insertions": 130,
+    "deletions": 32,
     "files": [
       "it-and-security/lib/linux/policies/fedora-debian-check-fleet-desktop.yml",
       "it-and-security/lib/linux/queries/all-deb-hosts.yml",
@@ -5539,6 +6407,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.10.70 (#27740)",
     "timestamp": "2025-04-01T15:47:47-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -5550,6 +6420,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version number to 15.4 (#27721)",
     "timestamp": "2025-03-31T20:04:30-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -5561,6 +6433,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update default.yml (#27626)",
     "timestamp": "2025-03-28T09:45:28-05:00",
+    "insertions": 4,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -5572,6 +6446,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Cleanup scripts (#27307)",
     "timestamp": "2025-03-27T17:43:53-04:00",
+    "insertions": 97,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/linux/scripts/change-password-linux.sh",
       "it-and-security/lib/linux/scripts/uninstall-fleetd-linux.sh",
@@ -5588,6 +6464,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update enrollment-profile-up-to-date.yml (#27265)",
     "timestamp": "2025-03-25T10:16:29-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml"
     ]
@@ -5599,6 +6477,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.10.68 (#27398)",
     "timestamp": "2025-03-21T10:57:45-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -5610,6 +6490,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update 1Password macOS version number to 8.10.70 (#27306)",
     "timestamp": "2025-03-19T14:05:49-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
     ]
@@ -5621,6 +6503,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added policy automation and new Windows installer (#27244)",
     "timestamp": "2025-03-19T13:54:25-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/windows/software/1password.yml"
     ]
@@ -5632,11 +6516,13 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Uninstall fleetd remotely (#27024)",
     "timestamp": "2025-03-19T14:35:39-04:00",
+    "insertions": 146,
+    "deletions": 43,
     "files": [
       "it-and-security/lib/linux/scripts/uninstall-fleetd-linux.sh",
       "it-and-security/lib/macos/scripts/uninstall-fleetd-macos.sh",
       "it-and-security/lib/windows/scripts/create-admin-user.ps1",
-      "it-and-security/lib/windows/scripts/uninstall-fleetd-windows.ps1",
+      "it-and-security/lib/windows/scripts/{remove-fleetd.ps1 => uninstall-fleetd-windows.ps1}",
       "it-and-security/teams/compliance-exclusions.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
@@ -5649,6 +6535,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated Google Chrome for Windows software entries (#27133)",
     "timestamp": "2025-03-14T08:36:12-05:00",
+    "insertions": 13,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/windows/software/google-chrome-arm.yml",
       "it-and-security/lib/windows/software/google-chrome.yml",
@@ -5663,8 +6551,10 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "1Password updates (#27058)",
     "timestamp": "2025-03-12T09:54:14-05:00",
+    "insertions": 53,
+    "deletions": 7,
     "files": [
-      "it-and-security/lib/macos/configuration-profiles/1password-managed-settings.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/{automatically-update-1Password.mobileconfig => 1password-managed-settings.mobileconfig}",
       "it-and-security/lib/macos/policies/1password-installed.yml",
       "it-and-security/lib/macos/policies/update-1password.yml",
       "it-and-security/lib/macos/software/1password.yml",
@@ -5682,6 +6572,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version number to 15.3.2 (#27056)",
     "timestamp": "2025-03-11T19:30:55-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -5693,6 +6585,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Use disk encryption key to login to a Windows computer (#26951)",
     "timestamp": "2025-03-10T13:32:10-04:00",
+    "insertions": 16,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/windows/scripts/create-admin-user.ps1",
       "it-and-security/teams/workstations-canary.yml",
@@ -5706,8 +6600,10 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Assigning new disk encryption check policies to teams (#26952)",
     "timestamp": "2025-03-07T10:24:55-06:00",
+    "insertions": 4,
+    "deletions": 0,
     "files": [
-      "it-and-security/lib/windows/policies/disk-encryption-check.yml",
+      "it-and-security/lib/windows/policies/{disk-encrpytion-check.yml => disk-encryption-check.yml}",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]
@@ -5719,6 +6615,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added disk encryption check policies (#26949)",
     "timestamp": "2025-03-07T09:49:23-06:00",
+    "insertions": 18,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/policies/disk-encryption-check.yml",
       "it-and-security/lib/windows/policies/disk-encrpytion-check.yml"
@@ -5731,6 +6629,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added query to detect APNs certificates (#26876)",
     "timestamp": "2025-03-05T13:36:00-06:00",
+    "insertions": 10,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/macos/queries/detect-apns-certificate.yml"
@@ -5743,6 +6643,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update enrollment-profile-up-to-date.yml (#26834)",
     "timestamp": "2025-03-04T15:13:08-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml"
     ]
@@ -5754,6 +6656,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updating APNs certificate and related policy automations (#26696)",
     "timestamp": "2025-03-04T13:42:42-06:00",
+    "insertions": 17,
+    "deletions": 15,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml",
@@ -5770,6 +6674,8 @@
     "email": "83164494+marko-lisica@users.noreply.github.com",
     "message": "Update Windows setup guide to include how to turn off MDM (#26562)",
     "timestamp": "2025-02-26T00:35:41+01:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/windows/scripts/turn-off-mdm.ps1"
     ]
@@ -5781,6 +6687,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update workstations-canary.yml (#26595)",
     "timestamp": "2025-02-25T15:00:18-06:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/workstations-canary.yml"
     ]
@@ -5792,6 +6700,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Adding santa for testing (#26586)",
     "timestamp": "2025-02-25T13:11:03-06:00",
+    "insertions": 397,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/santa-configuration-no-rules-or-sync-server.mobileconfig",
       "it-and-security/lib/macos/configuration-profiles/santa-notification-settings.mobileconfig",
@@ -5810,6 +6720,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update mac-enrollment-profile-up-to-date.yml (#26563)",
     "timestamp": "2025-02-25T00:48:46-06:00",
+    "insertions": 5,
+    "deletions": 4,
     "files": [
       "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml"
     ]
@@ -5821,6 +6733,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update mac-enrollment-profile-up-to-date.yml (#26530)",
     "timestamp": "2025-02-24T10:14:51-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml"
     ]
@@ -5832,6 +6746,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Switched from metadata_url to metadata for end user authentication (#26042)",
     "timestamp": "2025-02-20T10:02:24-06:00",
+    "insertions": 5,
+    "deletions": 2,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -5843,6 +6759,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Enable disk encryption for \"Compliance exclusions\" (#26476)",
     "timestamp": "2025-02-19T16:29:23-05:00",
+    "insertions": 1,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/compliance-exclusions.yml"
     ]
@@ -5854,6 +6772,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Software updates (#26452)",
     "timestamp": "2025-02-19T10:35:47-06:00",
+    "insertions": 10,
+    "deletions": 10,
     "files": [
       "it-and-security/lib/linux/software/slack-deb.yml",
       "it-and-security/lib/linux/software/slack-rpm.yml",
@@ -5872,6 +6792,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version number to 15.3.1 (#26360)",
     "timestamp": "2025-02-14T15:01:17-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -5883,6 +6805,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added troubleshooting logic (#26357)",
     "timestamp": "2025-02-14T14:39:58-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -5894,6 +6818,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version number to 15.3.1 (#26355)",
     "timestamp": "2025-02-14T14:17:56-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -5905,6 +6831,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update dogfood-policy-updater-latest-macos.sh (#26351)",
     "timestamp": "2025-02-14T14:10:34-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -5916,6 +6844,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version number to 15.3.1 (#26249)",
     "timestamp": "2025-02-10T19:47:28-06:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -5927,6 +6857,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update mozilla-firefox.yml (#26195)",
     "timestamp": "2025-02-07T20:03:16-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/software/mozilla-firefox.yml"
     ]
@@ -5938,6 +6870,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update workstations-canary.yml (#26194)",
     "timestamp": "2025-02-07T19:37:41-06:00",
+    "insertions": 0,
+    "deletions": 1,
     "files": [
       "it-and-security/teams/workstations-canary.yml"
     ]
@@ -5949,6 +6883,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update so latest Zoom is always installed for macOS and Windows (#26161)",
     "timestamp": "2025-02-06T18:16:42-06:00",
+    "insertions": 5,
+    "deletions": 5,
     "files": [
       "it-and-security/lib/linux/software/zoom-deb.yml",
       "it-and-security/lib/linux/software/zoom-rpm.yml",
@@ -5964,6 +6900,8 @@
     "email": "iansltx@gmail.com",
     "message": "Re-add VPP apps and VPP-team associations to Dogfood (#26122)",
     "timestamp": "2025-02-05T17:46:06-06:00",
+    "insertions": 19,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/teams/company-owned-ipads.yml",
@@ -5980,6 +6918,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Multiple updates to resolve VPP issues (#26117)",
     "timestamp": "2025-02-05T17:32:59-06:00",
+    "insertions": 0,
+    "deletions": 12,
     "files": [
       "it-and-security/teams/company-owned-ipads.yml",
       "it-and-security/teams/company-owned-iphones.yml",
@@ -5995,6 +6935,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update default.yml (#26115)",
     "timestamp": "2025-02-05T17:21:48-06:00",
+    "insertions": 0,
+    "deletions": 7,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -6006,6 +6948,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated macOS/iOS/iPadOS update deadlines (#26048)",
     "timestamp": "2025-02-04T15:51:46-06:00",
+    "insertions": 9,
+    "deletions": 9,
     "files": [
       "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml",
       "it-and-security/teams/company-owned-ipads.yml",
@@ -6021,6 +6965,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update mac-enrollment-profile-up-to-date.yml (#26024)",
     "timestamp": "2025-02-04T11:10:04-06:00",
+    "insertions": 5,
+    "deletions": 4,
     "files": [
       "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml"
     ]
@@ -6032,6 +6978,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "New enrollment profile policy, removed disable notification mobileconfig (#26018)",
     "timestamp": "2025-02-04T10:37:05-06:00",
+    "insertions": 13,
+    "deletions": 85,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml",
@@ -6046,6 +6994,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update antivirus-signatures-up-to-date.yml (#25990)",
     "timestamp": "2025-02-03T14:20:18-06:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/windows/policies/antivirus-signatures-up-to-date.yml"
     ]
@@ -6057,11 +7007,13 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Multiple policy updates (#25927)",
     "timestamp": "2025-01-31T11:02:16-06:00",
+    "insertions": 19,
+    "deletions": 15,
     "files": [
       "it-and-security/lib/all/queries/collect-usb-devices.yml",
       "it-and-security/lib/macos/policies/all-software-updates-installed.yml",
       "it-and-security/lib/windows/policies/all-windows-updates-installed.yml",
-      "it-and-security/lib/windows/policies/antivirus-signatures-up-to-date.yml",
+      "it-and-security/lib/windows/policies/{windows-device-health.yml => antivirus-signatures-up-to-date.yml}",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]
@@ -6073,6 +7025,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Multiple updates to queries (#25891)",
     "timestamp": "2025-01-30T13:00:43-06:00",
+    "insertions": 76,
+    "deletions": 116,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/queries/collect-crowdstrike-info.yml",
@@ -6105,6 +7059,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update collect-operating-system-information.yml (#25879)",
     "timestamp": "2025-01-29T17:44:09-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/all/queries/collect-operating-system-information.yml"
     ]
@@ -6116,6 +7072,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update update-slack.yml (#25868)",
     "timestamp": "2025-01-29T14:00:51-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-slack.yml"
     ]
@@ -6127,9 +7085,11 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Query and policy fixes (#25864)",
     "timestamp": "2025-01-29T13:04:46-06:00",
+    "insertions": 2,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml",
-      "it-and-security/lib/all/queries/collect-operating-system-information.yml",
+      "it-and-security/lib/all/queries/{collect-operating-system-information.yaml => collect-operating-system-information.yml}",
       "it-and-security/teams/workstations.yml"
     ]
   },
@@ -6140,9 +7100,11 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Cleaning up policies (#25850)",
     "timestamp": "2025-01-29T12:46:41-06:00",
+    "insertions": 37,
+    "deletions": 273,
     "files": [
       "it-and-security/lib/all/queries/collect-operating-system-information.yaml",
-      "it-and-security/lib/linux/policies/disk-encryption-check.yml",
+      "it-and-security/lib/linux/policies/{linux-device-health.yml => disk-encryption-check.yml}",
       "it-and-security/lib/macos/policies/1password-emergency-kit-check.yml",
       "it-and-security/lib/macos/policies/cis.yml",
       "it-and-security/lib/macos/policies/device-health.yml",
@@ -6162,6 +7124,8 @@
     "email": "38767391+harrisonravazzolo@users.noreply.github.com",
     "message": "Add CSP to disable guest account, add to canary team (#25862)",
     "timestamp": "2025-01-29T09:27:42-08:00",
+    "insertions": 12,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/windows/configuration-profiles/disable-guest-account.xml",
       "it-and-security/teams/workstations-canary.yml"
@@ -6174,6 +7138,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updates for webhooks (#25806)",
     "timestamp": "2025-01-28T20:58:12-06:00",
+    "insertions": 12,
+    "deletions": 12,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/teams/workstations-canary.yml",
@@ -6187,6 +7153,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update latest-macos.yml (#25814)",
     "timestamp": "2025-01-28T10:24:02-06:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
@@ -6198,6 +7166,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Enable activities webhook via GitOps (#25690)",
     "timestamp": "2025-01-22T15:00:07-06:00",
+    "insertions": 3,
+    "deletions": 0,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -6209,6 +7179,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated policies and software installs (#25677)",
     "timestamp": "2025-01-22T12:49:38-06:00",
+    "insertions": 35,
+    "deletions": 47,
     "files": [
       "it-and-security/lib/linux/software/slack-deb.yml",
       "it-and-security/lib/linux/software/slack-rpm.yml",
@@ -6230,6 +7202,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Fix lock-screen-message.mobileconfig (#25443)",
     "timestamp": "2025-01-15T17:27:14-06:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/lib/ios/configuration-profiles/lock-screen-message.mobileconfig"
     ]
@@ -6241,6 +7215,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Dogfood hiding secrets added via YAML (#25384)",
     "timestamp": "2025-01-15T14:40:39-05:00",
+    "insertions": 1,
+    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/chrome-enrollment.mobileconfig"
     ]
@@ -6252,6 +7228,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added Google Chrome back to Windows (#25413)",
     "timestamp": "2025-01-14T21:10:12-06:00",
+    "insertions": 3,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/windows/software/google-chrome.yml",
       "it-and-security/teams/workstations-canary.yml"
@@ -6264,6 +7242,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add 1Password update profile to \"\ud83d\udcbb Workstations\" team (#25291)",
     "timestamp": "2025-01-09T17:02:44-06:00",
+    "insertions": 3,
+    "deletions": 0,
     "files": [
       "it-and-security/teams/workstations.yml"
     ]
@@ -6275,6 +7255,8 @@
     "email": "luke@fleetdm.com",
     "message": "Change deadline to next Tuesday (#25129)",
     "timestamp": "2025-01-03T12:34:49-06:00",
+    "insertions": 2,
+    "deletions": 2,
     "files": [
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
@@ -6287,13 +7269,15 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Cleanup no-team.yml, implement host expiry on servers, add Windows CSPs (#24916)",
     "timestamp": "2024-12-24T20:55:07-06:00",
+    "insertions": 127,
+    "deletions": 39,
     "files": [
       "it-and-security/lib/windows/configuration-profiles/advanced-logging-powershell.xml",
       "it-and-security/lib/windows/configuration-profiles/autoset-time-date.xml",
       "it-and-security/lib/windows/configuration-profiles/disable-onedrive.xml",
       "it-and-security/lib/windows/configuration-profiles/enable-firewall-all-domains.xml",
-      "it-and-security/lib/windows/configuration-profiles/password.xml",
-      "it-and-security/lib/windows/configuration-profiles/screen-lock.xml",
+      "it-and-security/lib/windows/configuration-profiles/{windows-password.xml => password.xml}",
+      "it-and-security/lib/windows/configuration-profiles/{windows-screen-lock.xml => screen-lock.xml}",
       "it-and-security/lib/windows/configuration-profiles/windows-firewall.xml",
       "it-and-security/lib/windows/software/google-chrome.yml",
       "it-and-security/teams/no-team.yml",
@@ -6310,6 +7294,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Fix VPP error in new team and webhook errors (#24968)",
     "timestamp": "2024-12-20T15:54:29-06:00",
+    "insertions": 5,
+    "deletions": 4,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -6321,11 +7307,13 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Add new \"\ud83d\udcf1\ud83d\udd10 Personally-owned iPhones\" team (#24952)",
     "timestamp": "2024-12-20T14:24:59-06:00",
+    "insertions": 84,
+    "deletions": 329,
     "files": [
       "it-and-security/lib/ios/configuration-profiles/content-filtering.mobileconfig",
       "it-and-security/lib/ios/configuration-profiles/lock-screen-message.mobileconfig",
       "it-and-security/lib/ios/configuration-profiles/restrictions.mobileconfig",
-      "it-and-security/lib/ios/declaration-profiles/passcode-settings.json",
+      "it-and-security/lib/ios/declaration-profiles/{passcode-settings-ddm.json => passcode-settings.json}",
       "it-and-security/lib/ios/declaration-profiles/software-update-settings.json",
       "it-and-security/lib/ipados/configuration-profiles/lock-screen-message.mobileconfig",
       "it-and-security/lib/ipados/declaration-profiles/passcode-settings.json",
@@ -6342,6 +7330,8 @@
     "email": "184028114+jmwatts@users.noreply.github.com",
     "message": "Implement 1Password automatic updates via config profile using \"Inclu\u2026 (#24887)",
     "timestamp": "2024-12-19T17:41:58-06:00",
+    "insertions": 36,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/macos/configuration-profiles/automatically-update-1Password.mobileconfig",
       "it-and-security/teams/workstations-canary.yml"
@@ -6354,6 +7344,8 @@
     "email": "47070608+noahtalerman@users.noreply.github.com",
     "message": "Update default.yml (#24921)",
     "timestamp": "2024-12-19T18:19:33-05:00",
+    "insertions": 1,
+    "deletions": 2,
     "files": [
       "it-and-security/default.yml"
     ]
@@ -6365,6 +7357,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added settings for Windows MDM migration (#24865)",
     "timestamp": "2024-12-19T10:31:31-06:00",
+    "insertions": 10,
+    "deletions": 22,
     "files": [
       "it-and-security/default.yml",
       "it-and-security/teams/no-team.yml"
@@ -6377,14 +7371,16 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added multi-platform software to Workstations (canary) team (#24864)",
     "timestamp": "2024-12-19T10:30:17-06:00",
+    "insertions": 70,
+    "deletions": 14,
     "files": [
       "it-and-security/lib/all/queries/collect-usb-devices.yml",
       "it-and-security/lib/all/queries/collect-vs-code-extensions.yml",
-      "it-and-security/lib/linux/queries/all-deb-hosts.yml",
+      "it-and-security/lib/linux/queries/{all-debian-hosts.yml => all-deb-hosts.yml}",
       "it-and-security/lib/linux/queries/all-rpm-hosts.yml",
       "it-and-security/lib/linux/software/slack-deb.yml",
       "it-and-security/lib/linux/software/slack-rpm.yml",
-      "it-and-security/lib/linux/software/zoom-deb.yml",
+      "it-and-security/lib/linux/software/{zoom.yml => zoom-deb.yml}",
       "it-and-security/lib/linux/software/zoom-rpm.yml",
       "it-and-security/lib/macos/queries/check-if-apple-silicon.yml",
       "it-and-security/lib/macos/queries/collect-failed-login-attempts.yml",
@@ -6411,6 +7407,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added DDM profile for iOS and iPadOS and copied macOS DDM profile to Workstations team (#24825)",
     "timestamp": "2024-12-17T14:19:08-06:00",
+    "insertions": 33,
+    "deletions": 0,
     "files": [
       "it-and-security/lib/ios/declaration-profiles/software-update-settings.json",
       "it-and-security/lib/ipados/declaration-profiles/software-update-settings.json",
@@ -6426,6 +7424,8 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Updated minimum OS version for iOS and iPadOS (#24822)",
     "timestamp": "2024-12-17T14:18:32-06:00",
+    "insertions": 4,
+    "deletions": 4,
     "files": [
       "it-and-security/teams/company-owned-ipads.yml",
       "it-and-security/teams/company-owned-iphones.yml"
