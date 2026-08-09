@@ -150,12 +150,21 @@
         <line x1="60" y1="92" x2="860" y2="92" stroke="var(--fleet-black-10)" stroke-width="1" />
         <circle
           v-for="a in appDots" :key="a.software_name"
-          :cx="dotX(a.lag)" :cy="a.cy" r="6"
+          class="app-dot"
+          :cx="dotX(a.lag)" :cy="a.cy" :r="hovered && hovered.software_name === a.software_name ? 8.5 : 6"
           :fill="dotColor(a.lag)"
+          :stroke="hovered && hovered.software_name === a.software_name ? 'var(--fleet-black)' : 'none'"
+          stroke-width="1.5"
+          @mouseenter="hovered = a" @mouseleave="hovered = null"
         >
           <title>{{ a.software_name }} — {{ a.lag.toFixed(1) }}d mean · {{ a.hosts }} hosts</title>
         </circle>
-        <text v-if="slowestDot" :x="Math.min(dotX(slowestDot.lag), 840)" y="34" text-anchor="end" class="curve-label curve-label--bad">{{ slowestDot.software_name }} — {{ slowestDot.lag.toFixed(0) }}d</text>
+        <text v-if="slowestDot && !hovered" :x="Math.min(dotX(slowestDot.lag), 840)" y="34" text-anchor="end" class="curve-label curve-label--bad">{{ slowestDot.software_name }} — {{ slowestDot.lag.toFixed(0) }}d</text>
+        <!-- Hover tooltip: name · mean · hosts, clamped inside the plot -->
+        <g v-if="hovered" class="dot-tip" :transform="`translate(${tipX}, ${Math.max(2, hovered.cy - 30)})`">
+          <rect :width="tipW" height="22" rx="4" fill="var(--fleet-black)" />
+          <text x="10" y="15" class="dot-tip-text">{{ tipText }}</text>
+        </g>
         <text v-for="d in dotTicks" :key="'dx' + d" :x="dotX(d)" y="114" text-anchor="middle" class="curve-tick" :class="{ 'curve-tick--bold': d === config.patchSlaDays }">{{ d === 0 ? 'day 0' : d }}</text>
         <text x="460" y="128" text-anchor="middle" class="curve-tick">average days to patch, per app · hover a dot for the name</text>
       </svg>
@@ -403,6 +412,18 @@ const appDots = computed(() => {
     cy: [44, 60, 76][i % 3],
   }))
 })
+// Hover state + tooltip geometry (SVG user units, viewBox 0..900).
+const hovered = ref(null)
+const tipText = computed(() => hovered.value
+  ? `${hovered.value.software_name} · ${hovered.value.lag.toFixed(1)}d mean · ${hovered.value.hosts} host${hovered.value.hosts === 1 ? '' : 's'}`
+  : '')
+const tipW = computed(() => Math.round(tipText.value.length * 6.6) + 20)
+const tipX = computed(() => {
+  if (!hovered.value) return 0
+  const cx = dotX(hovered.value.lag)
+  return Math.max(60, Math.min(cx - tipW.value / 2, 860 - tipW.value))
+})
+
 const appsInside = computed(() => appDots.value.filter(a => a.lag <= Number(config.value.patchSlaDays)))
 const appsOutside = computed(() => appDots.value.filter(a => a.lag > Number(config.value.patchSlaDays)))
 const slowestDot = computed(() => appDots.value.length ? appDots.value.reduce((m, a) => (a.lag > m.lag ? a : m)) : null)
@@ -697,6 +718,9 @@ onMounted(async () => {
   gap: 18px;
 }
 .coverage-svg, .dots-svg { width: 100%; height: auto; }
+.app-dot { cursor: pointer; transition: r 120ms ease; }
+.dot-tip { pointer-events: none; }
+.dot-tip-text { font-size: 12px; font-weight: 600; fill: var(--fleet-white); font-family: inherit; }
 .curve-label { font-size: 12px; font-weight: 600; fill: var(--fleet-black-75); font-family: inherit; }
 .curve-label--bad { fill: var(--status-critical); }
 .curve-tick { font-size: 12px; fill: var(--fleet-black-50); font-family: inherit; }
