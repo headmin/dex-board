@@ -73,6 +73,7 @@
           :drill-loading="drillLoading"
           @toggle-app-drill="toggleAppDrill"
         />
+        <PerformanceSignalDetail v-else-if="expandedCategory === 'performance'" />
       </SignalBreakdown>
     </section>
 
@@ -129,6 +130,7 @@ import AnswerHero from '../components/experience/AnswerHero.vue'
 import CategoryGrid from '../components/experience/CategoryGrid.vue'
 import SignalBreakdown from '../components/experience/SignalBreakdown.vue'
 import SoftwareSignalDetail from '../components/experience/SoftwareSignalDetail.vue'
+import PerformanceSignalDetail from '../components/experience/PerformanceSignalDetail.vue'
 import CohortCard from '../components/experience/CohortCard.vue'
 import HostScoresTable from '../components/experience/HostScoresTable.vue'
 
