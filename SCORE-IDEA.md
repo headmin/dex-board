@@ -125,6 +125,33 @@ Composite = 0.25 * Device_Health
 Network is displayed but excluded — it's too noisy to include in a number that
 drives quarterly decisions.
 
+### Platform coverage — weights renormalize over what was measured
+
+A category a platform cannot report is **NULL, never a defaulted number** —
+an unmeasured category must not read as an average one. The composite then
+renormalizes its weights over the categories that exist:
+
+```
+Composite = Σ(weight_i × score_i, over measured categories)
+          / Σ(weight_i,           over measured categories)
+```
+
+For macOS hosts all four categories are measured, so the denominator is 1.0
+and the formula above applies unchanged. Windows hosts (scored since
+2026-08-09 from the `win_*` normalization tables) currently measure:
+
+| Category | Windows source |
+|---|---|
+| Security | BitLocker 25% + firewall 20% + Secure Boot 15% + TPM 10% + antivirus 15% + UAC 15% (Security Center health) |
+| Software | WER crash-event ladder only — no adoption/app-count telemetry yet |
+| Device Health / Performance / Network | not collected → NULL, shown as "—" |
+
+so their composite is `(0.20·Security + 0.20·Software) / 0.40`. Every scored
+row carries `scored_categories` (1-4) and `platform` so consumers can
+disclose how much of the formula was measured. Linux hosts emit no DEX
+telemetry today; they enter through the same mechanism once their pack
+streams are normalized.
+
 ### Grading
 
 | Grade | Score range | Meaning |

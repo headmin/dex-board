@@ -18,7 +18,7 @@ export interface QueryConfig {
   domain: string
   /** Which ClickHouse instance to query: 'default' (Fleet logs) or 'core' (firehose) */
   client?: 'default' | 'core'
-  /** Parameterized SQL with {name:Type} ClickHouse placeholders and {{FILTERS}} macro */
+  /** Parameterized SQL with {name:Type} ClickHouse placeholders and {{LIMIT}}/{{TIME_*}} macros */
   sql: string
   /** Parameter definitions for validation */
   params: QueryParam[]

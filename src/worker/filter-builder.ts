@@ -25,8 +25,6 @@ const TIME_BUCKETS: Record<string, { expr: string; fmt: string }> = {
 }
 
 export interface FilterResult {
-  /** WHERE clause fragments (without leading AND) */
-  clauses: string[]
   /** ClickHouse {name:Type} parameter bindings */
   queryParams: Record<string, unknown>
   /** SQL INTERVAL expression for time range */
@@ -36,13 +34,18 @@ export interface FilterResult {
 }
 
 /**
- * Build parameterized filter clauses from validated params.
+ * Build parameter bindings from validated params.
+ *
+ * Filtering itself happens inside each query's SQL (FILTERED_HOSTS_CTE and
+ * friends reference `{filter*:String}` placeholders directly) — this
+ * function's job is to bind those placeholders, with '' defaults so
+ * ClickHouse never sees an unbound parameter. The old clause-generation
+ * path (`{{FILTERS}}` macro) had no remaining consumers and was removed.
  *
  * @param params - Validated params from param-validator
- * @returns Filter clauses + parameter bindings
+ * @returns Parameter bindings + time-range expressions (audit.ts macros)
  */
 export function buildFilters(params: Record<string, string | number>): FilterResult {
-  const clauses: string[] = []
   const queryParams: Record<string, unknown> = {}
 
   // Time range — always uses allowlist, never interpolates user input
@@ -50,73 +53,23 @@ export function buildFilters(params: Record<string, string | number>): FilterRes
   const timeInterval = TIME_INTERVALS[timeRange] || TIME_INTERVALS['24']
   const timeBucket = TIME_BUCKETS[timeRange] || TIME_BUCKETS['24']
 
-  // OS filter — parameterized
-  if (params.os) {
-    clauses.push("AND os_name = {filterOs:String}")
-    queryParams.filterOs = params.os
-  }
-
-  // Model filter — parameterized
-  if (params.model) {
-    clauses.push("AND hardware_model = {filterModel:String}")
-    queryParams.filterModel = params.model
-  }
-
-  // Search text — parameterized LIKE
-  if (params.search) {
-    clauses.push(
-      "AND (hostname LIKE {filterSearch:String} OR serial_number LIKE {filterSearch:String} OR hardware_model LIKE {filterSearch:String})"
-    )
-    queryParams.filterSearch = `%${params.search}%`
-  }
-
-  // Encryption filter — uses a subquery with fixed SQL (no user input in SQL)
-  if (params.encryption === 'encrypted') {
-    clauses.push(
-      "AND host_identifier IN (SELECT host_identifier FROM dex_security_posture WHERE disk_encrypted = '1' GROUP BY host_identifier HAVING argMax(disk_encrypted, event_time) = '1')"
-    )
-  } else if (params.encryption === 'not-encrypted') {
-    clauses.push(
-      "AND host_identifier IN (SELECT host_identifier FROM dex_security_posture WHERE disk_encrypted != '1' GROUP BY host_identifier HAVING argMax(disk_encrypted, event_time) != '1')"
-    )
-  }
-
-  // RAM tier filter — parameterized
-  if (params.ramTier) {
-    clauses.push(
-      "AND host_identifier IN (SELECT DISTINCT host_identifier FROM dex_device_scores_hourly WHERE ram_tier = {filterRamTier:String} AND hour >= now() - INTERVAL 1 DAY)"
-    )
-    queryParams.filterRamTier = params.ramTier
-  }
-
-  // Host identifier — parameterized (for device drill-down)
-  if (params.hostIdentifier) {
-    clauses.push("AND host_identifier = {filterHostId:String}")
-    queryParams.filterHostId = params.hostIdentifier
-  }
-
-  // Host ID — firehose queries use host_id column
-  if (params.hostId) {
-    queryParams.filterHostId = params.hostId
-  }
-
-  // Ensure firehose filter params always have defaults so ClickHouse binds
-  // all {filter*:String} placeholders even when no filter is set.
-  if (!queryParams.filterSearch) queryParams.filterSearch = params.search || ''
-  if (!queryParams.filterModel) queryParams.filterModel = params.model || ''
-  if (!queryParams.filterRamTier) queryParams.filterRamTier = params.ramTier || ''
-  if (!queryParams.filterOs) queryParams.filterOs = params.os || ''
-  if (!queryParams.filterTeam) queryParams.filterTeam = params.team || ''
+  // Firehose filter params always get defaults so ClickHouse binds every
+  // {filter*:String} placeholder even when no filter is set.
+  queryParams.filterSearch = params.search || ''
+  queryParams.filterModel = params.model || ''
+  queryParams.filterRamTier = params.ramTier || ''
+  queryParams.filterOs = params.os || ''
+  queryParams.filterTeam = params.team || ''
   // filterHostId too: list queries use `if({filterHostId:String} != '', …)`
   // to double as single-host lookups — unbound, ClickHouse rejects the query.
-  if (!queryParams.filterHostId) queryParams.filterHostId = params.hostId || params.hostIdentifier || ''
+  queryParams.filterHostId = params.hostId || params.hostIdentifier || ''
 
   // Limit — parameterized
   if (params.limit) {
     queryParams.filterLimit = Number(params.limit)
   }
 
-  return { clauses, queryParams, timeInterval, timeBucket }
+  return { queryParams, timeInterval, timeBucket }
 }
 
 /**
@@ -124,7 +77,6 @@ export function buildFilters(params: Record<string, string | number>): FilterRes
  *
  * Replaces these placeholders in the SQL:
  * - `{{TIME_FILTER}}` → `event_time > now() - INTERVAL N UNIT`
- * - `{{FILTERS}}` → `AND os_name = {filterOs:String} AND ...`
  * - `{{TIME_INTERVAL}}` → `INTERVAL 1 DAY` (raw, from allowlist)
  * - `{{TIME_BUCKET}}` → `toStartOfHour(event_time)` (raw, from allowlist)
  * - `{{TIME_FMT}}` → `%H:00` (raw, from allowlist)
@@ -137,7 +89,6 @@ export function injectFilters(sql: string, filters: FilterResult): string {
     /\{\{TIME_FILTER\}\}/g,
     `event_time > now() - ${filters.timeInterval}`
   )
-  result = result.replace(/\{\{FILTERS\}\}/g, filters.clauses.join(' '))
   result = result.replace(/\{\{TIME_INTERVAL\}\}/g, filters.timeInterval)
   result = result.replace(/\{\{TIME_BUCKET\}\}/g, filters.timeBucket.expr)
   result = result.replace(/\{\{TIME_FMT\}\}/g, filters.timeBucket.fmt)
