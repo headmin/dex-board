@@ -22,6 +22,8 @@ export function usePatchVelocity() {
   const byType = ref([])          // OS vs app split
   const byApp = ref([])
   const byHost = ref([])
+  const byWeek = ref([])          // weekly p50/p90 trend
+  const hostWeighted = ref(null)  // each host counts once
   const loading = ref(false)
 
   async function fetchAll(slaDays = 14, filterParams = {}) {
@@ -37,18 +39,23 @@ export function usePatchVelocity() {
     const start = new Date(end.getTime() - 30 * 24 * 3600 * 1000)
     const fmt = (d) => d.toISOString().slice(0, 19).replace('T', ' ')
 
-    const [s90, c7, p7, types, appRows, hostRows] = await Promise.all([
+    const [s90, c7, p7, types, appRows, hostRows, weekRows, hw] = await Promise.all([
       one({ windowDays: 90 }),
       one({ windowDays: 7 }),
       one({ windowDays: 7, offsetDays: 7 }),
       query('firehose.scores.mttp_summary_by_type', { windowDays: 90, excludeSoftware, ...filterParams }).catch(() => []),
       fetchPatchSummaryBucketed(fmt(start), fmt(end), 1).catch(() => []),
       query('firehose.scores.mttp_by_host', { windowDays: 30, limit: 15, excludeSoftware, ...filterParams }).catch(() => []),
+      query('firehose.scores.mttp_weekly', { windowDays: 90, excludeSoftware, ...filterParams }).catch(() => []),
+      query('firehose.scores.mttp_host_weighted', { windowDays: 90, excludeSoftware, ...filterParams })
+        .then(rows => rows?.[0] || null).catch(() => null),
     ])
     summary90.value = s90
     current7.value = c7
     prior7.value = p7
     byType.value = types || []
+    byWeek.value = weekRows || []
+    hostWeighted.value = hw
     // Per-app rows are aggregated client-side from the bucketed feed, which
     // has no exclusion param — drop excluded titles here so the app list
     // matches the server-side numbers above.
@@ -58,5 +65,5 @@ export function usePatchVelocity() {
     loading.value = false
   }
 
-  return { summary90, current7, prior7, byType, byApp, byHost, loading, fetchAll }
+  return { summary90, current7, prior7, byType, byApp, byHost, byWeek, hostWeighted, loading, fetchAll }
 }

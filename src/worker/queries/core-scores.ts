@@ -1251,6 +1251,58 @@ export const firehoseScoreQueries: QueryConfig[] = [
         ${excludeClause('software_name')}
     `,
   },
+  {
+    name: 'firehose.scores.mttp_weekly',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'Weekly p50/p90 days-to-patch over a trailing window — the "is velocity improving" trend the single hero number cannot show',
+    params: [
+      { name: 'windowDays', type: 'number' as const, required: false, min: 7, max: 365, default: 90 },
+      EXCLUDE_SOFTWARE_PARAM,
+      ...FILTER_PARAMS,
+    ],
+    sql: `
+      WITH ${FILTERED_HOSTS_CTE}
+      SELECT
+        toStartOfWeek(event_time)              AS week,
+        count()                                AS n_events,
+        countDistinct(host_identifier)         AS n_hosts,
+        round(quantile(0.5)(days_to_patch), 2) AS p50_lag,
+        round(quantile(0.9)(days_to_patch), 2) AS p90_lag
+      FROM dex_patch_events FINAL
+      WHERE event_time >= now() - toIntervalDay({windowDays:UInt32})
+        AND host_identifier IN (SELECT host_id FROM filtered_hosts)
+        ${excludeClause('software_name')}
+      GROUP BY week
+      ORDER BY week ASC
+    `,
+  },
+  {
+    name: 'firehose.scores.mttp_host_weighted',
+    domain: 'scores',
+    client: 'core' as const,
+    description: 'Host-weighted MTTP percentiles: each host counts once (its mean lag), so high-cadence titles like Chrome cannot dominate the fleet number',
+    params: [
+      { name: 'windowDays', type: 'number' as const, required: false, min: 1, max: 365, default: 90 },
+      EXCLUDE_SOFTWARE_PARAM,
+      ...FILTER_PARAMS,
+    ],
+    sql: `
+      WITH ${FILTERED_HOSTS_CTE}
+      SELECT
+        count()                             AS n_hosts,
+        round(quantile(0.5)(host_avg), 2)   AS p50_host_lag,
+        round(quantile(0.9)(host_avg), 2)   AS p90_host_lag
+      FROM (
+        SELECT host_identifier, avg(days_to_patch) AS host_avg
+        FROM dex_patch_events FINAL
+        WHERE event_time >= now() - toIntervalDay({windowDays:UInt32})
+          AND host_identifier IN (SELECT host_id FROM filtered_hosts)
+          ${excludeClause('software_name')}
+        GROUP BY host_identifier
+      )
+    `,
+  },
   // Every (software, new_version) pair seen patching in the window — ONE
   // cheap query so the GitOps "only show releases with patch data" toggle
   // can match the whole FMA feed instead of the visible top-N slice.

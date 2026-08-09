@@ -3,9 +3,12 @@
  *
  * Source: alt ClickHouse → device_health + hardware_inventory
  *
- * "Refresh score" (0-100, higher = more urgent) combines endpoint telemetry
+ * "Refresh score" (0-105, higher = more urgent) combines endpoint telemetry
  * that signals a device is holding its user back and is a replace/upgrade
- * candidate:
+ * candidate. Bands are shared across every consumer (SQL buckets, UI row
+ * tones, verdict weak-line): >= 40 priority · 20-39 watch · < 20 healthy.
+ * Documented in SCORE-IDEA.md § "The refresh score".
+ * Point values:
  *   battery_health_score  replace +40 · degraded +15    (battery at end of life)
  *   cpu_class             intel*  +25 · apple_m1 +10    (aging silicon)
  *   ram_tier              under_8gb +25 · 8gb +20 · 16gb +5  (under-spec memory)

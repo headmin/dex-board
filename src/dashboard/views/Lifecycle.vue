@@ -255,7 +255,10 @@ function hostVerdict(h) {
       ? { key: 'refresh', label: 'Refresh candidate', tone: 'critical' }
       : { key: 'battery', label: 'Battery service', tone: 'critical' }
   }
-  return verdictFor(Number(h.refresh_score) >= 30, gensBehind, {
+  // One scale, three consumers: >= 40 is "priority" everywhere — the SQL
+  // summary bucket (core-lifecycle.ts high_priority), the row color tones
+  // below, and this verdict's weak-input line. 20-39 is "watch" everywhere.
+  return verdictFor(Number(h.refresh_score) >= 40, gensBehind, {
     weakDays: Number(h.days_pressured_30d) || 0,
     reportDays: Number(h.days_reporting_30d) || 0,
     severeDays: Number(h.days_severe_30d) || 0,

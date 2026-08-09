@@ -200,6 +200,37 @@ Each dimension shows the average composite + per-category scores for devices
 in that cohort, enabling targeted decisions ("8 GB devices average 52 — time
 to refresh").
 
+## The refresh score (Lifecycle view)
+
+Separate from the composite: a 0-105 **urgency index** (higher = more urgent)
+answering "which machines should the refresh budget look at first?" The
+composite measures *state*; the refresh score ranks *action*. Both read the
+same four hardware inputs but weight them differently on purpose — a machine
+can be mid-pack on Device Health and still top the refresh list.
+
+| Signal | Points | Rationale |
+|---|---|---|
+| Battery `replace` / `degraded` | +40 / +15 | end-of-life battery is the strongest single "act now" signal |
+| CPU Intel (any) / Apple M1 | +25 / +10 | aging silicon |
+| RAM under 8 GB / 8 GB / 16 GB | +25 / +20 / +5 | under-spec memory |
+| Swap severe / elevated | +20 / +10 | sustained memory strain |
+
+**Bands — one scale for every consumer** (SQL summary buckets, UI row tones,
+verdict weak-line): **≥ 40 priority · 20–39 watch · < 20 healthy**.
+
+**Verdicts** are earned, not point-in-time: the age × strain quadrant
+(3+ chip generations behind = "old") requires weakness on ≥ 50% of reporting
+days over 30 days (minimum 5 days of history) before naming a host a
+*Refresh candidate* (old + weak) or *Investigate* (current silicon + weak).
+One exception bypasses persistence: **battery `replace` is an unambiguous
+hardware fact** and always lands in an action group — *Refresh candidate*
+when the silicon is also old, otherwise *Battery service* (a service call,
+not a machine replacement).
+
+Scope: macOS hosts only today — the inputs come from `device_health`, gated
+to hosts seen in the last 14 days. Procurement, warranty, and cost live
+outside osquery and outside this score.
+
 ## What this is not
 
 - Not a **compliance score** — compliance is binary (encrypted or not); this is a gradient

@@ -89,6 +89,29 @@
       </div>
     </section>
 
+    <!-- ─── Week-over-week velocity trend ────────────────────── -->
+    <section v-if="weekTrendRows.length" class="week-trend-card">
+      <div class="curve-head">
+        <h2>Velocity by week</h2>
+        <span class="curve-sub">typical (p50) and slowest-tenth (p90) days to patch · partial weeks included</span>
+      </div>
+      <div class="week-rows">
+        <div
+          v-for="w in weekTrendRows"
+          :key="w.week"
+          class="week-row"
+          :title="`Week of ${w.label}: p50 ${w.p50.toFixed(1)}d · p90 ${w.p90.toFixed(1)}d · ${w.events} updates on ${w.hosts} hosts`"
+        >
+          <span class="week-label">{{ w.label }}</span>
+          <div class="week-bars">
+            <div class="week-bar week-bar--p90" :style="{ width: w.p90Pct + '%' }"></div>
+            <div class="week-bar week-bar--p50" :style="{ width: w.p50Pct + '%' }"></div>
+          </div>
+          <span class="week-values"><strong>{{ fmtLag(w.p50) }}</strong> · p90 {{ fmtLag(w.p90) }}</span>
+        </div>
+      </div>
+    </section>
+
     <!-- ─── Coverage after a version ships ──────────────────── -->
     <section class="curve-card">
       <div class="curve-head">
@@ -313,7 +336,7 @@ const error = ref(null)
 const showMethod = ref(false)
 
 // ─── Core MTTP data ───────────────────────────────────────────
-const { summary90, current7, prior7, byType, byApp, byHost, loading, fetchAll } = usePatchVelocity()
+const { summary90, current7, prior7, byType, byApp, byHost, byWeek, hostWeighted, loading, fetchAll } = usePatchVelocity()
 const { fetchPatchSummaryBucketed } = usePatchEvents()
 
 const p50_90 = computed(() => summary90.value?.p50_lag != null ? Number(summary90.value.p50_lag) : null)
@@ -356,7 +379,33 @@ const statBand = computed(() => {
     { key: 'hosts', label: 'Machines patched', value: s.n_hosts != null ? Number(s.n_hosts).toLocaleString() : '—', sub: 'at least one update' },
     { key: 'apps', label: 'Titles updated', value: s.n_apps != null ? Number(s.n_apps).toLocaleString() : '—', sub: 'distinct apps + OS' },
     { key: 'sla', label: 'Within target', value: s.pct_within_sla != null ? s.pct_within_sla + '%' : '—', sub: `≤ ${config.value.patchSlaDays}-day SLA`, tone: s.pct_within_sla >= 90 ? 'good' : s.pct_within_sla >= 75 ? 'fair' : 'bad' },
+    // Host-weighted counterpart to the (event-weighted) hero percentiles:
+    // each host counts once via its mean lag, so Chrome's weekly cadence
+    // can't dominate the number.
+    {
+      key: 'hostp50',
+      label: 'Median machine',
+      value: hostWeighted.value?.p50_host_lag != null ? fmtLag(Number(hostWeighted.value.p50_host_lag)) : '—',
+      sub: 'host-weighted · each machine counts once',
+    },
   ]
+})
+
+// ─── Weekly trend: is velocity improving? ─────────────────────
+const weekTrendRows = computed(() => {
+  const rows = (byWeek.value || []).filter(r => r.p50_lag != null)
+  if (rows.length < 2) return []   // one week is a point, not a trend
+  const maxP90 = Math.max(...rows.map(r => Number(r.p90_lag) || 0), 1)
+  return rows.map(r => ({
+    week: r.week,
+    label: new Date(r.week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    p50: Number(r.p50_lag),
+    p90: Number(r.p90_lag),
+    events: Number(r.n_events) || 0,
+    hosts: Number(r.n_hosts) || 0,
+    p50Pct: Math.max(2, (Number(r.p50_lag) / maxP90) * 100),
+    p90Pct: Math.max(2, (Number(r.p90_lag) / maxP90) * 100),
+  }))
 })
 
 // ─── OS updates vs app updates (byType, previously unused) ────
@@ -662,7 +711,7 @@ watch(filterParams, loadAll, { deep: true })
 /* ─── Stat band ────────────────────────────────── */
 .stat-band {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 1px;
   background: var(--fleet-black-10);
   border: 1px solid var(--fleet-black-10);
@@ -735,6 +784,23 @@ watch(filterParams, loadAll, { deep: true })
 .curve-sub { font-size: var(--font-size-sm); color: var(--fleet-black-50); text-align: right; }
 
 /* ─── Coverage curve ───────────────────────────── */
+/* ─── Weekly velocity trend ─────────────────────── */
+.week-rows { display: flex; flex-direction: column; gap: 9px; }
+.week-row {
+  display: grid;
+  grid-template-columns: 64px 1fr 150px;
+  align-items: center;
+  gap: 12px;
+}
+.week-label { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
+.week-bars { position: relative; height: 12px; background: var(--fleet-black-5); border-radius: var(--radius-full); overflow: hidden; }
+.week-bar { position: absolute; inset: 0 auto 0 0; height: 100%; border-radius: var(--radius-full); }
+.week-bar--p90 { background: var(--fleet-black-10); }
+.week-bar--p50 { background: var(--status-good-soft); }
+.week-values { font-size: var(--font-size-sm); color: var(--fleet-black-50); text-align: right; font-variant-numeric: tabular-nums; }
+.week-values strong { color: var(--fleet-black); font-weight: 650; }
+
+.week-trend-card,
 .curve-card, .apps-card {
   background: var(--fleet-white);
   border: 1px solid var(--fleet-black-10);

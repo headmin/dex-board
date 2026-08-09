@@ -155,8 +155,11 @@ const draggingCategory = computed(() => {
   const scored = props.categories.filter(c => c.key !== 'network' && c.score != null)
   if (!scored.length) return null
   const worst = scored.reduce((a, b) => (b.score < a.score ? b : a))
-  // Only call it a drag if it's meaningfully below the composite.
-  if (props.fleet.score != null && worst.score >= props.fleet.score) return null
+  // Materiality gate: the worst category of a weighted mean is below the
+  // composite almost by definition, so "worst < composite" alone would fire
+  // permanently and the clause would be a restated ranking, not a verdict.
+  // Only call it a drag when it trails the composite by 8+ points.
+  if (props.fleet.score == null || worst.score >= props.fleet.score - 8) return null
   return worst
 })
 
