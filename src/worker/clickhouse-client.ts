@@ -92,6 +92,28 @@ export async function executeCoreQuery(
 }
 
 /**
+ * Execute a write statement (INSERT ... SELECT) against the firehose
+ * instance. Used by the scheduled score snapshot — the SELECT half is the
+ * same canonical CTE the read queries use, so the persisted history can
+ * never diverge from the live formula.
+ */
+export async function executeCoreCommand(
+  sql: string,
+  params: Record<string, unknown>,
+  env: Env
+): Promise<void> {
+  const ch = getCoreClient(env)
+  try {
+    await ch.command({
+      query: sql,
+      query_params: params,
+    })
+  } finally {
+    await ch.close()
+  }
+}
+
+/**
  * Ping ClickHouse to verify connectivity.
  */
 export async function pingClickHouse(env: Env): Promise<boolean> {

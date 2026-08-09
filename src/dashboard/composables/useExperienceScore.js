@@ -97,33 +97,37 @@ export function useExperienceScore({ queryParams, snapshotParams, timeRangeHours
     }
   }
 
-  // ─── Fetch Fleet Score (now + 7d ago for Δ tile + 30d sparkline) ──
+  // ─── Fetch Fleet Score (live now + persisted 30d history) ──
   async function fetchFleetScore() {
     loading.value.fleet = true
     try {
-      // 30 daily samples (asOfDaysAgo 0..29). Each call wrapped in .catch so a
-      // single failure doesn't blank the whole sparkline — the bad day just
-      // shows as null (ECharts skips it).
-      const trendDays = 30
-      const trendRequests = Array.from({ length: trendDays }, (_, i) =>
-        query('firehose.scores.fleet_summary', { ...snapshotParams.value, asOfDaysAgo: i })
-          .catch(() => [])
-      )
-      const trendRows = await Promise.all(trendRequests)
+      // Two queries: the live snapshot (respects the fleet filter) and the
+      // persisted daily history (fleet-wide, written by the worker cron from
+      // the same scoring CTE — replaces the old 30 as-of queries per load).
+      const [nowRows, historyRows] = await Promise.all([
+        query('firehose.scores.fleet_summary', { ...snapshotParams.value }),
+        query('firehose.scores.daily_history', { days: 30 }).catch(() => []),
+      ])
 
-      const todayRow = trendRows[0]?.[0]
+      const todayRow = nowRows?.[0]
       const score = todayRow?.avg_score ?? null
       const count = todayRow?.device_count ?? 0
       // The now-vs-window Δ badge is owned by fetchTileDeltas (range-aware); the
       // hero just shows the current score + 30-day sparkline.
 
-      // Sparkline: newest → oldest from trendRequests, so reverse to oldest → newest.
-      const sparkline = trendRows
-        .map(rows => {
-          const s = rows?.[0]?.avg_score
-          return (typeof s === 'number') ? s : null
-        })
-        .reverse()
+      // History is oldest → newest with one row per persisted day. Fill a
+      // fixed 30-slot window (nulls for unpersisted days) so gaps stay
+      // visible instead of being squeezed out.
+      const trendDays = 30
+      const byDate = new Map(
+        (historyRows || []).map(r => [String(r.score_date), Number(r.composite)])
+      )
+      const sparkline = Array.from({ length: trendDays }, (_, i) => {
+        const d = new Date(Date.now() - (trendDays - 1 - i) * 86400000)
+        const key = d.toISOString().slice(0, 10)
+        const v = byDate.get(key)
+        return typeof v === 'number' && isFinite(v) ? v : null
+      })
 
       fleet.value = {
         grade: scoreToGrade(score),

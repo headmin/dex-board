@@ -4,6 +4,7 @@ import { basicAuth } from 'hono/basic-auth'
 import type { Env, QueryRequest } from './types'
 import { registry, RegistryError } from './query-registry'
 import { pingClickHouse } from './clickhouse-client'
+import { runDailyScoreSnapshot } from './snapshot'
 import { cfAccessAuth } from './auth'
 
 // ─── Register query domains ──────────────────────────────
@@ -126,6 +127,31 @@ app.post('/api/query', async (c) => {
   }
 })
 
+// ─── POST /api/snapshot — persist score history ─────────
+// Behind the same auth as every /api route. The cron trigger covers the
+// daily row; this endpoint exists for backfill ({"backfillDays": 95}
+// snapshots each of the last N as-of days) and manual re-runs — the
+// target table is ReplacingMergeTree, so re-running a day overwrites it.
+app.post('/api/snapshot', async (c) => {
+  let backfillDays = 0
+  try {
+    const body = await c.req.json<{ backfillDays?: number }>()
+    backfillDays = Math.min(365, Math.max(0, Number(body.backfillDays) || 0))
+  } catch {
+    // empty body → snapshot today only
+  }
+  const failed: number[] = []
+  for (let n = backfillDays; n >= 0; n--) {
+    try {
+      await runDailyScoreSnapshot(c.env, n)
+    } catch (err) {
+      console.error(`Snapshot asOfDaysAgo=${n} failed:`, err)
+      failed.push(n)
+    }
+  }
+  return c.json({ snapshotted: backfillDays + 1 - failed.length, failed })
+})
+
 // ─── GET /api/queries — list all registered queries ─────
 app.get('/api/queries', (c) => {
   const domain = c.req.query('domain')
@@ -156,4 +182,11 @@ app.get('*', async (c) => {
   return c.env.ASSETS.fetch(new Request(new URL('/', c.req.url), c.req.raw))
 })
 
-export default app
+export default {
+  fetch: app.fetch,
+  // Cron trigger (wrangler.toml [triggers]) — one score-history row per
+  // (day, platform). waitUntil keeps the insert alive past the handler.
+  scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(runDailyScoreSnapshot(env))
+  },
+}

@@ -3,16 +3,21 @@ import { query } from '../services/api'
 import dayjs from 'dayjs'
 
 /**
- * 30-day daily fleet score series — composite + every category — via
- * 30 parallel `firehose.scores.categories {asOfDaysAgo}` calls (the same
- * time-travel mechanism the home hero uses). Module singleton: fetched
- * once per session, shared by GitOps and Patch velocity.
+ * Daily fleet score series — composite + every category — read from the
+ * persisted `dex_scores_daily` history (one query; written daily by the
+ * worker cron from the same scoring CTE as the live queries). Extends as
+ * far back as history exists — the old approach was 30 parallel as-of
+ * queries and hard-walled the judgment window at 30 days.
+ * Module singleton: fetched once per session, shared by GitOps and
+ * Patch velocity.
  *
  * Judgements are correlational readings of "what the fleet score did in
  * the 7 days AFTER a date" — never causal claims. 'too-recent' (window
  * still open) and 'outside-window' (date predates the series) stay
  * distinct: two different kinds of unknown.
  */
+
+const HISTORY_DAYS = 365
 
 const series = ref({})        // 'YYYY-MM-DD' -> { composite, device_health, performance, security, software }
 const seriesLoaded = ref(false)
@@ -22,22 +27,17 @@ async function fetchDailySeries() {
   if (seriesLoaded.value) return
   if (inflight) return inflight
   inflight = (async () => {
-    const calls = Array.from({ length: 30 }, (_, i) =>
-      query('firehose.scores.categories', { asOfDaysAgo: i })
-        .then(rows => ({ i, row: rows?.[0] || null }))
-        .catch(() => ({ i, row: null }))
-    )
-    const results = await Promise.all(calls)
+    const rows = await query('firehose.scores.daily_history', { days: HISTORY_DAYS })
+      .catch(() => [])
     const map = {}
-    for (const { i, row } of results) {
-      if (!row) continue
-      const date = dayjs().subtract(i, 'day').format('YYYY-MM-DD')
+    for (const row of rows || []) {
+      const date = dayjs(row.score_date).format('YYYY-MM-DD')
       map[date] = {
-        composite: row.avg_composite != null ? Number(row.avg_composite) : null,
-        device_health: row.avg_device_health != null ? Number(row.avg_device_health) : null,
-        performance: row.avg_performance != null ? Number(row.avg_performance) : null,
-        security: row.avg_security != null ? Number(row.avg_security) : null,
-        software: row.avg_software != null ? Number(row.avg_software) : null,
+        composite: row.composite != null ? Number(row.composite) : null,
+        device_health: row.device_health != null ? Number(row.device_health) : null,
+        performance: row.performance != null ? Number(row.performance) : null,
+        security: row.security != null ? Number(row.security) : null,
+        software: row.software != null ? Number(row.software) : null,
       }
     }
     series.value = map

@@ -389,7 +389,16 @@ scored AS (
 
 // Snapshot variant — all hosts, each at its latest snapshot (used by the
 // composite hero, category cards, exposure tile, per-fleet breakdown).
-const DEVICE_SCORES_CTE = buildScoresCTE('')
+// Exported for the scheduled daily snapshot (src/worker/snapshot.ts): the
+// INSERT ... SELECT that persists score history is assembled from this same
+// constant at runtime, so history and live queries share one formula.
+export const DEVICE_SCORES_CTE = buildScoresCTE('')
+
+/** Neutral parameter bindings for the snapshot: no filter, no time travel. */
+export const SNAPSHOT_PARAMS: Record<string, unknown> = {
+  filterSearch: '', filterModel: '', filterRamTier: '', filterOs: '',
+  filterTeam: '', filterHostId: '', asOfDaysAgo: 0, asOfHoursAgo: 0,
+}
 // Windowed variant — only hosts seen in the selected time range (used by the
 // drill-downs: distributions, dimensions, biggest movers, device list).
 const DEVICE_SCORES_CTE_WINDOWED = buildScoresCTE(WINDOW_WHERE)
@@ -1070,6 +1079,36 @@ export const firehoseScoreQueries: QueryConfig[] = [
       UNION ALL SELECT 'vpn_gate', count() FROM vpn_gate
       UNION ALL SELECT 'wifi_signal', count() FROM wifi_signal
       UNION ALL SELECT 'security_posture', count() FROM security_posture
+    `,
+  },
+
+  // ── Persisted score history ─────────────────────────────
+  // Written daily by the Worker cron (src/worker/snapshot.ts) from the same
+  // scoring CTE as the live queries — see 12-scores-daily.sql for why this
+  // is not a ClickHouse MV. Backfill/manual runs: POST /api/snapshot.
+  {
+    name: 'firehose.scores.daily_history',
+    domain: 'scores',
+    client: 'core',
+    description: 'Persisted daily fleet/platform score history — sparkline and GitOps series source (one query, no per-day time travel)',
+    params: [
+      { name: 'days', type: 'number' as const, required: false, min: 1, max: 3650, default: 90 },
+      { name: 'platform', type: 'string' as const, required: false, default: 'all' },
+    ],
+    sql: `
+      SELECT
+        score_date,
+        device_count,
+        composite,
+        device_health,
+        performance,
+        network,
+        security,
+        software
+      FROM dex_scores_daily FINAL
+      WHERE platform = if({platform:String} = '', 'all', {platform:String})
+        AND score_date >= today() - {days:UInt32}
+      ORDER BY score_date ASC
     `,
   },
 

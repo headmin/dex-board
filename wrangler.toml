@@ -14,6 +14,12 @@ not_found_handling = "single-page-application"
 [observability]
 enabled = true
 
+# Daily score-history snapshot (src/worker/snapshot.ts) — writes one row per
+# (day, platform) into firehose dex_scores_daily using the same scoring CTE
+# the read queries use. 06:17 UTC = after the overnight telemetry settles.
+[triggers]
+crons = ["17 6 * * *"]
+
 # Worker name above can be overridden at deploy time via `wrangler deploy --name $WORKER_NAME`
 # (setup/deploy.sh reads WORKER_NAME from .env). Change for forks/second deployments.
 #

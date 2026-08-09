@@ -37,7 +37,7 @@
           <div class="hero-rail-row"><span>No measurable move</span><span class="hero-rail-count">{{ outcome.flat }}</span></div>
           <div class="hero-rail-row" :class="{ 'hero-rail-row--bad': outcome.worse }"><span>Score fell after</span><span class="hero-rail-count" :class="{ 'hero-down': outcome.worse }">{{ outcome.worse }}</span></div>
           <div v-if="outcome.tooRecent" class="hero-rail-row"><span>Too recent to judge</span><span class="hero-rail-count">{{ outcome.tooRecent }}</span></div>
-          <div v-if="outcome.outsideWindow" class="hero-rail-row hero-rail-row--dim"><span>Before the 30d score window</span><span class="hero-rail-count">{{ outcome.outsideWindow }}</span></div>
+          <div v-if="outcome.outsideWindow" class="hero-rail-row hero-rail-row--dim"><span>Before the score history begins</span><span class="hero-rail-count">{{ outcome.outsideWindow }}</span></div>
         </div>
         <span class="hero-rail-tiers mono" title="Evidence tiers: verified = commit linked by software name to a real patch rollout ≤7 days after it; policy = policy/profile/script commits judged on their category; temporal = date proximity only">
           {{ tierCounts.verified }} verified · {{ tierCounts.policy }} policy · {{ tierCounts.temporal }} temporal
@@ -425,7 +425,7 @@ function commitRegression(c) {
 
 // Outcome buckets across commits (each judged by its 7d-after window).
 // "Too recent" = the 7-day window hasn't closed; "outside window" = the
-// commit predates the 30-day score series — two different kinds of unknown.
+// commit predates the persisted score series — two different kinds of unknown.
 const outcome = computed(() => {
   let better = 0, flat = 0, worse = 0, tooRecent = 0, outsideWindow = 0
   for (const c of commits.value) {
