@@ -30,6 +30,10 @@ export function aggregatePatchRowsBySoftware(rows, limit = 10) {
         weightedLagSum: 0,
         min_lag: Number(r.min_lag),
         max_lag: Number(r.max_lag),
+        // Exact distinct count: union the per-day lag values when the query
+        // provides them; fall back to the max per-day count (a lower bound)
+        // for callers on the old row shape.
+        lagSet: new Set(),
         maxDistinct: Number(r.distinct_lags || 0),
       })
     }
@@ -40,6 +44,7 @@ export function aggregatePatchRowsBySoftware(rows, limit = 10) {
     agg.min_lag = Math.min(agg.min_lag, Number(r.min_lag))
     agg.max_lag = Math.max(agg.max_lag, Number(r.max_lag))
     agg.maxDistinct = Math.max(agg.maxDistinct, Number(r.distinct_lags || 0))
+    for (const v of (Array.isArray(r.lag_values) ? r.lag_values : [])) agg.lagSet.add(Number(v))
   }
   return Array.from(bySw.values())
     .map(a => ({
@@ -48,7 +53,7 @@ export function aggregatePatchRowsBySoftware(rows, limit = 10) {
       avg_lag: a.hosts > 0 ? +(a.weightedLagSum / a.hosts).toFixed(2) : 0,
       min_lag: +a.min_lag.toFixed(2),
       max_lag: +a.max_lag.toFixed(2),
-      distinct_lags: a.maxDistinct,
+      distinct_lags: a.lagSet.size || a.maxDistinct,
     }))
     .sort((x, y) => y.hosts - x.hosts)
     .slice(0, limit)

@@ -5,15 +5,17 @@
       <h4>Fleet Software Health</h4>
       <div class="patch-stats">
         <div class="patch-stat">
-          <span class="stat-value">{{ patchStats.pctCurrent || '—' }}%</span>
+          <span class="stat-value">{{ patchStats.pctCurrent != null ? `${patchStats.pctCurrent}%` : '—' }}</span>
           <span class="stat-label">fleet on current OS</span>
         </div>
+        <!-- Both lists are fetched with limit 8 — a capped list length must
+             never read as a fleet count, so show "8+" at the cap. -->
         <div class="patch-stat">
-          <span class="stat-value">{{ mostUsedApps.length }}</span>
+          <span class="stat-value">{{ mostUsedApps.length >= 8 ? '8+' : mostUsedApps.length }}</span>
           <span class="stat-label">crashing apps (7d)</span>
         </div>
         <div class="patch-stat">
-          <span class="stat-value">{{ leastUsedApps.length }}</span>
+          <span class="stat-value">{{ leastUsedApps.length >= 8 ? '8+' : leastUsedApps.length }}</span>
           <span class="stat-label">stale apps (90d+)</span>
         </div>
       </div>

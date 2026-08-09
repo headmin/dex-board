@@ -4,7 +4,7 @@
     <div class="lc-header">
       <div>
         <h1 class="lc-title">Lifecycle</h1>
-        <div class="lc-page-subtitle">Refresh candidates from endpoint telemetry — procurement and warranty live outside this view</div>
+        <div class="lc-page-subtitle">Refresh candidates from endpoint telemetry — macOS hosts only today; procurement and warranty live outside this view</div>
       </div>
       <div class="lc-actions">
         <BaseButton variant="secondary" @click="exportShortlist">Export shortlist</BaseButton>
@@ -241,10 +241,21 @@ function chipAgeYears(cpuClass) {
   return Math.max(0, new Date().getFullYear() - info.year)
 }
 
-// ─── Verdicts (trend-earned; unchanged logic) ─────────────────
+// ─── Verdicts (trend-earned) ──────────────────────────────────
 function hostVerdict(h) {
   const info = chipInfo(h.cpu_class)
-  return verdictFor(Number(h.refresh_score) >= 30, info?.gensBehind ?? null, {
+  const gensBehind = info?.gensBehind ?? null
+  // A battery at end of life is an unambiguous hardware fact — it must land
+  // in an action group on its own, without waiting for swap-day persistence
+  // (the quadrant logic gates on workload strain, which a dead battery never
+  // produces). Age picks WHICH action: old silicon with a dead battery is a
+  // refresh; current silicon needs a battery service, not a new machine.
+  if (h.battery_health_score === 'replace') {
+    return gensBehind != null && gensBehind >= 3
+      ? { key: 'refresh', label: 'Refresh candidate', tone: 'critical' }
+      : { key: 'battery', label: 'Battery service', tone: 'critical' }
+  }
+  return verdictFor(Number(h.refresh_score) >= 30, gensBehind, {
     weakDays: Number(h.days_pressured_30d) || 0,
     reportDays: Number(h.days_reporting_30d) || 0,
     severeDays: Number(h.days_severe_30d) || 0,
@@ -253,6 +264,7 @@ function hostVerdict(h) {
 
 const GROUP_META = [
   { key: 'refresh', label: 'Refresh candidates', tone: 'critical', hint: 'old silicon + sustained strain; replacement is the fix' },
+  { key: 'battery', label: 'Battery service', tone: 'critical', hint: 'battery at end of life on current silicon — a service call, not a replacement' },
   { key: 'investigate', label: 'Investigate', tone: 'fair', hint: 'current silicon under sustained strain; fix the workload or the spec, not the age' },
   { key: 'watch', label: 'Watch', tone: 'neutral', hint: 'signals present but not sustained; recheck next cycle' },
   { key: 'defer', label: 'Defer OK', tone: 'good', hint: 'aging silicon holding up fine — no action needed yet' },

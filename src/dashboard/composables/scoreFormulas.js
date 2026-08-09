@@ -127,7 +127,7 @@ const fmtPct = (n) => {
 }
 
 // ── category × signal table ──
-// Mirrors DEVICE_SCORES_CTE in alt-scores.ts (lines 43-115). Each row says:
+// Mirrors DEVICE_SCORES_CTE in src/worker/queries/core-scores.ts. Each row says:
 // "for this category, this signal contributes (weight) × score(value)."
 export const CATEGORY_RULES = {
   performance: {

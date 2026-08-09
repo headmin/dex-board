@@ -20,23 +20,35 @@
         </IconButton>
       </div>
 
-      <!-- Methodology info popup -->
+      <!-- Methodology info popup.
+           Every formula below restates core-scores.ts (the canonical scoring
+           SQL) — if this copy and the SQL disagree, the SQL wins and this
+           copy has a bug. Do not describe signals the score doesn't use. -->
       <div v-if="showMethodology" class="methodology-box">
         <div v-if="expandedCategory === 'software'" class="method-content">
-          <p><strong>Patch Velocity</strong> measures the gap between when a patch first appears on any fleet host and when each host applies it. The first host to update sets the "available" date — we then track how many days each other host trails behind. Faster patching = higher score.</p>
-          <p><strong>Software Usage</strong> compares install time vs. last-opened time to classify every app as daily active, weekly, monthly, or shelfware (90+ days unopened). System utilities (Activity Monitor, Disk Utility, Font Book, etc.) are excluded — they're always installed but rarely opened, so counting them as shelfware would be misleading. Only user-installed and productivity apps are scored.</p>
+          <p><strong>Software = crash frequency 40% + app adoption 35% + installed-app count 25%.</strong></p>
+          <p><strong>Crash frequency</strong> counts each host's crashes over 7 days: none scores 100, a single crash 85, sliding to 20 at ten or more. <strong>App adoption</strong> is the share of installed apps opened this week — 80%+ scores 100, under 40% scores 40; shelfware drags it down. <strong>App count</strong> scores lean environments higher: under 80 apps is 100, 160+ is 40.</p>
+          <p>The patch-velocity panel below is context for this category — patch speed is <em>not</em> part of the Software score today.</p>
         </div>
         <div v-else-if="expandedCategory === 'performance'" class="method-content">
-          <p>Scores are computed from real-time telemetry: memory pressure, disk utilization, top-5 process memory footprint, and days since last reboot. Each signal is weighted and scored against fleet-wide thresholds.</p>
+          <p><strong>Performance = swap pressure 35% + memory compression 30% + largest process 20% + uptime staleness 15%.</strong></p>
+          <p><strong>Swap pressure</strong> is the strongest "this machine feels slow" predictor: none scores 100, severe 30. <strong>Compression</strong> is scored gently — macOS compresses aggressively by design, so "high" scores 65, not a failure. <strong>Largest process</strong> looks at the single biggest resident process: under 2 GB scores 100, over 8 GB scores 30. <strong>Uptime</strong> penalizes stale sessions: 14+ days without a reboot scores 30. Thresholds are fixed constants, not fleet-relative.</p>
         </div>
         <div v-else-if="expandedCategory === 'network'" class="method-content">
-          <p>WiFi signal strength (RSSI), noise floor, and transmit rate are measured continuously. Scores reflect connection quality — not bandwidth tests — because poor WiFi is the #1 cause of perceived "slow computer" complaints.</p>
+          <p><strong>Network = Wi-Fi signal (RSSI) 40% + signal-to-noise 30% + transmit rate 20% + VPN confidence 10% — context only, excluded from the composite.</strong></p>
+          <p>Values come from each host's latest snapshot, not continuous measurement, and Wi-Fi is volatile — a host that was excellent ten minutes ago may be in a bad spot now. That volatility is why Network is shown for correlation but never scored into the composite.</p>
         </div>
         <div v-else-if="expandedCategory === 'security'" class="method-content">
-          <p>Binary compliance checks: is disk encrypted, firewall on, SIP enabled, Gatekeeper active? Plus OS currency — hosts behind on updates carry known vulnerabilities. Each signal is weighted by risk severity.</p>
+          <p><strong>Security = FileVault 25% + firewall 20% + Gatekeeper 15% + SIP 10% + OS currency 15% + OS health 15%</strong> for hosts reporting security posture. Posture checks are binary — enabled scores 100, disabled 0.</p>
+          <p><strong>OS currency</strong> scores the latest release 100, one behind 70, legacy 20. <strong>OS health</strong> folds uptime risk and crash history into healthy / acceptable / degraded. Hosts without a posture row are scored on the OS pair alone (50/50) so missing telemetry reads as average, never as a failure.</p>
         </div>
         <div v-else class="method-content">
-          <p>Hardware capability scoring: disk capacity for storage headroom and estimated hardware age. Older hardware with limited storage directly impacts employee productivity.</p>
+          <p><strong>Device Health = CPU generation 30% + RAM tier 25% + battery health 25% + swap pressure 20%.</strong></p>
+          <p><strong>CPU</strong> scores by silicon class: M5 100 down to M1 80, Intel i9 75 down to i5 60. <strong>RAM</strong>: 32 GB+ scores 100, 16 GB 80, 8 GB 50, under 8 GB 30. <strong>Battery</strong>: good 100, degraded 60, replace 20 (hosts without a battery read as good). <strong>Swap</strong> is shared with Performance — sustained swap on capable hardware still signals strain.</p>
+        </div>
+        <div class="method-footer">
+          <p><strong>Composite = 25% Device Health + 35% Performance + 20% Security + 20% Software.</strong> Grades: A ≥ 90 · B ≥ 75 · C ≥ 60 · D ≥ 40 · F below 40.</p>
+          <p><strong>Missing data never penalizes:</strong> a host absent from a signal's table scores that signal's neutral default, not zero. The signal bars above summarize each input across the fleet — they contextualize the category score rather than sum to it exactly.</p>
         </div>
       </div>
 
@@ -185,6 +197,20 @@ function signalBarColor(score) {
 }
 .method-content p:last-child { margin-bottom: 0; }
 .method-content strong { color: var(--fleet-black); }
+
+.method-footer {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--fleet-black-10);
+}
+.method-footer p {
+  font-size: var(--font-size-xxsmall);
+  color: var(--fleet-black-50);
+  line-height: 1.5;
+  margin: 0 0 5px 0;
+}
+.method-footer p:last-child { margin-bottom: 0; }
+.method-footer strong { color: var(--fleet-black-75); }
 
 /* ─── Signal grid: one cell per signal ────────── */
 .signal-grid {

@@ -61,7 +61,13 @@
       </div>
 
       <div v-if="loading" class="in-loading">Analyzing telemetry…</div>
-      <EmptyState v-else-if="!visibleFindings.length" small title="No findings pass their evidence thresholds in this window." />
+      <EmptyState
+        v-else-if="!visibleFindings.length"
+        small
+        :title="failedCount
+          ? 'Findings can\'t be evaluated — some telemetry queries failed.'
+          : 'No findings pass their evidence thresholds in this window.'"
+      />
 
       <div
         v-for="f in visibleFindings"
@@ -158,6 +164,7 @@ const { filterParams } = useFleetFilter()
 const fp = () => ({ ...filterParams.value })
 
 const error = ref(null)
+const failedCount = ref(0)
 const loading = ref(false)
 const expandedId = ref(null)
 const categoryFilter = ref(null)
@@ -174,15 +181,22 @@ async function load() {
   loading.value = true
   error.value = null
   try {
-    const [ag, tiers, top, cs, ws, up, lc] = await Promise.all([
-      query('firehose.insights.agent_overhead', { limit: 8, ...fp() }).catch(() => []),
-      query('firehose.insights.pressure_by_ram_tier', fp()).catch(() => []),
-      query('firehose.crashes.top_crashers', { limit: 5, ...fp() }).catch(() => []),
-      query('firehose.crashes.summary', fp()).catch(() => []),
-      query('firehose.adoption.waste_summary', fp()).catch(() => []),
-      query('firehose.health.uptime_distribution', fp()).catch(() => []),
-      query('firehose.lifecycle.refresh_candidates', { limit: 200, ...fp() }).catch(() => []),
+    // Catch to null (not []) so a failed query is distinguishable from an
+    // empty result — "no findings" must never be how an outage renders.
+    const results = await Promise.all([
+      query('firehose.insights.agent_overhead', { limit: 8, ...fp() }).catch(() => null),
+      query('firehose.insights.pressure_by_ram_tier', fp()).catch(() => null),
+      query('firehose.crashes.top_crashers', { limit: 5, ...fp() }).catch(() => null),
+      query('firehose.crashes.summary', fp()).catch(() => null),
+      query('firehose.adoption.waste_summary', fp()).catch(() => null),
+      query('firehose.health.uptime_distribution', fp()).catch(() => null),
+      query('firehose.lifecycle.refresh_candidates', { limit: 200, ...fp() }).catch(() => null),
     ])
+    const [ag, tiers, top, cs, ws, up, lc] = results
+    failedCount.value = results.filter(r => r === null).length
+    if (failedCount.value) {
+      error.value = `${failedCount.value} of ${results.length} data queries failed — findings below may be incomplete.`
+    }
     agents.value = ag || []
     ramTiers.value = tiers || []
     crashers.value = top || []

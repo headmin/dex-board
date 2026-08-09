@@ -37,6 +37,7 @@
       :delta-label="tileDeltaLabel"
       :distribution="distribution"
       :device-list="deviceList"
+      :coverage="coverage"
     />
 
     <!-- ─── Why — where the points are going ────────────────── -->
@@ -95,7 +96,9 @@
     <section class="grammar-section">
       <div class="grammar-head">
         <h2 class="grammar-title">Act — hosts needing attention</h2>
-        <router-link to="/hosts" class="grammar-link">See all {{ fleet.deviceCount || '' }} hosts →</router-link>
+        <!-- /hosts shows the whole enrolled fleet — labeling it with the
+             scored count would present macOS coverage as the full fleet. -->
+        <router-link to="/hosts" class="grammar-link">See all hosts →</router-link>
       </div>
       <HostScoresTable
         :device-list="deviceList"
@@ -196,6 +199,8 @@ const {
   deviceList,
   teamRows,
   missingSignals,
+  coverage,
+  fetchCoverage,
   fetchFleetScore,
   fetchCategoryScores,
   fetchTileDeltas,
@@ -260,6 +265,7 @@ function fetchAll() {
   fetchDrillDowns()
   fetchTeamBreakdown()
   fetchReadiness()
+  fetchCoverage()
   updatedAt.value = new Date()
 }
 

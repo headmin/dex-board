@@ -413,11 +413,11 @@ const wifiTs = ref([])
 const wifiDevices = ref([])
 const wifiCols = [
   { key: 'hostname', label: 'Hostname' },
-  { key: 'rssi', label: 'RSSI' },
-  { key: 'snr', label: 'SNR' },
+  { key: 'rssi', label: 'RSSI', type: 'number' },
+  { key: 'snr', label: 'SNR', type: 'number' },
   { key: 'signal_quality', label: 'Quality' },
-  { key: 'transmit_rate', label: 'Tx Rate' },
-  { key: 'channel', label: 'Channel' },
+  { key: 'transmit_rate', label: 'Tx Rate', type: 'number' },
+  { key: 'channel', label: 'Channel', type: 'number' },
   { key: 'security_type', label: 'Security' },
 ]
 
@@ -428,11 +428,11 @@ const peakApps = ref([])
 const allApps = ref([])
 const appCols = [
   { key: 'app_name', label: 'App' },
-  { key: 'avg_memory_mb', label: 'Avg MB' },
-  { key: 'max_memory_mb', label: 'Peak MB' },
-  { key: 'avg_threads', label: 'Threads' },
-  { key: 'device_count', label: 'Hosts' },
-  { key: 'sample_count', label: 'Samples' },
+  { key: 'avg_memory_mb', label: 'Avg MB', type: 'number' },
+  { key: 'max_memory_mb', label: 'Peak MB', type: 'number' },
+  { key: 'avg_threads', label: 'Threads', type: 'number' },
+  { key: 'device_count', label: 'Hosts', type: 'number' },
+  { key: 'sample_count', label: 'Samples', type: 'number' },
 ]
 
 // Background daemons/services — running_apps minus what adoption_gap covers
@@ -492,10 +492,10 @@ const hwInventory = ref([])
 const hwCols = [
   { key: 'hostname', label: 'Hostname' },
   { key: 'cpu_brand', label: 'CPU' },
-  { key: 'cpu_logical_cores', label: 'Cores' },
+  { key: 'cpu_logical_cores', label: 'Cores', type: 'number' },
   { key: 'hardware_model', label: 'Model' },
   { key: 'hardware_serial', label: 'Serial' },
-  { key: 'memory_gb', label: 'RAM (GB)' },
+  { key: 'memory_gb', label: 'RAM (GB)', type: 'number' },
 ]
 
 // ── Fleetd data ─────────────────────────────────────
@@ -526,16 +526,16 @@ const healthDeviceCols = [
   { key: 'ram_tier', label: 'RAM' },
   { key: 'swap_pressure', label: 'Swap' },
   { key: 'battery_health_score', label: 'Battery' },
-  { key: 'battery_percent', label: 'Batt %' },
+  { key: 'battery_percent', label: 'Batt %', type: 'number' },
 ]
 const osDeviceCols = [
   { key: 'hostname', label: 'Hostname' },
   { key: 'os_version', label: 'Version' },
   { key: 'os_currency', label: 'Currency' },
-  { key: 'uptime_days', label: 'Uptime (d)' },
+  { key: 'uptime_days', label: 'Uptime (d)', type: 'number' },
   { key: 'uptime_risk', label: 'Risk' },
   { key: 'dex_os_health', label: 'Health' },
-  { key: 'crashes_30d', label: 'Crashes' },
+  { key: 'crashes_30d', label: 'Crashes', type: 'number' },
 ]
 
 // ── VPN data ───────────────────────────────────────
@@ -544,7 +544,7 @@ const vpnConfDist = ref([])
 const vpnDevices = ref([])
 const vpnCols = [
   { key: 'hostname', label: 'Hostname' },
-  { key: 'vpn_tunnels_active', label: 'Tunnels' },
+  { key: 'vpn_tunnels_active', label: 'Tunnels', type: 'number' },
   { key: 'network_confidence', label: 'Confidence' },
   { key: 'primary_interface', label: 'Interface' },
 ]
@@ -556,10 +556,10 @@ const topCrashers = ref([])
 const crashCols = [
   { key: 'crashed_identifier', label: 'Identifier' },
   { key: 'app_name', label: 'App' },
-  { key: 'total_crashes_7d', label: 'Crashes (7d)' },
-  { key: 'affected_devices', label: 'Hosts' },
+  { key: 'total_crashes_7d', label: 'Crashes (7d)', type: 'number' },
+  { key: 'affected_devices', label: 'Hosts', type: 'number' },
   { key: 'worst_severity', label: 'Severity' },
-  { key: 'last_crash', label: 'Last crash' },
+  { key: 'last_crash', label: 'Last crash', type: 'datetime' },
 ]
 
 // ── Adoption data ──────────────────────────────────
@@ -569,8 +569,8 @@ const staleApps = ref([])
 const adoptionCols = [
   { key: 'app_name', label: 'App' },
   { key: 'bundle_identifier', label: 'Bundle ID' },
-  { key: 'avg_days_stale', label: 'Avg days stale' },
-  { key: 'installed_on', label: 'Installed on' },
+  { key: 'avg_days_stale', label: 'Avg days stale', type: 'number' },
+  { key: 'installed_on', label: 'Installed on', type: 'number' },
   { key: 'usage_tier', label: 'Tier' },
 ]
 
@@ -620,25 +620,22 @@ async function fetchTab(tab) {
     }
     else if (tab === 'hardware') {
       loading.value.hw = true
-      const [tiers, models, inv] = await Promise.all([
+      const [summary, tiers, models, inv] = await Promise.all([
+        query('firehose.hardware.summary', { ...fp() }),
         query('firehose.hardware.memory_tiers', { ...fp() }),
         query('firehose.hardware.model_distribution', { ...fp() }),
         query('firehose.hardware.inventory', { limit: 200, ...fp() }),
       ])
       ramTiers.value = tiers
       hwInventory.value = withDisplayHost(inv)
-      hwDeviceCount.value = inv.length
-      hwAvgRam.value = inv.length ? Math.round(inv.reduce((s, d) => s + (Number(d.memory_gb) || 0), 0) / inv.length) : 0
-      hwAvgCores.value = inv.length ? Math.round(inv.reduce((s, d) => s + (Number(d.cpu_logical_cores) || 0), 0) / inv.length) : 0
-
-      // Aggregate model distribution from raw rows
-      const mc = {}
-      for (const m of models) {
-        const key = m.hardware_model || 'Unknown'
-        mc[key] = (mc[key] || 0) + 1
-      }
-      modelDist.value = Object.entries(mc).map(([k, v]) => ({ hardware_model: k, device_count: v })).sort((a, b) => b.device_count - a.device_count)
-      hwModelCount.value = modelDist.value.length
+      // Tiles come from the server-side aggregate — the inventory list is
+      // capped at 200 rows and must never be the basis for fleet math.
+      const hs = summary[0] || {}
+      hwDeviceCount.value = Number(hs.device_count) || 0
+      hwAvgRam.value = Number(hs.avg_memory_gb) || 0
+      hwAvgCores.value = Number(hs.avg_logical_cores) || 0
+      modelDist.value = models.map(m => ({ ...m, hardware_model: m.hardware_model || 'Unknown' }))
+      hwModelCount.value = Number(hs.model_count) || 0
 
       loading.value.hw = false
     }
@@ -652,7 +649,16 @@ async function fetchTab(tab) {
       ])
       fleetdSummary.value = s[0] || {}
       uptimeDist.value = up
-      versionDist.value = ver
+      // Query returns one row per (orbit, osquery, desktop) version triple —
+      // collapse to orbit_version for the bar chart so names stay unique.
+      const vc = {}
+      for (const v of ver) {
+        const key = v.orbit_version || 'unknown'
+        vc[key] = (vc[key] || 0) + Number(v.device_count || 0)
+      }
+      versionDist.value = Object.entries(vc)
+        .map(([orbit_version, device_count]) => ({ orbit_version, device_count }))
+        .sort((a, b) => b.device_count - a.device_count)
       fleetdErrors.value = withDisplayHost(err)
       loading.value.fleetd = false
     }

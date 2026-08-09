@@ -31,7 +31,7 @@
       >
         <div class="cohort-row-label">
           <span class="cohort-name">{{ r.label }}</span>
-          <span class="cohort-hosts">{{ r.count }} host{{ r.count === 1 ? '' : 's' }}</span>
+          <span class="cohort-hosts">{{ r.noCoverage ? 'no scored hosts' : `${r.count} host${r.count === 1 ? '' : 's'}` }}</span>
         </div>
         <div class="cohort-meter">
           <div class="cohort-meter-fill" :style="{ width: (r.score || 0) + '%', background: gradeColor(r.grade) }"></div>
@@ -82,17 +82,19 @@ function teamLabel(id) {
 
 const rows = computed(() => {
   if (dim.value === 'team') {
+    // Unscored teams stay visible as no-coverage rows — dropping them would
+    // present a macOS-only view as if it covered every fleet.
     return props.teamRows
-      .filter(t => !t.unscorable)
       .map(t => ({
         name: t.team_id,
         label: teamLabel(t.team_id),
         count: t.hosts,
         score: t.avg_composite,
-        grade: scoreToGrade(t.avg_composite),
+        grade: scoreToGrade(t.avg_composite) || '—',
+        noCoverage: !!t.unscorable,
         onClick: () => setTeamFilter(t.team_id),
       }))
-      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+      .sort((a, b) => (b.score ?? -1) - (a.score ?? -1))
   }
   const list = props.dimensionData?.[dim.value] || []
   return list

@@ -127,7 +127,7 @@ const visibleData = computed(() =>
 )
 
 const formatCell = (value, col) => {
-  if (value === null || value === undefined) return '-'
+  if (value === null || value === undefined) return '—'
 
   if (col.type === 'datetime') {
     const d = dayjs(value)

@@ -374,6 +374,7 @@ import DrillPanel from '../base/DrillPanel.vue'
 import EmptyState from '../base/EmptyState.vue'
 import { palette } from '../../composables/uiPalette'
 import { displayHost } from '../../composables/displayName'
+import { aggregatePatchRowsBySoftware } from '../../composables/patchAggregation'
 import { useAppConfig } from '../../composables/useAppConfig'
 
 const SIGNAL_ORDER = ['excellent', 'good', 'fair', 'weak', 'poor', 'very_weak', 'unknown']
@@ -659,41 +660,9 @@ async function fetchTopPatchMovers() {
     const rows = await query('firehose.scores.timeline_patches_summary', {
       startDate: fmt(start), endDate: fmt(end), minHosts: 1,
     })
-    // Collapse per-day rows into per-software rows for the table.
-    const bySw = new Map()
-    for (const r of (rows || [])) {
-      const k = r.software_name
-      if (!bySw.has(k)) {
-        bySw.set(k, {
-          software_name: k,
-          hosts: 0,
-          weightedLagSum: 0,
-          min_lag: Number(r.min_lag),
-          max_lag: Number(r.max_lag),
-          distinctSet: new Set(),
-        })
-      }
-      const agg = bySw.get(k)
-      const hosts = Number(r.hosts || 0)
-      agg.hosts += hosts
-      agg.weightedLagSum += hosts * Number(r.avg_lag || 0)
-      agg.min_lag = Math.min(agg.min_lag, Number(r.min_lag))
-      agg.max_lag = Math.max(agg.max_lag, Number(r.max_lag))
-      agg.distinctSet.add(Number(r.distinct_lags || 0))
-    }
-    topPatchMovers.value = Array.from(bySw.values())
-      .map(a => ({
-        software_name: a.software_name,
-        hosts: a.hosts,
-        avg_lag: a.hosts > 0 ? +(a.weightedLagSum / a.hosts).toFixed(2) : 0,
-        min_lag: +a.min_lag.toFixed(2),
-        max_lag: +a.max_lag.toFixed(2),
-        // For collapsed rows, use the max single-day distinct count as a proxy —
-        // a true distinct count across days would need a server-side rewrite.
-        distinct_lags: Math.max(...a.distinctSet, 0) || 0,
-      }))
-      .sort((a, b) => b.hosts - a.hosts)
-      .slice(0, 12)
+    // Collapse per-day rows into per-software rows for the table — shared
+    // helper unions the query's lag_values for an exact distinct count.
+    topPatchMovers.value = aggregatePatchRowsBySoftware(rows, 12)
   } catch (e) {
     topPatchMovers.value = []
   }

@@ -47,6 +47,7 @@ export function useExperienceScore({ queryParams, snapshotParams, timeRangeHours
   const movers = ref([])
   const dimensionData = ref({ os: [], model: [], ram: [], team: [] })
   const missingSignals = ref([])
+  const coverage = ref({})
 
   // Device list state
   const deviceList = ref([])
@@ -123,8 +124,6 @@ export function useExperienceScore({ queryParams, snapshotParams, timeRangeHours
           return (typeof s === 'number') ? s : null
         })
         .reverse()
-
-      console.log(`[ExperienceScore] sparkline: ${sparkline.filter(v => v != null).length}/${trendDays} days populated, range ${Math.min(...sparkline.filter(v => v != null))}–${Math.max(...sparkline.filter(v => v != null))}`)
 
       fleet.value = {
         grade: scoreToGrade(score),
@@ -260,30 +259,39 @@ export function useExperienceScore({ queryParams, snapshotParams, timeRangeHours
       return { ...c, curr: currVal, prev: prevVal, delta, isDriver: false }
     })
 
-    // Mark the category with the largest absolute delta as the primary driver
-    let maxDelta = 0
+    // Primary driver = largest weighted contribution to the composite.
+    // Network has no composite weight, so it can never be the driver —
+    // badging it as one would attribute a change to a category that
+    // doesn't feed the number that changed.
+    let maxContribution = 0
     let driverIdx = -1
     cats.forEach((c, i) => {
-      if (c.delta !== null && Math.abs(c.delta) > maxDelta) {
-        maxDelta = Math.abs(c.delta)
+      if (c.weight === null || c.delta === null) return
+      const contribution = Math.abs(c.delta) * c.weight / 100
+      if (contribution > maxContribution) {
+        maxContribution = contribution
         driverIdx = i
       }
     })
     if (driverIdx >= 0) cats[driverIdx].isDriver = true
 
-    // Generate insight text
+    // Generate insight text — every clause below is checked against the
+    // category rows; no narrative that the data doesn't establish.
     let insight = ''
     const driver = driverIdx >= 0 ? cats[driverIdx] : null
     if (driver && driver.delta !== null) {
       const dir = driver.delta > 0 ? 'improved' : 'declined'
-      const weightNote = driver.weight === null
-        ? 'informational — not in the composite'
-        : `${driver.weight}% weight`
-      insight = `${driver.label} ${dir} by ${Math.abs(driver.delta).toFixed(1)} points (${weightNote}), `
+      insight = `${driver.label} ${dir} by ${Math.abs(driver.delta).toFixed(1)} points (${driver.weight}% weight), `
       if (Math.abs(driver.delta) > 5) {
         insight += `which was the primary driver of this device's score change.`
       } else {
-        insight += `contributing to a small overall shift. Multiple categories moved in the same direction.`
+        const sameDir = cats.filter(c =>
+          c.weight !== null && c.delta !== null && c.delta !== 0 &&
+          (c.delta > 0) === (driver.delta > 0)
+        ).length
+        insight += sameDir >= 2
+          ? `with ${sameDir} scored categories moving in the same direction.`
+          : `contributing to a small overall shift.`
       }
     }
 
@@ -359,6 +367,18 @@ export function useExperienceScore({ queryParams, snapshotParams, timeRangeHours
     }
   }
 
+  // Coverage disclosure: scored hosts vs all hosts seen in any telemetry
+  // table (7d, fleet-wide). The gap is the unscored population — today the
+  // non-macOS hosts, which never land in device_health.
+  async function fetchCoverage() {
+    try {
+      const rows = await query('firehose.scores.coverage')
+      coverage.value = rows?.[0] || {}
+    } catch (e) {
+      console.error('Coverage check failed:', e)
+    }
+  }
+
   return {
     loading,
     fleet,
@@ -370,6 +390,8 @@ export function useExperienceScore({ queryParams, snapshotParams, timeRangeHours
     deviceList,
     teamRows,
     missingSignals,
+    coverage,
+    fetchCoverage,
     fetchFleetScore,
     fetchCategoryScores,
     fetchTileDeltas,

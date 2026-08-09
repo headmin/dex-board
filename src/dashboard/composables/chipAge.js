@@ -51,10 +51,10 @@ export function verdictFor(weak, gensBehind, persistence = null) {
   // reporting days, with at least 5 days of history.
   //
   // Weakness is score-based OR pressure-based: sustained SEVERE swap counts
-  // as weak on its own. The refresh score folds the pressure points into the
-  // same number (a healthy-battery modern machine maxes out at 25 < the 30
-  // "weak" threshold), so without this a new-but-drowning host could never
-  // reach the "Investigate" verdict that exists exactly for it.
+  // as weak on its own, so a new-but-drowning host can still reach the
+  // "Investigate" verdict that exists exactly for it. (Battery 'replace' is
+  // handled before this function is called — see Lifecycle hostVerdict — so
+  // the quadrant here only judges age × workload strain.)
   if (persistence) {
     const { weakDays = 0, reportDays = 0, severeDays = 0 } = persistence
     const enough = reportDays >= 5
