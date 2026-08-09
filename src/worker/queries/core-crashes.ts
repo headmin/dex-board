@@ -26,6 +26,9 @@ export const firehoseCrashQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM crash_summary GROUP BY host_id
       )
+      -- Freshness gate: crash_count_7d only means "this week" if the
+      -- snapshot itself is from this week.
+      AND timestamp > now() - INTERVAL 7 DAY
       AND host_id IN (SELECT host_id FROM filtered_hosts)
     `,
   },
@@ -36,8 +39,10 @@ export const firehoseCrashQueries: QueryConfig[] = [
     description: 'Top crashing app identifiers across fleet',
     params: [
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 50, default: 25 },
+      ...FILTER_PARAMS,
     ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         crashed_identifier,
         any(app_name) AS app_name,
@@ -49,6 +54,8 @@ export const firehoseCrashQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM crash_summary GROUP BY host_id
       )
+      AND timestamp > now() - INTERVAL 7 DAY
+      AND host_id IN (SELECT host_id FROM filtered_hosts)
       GROUP BY crashed_identifier
       ORDER BY total_crashes_7d DESC
       {{LIMIT}}
@@ -108,8 +115,9 @@ export const firehoseCrashQueries: QueryConfig[] = [
     domain: 'software',
     client: 'core',
     description: 'Crash severity distribution across fleet',
-    params: [],
+    params: [...FILTER_PARAMS],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         crash_severity,
         count() AS crash_count,
@@ -118,6 +126,8 @@ export const firehoseCrashQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM crash_summary GROUP BY host_id
       )
+      AND timestamp > now() - INTERVAL 7 DAY
+      AND host_id IN (SELECT host_id FROM filtered_hosts)
       GROUP BY crash_severity
       ORDER BY crash_count DESC
     `,

@@ -4,8 +4,33 @@
  * Source: alt ClickHouse → hardware_inventory (materialized from osquery result logs)
  */
 import type { QueryConfig } from '../types'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
 export const firehoseHardwareQueries: QueryConfig[] = [
+  {
+    name: 'firehose.hardware.summary',
+    domain: 'devices',
+    client: 'core',
+    description: 'Fleet-wide hardware aggregates: host count, avg RAM, avg cores, model count',
+    params: [...FILTER_PARAMS],
+    sql: `
+      WITH ${FILTERED_HOSTS_CTE}
+      SELECT
+        count() AS device_count,
+        round(avg(memory_gb)) AS avg_memory_gb,
+        round(avg(cpu_logical_cores)) AS avg_logical_cores,
+        countDistinct(hardware_model) AS model_count
+      FROM (
+        SELECT host_id,
+          argMax(memory_gb, timestamp) AS memory_gb,
+          argMax(cpu_logical_cores, timestamp) AS cpu_logical_cores,
+          argMax(hardware_model, timestamp) AS hardware_model
+        FROM hardware_inventory
+        WHERE host_id IN (SELECT host_id FROM filtered_hosts)
+        GROUP BY host_id
+      )
+    `,
+  },
   {
     name: 'firehose.hardware.inventory',
     domain: 'devices',
@@ -40,11 +65,17 @@ export const firehoseHardwareQueries: QueryConfig[] = [
     params: [],
     sql: `
       SELECT
-        argMax(hardware_model, timestamp) AS hardware_model,
-        argMax(cpu_brand, timestamp) AS cpu_brand,
+        hardware_model,
+        any(cpu_brand) AS cpu_brand,
         count() AS device_count
-      FROM hardware_inventory
-      GROUP BY host_id
+      FROM (
+        SELECT host_id,
+          argMax(hardware_model, timestamp) AS hardware_model,
+          argMax(cpu_brand, timestamp) AS cpu_brand
+        FROM hardware_inventory
+        GROUP BY host_id
+      )
+      GROUP BY hardware_model
       ORDER BY device_count DESC
     `,
   },

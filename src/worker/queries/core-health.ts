@@ -322,16 +322,21 @@ export const firehoseHealthQueries: QueryConfig[] = [
     name: 'firehose.health.uptime_distribution',
     domain: 'health',
     client: 'core',
-    description: 'Device count by uptime risk tier',
+    description: 'Device count by uptime risk tier (hosts reporting within 7 days)',
     params: [],
     sql: `
       SELECT
         uptime_risk,
         count() AS device_count
       FROM (
-        SELECT host_id, argMax(uptime_risk, timestamp) AS uptime_risk
+        SELECT host_id,
+          argMax(uptime_risk, timestamp) AS uptime_risk,
+          max(timestamp) AS last_seen
         FROM os_health GROUP BY host_id
       )
+      -- Freshness gate: a host whose last snapshot is weeks old must not be
+      -- claimed as "currently un-rebooted" — stale rows say nothing about now.
+      WHERE last_seen > now() - INTERVAL 7 DAY
       GROUP BY uptime_risk
       ORDER BY device_count DESC
     `,

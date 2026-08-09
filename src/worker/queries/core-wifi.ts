@@ -21,6 +21,9 @@ export const firehoseWifiQueries: QueryConfig[] = [
         round(avg(snr), 1) AS avg_snr,
         round(avg(transmit_rate), 0) AS avg_transmit_rate
       FROM wifi_signal
+      -- rssi = 0 is the "no reading" sentinel (real RSSI is negative dBm);
+      -- averaging it in drags avg_rssi toward 0 and inflates the fleet stats
+      WHERE rssi < 0
     `,
   },
   {
@@ -44,7 +47,10 @@ export const firehoseWifiQueries: QueryConfig[] = [
         argMax(channel, timestamp) AS channel,
         argMax(channel_width, timestamp) AS channel_width,
         max(timestamp) AS last_seen
-      FROM wifi_signal
+      -- Sentinel guard in the subquery (the outer alias shadows the column):
+      -- only real readings — hosts whose latest row is the rssi = 0
+      -- "no reading" sentinel fall back to their last real reading.
+      FROM (SELECT * FROM wifi_signal WHERE rssi < 0)
       GROUP BY host_id
       ORDER BY rssi ASC
       {{LIMIT}}
@@ -62,6 +68,7 @@ export const firehoseWifiQueries: QueryConfig[] = [
         count() AS cnt,
         round(count() * 100.0 / sum(count()) OVER (), 1) AS pct
       FROM wifi_signal
+      WHERE rssi < 0
       GROUP BY signal_quality
       ORDER BY
         CASE signal_quality
@@ -87,6 +94,7 @@ export const firehoseWifiQueries: QueryConfig[] = [
         round(avg(snr), 1) AS avg_snr,
         count() AS samples
       FROM wifi_signal
+      WHERE rssi < 0
       GROUP BY hour
       ORDER BY hour
     `,

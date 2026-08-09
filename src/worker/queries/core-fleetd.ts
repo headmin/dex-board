@@ -41,12 +41,20 @@ export const firehoseFleetdQueries: QueryConfig[] = [
     params: [],
     sql: `
       SELECT
-        argMax(version, timestamp) AS orbit_version,
-        argMax(osquery_version, timestamp) AS osquery_version,
-        argMax(desktop_version, timestamp) AS desktop_version,
+        orbit_version,
+        osquery_version,
+        desktop_version,
         count() AS device_count
-      FROM fleetd_info
-      GROUP BY host_id
+      FROM (
+        SELECT host_id,
+          argMax(version, timestamp) AS orbit_version,
+          argMax(osquery_version, timestamp) AS osquery_version,
+          argMax(desktop_version, timestamp) AS desktop_version
+        FROM fleetd_info
+        GROUP BY host_id
+      )
+      GROUP BY orbit_version, osquery_version, desktop_version
+      ORDER BY device_count DESC
     `,
   },
   {

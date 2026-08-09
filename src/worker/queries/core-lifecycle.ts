@@ -6,10 +6,10 @@
  * "Refresh score" (0-100, higher = more urgent) combines endpoint telemetry
  * that signals a device is holding its user back and is a replace/upgrade
  * candidate:
- *   battery_health_score  replace +40 · degraded +15   (battery at end of life)
+ *   battery_health_score  replace +40 · degraded +15    (battery at end of life)
  *   cpu_class             intel*  +25 · apple_m1 +10    (aging silicon)
- *   ram_tier              8gb     +20 · 16gb     +5      (under-spec memory)
- *   swap_pressure         severe  +20 · elevated +10     (sustained memory strain)
+ *   ram_tier              under_8gb +25 · 8gb +20 · 16gb +5  (under-spec memory)
+ *   swap_pressure         severe  +20 · elevated +10    (sustained memory strain)
  *
  * All "act" (procurement, warranty, cost) lives outside osquery — this is the
  * telemetry-driven shortlist, not a purchase order.
@@ -21,10 +21,12 @@ import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 const REFRESH_SCORE = `
   ( multiIf(battery_health_score = 'replace', 40, battery_health_score = 'degraded', 15, 0)
   + multiIf(cpu_class LIKE 'intel%', 25, cpu_class = 'apple_m1', 10, 0)
-  + multiIf(lower(ram_tier) = '8gb', 20, lower(ram_tier) = '16gb', 5, 0)
+  + multiIf(lower(ram_tier) = 'under_8gb', 25, lower(ram_tier) = '8gb', 20, lower(ram_tier) = '16gb', 5, 0)
   + multiIf(swap_pressure = 'severe', 20, swap_pressure = 'elevated', 10, 0) )`
 
-// Latest device_health snapshot per (filtered) host.
+// Latest device_health snapshot per (filtered) host. Gated to hosts seen in
+// the last 14 days — a machine that stopped reporting weeks ago is retired
+// or offline, not a refresh candidate, and must not occupy the shortlist.
 const LATEST_HEALTH = `
   SELECT host_id,
     argMax(hostname, timestamp)             AS hostname,
@@ -39,7 +41,8 @@ const LATEST_HEALTH = `
     argMax(swap_pressure, timestamp)        AS swap_pressure
   FROM device_health
   WHERE host_id IN (SELECT host_id FROM filtered_hosts)
-  GROUP BY host_id`
+  GROUP BY host_id
+  HAVING max(timestamp) > now() - INTERVAL 14 DAY`
 
 export const firehoseLifecycleQueries: QueryConfig[] = [
   {
@@ -114,7 +117,7 @@ export const firehoseLifecycleQueries: QueryConfig[] = [
         countIf(refresh_score >= 40)                                  AS high_priority,
         countIf(refresh_score >= 20 AND refresh_score < 40)           AS watch,
         countIf(battery_health_score = 'replace')                     AS battery_replace,
-        countIf(lower(ram_tier) = '8gb')                              AS low_ram,
+        countIf(lower(ram_tier) IN ('under_8gb', '8gb'))              AS low_ram,
         countIf(cpu_class LIKE 'intel%')                              AS aging_cpu,
         countIf(swap_pressure = 'severe')                             AS swap_strain
       FROM scored
