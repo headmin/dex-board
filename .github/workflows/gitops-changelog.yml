@@ -29,7 +29,7 @@ jobs:
           cd fleet
           git log \
             --format='%x00%H%x01%h%x01%an%x01%ae%x01%s%x01%aI' \
-            --name-only \
+            --numstat \
             -- it-and-security/ \
           | python3 -c "
           import sys, json
@@ -51,7 +51,23 @@ jobs:
               if len(parts) != 6:
                   continue
 
-              files = [l.strip() for l in lines[1:] if l.strip()]
+              # --numstat lines: '<insertions>\t<deletions>\t<path>'
+              # ('-' for binary files). Keeps the files list identical to the
+              # old --name-only output while adding size-of-change data.
+              files = []
+              insertions = 0
+              deletions = 0
+              for l in lines[1:]:
+                  l = l.strip()
+                  if not l:
+                      continue
+                  bits = l.split('\t')
+                  if len(bits) == 3:
+                      files.append(bits[2])
+                      if bits[0].isdigit(): insertions += int(bits[0])
+                      if bits[1].isdigit(): deletions += int(bits[1])
+                  else:
+                      files.append(l)
               entries.append({
                   'sha': parts[0],
                   'short_sha': parts[1],
@@ -59,6 +75,8 @@ jobs:
                   'email': parts[3],
                   'message': parts[4],
                   'timestamp': parts[5],
+                  'insertions': insertions,
+                  'deletions': deletions,
                   'files': files
               })
 
@@ -155,6 +173,8 @@ jobs:
                       'change_type': change_type,
                       'scope': scope,
                       'files_changed': len(entry['files']),
+                      'insertions': entry.get('insertions', 0),
+                      'deletions': entry.get('deletions', 0),
                       'files': entry['files'],
                       'categories': categories
                   }

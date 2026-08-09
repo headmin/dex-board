@@ -230,6 +230,7 @@
               <div class="commit-meta">
                 <span class="commit-author">{{ c.author }}</span>
                 <span class="commit-files-count">{{ c.files.length }} file{{ c.files.length > 1 ? 's' : '' }}</span>
+                <span v-if="c.insertions != null" class="commit-diffstat"><span class="diff-add">+{{ c.insertions }}</span> <span class="diff-del">−{{ c.deletions }}</span></span>
                 <span v-for="tag in fileTags(c.files)" :key="tag" class="file-tag" :class="tag">{{ tag }}</span>
                 <span v-if="c.scope && c.scope !== 'global'" class="file-tag scope" :title="`Files in this commit target ${c.scope}`">{{ c.scope }}</span>
                 <template v-if="commitTier(c)">
@@ -1196,6 +1197,9 @@ onMounted(async () => {
 .commit-meta { display: flex; align-items: center; gap: 10px; }
 .commit-author { font-size: var(--font-size-xs); color: var(--fleet-black-50); }
 .commit-files-count { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); }
+.commit-diffstat { font-family: var(--font-mono); font-size: var(--font-size-xs); }
+.diff-add { color: var(--status-good-text); }
+.diff-del { color: var(--status-critical-text); }
 .file-tag { display: inline-block; padding: 1px 6px; border-radius: var(--radius-full); font-size: 10px; font-weight: 600; text-transform: capitalize; letter-spacing: 0.5px; }
 .file-tag.policies { background: var(--fleet-accent-blue-light); color: var(--fleet-accent-blue); }
 .file-tag.scripts { background: var(--status-good-bg); color: var(--status-good-text); }
