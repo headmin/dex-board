@@ -169,7 +169,11 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
     params: [
       ...FILTER_PARAMS,
       { name: 'minInstalls', type: 'number' as const, required: false, min: 1, max: 1000, default: 3 },
-      { name: 'limit', type: 'number' as const, required: false, min: 1, max: 100, default: 25 },
+      { name: 'limit', type: 'number' as const, required: false, min: 1, max: 500, default: 25 },
+      // Scope to one App Store category (the category strip's drill).
+      // 'uncategorized' matches the empty-string category, mirroring the
+      // label waste_by_category synthesizes for it.
+      { name: 'category', type: 'string' as const, required: false, default: '' },
     ],
     sql: `
       WITH ${FILTERED_HOSTS_CTE},
@@ -180,6 +184,11 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
           -- Exclude free Apple built-ins: no license cost, not IT-deployed, so
           -- they're not "license waste" — just noise in a cost-focused view.
           AND bundle_identifier NOT LIKE 'com.apple.%'
+          AND (
+            {category:String} = ''
+            OR category = {category:String}
+            OR ({category:String} = 'uncategorized' AND category = '')
+          )
           AND (host_id, timestamp) IN (
             SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id
           )
@@ -209,6 +218,9 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
     params: [
       ...FILTER_PARAMS,
       { name: 'appName', type: 'string' as const, required: true },
+      // Bounded for very large fleets — the UI pages the render and
+      // discloses when the fetch cap is below the row's unused count.
+      { name: 'limit', type: 'number' as const, required: false, min: 1, max: 5000, default: 1000 },
     ],
     sql: `
       WITH ${FILTERED_HOSTS_CTE}
@@ -226,6 +238,7 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
           SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id
         )
       ORDER BY days_since_opened DESC
+      {{LIMIT}}
     `,
   },
   {

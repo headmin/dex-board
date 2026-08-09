@@ -46,7 +46,17 @@
         <span class="grammar-hint">Idle seats by App Store category — computed over every app, not the list below</span>
       </div>
       <div class="cat-strip">
-        <div v-for="c in categoryRows" :key="c.category" class="cat-row" :title="`${c.apps} apps · ${c.unused_seats} of ${c.seats} seats idle`">
+        <div
+          v-for="c in categoryRows"
+          :key="c.category"
+          class="cat-row cat-row--clickable"
+          :class="{ 'cat-row--active': categoryFilter === c.category }"
+          role="button"
+          tabindex="0"
+          :title="`${c.apps} apps · ${c.unused_seats} of ${c.seats} seats idle — click to filter the list below`"
+          @click="toggleCategory(c.category)"
+          @keydown.enter="toggleCategory(c.category)"
+        >
           <span class="cat-label">{{ prettyCategory(c.category) }}</span>
           <MeterBar class="cat-bar" height="var(--bar-height)" :value="c.barPct" :color="shareColor(c.pct_unused)" />
           <span class="cat-count">{{ c.unused_seats }} idle · {{ c.pct_unused }}% of {{ c.seats }}</span>
@@ -57,8 +67,11 @@
     <!-- Reclaim list, clustered by the decision each app calls for -->
     <section class="section">
       <div class="grammar-head">
-        <h2 class="grammar-title">Act — the reclaim list</h2>
-        <span class="grammar-hint">Grouped by action · apps with 3+ installs · unused = opened 90d+ ago or never</span>
+        <h2 class="grammar-title">Act — the reclaim list<template v-if="categoryFilter"> · {{ prettyCategory(categoryFilter) }}</template></h2>
+        <span class="grammar-hint">
+          <template v-if="categoryFilter">every app in this category · <button type="button" class="sw-clear-cat" @click="toggleCategory(categoryFilter)">show all categories ✕</button></template>
+          <template v-else>Grouped by action · apps with 3+ installs · unused = opened 90d+ ago or never</template>
+        </span>
       </div>
 
       <!-- Cluster filter: chips carry live counts; 'All' restores the grouped view -->
@@ -122,18 +135,31 @@
                 <td colspan="5">
                   <div v-if="drillLoading" class="sw-drill-loading">Loading hosts…</div>
                   <div v-else-if="drillHosts === null" class="sw-drill-loading">Host list unavailable — the query failed.</div>
-                  <div v-else class="sw-drill-list">
-                    <router-link
-                      v-for="h in drillHosts"
-                      :key="h.host_id"
-                      :to="`/hosts/${h.host_id}`"
-                      class="sw-drill-host"
-                    >
-                      <span class="sw-drill-name">{{ displayHost(h) }}</span>
-                      <span class="sw-drill-version">{{ h.version ? 'v' + h.version : '—' }}</span>
-                      <span class="sw-drill-days">{{ drillDaysLabel(h) }}</span>
-                    </router-link>
-                  </div>
+                  <template v-else>
+                    <div class="sw-drill-list">
+                      <router-link
+                        v-for="h in drillHosts.slice(0, drillShown)"
+                        :key="h.host_id"
+                        :to="`/hosts/${h.host_id}`"
+                        class="sw-drill-host"
+                      >
+                        <span class="sw-drill-name">{{ displayHost(h) }}</span>
+                        <span class="sw-drill-version">{{ h.version ? 'v' + h.version : '—' }}</span>
+                        <span class="sw-drill-days">{{ drillDaysLabel(h) }}</span>
+                      </router-link>
+                    </div>
+                    <div v-if="drillHosts.length > drillShown || drillCapped(a) || drillHosts.length > DRILL_PAGE" class="sw-drill-actions">
+                      <button v-if="drillHosts.length > drillShown" type="button" class="sw-drill-btn" @click="drillShown += DRILL_PAGE">
+                        Show {{ Math.min(DRILL_PAGE, drillHosts.length - drillShown) }} more ({{ drillShown }} of {{ drillHosts.length }} shown)
+                      </button>
+                      <button type="button" class="sw-drill-btn" @click="exportDrillCsv(a)">
+                        Export CSV ({{ drillHosts.length }} hosts)
+                      </button>
+                      <span v-if="drillCapped(a)" class="sw-drill-cap">
+                        fetched the first {{ drillHosts.length.toLocaleString() }} of {{ Number(a.unused_hosts).toLocaleString() }} — the export contains only these
+                      </span>
+                    </div>
+                  </template>
                 </td>
               </tr>
             </template>
@@ -215,18 +241,59 @@ const clusters = computed(() => {
 // ─── Per-app drill-down: who holds the idle seats? ────────────
 // Hidden entirely in Workers Council mode — the drill is a per-host list.
 // drillHosts: null = fetch failed (distinct from an empty list).
+// Scale: the fetch is capped at DRILL_FETCH_CAP hosts (disclosed when the
+// row's count is larger) and the render pages in DRILL_PAGE steps — a
+// thousand-host drill must not become a thousand DOM rows at once. At that
+// size the actionable artifact is the CSV export, not the on-screen list.
+const DRILL_PAGE = 50
+const DRILL_FETCH_CAP = 2000
 const drillApp = ref(null)
 const drillHosts = ref([])
 const drillLoading = ref(false)
+const drillShown = ref(DRILL_PAGE)
 
 async function toggleDrill(appName) {
   if (drillApp.value === appName) { drillApp.value = null; return }
   drillApp.value = appName
+  drillShown.value = DRILL_PAGE
   drillLoading.value = true
-  drillHosts.value = await query('firehose.adoption.unused_hosts_for_app', { ...fp(), appName })
+  drillHosts.value = await query('firehose.adoption.unused_hosts_for_app', { ...fp(), appName, limit: DRILL_FETCH_CAP })
     .catch(() => null)
   drillLoading.value = false
 }
+
+function drillCapped(appRow) {
+  return Array.isArray(drillHosts.value) && Number(appRow.unused_hosts) > drillHosts.value.length
+}
+
+// CSV of the fetched host list — the at-scale artifact for MDM/ticketing.
+function exportDrillCsv(appRow) {
+  if (!Array.isArray(drillHosts.value) || !drillHosts.value.length) return
+  const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const lines = [
+    ['hostname', 'host_id', 'version', 'days_since_opened', 'usage_tier'].join(','),
+    ...drillHosts.value.map(h =>
+      [esc(displayHost(h)), esc(h.host_id), esc(h.version), esc(h.days_since_opened), esc(h.usage_tier)].join(',')
+    ),
+  ]
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  const safe = String(appRow.app_name).replace(/\.app$/, '').replace(/[^\w-]+/g, '-').toLowerCase()
+  a.download = `idle-seats-${safe}-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(a.href)
+}
+
+// ─── Category filter (the strip is the control) ───────────────
+// Selecting a category refetches the list scoped server-side, so it shows
+// EVERY app in that category — not the slice that survived the global
+// top-100 — and the action clusters recompute within it.
+const categoryFilter = ref('')
+function toggleCategory(cat) {
+  categoryFilter.value = categoryFilter.value === cat ? '' : cat
+}
+watch(categoryFilter, load)
 
 function drillDaysLabel(h) {
   if (h.usage_tier === 'never_opened') return 'never opened'
@@ -276,9 +343,17 @@ async function load() {
   error.value = null
   loading.value = true
   try {
+    // The hero totals and the category strip stay fleet-wide; only the
+    // reclaim list scopes to the selected category (server-side, at a
+    // higher limit so a category drill shows EVERY app in it).
     const [s, list, cats] = await Promise.all([
       query('firehose.adoption.waste_summary', fp()),
-      query('firehose.adoption.license_waste', { ...fp(), minInstalls: 3, limit: 100 }),
+      query('firehose.adoption.license_waste', {
+        ...fp(),
+        minInstalls: 3,
+        limit: categoryFilter.value ? 500 : 100,
+        category: categoryFilter.value,
+      }),
       query('firehose.adoption.waste_by_category', { ...fp(), minInstalls: 3 }).catch(() => []),
     ])
     summary.value = s[0] || {}
@@ -396,7 +471,27 @@ watch(filterParams, load, { deep: true })
   grid-template-columns: 160px 1fr 200px;
   align-items: center;
   gap: 14px;
+  padding: 3px 8px;
+  border-radius: var(--radius-medium);
 }
+.cat-row--clickable { cursor: pointer; }
+.cat-row--clickable:hover { background: var(--fleet-off-white); }
+.cat-row--clickable:focus-visible { outline: 1px solid var(--fleet-focused-outline); outline-offset: 1px; }
+.cat-row--active { background: var(--fleet-black-5); box-shadow: inset 2px 0 0 var(--fleet-black); }
+
+.sw-clear-cat {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--fleet-black-75);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.sw-clear-cat:hover { color: var(--fleet-black); }
 .cat-label {
   font-size: var(--font-size-base);
   font-weight: 500;
@@ -477,6 +572,20 @@ watch(filterParams, load, { deep: true })
 .sw-drill-name { font-size: var(--font-size-sm); font-weight: 500; color: var(--fleet-black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sw-drill-version { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fleet-black-50); }
 .sw-drill-days { font-size: var(--font-size-xs); color: var(--fleet-black-50); text-align: right; font-variant-numeric: tabular-nums; }
+.sw-drill-actions { display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+.sw-drill-btn {
+  border: 1px solid var(--fleet-black-10);
+  background: var(--fleet-white);
+  border-radius: var(--radius-full);
+  padding: 3px 11px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--fleet-black-75);
+  cursor: pointer;
+}
+.sw-drill-btn:hover { border-color: var(--fleet-black-25); color: var(--fleet-black); }
+.sw-drill-cap { font-size: var(--font-size-xs); color: var(--status-fair-text); }
 
 .sw-bar-col { width: 200px; }
 .sw-bar-row { display: flex; align-items: center; gap: 10px; }
