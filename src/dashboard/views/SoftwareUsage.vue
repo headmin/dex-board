@@ -61,8 +61,27 @@
         <span class="grammar-hint">Grouped by action · apps with 3+ installs · unused = opened 90d+ ago or never</span>
       </div>
 
+      <!-- Cluster filter: chips carry live counts; 'All' restores the grouped view -->
+      <div v-if="clusters.length > 1" class="sw-filters">
+        <button
+          type="button"
+          class="sw-filter"
+          :class="{ 'is-active': clusterFilter === null }"
+          @click="clusterFilter = null"
+        >All {{ apps.length }}</button>
+        <button
+          v-for="g in clusters"
+          :key="g.key"
+          type="button"
+          class="sw-filter"
+          :class="[{ 'is-active': clusterFilter === g.key }, `sw-filter--${g.tone}`]"
+          @click="clusterFilter = clusterFilter === g.key ? null : g.key"
+        >{{ g.label }} {{ g.rows.length }}</button>
+      </div>
+
       <div v-if="loading" class="sw-loading">Loading…</div>
       <EmptyState v-else-if="!apps.length" small title="No third-party app usage matches the current filter." />
+      <EmptyState v-else-if="!visibleClusters.length" small title="No apps in this group under the current fleet filter." />
       <div v-else class="sw-table-wrapper">
         <table class="sw-table">
           <thead>
@@ -74,7 +93,7 @@
               <th class="sw-bar-col sortable" @click="sortBy('pct_unused')">Unused share {{ sortIcon('pct_unused') }}</th>
             </tr>
           </thead>
-          <tbody v-for="g in clusters" :key="g.key">
+          <tbody v-for="g in visibleClusters" :key="g.key">
             <tr class="sw-group-row">
               <td colspan="5">
                 <span class="sw-group-title" :class="`sw-group-title--${g.tone}`">{{ g.label }}</span>
@@ -165,6 +184,15 @@ const clusters = computed(() => {
   support.rows = sortRows(support.rows)
   return [...groups, support].filter(g => g.rows.length)   // never render an empty group
 })
+
+// Chip filter: null = all groups. A stale selection (group emptied by the
+// fleet filter) renders the honest empty state rather than silently resetting.
+const clusterFilter = ref(null)
+const visibleClusters = computed(() =>
+  clusterFilter.value === null
+    ? clusters.value
+    : clusters.value.filter(g => g.key === clusterFilter.value)
+)
 
 // Category rollup (server-side over ALL apps — not the capped list). Bars
 // are scaled to the largest category so relative size reads at a glance.
@@ -330,6 +358,27 @@ watch(filterParams, load, { deep: true })
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+/* ─── Cluster filter chips ─────────────────────── */
+.sw-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.sw-filter {
+  border: 1px solid var(--fleet-black-10);
+  background: var(--fleet-white);
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--fleet-black-75);
+  cursor: pointer;
+}
+.sw-filter:hover { border-color: var(--fleet-black-25); }
+.sw-filter.is-active { background: var(--fleet-black); border-color: var(--fleet-black); color: var(--fleet-white); }
+.sw-filter--critical:not(.is-active) { color: var(--status-critical-text); }
+.sw-filter--fair:not(.is-active) { color: var(--status-fair-text); }
+.sw-filter--good:not(.is-active) { color: var(--status-good-text); }
+.sw-filter--neutral:not(.is-active) { color: var(--fleet-black-50); }
+.sw-filter:focus-visible { outline: 1px solid var(--fleet-focused-outline); outline-offset: 2px; }
 
 /* ─── Cluster group rows ───────────────────────── */
 .sw-group-row td {
