@@ -7,6 +7,21 @@
 import type { QueryConfig } from '../types'
 import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
+// Bundled support binaries (helpers, uninstallers, updaters, crash
+// reporters) ride along with their parent app and are never "opened" by a
+// person — they are not license seats. The COST aggregates (waste_summary,
+// waste_by_category) exclude them so "renewal budget" numbers stay honest;
+// the per-app list keeps them, FLAGGED, so the inventory signal stays
+// visible (see license_waste's is_support_binary column).
+const SUPPORT_BINARY_EXPR = `(
+            lower(app_name) LIKE '%helper%'
+            OR lower(app_name) LIKE '%uninstall%'
+            OR lower(app_name) LIKE '%installer%'
+            OR lower(app_name) LIKE '%updater%'
+            OR lower(app_name) LIKE '%diagnostics%'
+            OR lower(app_name) LIKE '%crash reporter%')`
+const SEAT_NOISE_FILTER = `AND NOT ${SUPPORT_BINARY_EXPR}`
+
 export const firehoseAdoptionQueries: QueryConfig[] = [
   {
     name: 'firehose.adoption.summary',
@@ -172,6 +187,9 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
       SELECT
         app_name,
         any(category)                                                                       AS category,
+        -- Kept in the list but flagged: support binaries are inventory
+        -- signal, not seats — the UI clusters them separately.
+        max(if(${SUPPORT_BINARY_EXPR}, 1, 0))                                               AS is_support_binary,
         countDistinct(host_id)                                                              AS installs,
         countDistinctIf(host_id, usage_tier IN ('stale_90d', 'stale_90d_plus', 'never_opened')) AS unused_hosts,
         round(100.0 * countDistinctIf(host_id, usage_tier IN ('stale_90d', 'stale_90d_plus', 'never_opened'))
@@ -181,6 +199,51 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
       HAVING installs >= {minInstalls:UInt32}
       ORDER BY unused_hosts DESC, installs DESC
       {{LIMIT}}
+    `,
+  },
+  {
+    name: 'firehose.adoption.waste_by_category',
+    domain: 'software',
+    client: 'core',
+    description: 'License waste rolled up by App Store category — computed over ALL apps, not the top-N slice, so portfolio numbers are never capped math',
+    params: [
+      ...FILTER_PARAMS,
+      { name: 'minInstalls', type: 'number' as const, required: false, min: 1, max: 1000, default: 3 },
+    ],
+    sql: `
+      WITH ${FILTERED_HOSTS_CTE},
+      latest AS (
+        SELECT *
+        FROM adoption_gap
+        WHERE host_id IN (SELECT host_id FROM filtered_hosts)
+          AND bundle_identifier NOT LIKE 'com.apple.%'
+          ${SEAT_NOISE_FILTER}
+          AND (host_id, timestamp) IN (
+            SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id
+          )
+      ),
+      per_app AS (
+        SELECT
+          app_name,
+          any(category) AS category,
+          countDistinct(host_id) AS installs,
+          countDistinctIf(host_id, usage_tier IN ('stale_90d', 'stale_90d_plus', 'never_opened')) AS unused_hosts
+        FROM latest
+        GROUP BY app_name
+        HAVING installs >= {minInstalls:UInt32}
+      )
+      SELECT
+        if(category = '', 'uncategorized', category) AS category,
+        count()             AS apps,
+        -- 'seats' not 'installs': the outer alias must not shadow the
+        -- per_app column it aggregates (ClickHouse resolves the alias
+        -- inside the aggregate and rejects the query).
+        sum(installs)       AS seats,
+        sum(unused_hosts)   AS unused_seats,
+        round(100.0 * sum(unused_hosts) / sum(installs), 0) AS pct_unused
+      FROM per_app
+      GROUP BY category
+      ORDER BY unused_seats DESC
     `,
   },
   {
@@ -198,6 +261,7 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
           -- Exclude free Apple built-ins: no license cost, not IT-deployed, so
           -- they're not "license waste" — just noise in a cost-focused view.
           AND bundle_identifier NOT LIKE 'com.apple.%'
+          ${SEAT_NOISE_FILTER}
           AND (host_id, timestamp) IN (
             SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id
           )
