@@ -1,5 +1,18 @@
 [
   {
+    "sha": "bf9989f11fdc7fe8ffa11fd7ee6eb5184d676df3",
+    "short_sha": "bf9989f11f",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Update deprecated GitOps keys in dogfood config (#51568)",
+    "timestamp": "2026-08-19T12:54:30-05:00",
+    "insertions": 3,
+    "deletions": 3,
+    "files": [
+      "it-and-security/default.yml"
+    ]
+  },
+  {
     "sha": "485fb69f9b05ebbc3cd29a3741bd4e9ec88ec14e",
     "short_sha": "485fb69f9b",
     "author": "Juan Fernandez",
@@ -7414,23 +7427,6 @@
       "it-and-security/lib/windows/software/zoom.yml",
       "it-and-security/teams/compliance-exclusions.yml",
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "7babadf4baf70b1c81d95fad35a92c614de10471",
-    "short_sha": "7babadf4ba",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Added DDM profile for iOS and iPadOS and copied macOS DDM profile to Workstations team (#24825)",
-    "timestamp": "2024-12-17T14:19:08-06:00",
-    "insertions": 33,
-    "deletions": 0,
-    "files": [
-      "it-and-security/lib/ios/declaration-profiles/software-update-settings.json",
-      "it-and-security/lib/ipados/declaration-profiles/software-update-settings.json",
-      "it-and-security/teams/company-owned-ipads.yml",
-      "it-and-security/teams/company-owned-iphones.yml",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]
