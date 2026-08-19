@@ -1,5 +1,21 @@
 [
   {
+    "sha": "485fb69f9b05ebbc3cd29a3741bd4e9ec88ec14e",
+    "short_sha": "485fb69f9b",
+    "author": "Juan Fernandez",
+    "email": "juan-fdz-hawa@users.noreply.github.com",
+    "message": "Fix built-in Linux labels missing derived distributions",
+    "timestamp": "2026-08-18T14:21:41-04:00",
+    "insertions": 6,
+    "deletions": 6,
+    "files": [
+      "it-and-security/lib/all/labels/debian-based-linux-hosts.yml",
+      "it-and-security/lib/all/labels/rpm-based-linux-hosts.yml",
+      "it-and-security/lib/linux/reports/all-deb-hosts.yml",
+      "it-and-security/lib/linux/reports/all-rpm-hosts.yml"
+    ]
+  },
+  {
     "sha": "cc9f8e4891d6b8755678ac921fe725bd8888d14a",
     "short_sha": "cc9f8e4891",
     "author": "Allen Houchins",
@@ -7415,20 +7431,6 @@
       "it-and-security/teams/company-owned-ipads.yml",
       "it-and-security/teams/company-owned-iphones.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "aba585ce6ecacbbd6ea74eee5a12499b4f136c26",
-    "short_sha": "aba585ce6e",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Updated minimum OS version for iOS and iPadOS (#24822)",
-    "timestamp": "2024-12-17T14:18:32-06:00",
-    "insertions": 4,
-    "deletions": 4,
-    "files": [
-      "it-and-security/teams/company-owned-ipads.yml",
-      "it-and-security/teams/company-owned-iphones.yml"
     ]
   }
 ]

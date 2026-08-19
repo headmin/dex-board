@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-18T18:29:59Z",
+  "generated": "2026-08-19T00:38:28Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "cc9f8e4891d6b8755678ac921fe725bd8888d14a",
-    "short_sha": "cc9f8e4891",
-    "message": "Dogfood: drop platform prefix from policy names (#50658)",
-    "timestamp": "2026-08-06T14:08:21-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/cc9f8e4891d6b8755678ac921fe725bd8888d14a"
+    "sha": "485fb69f9b05ebbc3cd29a3741bd4e9ec88ec14e",
+    "short_sha": "485fb69f9b",
+    "message": "Fix built-in Linux labels missing derived distributions",
+    "timestamp": "2026-08-18T14:21:41-04:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/485fb69f9b05ebbc3cd29a3741bd4e9ec88ec14e"
   },
   "fleets": [
     {
