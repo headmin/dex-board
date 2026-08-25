@@ -1,5 +1,18 @@
 [
   {
+    "sha": "4c1d4a487e06ea6f03d2fd89ad10d3ec4ab77619",
+    "short_sha": "4c1d4a487e",
+    "author": "Noah Talerman",
+    "email": "47070608+noahtalerman@users.noreply.github.com",
+    "message": "New bookmark: #g-byod (#51790)",
+    "timestamp": "2026-08-25T09:27:48-04:00",
+    "insertions": 6,
+    "deletions": 0,
+    "files": [
+      "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
+    ]
+  },
+  {
     "sha": "bf9989f11fdc7fe8ffa11fd7ee6eb5184d676df3",
     "short_sha": "bf9989f11f",
     "author": "Allen Houchins",
@@ -7391,42 +7404,6 @@
     "files": [
       "it-and-security/default.yml",
       "it-and-security/teams/no-team.yml"
-    ]
-  },
-  {
-    "sha": "d79e26d488a52fad538f3b884067de5718dc79c8",
-    "short_sha": "d79e26d488",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Added multi-platform software to Workstations (canary) team (#24864)",
-    "timestamp": "2024-12-19T10:30:17-06:00",
-    "insertions": 70,
-    "deletions": 14,
-    "files": [
-      "it-and-security/lib/all/queries/collect-usb-devices.yml",
-      "it-and-security/lib/all/queries/collect-vs-code-extensions.yml",
-      "it-and-security/lib/linux/queries/{all-debian-hosts.yml => all-deb-hosts.yml}",
-      "it-and-security/lib/linux/queries/all-rpm-hosts.yml",
-      "it-and-security/lib/linux/software/slack-deb.yml",
-      "it-and-security/lib/linux/software/slack-rpm.yml",
-      "it-and-security/lib/linux/software/{zoom.yml => zoom-deb.yml}",
-      "it-and-security/lib/linux/software/zoom-rpm.yml",
-      "it-and-security/lib/macos/queries/check-if-apple-silicon.yml",
-      "it-and-security/lib/macos/queries/collect-failed-login-attempts.yml",
-      "it-and-security/lib/macos/queries/collect-software-permissions-system.yml",
-      "it-and-security/lib/macos/queries/collect-software-permissions-user.yml",
-      "it-and-security/lib/macos/software/google-chrome.yml",
-      "it-and-security/lib/macos/software/zoom.yml",
-      "it-and-security/lib/windows/policies/device-health.yml",
-      "it-and-security/lib/windows/queries/all-arm-hosts.yml",
-      "it-and-security/lib/windows/queries/all-x86-hosts.yml",
-      "it-and-security/lib/windows/queries/collect-windows-defender.yml",
-      "it-and-security/lib/windows/software/google-chrome.yml",
-      "it-and-security/lib/windows/software/slack.yml",
-      "it-and-security/lib/windows/software/zoom-arm.yml",
-      "it-and-security/lib/windows/software/zoom.yml",
-      "it-and-security/teams/compliance-exclusions.yml",
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]

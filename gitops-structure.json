@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-25T12:27:05Z",
+  "generated": "2026-08-25T18:23:54Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "bf9989f11fdc7fe8ffa11fd7ee6eb5184d676df3",
-    "short_sha": "bf9989f11f",
-    "message": "Update deprecated GitOps keys in dogfood config (#51568)",
-    "timestamp": "2026-08-19T12:54:30-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/bf9989f11fdc7fe8ffa11fd7ee6eb5184d676df3"
+    "sha": "4c1d4a487e06ea6f03d2fd89ad10d3ec4ab77619",
+    "short_sha": "4c1d4a487e",
+    "message": "New bookmark: #g-byod (#51790)",
+    "timestamp": "2026-08-25T09:27:48-04:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/4c1d4a487e06ea6f03d2fd89ad10d3ec4ab77619"
   },
   "fleets": [
     {
