@@ -1,5 +1,18 @@
 [
   {
+    "sha": "403cc4495e67af48991eba9c08239135aae66351",
+    "short_sha": "403cc4495e",
+    "author": "Mike Thomas",
+    "email": "78363703+mike-j-thomas@users.noreply.github.com",
+    "message": "Update macs-excluded-from-external-storage-restrictions.yml (#52341)",
+    "timestamp": "2026-09-02T12:07:24+09:00",
+    "insertions": 1,
+    "deletions": 0,
+    "files": [
+      "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml"
+    ]
+  },
+  {
     "sha": "4c1d4a487e06ea6f03d2fd89ad10d3ec4ab77619",
     "short_sha": "4c1d4a487e",
     "author": "Noah Talerman",
@@ -7390,20 +7403,6 @@
     "deletions": 2,
     "files": [
       "it-and-security/default.yml"
-    ]
-  },
-  {
-    "sha": "9b6b21f3b70b7d42ce3aba1e4d5eb2357991059a",
-    "short_sha": "9b6b21f3b7",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Added settings for Windows MDM migration (#24865)",
-    "timestamp": "2024-12-19T10:31:31-06:00",
-    "insertions": 10,
-    "deletions": 22,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/teams/no-team.yml"
     ]
   }
 ]
