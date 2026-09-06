@@ -1,5 +1,21 @@
 [
   {
+    "sha": "658ea38af1869b98024584c89844233bd79ccd46",
+    "short_sha": "658ea38af1",
+    "author": "claude[bot]",
+    "email": "209825114+claude[bot]@users.noreply.github.com",
+    "message": "Bump Linux Zoom to 7.1.5.4332 and Slack to 4.52.155 in Workstations gitops config (#52637)",
+    "timestamp": "2026-09-05T22:28:35-05:00",
+    "insertions": 4,
+    "deletions": 4,
+    "files": [
+      "it-and-security/lib/linux/software/slack-deb.yml",
+      "it-and-security/lib/linux/software/slack-rpm.yml",
+      "it-and-security/lib/linux/software/zoom-deb.yml",
+      "it-and-security/lib/linux/software/zoom-rpm.yml"
+    ]
+  },
+  {
     "sha": "403cc4495e67af48991eba9c08239135aae66351",
     "short_sha": "403cc4495e",
     "author": "Mike Thomas",
@@ -7390,19 +7406,6 @@
     "files": [
       "it-and-security/lib/macos/configuration-profiles/automatically-update-1Password.mobileconfig",
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "e8a9c6654c86e369cb4c02ca7f8f67728e138e1b",
-    "short_sha": "e8a9c6654c",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Update default.yml (#24921)",
-    "timestamp": "2024-12-19T18:19:33-05:00",
-    "insertions": 1,
-    "deletions": 2,
-    "files": [
-      "it-and-security/default.yml"
     ]
   }
 ]
