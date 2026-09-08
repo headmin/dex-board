@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-08T15:44:35Z",
+  "generated": "2026-09-08T20:28:47Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "7f2f4ab063a449369974bdcfd3aaa433bdb2de64",
-    "short_sha": "7f2f4ab063",
-    "message": "Managed bookmark: \"\ud83e\udda2 Drafting\" board => \"\ud83e\udda2\ud83d\udce8\ud83c\udf89 Product design intake & outtake\" (#52676)",
-    "timestamp": "2026-09-07T21:38:48-04:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/7f2f4ab063a449369974bdcfd3aaa433bdb2de64"
+    "sha": "2ad70261986c844dece8c23c531d8ceb19a4db6a",
+    "short_sha": "2ad7026198",
+    "message": "Add Claude Desktop for Debian-based Linux to Workstations (script-only package + patch policy) (#52651)",
+    "timestamp": "2026-09-08T13:24:23-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/2ad70261986c844dece8c23c531d8ceb19a4db6a"
   },
   "fleets": [
     {
@@ -61,6 +61,11 @@
         }
       ],
       "icons": [
+        {
+          "name": "claude-logo",
+          "file": "it-and-security/lib/all/icons/claude-logo.png",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/icons/claude-logo.png"
+        },
         {
           "name": "fleet-desktop-icon",
           "file": "it-and-security/lib/all/icons/fleet-desktop-icon.png",
@@ -359,6 +364,11 @@
           "name": "sshd-permitrootlogin-restricted",
           "file": "it-and-security/lib/linux/policies/sshd-permitrootlogin-restricted.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/policies/sshd-permitrootlogin-restricted.yml"
+        },
+        {
+          "name": "update-claude",
+          "file": "it-and-security/lib/linux/policies/update-claude.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/policies/update-claude.yml"
         }
       ],
       "reports": [
@@ -380,6 +390,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/change-password-linux.sh"
         },
         {
+          "name": "install-claude-desktop",
+          "file": "it-and-security/lib/linux/scripts/install-claude-desktop.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/install-claude-desktop.sh"
+        },
+        {
           "name": "install-fleet-desktop-required-extension",
           "file": "it-and-security/lib/linux/scripts/install-fleet-desktop-required-extension.sh",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/install-fleet-desktop-required-extension.sh"
@@ -390,9 +405,24 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/install-readonly-removable-storage.sh"
         },
         {
+          "name": "uninstall-claude-desktop",
+          "file": "it-and-security/lib/linux/scripts/uninstall-claude-desktop.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/uninstall-claude-desktop.sh"
+        },
+        {
           "name": "uninstall-fleetd-linux",
           "file": "it-and-security/lib/linux/scripts/uninstall-fleetd-linux.sh",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/uninstall-fleetd-linux.sh"
+        },
+        {
+          "name": "update-claude-desktop",
+          "file": "it-and-security/lib/linux/scripts/update-claude-desktop.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/update-claude-desktop.sh"
+        },
+        {
+          "name": "verify-claude-desktop",
+          "file": "it-and-security/lib/linux/scripts/verify-claude-desktop.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/verify-claude-desktop.sh"
         }
       ],
       "software": [
@@ -1012,17 +1042,17 @@
     ],
     "fleets": 6,
     "agent_options": 2,
-    "icons": 6,
+    "icons": 7,
     "labels": 24,
-    "policies": 42,
+    "policies": 43,
     "reports": 22,
-    "scripts": 15,
+    "scripts": 19,
     "configuration_profiles": 43,
     "declaration_profiles": 7,
     "software": 13,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 184
+    "total_files": 190
   }
 }

@@ -1,5 +1,38 @@
 [
   {
+    "sha": "2ad70261986c844dece8c23c531d8ceb19a4db6a",
+    "short_sha": "2ad7026198",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Claude Desktop for Debian-based Linux to Workstations (script-only package + patch policy) (#52651)",
+    "timestamp": "2026-09-08T13:24:23-05:00",
+    "insertions": 250,
+    "deletions": 0,
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/icons/claude-logo.png",
+      "it-and-security/lib/linux/policies/update-claude.yml",
+      "it-and-security/lib/linux/scripts/install-claude-desktop.sh",
+      "it-and-security/lib/linux/scripts/uninstall-claude-desktop.sh",
+      "it-and-security/lib/linux/scripts/update-claude-desktop.sh",
+      "it-and-security/lib/linux/scripts/verify-claude-desktop.sh"
+    ]
+  },
+  {
+    "sha": "2092ac70f600c08d609d9ad20b0e322eb7ff5188",
+    "short_sha": "2092ac70f6",
+    "author": "Noah Talerman",
+    "email": "47070608+noahtalerman@users.noreply.github.com",
+    "message": "Install updates when apps are closed (#51789)",
+    "timestamp": "2026-09-08T13:06:14-04:00",
+    "insertions": 33,
+    "deletions": 0,
+    "files": [
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
     "sha": "7f2f4ab063a449369974bdcfd3aaa433bdb2de64",
     "short_sha": "7f2f4ab063",
     "author": "Noah Talerman",
@@ -7369,42 +7402,6 @@
       "it-and-security/teams/servers.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "db9258c9d06c350310fdf9d226eb39755bcfc73d",
-    "short_sha": "db9258c9d0",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Fix VPP error in new team and webhook errors (#24968)",
-    "timestamp": "2024-12-20T15:54:29-06:00",
-    "insertions": 5,
-    "deletions": 4,
-    "files": [
-      "it-and-security/default.yml"
-    ]
-  },
-  {
-    "sha": "c50a0965278c0e61547246c880e7dbe82707c02a",
-    "short_sha": "c50a096527",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Add new \"\ud83d\udcf1\ud83d\udd10 Personally-owned iPhones\" team (#24952)",
-    "timestamp": "2024-12-20T14:24:59-06:00",
-    "insertions": 84,
-    "deletions": 329,
-    "files": [
-      "it-and-security/lib/ios/configuration-profiles/content-filtering.mobileconfig",
-      "it-and-security/lib/ios/configuration-profiles/lock-screen-message.mobileconfig",
-      "it-and-security/lib/ios/configuration-profiles/restrictions.mobileconfig",
-      "it-and-security/lib/ios/declaration-profiles/{passcode-settings-ddm.json => passcode-settings.json}",
-      "it-and-security/lib/ios/declaration-profiles/software-update-settings.json",
-      "it-and-security/lib/ipados/configuration-profiles/lock-screen-message.mobileconfig",
-      "it-and-security/lib/ipados/declaration-profiles/passcode-settings.json",
-      "it-and-security/lib/ipados/declaration-profiles/software-update-settings.json",
-      "it-and-security/teams/company-owned-ipads.yml",
-      "it-and-security/teams/company-owned-iphones.yml",
-      "it-and-security/teams/personally-owned-iphones.yml"
     ]
   }
 ]
