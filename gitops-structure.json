@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-07T20:56:10Z",
+  "generated": "2026-09-08T02:01:28Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "658ea38af1869b98024584c89844233bd79ccd46",
-    "short_sha": "658ea38af1",
-    "message": "Bump Linux Zoom to 7.1.5.4332 and Slack to 4.52.155 in Workstations gitops config (#52637)",
-    "timestamp": "2026-09-05T22:28:35-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/658ea38af1869b98024584c89844233bd79ccd46"
+    "sha": "7f2f4ab063a449369974bdcfd3aaa433bdb2de64",
+    "short_sha": "7f2f4ab063",
+    "message": "Managed bookmark: \"\ud83e\udda2 Drafting\" board => \"\ud83e\udda2\ud83d\udce8\ud83c\udf89 Product design intake & outtake\" (#52676)",
+    "timestamp": "2026-09-07T21:38:48-04:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/7f2f4ab063a449369974bdcfd3aaa433bdb2de64"
   },
   "fleets": [
     {

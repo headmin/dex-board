@@ -1,5 +1,18 @@
 [
   {
+    "sha": "7f2f4ab063a449369974bdcfd3aaa433bdb2de64",
+    "short_sha": "7f2f4ab063",
+    "author": "Noah Talerman",
+    "email": "47070608+noahtalerman@users.noreply.github.com",
+    "message": "Managed bookmark: \"\ud83e\udda2 Drafting\" board => \"\ud83e\udda2\ud83d\udce8\ud83c\udf89 Product design intake & outtake\" (#52676)",
+    "timestamp": "2026-09-07T21:38:48-04:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
+    ]
+  },
+  {
     "sha": "658ea38af1869b98024584c89844233bd79ccd46",
     "short_sha": "658ea38af1",
     "author": "claude[bot]",
@@ -7392,20 +7405,6 @@
       "it-and-security/teams/company-owned-ipads.yml",
       "it-and-security/teams/company-owned-iphones.yml",
       "it-and-security/teams/personally-owned-iphones.yml"
-    ]
-  },
-  {
-    "sha": "b5d17fca4df39e297738853d10a49ea72c8dfd5a",
-    "short_sha": "b5d17fca4d",
-    "author": "Janis Watts",
-    "email": "184028114+jmwatts@users.noreply.github.com",
-    "message": "Implement 1Password automatic updates via config profile using \"Inclu\u2026 (#24887)",
-    "timestamp": "2024-12-19T17:41:58-06:00",
-    "insertions": 36,
-    "deletions": 0,
-    "files": [
-      "it-and-security/lib/macos/configuration-profiles/automatically-update-1Password.mobileconfig",
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]
