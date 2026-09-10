@@ -1,5 +1,18 @@
 [
   {
+    "sha": "bf90eb9f9986e6cc539f7ae81a4258e238a7bad3",
+    "short_sha": "bf90eb9f99",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Replace ID 275 with 815 in exclusion list (#52934)",
+    "timestamp": "2026-09-10T08:46:26-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml"
+    ]
+  },
+  {
     "sha": "d9b635a14d9019fbb894c15721c5894dc6047d78",
     "short_sha": "d9b635a14d",
     "author": "Allen Houchins",
@@ -7375,20 +7388,6 @@
     "insertions": 3,
     "deletions": 0,
     "files": [
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "b1446b1ad89d037dfdcb6e529d689ac1d974233c",
-    "short_sha": "b1446b1ad8",
-    "author": "Luke Heath",
-    "email": "luke@fleetdm.com",
-    "message": "Change deadline to next Tuesday (#25129)",
-    "timestamp": "2025-01-03T12:34:49-06:00",
-    "insertions": 2,
-    "deletions": 2,
-    "files": [
-      "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]
   }
