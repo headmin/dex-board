@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-10T15:28:45Z",
+  "generated": "2026-09-10T20:13:33Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "bf90eb9f9986e6cc539f7ae81a4258e238a7bad3",
-    "short_sha": "bf90eb9f99",
-    "message": "Replace ID 275 with 815 in exclusion list (#52934)",
-    "timestamp": "2026-09-10T08:46:26-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/bf90eb9f9986e6cc539f7ae81a4258e238a7bad3"
+    "sha": "bb665aacc11cb08d2e124066cff878390ffd9c87",
+    "short_sha": "bb665aacc1",
+    "message": "Set Workstations as default fleet for Windows Autopilot enrollment (#52965)",
+    "timestamp": "2026-09-10T12:08:55-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/bb665aacc11cb08d2e124066cff878390ffd9c87"
   },
   "fleets": [
     {

@@ -1,5 +1,18 @@
 [
   {
+    "sha": "bb665aacc11cb08d2e124066cff878390ffd9c87",
+    "short_sha": "bb665aacc1",
+    "author": "claude[bot]",
+    "email": "209825114+claude[bot]@users.noreply.github.com",
+    "message": "Set Workstations as default fleet for Windows Autopilot enrollment (#52965)",
+    "timestamp": "2026-09-10T12:08:55-05:00",
+    "insertions": 2,
+    "deletions": 0,
+    "files": [
+      "it-and-security/default.yml"
+    ]
+  },
+  {
     "sha": "bf90eb9f9986e6cc539f7ae81a4258e238a7bad3",
     "short_sha": "bf90eb9f99",
     "author": "Allen Houchins",
@@ -7376,19 +7389,6 @@
     "files": [
       "it-and-security/lib/windows/software/google-chrome.yml",
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "64cd45753a4e4f7ae458e03668604f93cd12e268",
-    "short_sha": "64cd45753a",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Add 1Password update profile to \"\ud83d\udcbb Workstations\" team (#25291)",
-    "timestamp": "2025-01-09T17:02:44-06:00",
-    "insertions": 3,
-    "deletions": 0,
-    "files": [
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]
