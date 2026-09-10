@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-09T20:13:37Z",
+  "generated": "2026-09-10T02:03:23Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "2ad70261986c844dece8c23c531d8ceb19a4db6a",
-    "short_sha": "2ad7026198",
-    "message": "Add Claude Desktop for Debian-based Linux to Workstations (script-only package + patch policy) (#52651)",
-    "timestamp": "2026-09-08T13:24:23-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/2ad70261986c844dece8c23c531d8ceb19a4db6a"
+    "sha": "d9b635a14d9019fbb894c15721c5894dc6047d78",
+    "short_sha": "d9b635a14d",
+    "message": "Bump Linux Claude Desktop patch policy to 1.49585.0 (#52830)",
+    "timestamp": "2026-09-09T16:01:25-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/d9b635a14d9019fbb894c15721c5894dc6047d78"
   },
   "fleets": [
     {

@@ -1,5 +1,18 @@
 [
   {
+    "sha": "d9b635a14d9019fbb894c15721c5894dc6047d78",
+    "short_sha": "d9b635a14d",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 1.49585.0 (#52830)",
+    "timestamp": "2026-09-09T16:01:25-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "2ad70261986c844dece8c23c531d8ceb19a4db6a",
     "short_sha": "2ad7026198",
     "author": "Allen Houchins",
@@ -7375,31 +7388,6 @@
     "insertions": 2,
     "deletions": 2,
     "files": [
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "7dc840c51e448d703108d15ef85965c0bd25639d",
-    "short_sha": "7dc840c51e",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Cleanup no-team.yml, implement host expiry on servers, add Windows CSPs (#24916)",
-    "timestamp": "2024-12-24T20:55:07-06:00",
-    "insertions": 127,
-    "deletions": 39,
-    "files": [
-      "it-and-security/lib/windows/configuration-profiles/advanced-logging-powershell.xml",
-      "it-and-security/lib/windows/configuration-profiles/autoset-time-date.xml",
-      "it-and-security/lib/windows/configuration-profiles/disable-onedrive.xml",
-      "it-and-security/lib/windows/configuration-profiles/enable-firewall-all-domains.xml",
-      "it-and-security/lib/windows/configuration-profiles/{windows-password.xml => password.xml}",
-      "it-and-security/lib/windows/configuration-profiles/{windows-screen-lock.xml => screen-lock.xml}",
-      "it-and-security/lib/windows/configuration-profiles/windows-firewall.xml",
-      "it-and-security/lib/windows/software/google-chrome.yml",
-      "it-and-security/teams/no-team.yml",
-      "it-and-security/teams/servers-canary.yml",
-      "it-and-security/teams/servers.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]
