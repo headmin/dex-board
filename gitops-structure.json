@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-11T15:30:41Z",
+  "generated": "2026-09-11T20:12:36Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "bb665aacc11cb08d2e124066cff878390ffd9c87",
-    "short_sha": "bb665aacc1",
-    "message": "Set Workstations as default fleet for Windows Autopilot enrollment (#52965)",
-    "timestamp": "2026-09-10T12:08:55-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/bb665aacc11cb08d2e124066cff878390ffd9c87"
+    "sha": "4c28ebd1e86fb51db0e6ed3649c37475cc364521",
+    "short_sha": "4c28ebd1e8",
+    "message": "Bump Linux Claude Desktop patch policy to 1.52386.0 (#53037)",
+    "timestamp": "2026-09-11T11:06:21-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/4c28ebd1e86fb51db0e6ed3649c37475cc364521"
   },
   "fleets": [
     {
