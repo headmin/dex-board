@@ -1,5 +1,18 @@
 [
   {
+    "sha": "84055ee7ae03b53f76b43b47329ca4a2d0034653",
+    "short_sha": "84055ee7ae",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 1.52386.3 (#53094)",
+    "timestamp": "2026-09-12T11:17:15-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "4c28ebd1e86fb51db0e6ed3649c37475cc364521",
     "short_sha": "4c28ebd1e8",
     "author": "Allen Houchins",
@@ -7375,19 +7388,6 @@
     "deletions": 2,
     "files": [
       "it-and-security/lib/ios/configuration-profiles/lock-screen-message.mobileconfig"
-    ]
-  },
-  {
-    "sha": "d5626acc6c92b1b184155c582209d79b186f280a",
-    "short_sha": "d5626acc6c",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Dogfood hiding secrets added via YAML (#25384)",
-    "timestamp": "2025-01-15T14:40:39-05:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/configuration-profiles/chrome-enrollment.mobileconfig"
     ]
   }
 ]
