@@ -1,5 +1,18 @@
 [
   {
+    "sha": "15f8c31d9b473c3282b12e8950a9aa0e7bf935c0",
+    "short_sha": "15f8c31d9b",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 1.52386.6 (#53128)",
+    "timestamp": "2026-09-14T09:54:47-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "84055ee7ae03b53f76b43b47329ca4a2d0034653",
     "short_sha": "84055ee7ae",
     "author": "Allen Houchins",
@@ -7375,19 +7388,6 @@
       "it-and-security/lib/macos/software/mozilla-firefox.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "11ac949c7e0c0c41a9f06b09a2f67f975372ce2d",
-    "short_sha": "11ac949c7e",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Fix lock-screen-message.mobileconfig (#25443)",
-    "timestamp": "2025-01-15T17:27:14-06:00",
-    "insertions": 2,
-    "deletions": 2,
-    "files": [
-      "it-and-security/lib/ios/configuration-profiles/lock-screen-message.mobileconfig"
     ]
   }
 ]
