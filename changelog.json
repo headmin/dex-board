@@ -1,5 +1,45 @@
 [
   {
+    "sha": "cd77b96c6f47a6944a05f72ed1b248d65f902a1b",
+    "short_sha": "cd77b96c6f",
+    "author": "Harrison Ravazzolo",
+    "email": "38767391+harrisonravazzolo@users.noreply.github.com",
+    "message": "Modify DEX query (#53332)",
+    "timestamp": "2026-09-16T07:14:50-07:00",
+    "insertions": 10,
+    "deletions": 8,
+    "files": [
+      "it-and-security/lib/all/reports/dex-queries.yml"
+    ]
+  },
+  {
+    "sha": "78ff45d6349044a506d72d354e3ba3dbff349a9b",
+    "short_sha": "78ff45d634",
+    "author": "Harrison Ravazzolo",
+    "email": "38767391+harrisonravazzolo@users.noreply.github.com",
+    "message": "add `ai_tools` query to DEX pack (#53328)",
+    "timestamp": "2026-09-16T06:58:05-07:00",
+    "insertions": 19,
+    "deletions": 0,
+    "files": [
+      "it-and-security/lib/all/reports/dex-queries.yml"
+    ]
+  },
+  {
+    "sha": "6a40efaf178f7c4388b3abdf54794ae24c4e15d8",
+    "short_sha": "6a40efaf17",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Linux OS up-to-date policy to Workstations (dogfood) (#53292)",
+    "timestamp": "2026-09-16T08:45:25-05:00",
+    "insertions": 49,
+    "deletions": 0,
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/linux/policies/latest-linux.yml"
+    ]
+  },
+  {
     "sha": "15f8c31d9b473c3282b12e8950a9aa0e7bf935c0",
     "short_sha": "15f8c31d9b",
     "author": "Allen Houchins",
@@ -7337,55 +7377,6 @@
     "deletions": 12,
     "files": [
       "it-and-security/default.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "740331f04aa7717e64dbae1d94a920c599df473b",
-    "short_sha": "740331f04a",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update latest-macos.yml (#25814)",
-    "timestamp": "2025-01-28T10:24:02-06:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/latest-macos.yml"
-    ]
-  },
-  {
-    "sha": "e90574b808cb570bfe6763bd7653c62e3db3b1d9",
-    "short_sha": "e90574b808",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Enable activities webhook via GitOps (#25690)",
-    "timestamp": "2025-01-22T15:00:07-06:00",
-    "insertions": 3,
-    "deletions": 0,
-    "files": [
-      "it-and-security/default.yml"
-    ]
-  },
-  {
-    "sha": "af5d102e9dc4317e2a888dbae0e00f54c79118fb",
-    "short_sha": "af5d102e9d",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Updated policies and software installs (#25677)",
-    "timestamp": "2025-01-22T12:49:38-06:00",
-    "insertions": 35,
-    "deletions": 47,
-    "files": [
-      "it-and-security/lib/linux/software/slack-deb.yml",
-      "it-and-security/lib/linux/software/slack-rpm.yml",
-      "it-and-security/lib/linux/software/zoom-deb.yml",
-      "it-and-security/lib/linux/software/zoom-rpm.yml",
-      "it-and-security/lib/macos/policies/latest-macos.yml",
-      "it-and-security/lib/macos/policies/update-firefox.yml",
-      "it-and-security/lib/macos/policies/update-slack.yml",
-      "it-and-security/lib/macos/policies/upgrade-firefox.yml",
-      "it-and-security/lib/macos/software/mozilla-firefox.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]

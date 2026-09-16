@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-16T10:28:41Z",
+  "generated": "2026-09-16T15:45:53Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "15f8c31d9b473c3282b12e8950a9aa0e7bf935c0",
-    "short_sha": "15f8c31d9b",
-    "message": "Bump Linux Claude Desktop patch policy to 1.52386.6 (#53128)",
-    "timestamp": "2026-09-14T09:54:47-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/15f8c31d9b473c3282b12e8950a9aa0e7bf935c0"
+    "sha": "cd77b96c6f47a6944a05f72ed1b248d65f902a1b",
+    "short_sha": "cd77b96c6f",
+    "message": "Modify DEX query (#53332)",
+    "timestamp": "2026-09-16T07:14:50-07:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/cd77b96c6f47a6944a05f72ed1b248d65f902a1b"
   },
   "fleets": [
     {
@@ -354,6 +354,11 @@
           "name": "disk-space-check",
           "file": "it-and-security/lib/linux/policies/disk-space-check.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/policies/disk-space-check.yml"
+        },
+        {
+          "name": "latest-linux",
+          "file": "it-and-security/lib/linux/policies/latest-linux.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/policies/latest-linux.yml"
         },
         {
           "name": "removable-storage-read-only",
@@ -1044,7 +1049,7 @@
     "agent_options": 2,
     "icons": 7,
     "labels": 24,
-    "policies": 43,
+    "policies": 44,
     "reports": 22,
     "scripts": 19,
     "configuration_profiles": 43,
@@ -1053,6 +1058,6 @@
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 190
+    "total_files": 191
   }
 }
