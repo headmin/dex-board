@@ -18,7 +18,8 @@ const FALLBACK_FLEET_URL = 'https://dogfood.fleetdm.com'
 // threshold line renders sensibly before /api/config lands (or if unset).
 const FALLBACK_PATCH_SLA_DAYS = 14
 
-const config = ref({ fleetUrl: FALLBACK_FLEET_URL, patchSlaDays: FALLBACK_PATCH_SLA_DAYS, teamNames: {} })
+// knownAiVendors: null = use the board default (aiInventory DEFAULT_KNOWN_VENDORS).
+const config = ref({ fleetUrl: FALLBACK_FLEET_URL, patchSlaDays: FALLBACK_PATCH_SLA_DAYS, teamNames: {}, knownAiVendors: null })
 let inflight = null
 let loaded = false
 
@@ -37,6 +38,9 @@ async function load() {
       }
       if (data?.teamNames && typeof data.teamNames === 'object') {
         config.value = { ...config.value, teamNames: data.teamNames }
+      }
+      if (Array.isArray(data?.knownAiVendors) && data.knownAiVendors.length) {
+        config.value = { ...config.value, knownAiVendors: data.knownAiVendors }
       }
       loaded = true
       return config.value

@@ -23,6 +23,7 @@ import { firehoseAdoptionQueries } from './queries/core-adoption'
 import { firehoseScoreQueries } from './queries/core-scores'
 import { firehoseSecurityQueries } from './queries/core-security'
 import { firehoseLifecycleQueries } from './queries/core-lifecycle'
+import { firehoseAiToolsQueries } from './queries/core-ai-tools'
 
 registry.registerAll(auditQueries)
 registry.registerAll(firehoseWifiQueries)
@@ -39,6 +40,7 @@ registry.registerAll(firehoseAdoptionQueries)
 registry.registerAll(firehoseScoreQueries)
 registry.registerAll(firehoseSecurityQueries)
 registry.registerAll(firehoseLifecycleQueries)
+registry.registerAll(firehoseAiToolsQueries)
 
 // ─── Hono app ────────────────────────────────────────────
 const app = new Hono<{ Bindings: Env }>()
@@ -78,10 +80,20 @@ app.get('/api/config', (c) => {
   } catch {
     // Malformed TEAM_NAMES — fall back to empty map (ids render raw).
   }
+  let knownAiVendors: string[] | null = null
+  try {
+    if (c.env.KNOWN_AI_VENDORS) {
+      const parsed = JSON.parse(c.env.KNOWN_AI_VENDORS)
+      if (Array.isArray(parsed) && parsed.every((v) => typeof v === 'string')) knownAiVendors = parsed
+    }
+  } catch {
+    // Malformed KNOWN_AI_VENDORS — the dashboard falls back to its default list.
+  }
   return c.json({
     fleetUrl: (c.env.FLEET_URL || 'https://dogfood.fleetdm.com').replace(/\/$/, ''),
     patchSlaDays: Number.isFinite(slaDays) && slaDays > 0 ? slaDays : 14,
     teamNames,
+    knownAiVendors,
   })
 })
 

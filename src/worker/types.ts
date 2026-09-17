@@ -104,4 +104,12 @@ export interface Env {
    * Set: `wrangler secret put TEAM_NAMES`.
    */
   TEAM_NAMES?: string
+  /**
+   * Optional JSON array of AI vendor names the organisation treats as
+   * "known" products on the AI tools page, e.g. `["Anthropic","GitHub"]`.
+   * Replaces the board's default list (aiInventory.js DEFAULT_KNOWN_VENDORS)
+   * when set. Recognisability, not approval — the page says so. Exposed via
+   * GET /api/config. Set: `wrangler secret put KNOWN_AI_VENDORS`.
+   */
+  KNOWN_AI_VENDORS?: string
 }

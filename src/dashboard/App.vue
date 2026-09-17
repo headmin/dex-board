@@ -95,6 +95,13 @@
 
           <div class="nav-section">
             <span class="nav-section-label">Governance</span>
+            <router-link to="/ai-tools" class="nav-item" active-class="active">
+              <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M10 3l1.6 3.9L15.5 8.5l-3.9 1.6L10 14l-1.6-3.9L4.5 8.5l3.9-1.6L10 3z"/>
+                <path d="M15.5 13.5l.7 1.6 1.6.7-1.6.7-.7 1.6-.7-1.6-1.6-.7 1.6-.7.7-1.6z"/>
+              </svg>
+              AI tools
+            </router-link>
             <router-link to="/audit" class="nav-item" active-class="active">
               <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M5 4h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/>

@@ -115,6 +115,9 @@
       </div>
     </section>
 
+    <!-- ─── AI — tools and agents on this host ──────────────── -->
+    <HostAiVisibility v-if="hostId" :hostId="hostId" />
+
     <!-- ─── Act — evidence and remediation ──────────────────── -->
     <section class="grammar-section">
       <div class="grammar-head">
@@ -176,6 +179,7 @@ import EmptyState from '../components/base/EmptyState.vue'
 import SkeletonLoader from '../components/base/SkeletonLoader.vue'
 import DataTable from '../components/DataTable.vue'
 import TimeSeriesChart from '../components/TimeSeriesChart.vue'
+import HostAiVisibility from '../components/host/HostAiVisibility.vue'
 import { displayHost } from '../composables/displayName'
 import { buildSignalDrivers } from '../composables/scoreFormulas'
 import { scoreToGrade, gradeColor } from '../composables/gradeColors'

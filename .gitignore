@@ -10,3 +10,7 @@ dist/
 .venv/
 docs/site/
 src/dashboard/components.zip
+
+# Local-only telemetry exports served by the Vite dev middleware (src/dev/).
+# Real host names live in here — never commit.
+local-data/

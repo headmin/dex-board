@@ -11,6 +11,8 @@ import Lifecycle from './views/Lifecycle.vue'
 import SoftwareUsage from './views/SoftwareUsage.vue'
 import Connectivity from './views/Connectivity.vue'
 import PatchVelocity from './views/PatchVelocity.vue'
+import AiTools from './views/AiTools.vue'
+import AiTrends from './views/AiTrends.vue'
 
 // Nav order tells the decision-maker story:
 // score → why → which hosts → what to do → cost → operations → governance.
@@ -26,6 +28,8 @@ const routes = [
   { path: '/gitops', name: 'GitOps timeline', component: GitOps },
   { path: '/patch-velocity', name: 'Patch velocity', component: PatchVelocity },
   { path: '/connectivity', name: 'Connectivity', component: Connectivity },
+  { path: '/ai-tools', name: 'AI tools', component: AiTools },
+  { path: '/ai-tools/trends', name: 'AI tools trends', component: AiTrends },
   { path: '/audit', name: 'Audit log', component: AuditLogs },
   { path: '/styleguide', name: 'Style guide', component: StyleGuide },
 
