@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-17T10:38:46Z",
+  "generated": "2026-09-17T15:52:29Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "cd77b96c6f47a6944a05f72ed1b248d65f902a1b",
-    "short_sha": "cd77b96c6f",
-    "message": "Modify DEX query (#53332)",
-    "timestamp": "2026-09-16T07:14:50-07:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/cd77b96c6f47a6944a05f72ed1b248d65f902a1b"
+    "sha": "d061c8e58d8462afde3f55531d2b130c16c24cab",
+    "short_sha": "d061c8e58d",
+    "message": "Bump Linux Claude Desktop patch policy to 2.110.1 (#53420)",
+    "timestamp": "2026-09-17T09:53:19-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/d061c8e58d8462afde3f55531d2b130c16c24cab"
   },
   "fleets": [
     {
@@ -676,11 +676,6 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/1password-installed.yml"
         },
         {
-          "name": "all-software-updates-installed",
-          "file": "it-and-security/lib/macos/policies/all-software-updates-installed.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/all-software-updates-installed.yml"
-        },
-        {
           "name": "battery-health-check",
           "file": "it-and-security/lib/macos/policies/battery-health-check.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/battery-health-check.yml"
@@ -1049,7 +1044,7 @@
     "agent_options": 2,
     "icons": 7,
     "labels": 24,
-    "policies": 44,
+    "policies": 43,
     "reports": 22,
     "scripts": 19,
     "configuration_profiles": 43,
@@ -1058,6 +1053,6 @@
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 191
+    "total_files": 190
   }
 }

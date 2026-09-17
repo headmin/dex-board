@@ -1,5 +1,32 @@
 [
   {
+    "sha": "d061c8e58d8462afde3f55531d2b130c16c24cab",
+    "short_sha": "d061c8e58d",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 2.110.1 (#53420)",
+    "timestamp": "2026-09-17T09:53:19-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
+    "sha": "9190127da85fbfb3cae68053ea527532ccb09625",
+    "short_sha": "9190127da8",
+    "author": "claude[bot]",
+    "email": "209825114+claude[bot]@users.noreply.github.com",
+    "message": "Remove software updates policy from workstations team (dogfood GitOps) (#53421)",
+    "timestamp": "2026-09-17T09:21:39-05:00",
+    "insertions": 0,
+    "deletions": 10,
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/all-software-updates-installed.yml"
+    ]
+  },
+  {
     "sha": "cd77b96c6f47a6944a05f72ed1b248d65f902a1b",
     "short_sha": "cd77b96c6f",
     "author": "Harrison Ravazzolo",
@@ -7348,35 +7375,6 @@
       "it-and-security/lib/windows/policies/cis.yml",
       "it-and-security/lib/windows/policies/device-health.yml",
       "it-and-security/lib/windows/policies/windows-device-health.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "42339375437c21830bcbd0d9fa1afa4533e4cedb",
-    "short_sha": "4233937543",
-    "author": "Harrison Ravazzolo",
-    "email": "38767391+harrisonravazzolo@users.noreply.github.com",
-    "message": "Add CSP to disable guest account, add to canary team (#25862)",
-    "timestamp": "2025-01-29T09:27:42-08:00",
-    "insertions": 12,
-    "deletions": 0,
-    "files": [
-      "it-and-security/lib/windows/configuration-profiles/disable-guest-account.xml",
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "52d5632e37b5ec9704f2230eab843ab724a055e2",
-    "short_sha": "52d5632e37",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Updates for webhooks (#25806)",
-    "timestamp": "2025-01-28T20:58:12-06:00",
-    "insertions": 12,
-    "deletions": 12,
-    "files": [
-      "it-and-security/default.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]
