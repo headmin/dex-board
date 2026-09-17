@@ -240,7 +240,12 @@ const activeTab = ref('crashes')
 // The detail row arrives after the route does, so fall back to the route param
 // while it loads — displayHost({}) on an empty row renders a placeholder name.
 const titleName = computed(() =>
-  displayHost(detail.value?.host_id ? detail.value : { host_id: hostId.value }) || hostId.value
+  // The detail query has no host_id column, so "did it load" is read from
+  // the name fields; host_id is added so demo-mode pseudonyms key on the
+  // UUID like every other page.
+  (detail.value?.computer_name || detail.value?.hostname)
+    ? displayHost({ ...detail.value, host_id: hostId.value })
+    : displayHost({ host_id: hostId.value }) || hostId.value
 )
 
 // ─── Fetch (same host-scoped batch the old drawer used) ───────

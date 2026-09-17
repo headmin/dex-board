@@ -131,6 +131,7 @@ export const firehoseDeviceQueries: QueryConfig[] = [
     ],
     sql: `
       SELECT
+        {filterHostId:String} AS host_id,
         h.hostname, h.computer_name, h.cpu_brand, h.cpu_logical_cores,
         h.hardware_model, h.hardware_serial, h.memory_gb,
         toDateTime(lastseen.last_seen) AS last_seen,
