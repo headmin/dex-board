@@ -24,6 +24,7 @@ import { firehoseScoreQueries } from './queries/core-scores'
 import { firehoseSecurityQueries } from './queries/core-security'
 import { firehoseLifecycleQueries } from './queries/core-lifecycle'
 import { firehoseAiToolsQueries } from './queries/core-ai-tools'
+import { firehoseThermalQueries } from './queries/core-thermal'
 
 registry.registerAll(auditQueries)
 registry.registerAll(firehoseWifiQueries)
@@ -41,6 +42,7 @@ registry.registerAll(firehoseScoreQueries)
 registry.registerAll(firehoseSecurityQueries)
 registry.registerAll(firehoseLifecycleQueries)
 registry.registerAll(firehoseAiToolsQueries)
+registry.registerAll(firehoseThermalQueries)
 
 // ─── Hono app ────────────────────────────────────────────
 const app = new Hono<{ Bindings: Env }>()

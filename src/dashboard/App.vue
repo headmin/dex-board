@@ -169,7 +169,7 @@
               <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/>
               <path d="M4 4l16 16"/>
             </svg>
-            Demo mode — names are pseudonyms, not real hosts
+            Demo mode — names are pseudonyms to hide sensitive information; the host data is real
           </div>
         </div>
         <div class="content-wrapper">

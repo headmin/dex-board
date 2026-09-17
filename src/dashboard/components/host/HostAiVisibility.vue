@@ -32,10 +32,10 @@
           <span class="ai-vis-count">{{ gov.local.tools + gov.mcp.servers }}</span>
           <span class="ai-vis-list">{{ [names(gov.local.list), gov.mcp.servers ? `${gov.mcp.servers} MCP server${gov.mcp.servers === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ') || '—' }}</span>
         </div>
-        <div class="ai-vis-tile" :class="summary.risk.flagged ? 'ai-vis-tile--' + worstSeverity : 'ai-vis-tile--clean'">
-          <span class="ai-vis-eyebrow">Flagged findings</span>
-          <span class="ai-vis-count">{{ summary.risk.flagged }}</span>
-          <span class="ai-vis-list">{{ summary.risk.flagged ? flagSummary : 'no risk flags' }}</span>
+        <div class="ai-vis-tile" :class="summary.risk.flagged ? 'ai-vis-tile--' + worstSeverity : 'ai-vis-tile--clean'" :title="`Preliminary: 100 − ${RISK_WEIGHTS.host.critical}·critical − ${RISK_WEIGHTS.host.elevated}·elevated − ${RISK_WEIGHTS.host.fair}·fair findings`">
+          <span class="ai-vis-eyebrow">AI risk — preliminary</span>
+          <span class="ai-vis-count">{{ hostRisk.grade }} <span class="ai-vis-score">{{ hostRisk.score }}/100</span></span>
+          <span class="ai-vis-list">{{ summary.risk.flagged ? `${summary.risk.flagged} flagged: ${flagSummary}` : 'no risk flags' }}</span>
         </div>
       </div>
 
@@ -78,7 +78,7 @@ import EmptyState from '../base/EmptyState.vue'
 import SkeletonLoader from '../base/SkeletonLoader.vue'
 import Tabs from '../base/Tabs.vue'
 import DataTable from '../DataTable.vue'
-import { normalizeRows, summarize, mcpServers, governance, flagInfo, isLoopback, SURFACES, SEVERITY_TONE } from '../../composables/aiInventory'
+import { normalizeRows, summarize, mcpServers, governance, flagInfo, isLoopback, hostRiskScore, gradeOf, RISK_WEIGHTS, SURFACES, SEVERITY_TONE } from '../../composables/aiInventory'
 import { useAppConfig } from '../../composables/useAppConfig'
 import { isMasked } from '../../composables/useDemoMode'
 
@@ -131,6 +131,11 @@ const summary = computed(() => summarize(rows.value))
 const gov = computed(() => governance(rows.value, config.value.knownAiVendors ? { knownVendors: config.value.knownAiVendors } : {}))
 const servers = computed(() => mcpServers(rows.value))
 const worstSeverity = computed(() => summary.value.risk.flags[0]?.severity || null)
+const hostRisk = computed(() => {
+  const b = summary.value.risk.bySeverity
+  const score = hostRiskScore({ critical: b.critical, elevated: b.elevated, fair: b.fair })
+  return { score, grade: gradeOf(score) }
+})
 const flagSummary = computed(() => summary.value.risk.flags.slice(0, 3).map(f => f.label.toLowerCase()).join(', '))
 const scannedAtLabel = computed(() => (scannedAt.value ? dayjs(scannedAt.value).format('YYYY-MM-DD HH:mm') : ''))
 
@@ -216,6 +221,7 @@ const findingRows = computed(() => rows.value
 .ai-vis-tile--elevated { border-top-color: var(--status-elevated); }
 .ai-vis-tile--critical { border-top-color: var(--status-critical); }
 .ai-vis-eyebrow { font-size: var(--font-size-xxsmall); font-weight: 600; color: var(--fleet-black-50); letter-spacing: 0.4px; text-transform: uppercase; }
+.ai-vis-score { font-size: 13px; font-weight: 500; color: var(--fleet-black-50); }
 .ai-vis-count { font-size: 26px; font-weight: 700; line-height: 1; color: var(--fleet-black); font-variant-numeric: tabular-nums; }
 .ai-vis-list { font-size: var(--font-size-sm); color: var(--fleet-black-75); line-height: 1.4; text-wrap: pretty; }
 

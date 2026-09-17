@@ -102,6 +102,65 @@
       </div>
     </section>
 
+    <!-- ─── Wear — fan baseline vs battery ──────────────────── -->
+    <section class="grammar-section">
+      <div class="grammar-head">
+        <h2 class="grammar-title">Wear — fan baseline vs battery</h2>
+        <span class="grammar-hint">
+          <template v-if="wear.hostsReporting">{{ wear.hostsReporting }} hosts reporting thermal telemetry · {{ wear.hostsFanless }} fanless · window {{ THERMAL_WINDOW_DAYS }}d</template>
+          <template v-else>Dust buildup shows as drift: more fan at idle for the same temperature</template>
+        </span>
+      </div>
+
+      <EmptyState
+        v-if="!loading && !wear.hostsReporting"
+        small
+        title="Thermal telemetry is not collected yet"
+        info="The pack query 'DEX - Hardware experience - Thermal' (fan RPM, heatsink temperature, load and battery wear, hourly, macOS) is drafted in setup/fleet-query-packs/dex-queries.yml and the thermal_health table is ready. This panel fills in once the pack ships and a week of scans has landed."
+      />
+
+      <template v-else>
+        <div class="metrics-row four-col">
+          <MetricCard label="Hosts with a fan baseline" :value="wear.hostsBaselined" :loading="loading" :subtitle="`${wear.hostsWithFan} with a fan · ≥ ${MIN_IDLE_SAMPLES} idle samples each`" />
+          <MetricCard label="Fleet idle fan" :value="wear.fleetIdleRpm != null ? Math.round(wear.fleetIdleRpm) : null" unit="rpm" :loading="loading" subtitle="median of host idle medians" />
+          <MetricCard label="Candidates for a look" :value="wear.candidates.length" :loading="loading" :subtitle="`idle fan ≥ ${Math.round((IDLE_RPM_RATIO - 1) * 100)}% above fleet, or ≥ ${Math.round(AT_MAX_SHARE * 100)}% of time at max`" />
+          <MetricCard label="Idle fan vs battery cycles" :value="wear.correlations.idleRpmVsCycles.r != null ? `r = ${wear.correlations.idleRpmVsCycles.r}` : '—'" :loading="loading" :subtitle="describeCorrelation(wear.correlations.idleRpmVsCycles.r, wear.correlations.idleRpmVsCycles.n)" />
+        </div>
+
+        <div class="charts-row two-col">
+          <ScatterChart
+            title="Idle fan RPM vs battery cycles — one point per host"
+            :data="wearPoints" xKey="batteryCycles" yKey="idleRpm" labelKey="label"
+            xLabel="battery cycles" yLabel="idle fan rpm" highlightKey="flagged"
+            :yLine="wear.fleetIdleRpm" :loading="loading"
+            emptyText="No host has enough idle samples for a baseline yet"
+          />
+          <ScatterChart
+            title="Idle fan RPM vs battery health — one point per host"
+            :data="wearPoints" xKey="batteryHealthPct" yKey="idleRpm" labelKey="label"
+            xLabel="battery health %" yLabel="idle fan rpm" highlightKey="flagged"
+            :yLine="wear.fleetIdleRpm" :loading="loading"
+            emptyText="No host has enough idle samples for a baseline yet"
+          />
+        </div>
+        <p class="section-caption">
+          Pearson r over hosts with a fan baseline; shown only from {{ MIN_HOSTS_FOR_CORRELATION }} hosts. A positive r says older batteries sit in machines that also run their fans harder at idle — age, not proof of dust. Candidates are highlighted; they deserve a look, not a verdict.
+        </p>
+
+        <div v-if="wear.candidates.length && !wcMode" class="wear-list">
+          <div v-for="c in wear.candidates.slice(0, 12)" :key="c.hostId" class="wear-row">
+            <router-link :to="`/hosts/${c.hostId}`" class="wear-host">{{ displayHost({ host_id: c.hostId, hostname: c.hostname }) }}</router-link>
+            <span class="wear-model">{{ c.hardwareModel || '—' }}</span>
+            <span class="wear-num mono">{{ Math.round(c.idleRpm) }} rpm idle</span>
+            <span class="wear-num mono">{{ c.pctAtMax != null ? Math.round(c.pctAtMax * 100) + '% at max' : '—' }}</span>
+            <span class="wear-num mono">{{ c.batteryCycles ?? '—' }} cycles · {{ c.batteryHealthPct != null ? c.batteryHealthPct + '%' : '—' }}</span>
+            <span class="wear-why">{{ c.reasons.join('; ') }}</span>
+          </div>
+        </div>
+        <p v-else-if="wear.candidates.length && wcMode" class="section-caption">{{ wear.candidates.length }} candidate host{{ wear.candidates.length === 1 ? '' : 's' }} — per-host detail withheld in Workers Council mode.</p>
+      </template>
+    </section>
+
     <!-- ─── Act — refresh shortlist ─────────────────────────── -->
     <section class="grammar-section">
       <div class="grammar-head">
@@ -188,6 +247,10 @@ import { query } from '../services/api'
 import BaseButton from '../components/base/BaseButton.vue'
 import Badge from '../components/base/Badge.vue'
 import EmptyState from '../components/base/EmptyState.vue'
+import MetricCard from '../components/MetricCard.vue'
+import ScatterChart from '../components/ScatterChart.vue'
+import { thermalWear, describeCorrelation, MIN_IDLE_SAMPLES, IDLE_RPM_RATIO, AT_MAX_SHARE, MIN_HOSTS_FOR_CORRELATION } from '../composables/thermalWear'
+import { useWorkersCouncil } from '../composables/useWorkersCouncil'
 import GradeBadge from '../components/GradeBadge.vue'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { useSort } from '../composables/useSort'
@@ -202,6 +265,9 @@ const fp = () => ({ ...filterParams.value })
 
 const error = ref(null)
 const loading = ref(false)
+const THERMAL_WINDOW_DAYS = 14
+const { wcMode } = useWorkersCouncil()
+const thermalRows = ref([])
 const summary = ref({})
 const candidates = ref([])
 const scores = ref([])
@@ -212,18 +278,22 @@ async function load() {
   error.value = null
   loading.value = true
   try {
-    const [s, list, scoreRows, cpuRows, modelRows] = await Promise.all([
+    const [s, list, scoreRows, cpuRows, modelRows, thermal] = await Promise.all([
       query('firehose.lifecycle.refresh_summary', fp()),
       query('firehose.lifecycle.refresh_candidates', { ...fp(), limit: 200 }),
       query('firehose.scores.device_list', { timeRange: 720, limit: 500, ...fp() }).catch(() => []),
       query('firehose.scores.dimension_cpu', { timeRange: 720, ...fp() }).catch(() => []),
       query('firehose.scores.dimension_model', { timeRange: 720, ...fp() }).catch(() => []),
+      // Thermal is optional telemetry: an empty or missing table reads as
+      // "not collected yet", never as a page error.
+      query('firehose.thermal.host_baselines', { ...fp(), windowDays: THERMAL_WINDOW_DAYS }).catch(() => []),
     ])
     summary.value = s[0] || {}
     candidates.value = list || []
     scores.value = scoreRows || []
     cpuDim.value = cpuRows || []
     modelDim.value = modelRows || []
+    thermalRows.value = thermal || []
   } catch (e) {
     error.value = e.message
   }
@@ -232,6 +302,13 @@ async function load() {
 
 onMounted(load)
 watch(filterParams, load, { deep: true })
+
+// ─── Thermal wear ─────────────────────────────────────────────────
+const wear = computed(() => thermalWear(thermalRows.value))
+const wearPoints = computed(() => {
+  const flagged = new Set(wear.value.candidates.map(c => c.hostId))
+  return wear.value.points.map(p => ({ ...p, label: displayHost({ host_id: p.hostId, hostname: p.hostname }), flagged: flagged.has(p.hostId) }))
+})
 
 function openHost(id) {
   if (id) router.push(`/hosts/${id}`)
@@ -648,6 +725,13 @@ function exportShortlist() {
 .grammar-section { display: flex; flex-direction: column; gap: var(--pad-smedium); }
 .grammar-head { display: flex; align-items: baseline; justify-content: space-between; }
 .grammar-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--fleet-black); }
+.wear-list { display: flex; flex-direction: column; border: 1px solid var(--fleet-black-10); border-radius: var(--radius-large); background: var(--fleet-white); overflow: hidden; }
+.wear-row { display: grid; grid-template-columns: 1.2fr 0.8fr 110px 100px 150px 1.6fr; gap: var(--pad-small); align-items: center; padding: 8px var(--pad-medium); border-bottom: 1px solid var(--fleet-black-5); font-size: var(--font-size-sm); }
+.wear-row:last-child { border-bottom: 0; }
+.wear-host { font-weight: 600; }
+.wear-model, .wear-why { color: var(--fleet-black-50); }
+.wear-num { color: var(--fleet-black-75); font-family: var(--font-mono); }
+@media (max-width: 1100px) { .wear-row { grid-template-columns: 1fr 1fr; } }
 .grammar-hint { font-size: var(--font-size-sm); color: var(--fleet-black-50); }
 
 /* ─── Why: cliff cards ─────────────────────────── */

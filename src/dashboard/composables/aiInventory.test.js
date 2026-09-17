@@ -21,6 +21,8 @@ import {
   hostOfEndpoint,
   portOfEndpoint,
   governance,
+  fleetRiskRating,
+  hostRiskScore,
 } from './aiInventory.js'
 
 const raw = (over) => ({
@@ -176,7 +178,7 @@ test('endpoint host parsing and loopback detection', () => {
 
 test('accepts the ClickHouse dialect and the second query shape', () => {
   const live = normalizeRows([
-    { host_id: 'UUID-1', hostname: 'mi5.localdomain', timestamp: '2026-09-17 08:00:00', tool_type: 'mcp_server', tool_name: 'wedge', category: 'mcp-server', identifier: 'wedge', origin: 'claude-code', location: 'remote', path: '/Users/henry/.claude.json', version: '', risk_indicators: 'cleartext_endpoint', target_endpoint: 'http://127.0.0.1:8787/mcp', detail: '{"transport":"http","scope":"project","source_type":"config"}', sha256_hash: '' },
+    { host_id: 'UUID-1', hostname: 'mi5.localdomain', timestamp: '2026-09-17 08:00:00', tool_type: 'mcp_server', tool_name: 'wedge', category: 'mcp-server', identifier: 'wedge', origin: 'claude-code', location: 'remote', path: '/Users/someone/.claude.json', version: '', risk_indicators: 'cleartext_endpoint', target_endpoint: 'http://127.0.0.1:8787/mcp', detail: '{"transport":"http","scope":"project","source_type":"config"}', sha256_hash: '' },
     { host_id: 'UUID-1', hostname: 'mi5.localdomain', timestamp: '2026-09-17 08:00:00', tool_type: 'sockets', tool_name: '2.1.270', category: 'ai-api-egress', identifier: 'unknown', origin: 'established', location: 'remote', path: '', version: '', risk_indicators: '', target_endpoint: '160.79.104.10:443', detail: '{"cmdline":"claude","protocol":"tcp"}', sha256_hash: '' },
     { host_id: 'UUID-1', hostname: 'mi5.localdomain', timestamp: '2026-09-17 08:00:00', tool_type: 'mcp_server', tool_name: 'salesforce-mcp-server', category: 'mcp-server', identifier: 'salesforce-mcp-server', origin: 'process', location: 'local', path: '', version: '', risk_indicators: '', target_endpoint: '', detail: '{"transport":"stdio","source_type":"process"}', sha256_hash: '' },
     { host_id: 'UUID-1', hostname: 'mi5.localdomain', timestamp: '2026-09-17 08:00:00', tool_type: 'agents', tool_name: 'claude-code', category: '', identifier: 'claude', origin: 'homebrew', location: 'local', path: '/opt/homebrew/bin/claude', version: '', risk_indicators: 'skip_permissions_runtime', target_endpoint: '', detail: '{"binary":"claude"}', sha256_hash: '' },
@@ -270,4 +272,34 @@ test('vendor prefers the identifier and ignores the MCP client', () => {
   assert.equal(v({ type: 'mcp_server', name: 'github-mcp-server', identifier: 'github-mcp-server', source: 'claude-code' }), 'GitHub')
   assert.equal(v({ type: 'agent_instruction', name: 'CLAUDE.md', identifier: 'claude', source: 'claude' }), 'Anthropic')
   assert.equal(v({ type: 'sockets', name: '2.1.270', identifier: 'unknown', detail: '{"cmdline":"claude"}' }), 'Anthropic', '"unknown" identifier falls through to the cmdline')
+})
+
+test('preliminary risk rating: fleet from scanned-host shares, host from weighted findings', () => {
+  assert.equal(hostRiskScore({}), 100)
+  assert.equal(hostRiskScore({ critical: 1 }), 70, 'one plaintext secret is a C')
+  assert.equal(hostRiskScore({ critical: 3, elevated: 2 }), 0, 'floored at zero')
+  assert.equal(hostRiskScore({ fair: 2, elevated: 1 }), 84)
+
+  const rows = normalizeRows(FIXTURE)          // Host A + Host B critical, Host C clean
+  const s = summarize(rows)
+  const r = fleetRiskRating(s, 10)             // 10 scanned, 2 critical hosts
+  assert.equal(r.denominator, 10)
+  assert.equal(r.score, 88, '100 - 60 * 0.2')
+  assert.equal(r.grade, 'B')
+  const noScan = fleetRiskRating(s)            // CSV: hosts with findings as denominator
+  assert.equal(noScan.denominator, 3)
+  assert.equal(noScan.score, 60)
+  assert.equal(noScan.grade, 'C')
+  assert.deepEqual(fleetRiskRating(summarize([]), 0), { score: null, grade: null, denominator: 0, shares: null })
+
+  const hosts = hostRollup(rows)
+  assert.equal(hosts[0].riskScore, 60, 'Host A: one critical extension (30) + one elevated MCP server (10)')
+})
+
+test('configFile is the last path segment and firstSeen passes through', () => {
+  const [r] = normalizeRows([raw({ type: 'mcp_server', name: 'x', path: '/Users/someone/.claude.json', first_seen: '2026-09-16 14:02:49' })])
+  assert.equal(r.configFile, '.claude.json')
+  assert.equal(r.firstSeen, '2026-09-16 14:02:49')
+  const [w] = normalizeRows([raw({ type: 'ide_plugins', name: 'y', executable_path: 'C:\\Program Files\\Windsurf' })])
+  assert.equal(w.configFile, 'Windsurf')
 })

@@ -34,29 +34,31 @@
       <!-- ─── Answer — the governance reading ───────────────────── -->
       <section class="ai-hero">
         <div class="hero-block">
-          <span class="hero-eyebrow">Hosts with AI tooling</span>
-          <div class="hero-count-row">
-            <span class="hero-count">{{ loading ? '—' : summary.hosts }}</span>
-            <span v-if="scannedHosts" class="hero-count-of">of {{ scannedHosts }} scanned</span>
+          <span class="hero-eyebrow">AI risk — preliminary</span>
+          <div class="hero-grade-row">
+            <GradeBadge v-if="!loading && risk.grade" :grade="risk.grade" class="hero-grade" />
+            <span v-else class="hero-count">—</span>
+            <div class="hero-grade-text">
+              <span class="hero-score">{{ loading || risk.score == null ? '—' : risk.score }}<span class="hero-score-of">/100</span></span>
+              <span class="hero-count-of">{{ summary.hosts }} of {{ risk.denominator || summary.hosts }} {{ scannedHosts ? 'scanned' : '' }} hosts with AI tooling</span>
+            </div>
           </div>
-          <span v-if="!loading" class="hero-chip">{{ summary.findings.toLocaleString() }} findings across {{ surfacesWithData }} surfaces</span>
+          <span v-if="!loading" class="hero-chip" :title="riskFormula">{{ summary.risk.flagged }} flagged of {{ summary.findings.toLocaleString() }} findings · hover for the formula</span>
         </div>
         <div class="hero-narrative">
           <p class="hero-headline">
             <template v-if="loading">Loading the inventory…</template>
             <template v-else-if="!summary.hosts">No AI tooling findings in this selection.</template>
+            <template v-else-if="!summary.risk.flaggedHosts">
+              <span class="hl-good">No finding carries a risk flag</span> across {{ summary.hosts }} hosts.
+            </template>
             <template v-else>
-              <span class="hl-good">{{ gov.known.tools }} known product{{ gov.known.tools === 1 ? '' : 's' }}</span> on {{ gov.known.hosts }} host{{ gov.known.hosts === 1 ? '' : 's' }},
-              <span class="hl-fair">{{ gov.explorative.tools }} explorative tool{{ gov.explorative.tools === 1 ? '' : 's' }}</span> on {{ gov.explorative.hosts }},
-              <span class="hl-info">{{ gov.local.tools + gov.mcp.servers }} local</span> — {{ gov.local.tools }} self-hosted tool{{ gov.local.tools === 1 ? '' : 's' }} and {{ gov.mcp.servers }} MCP server{{ gov.mcp.servers === 1 ? '' : 's' }}.
+              <span :class="summary.risk.hostsBySeverity.critical ? 'hl-bad' : 'hl-fair'">{{ summary.risk.flagged }} flagged finding{{ summary.risk.flagged === 1 ? '' : 's' }} on {{ summary.risk.flaggedHosts }} host{{ summary.risk.flaggedHosts === 1 ? '' : 's' }}</span><template v-if="summary.risk.bySeverity.critical">, {{ summary.risk.bySeverity.critical }} critical<template v-if="criticalFlagLabels"> — {{ criticalFlagLabels }}</template></template>.
+              <template v-if="newCriticalThisWeek"> {{ newCriticalThisWeek }} of the critical ones appeared in the last 7 days.</template>
             </template>
           </p>
           <p v-if="!loading && summary.hosts" class="hero-support">
-            <template v-if="summary.risk.flaggedHosts">
-              {{ summary.risk.flaggedHosts }} of {{ summary.hosts }} hosts carry at least one flagged finding<template v-if="summary.risk.hostsBySeverity.critical">, {{ summary.risk.hostsBySeverity.critical }} at critical severity<template v-if="criticalFlagLabels"> ({{ criticalFlagLabels }})</template></template>.
-            </template>
-            <template v-else>No finding carries a risk flag.</template>
-            <template v-if="gov.mcp.servers">{{ ' ' }}Of the MCP servers, {{ gov.mcp.localProcess }} run as local processes, {{ gov.mcp.loopback }} on loopback, {{ gov.mcp.remote }} reach remote endpoints.</template>
+            {{ gov.known.tools }} known product{{ gov.known.tools === 1 ? '' : 's' }} on {{ gov.known.hosts }} host{{ gov.known.hosts === 1 ? '' : 's' }}, {{ gov.explorative.tools }} explorative on {{ gov.explorative.hosts }}, {{ gov.local.tools }} self-hosted and {{ gov.mcp.servers }} MCP server{{ gov.mcp.servers === 1 ? '' : 's' }}<template v-if="gov.mcp.servers"> ({{ gov.mcp.localProcess }} local process, {{ gov.mcp.loopback }} loopback, {{ gov.mcp.remote }} remote)</template>.
             <template v-if="summary.network.hosts">{{ ' ' }}{{ summary.network.hosts }} host{{ summary.network.hosts === 1 ? ' had' : 's had' }} a live AI API connection at last scan.</template>
           </p>
         </div>
@@ -69,6 +71,55 @@
             <div class="hero-rail-row"><span>No flags</span><span class="hero-rail-count">{{ loading ? '—' : cleanHosts }}</span></div>
           </div>
         </div>
+      </section>
+
+      <!-- ─── Findings — the worklist ──────────────────────────── -->
+      <section class="section">
+        <div class="grammar-head">
+          <h2 class="grammar-title">Findings — what to fix</h2>
+          <div class="work-controls">
+            <span class="grammar-hint">{{ worklist.length }} shown · click a row to open its host</span>
+            <button type="button" class="work-btn" :class="{ 'work-btn--on': showFair }" @click="showFair = !showFair">{{ showFair ? 'Hide fair' : `Show fair (${fairCount})` }}</button>
+            <button type="button" class="work-btn" :disabled="!worklist.length" @click="exportWorklist">Export CSV</button>
+          </div>
+        </div>
+        <ChartCard title="Findings by worst flag" :loading="loading" :empty="!summary.findings">
+          <DistributionStrip :data="severityDist" nameKey="name" valueKey="value" :order="SEVERITY_DIST_ORDER" :tones="SEVERITY_DIST_TONES" />
+        </ChartCard>
+        <div v-if="!loading && summary.risk.flags.length" class="flag-chips">
+          <button
+            v-for="f in summary.risk.flags"
+            :key="f.flag"
+            type="button"
+            class="flag-chip"
+            :class="['flag-chip--' + f.severity, { 'flag-chip--on': activeFlag === f.flag, 'flag-chip--dim': f.severity === 'fair' && !showFair && activeFlag !== f.flag }]"
+            :title="f.description"
+            @click="activeFlag = activeFlag === f.flag ? '' : f.flag"
+          >
+            <span class="flag-chip-label">{{ f.label }}</span>
+            <span class="flag-chip-count">{{ f.findings }}</span>
+          </button>
+        </div>
+        <p v-if="activeFlagInfo" class="flag-active">
+          <Badge :tone="SEVERITY_TONE[activeFlagInfo.severity]" :label="activeFlagInfo.severity" />
+          <span><strong>{{ activeFlagInfo.label }}.</strong> {{ activeFlagInfo.description }}
+            <template v-if="activeFlagInfo.caveat && (activeFlagInfo.unverified || activeFlagInfo.waived)"> <span class="flag-caveat-inline">{{ activeFlagInfo.unverified ? `${activeFlagInfo.unverified} finding(s) have no recorded endpoint host. ` : '' }}{{ activeFlagInfo.waived ? `${activeFlagInfo.waived} loopback finding(s) waived. ` : '' }}{{ activeFlagInfo.caveat }}</span></template>
+            <template v-if="activeFlagInfo.uncatalogued"> Uncatalogued flag — severity defaults to fair.</template>
+          </span>
+        </p>
+        <DataTable
+          :data="worklist"
+          :columns="worklistColumns"
+          :loading="loading"
+          density="compact"
+          :clickable="!wcMode && worklist.some(r => r.hostId)"
+          defaultSortKey="severity_rank"
+          :maxRows="WORKLIST_MAX"
+          @row-click="openHost"
+        />
+        <p v-if="worklist.length > WORKLIST_MAX" class="section-caption">Showing the first {{ WORKLIST_MAX }} of {{ worklist.length }} findings — narrow with a flag chip or export the CSV.</p>
+        <p v-else-if="!loading && !worklist.length" class="section-caption">{{ summary.risk.flagged ? 'Only fair-severity findings remain — show fair to list them.' : 'No finding in this selection carries a risk flag.' }}</p>
+        <p v-if="!loading && summary.findings" class="section-caption risk-formula">Preliminary rating: {{ riskFormula }}</p>
       </section>
 
       <!-- ─── Governance — the three tiers ─────────────────────── -->
@@ -142,44 +193,6 @@
           defaultSortKey="hosts"
           :defaultSortAsc="false"
         />
-      </section>
-
-      <!-- ─── Risk — what needs attention ──────────────────────── -->
-      <section class="section">
-        <div class="grammar-head">
-          <h2 class="grammar-title">Risk — findings with a flag</h2>
-          <span class="grammar-hint">Flags are emitted by the discovery queries; severity is this board's ordering of them</span>
-        </div>
-        <ChartCard title="Findings by worst flag" :loading="loading" :empty="!summary.findings">
-          <DistributionStrip :data="severityDist" nameKey="name" valueKey="value" :order="SEVERITY_DIST_ORDER" :tones="SEVERITY_DIST_TONES" />
-        </ChartCard>
-        <div v-if="!loading && summary.risk.flags.length" class="flag-list">
-          <button
-            v-for="f in summary.risk.flags"
-            :key="f.flag"
-            type="button"
-            class="flag-row"
-            :class="{ 'flag-row--open': drill?.id === 'flag:' + f.flag }"
-            @click="drillFlag(f)"
-          >
-            <Badge :tone="SEVERITY_TONE[f.severity]" :label="f.severity" />
-            <div class="flag-text">
-              <span class="flag-label">{{ f.label }}<span v-if="f.uncatalogued" class="flag-uncat"> · uncatalogued</span></span>
-              <span class="flag-desc">{{ f.description }}</span>
-              <span v-if="f.caveat && (f.unverified || f.waived)" class="flag-caveat">
-                <template v-if="f.unverified">{{ f.unverified }} of {{ f.findings }} finding{{ f.findings === 1 ? '' : 's' }} {{ f.unverified === 1 ? 'is' : 'are' }} on a server whose endpoint host the query did not record, so a loopback address cannot be ruled out. </template>
-                <template v-if="f.waived">{{ f.waived }} loopback finding{{ f.waived === 1 ? '' : 's' }} waived and not counted here. </template>
-                {{ f.caveat }}
-              </span>
-            </div>
-            <div class="flag-counts">
-              <span class="flag-count"><strong>{{ f.findings }}</strong> finding{{ f.findings === 1 ? '' : 's' }}</span>
-              <span class="flag-count"><strong>{{ f.hosts }}</strong> host{{ f.hosts === 1 ? '' : 's' }}</span>
-              <span class="flag-surfaces">{{ f.surfaces.join(', ') }}</span>
-            </div>
-          </button>
-        </div>
-        <p v-else-if="!loading" class="section-caption">No finding in this selection carries a risk flag.</p>
       </section>
 
       <!-- ─── Drill panel — shared by flags, servers and hosts ─── -->
@@ -330,7 +343,8 @@ import SearchInput from '../components/base/SearchInput.vue'
 import Tabs from '../components/base/Tabs.vue'
 import AiToolsNav from '../components/ai/AiToolsNav.vue'
 import { useAiInventory } from '../composables/useAiInventory'
-import { summarize, mcpServers, hostRollup, governance, flagInfo, isLoopback, SURFACES, SEVERITY_ORDER, SEVERITY_TONE } from '../composables/aiInventory'
+import GradeBadge from '../components/GradeBadge.vue'
+import { summarize, mcpServers, hostRollup, governance, flagInfo, isLoopback, fleetRiskRating, gradeOf, RISK_WEIGHTS, SURFACES, SEVERITY_ORDER, SEVERITY_TONE } from '../composables/aiInventory'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { useWorkersCouncil } from '../composables/useWorkersCouncil'
 import { useExpertMode } from '../composables/useExpertMode'
@@ -340,6 +354,7 @@ import { isMasked } from '../composables/useDemoMode'
 import { humanizeToken } from '../composables/humanize'
 
 const DRILL_MAX = 200
+const WORKLIST_MAX = 150
 const FINDINGS_MAX = 300
 
 const SEVERITY_DIST_ORDER = ['critical', 'elevated', 'fair', 'clean']
@@ -362,6 +377,78 @@ const summary = computed(() => summarize(rows.value))
 // else the board default. Either way the page names the list in expert mode.
 const gov = computed(() => governance(rows.value, config.value.knownAiVendors ? { knownVendors: config.value.knownAiVendors } : {}))
 const scannedHosts = computed(() => Number(coverage.value?.hosts_scanned) || 0)
+
+// ─── Preliminary risk rating ─────────────────────────────────────
+const risk = computed(() => fleetRiskRating(summary.value, scannedHosts.value))
+const riskFormula = computed(() => {
+  const w = RISK_WEIGHTS.fleet
+  const sh = risk.value.shares
+  const pct = v => `${Math.round((v || 0) * 100)}%`
+  return `100 − (${w.critical} × share of hosts whose worst flag is critical${sh ? ` [${pct(sh.critical)}]` : ''} + ${w.elevated} × elevated${sh ? ` [${pct(sh.elevated)}]` : ''} + ${w.fair} × fair${sh ? ` [${pct(sh.fair)}]` : ''}), over ${risk.value.denominator} ${scannedHosts.value ? 'scanned' : 'reporting'} hosts. Weights are judgement, not calibration.`
+})
+// "Appeared in the last 7 days" is only a statement once the history is
+// older than 7 days; before that every finding is "new" and the sentence is
+// an artefact of when scanning started. historyDays gates it.
+const historyDays = computed(() => {
+  const first = coverage.value?.first_scan_ever
+  return first ? dayjs().diff(dayjs(first), 'day') : 0
+})
+const newCriticalThisWeek = computed(() => {
+  if (historyDays.value < 7) return 0
+  const cutoff = dayjs().subtract(7, 'day')
+  return rows.value.filter(r => r.severity === 'critical' && r.firstSeen && dayjs(r.firstSeen).isAfter(cutoff)).length
+})
+
+// ─── Worklist ────────────────────────────────────────────────────
+const showFair = ref(false)
+const activeFlag = ref('')
+const activeFlagInfo = computed(() => summary.value.risk.flags.find(f => f.flag === activeFlag.value) || null)
+const fairCount = computed(() => rows.value.filter(r => r.severity === 'fair').length)
+const worklistColumns = computed(() => [
+  ...(wcMode.value ? [] : [{ key: 'host_label', label: 'Host' }]),
+  { key: 'severity_label', label: 'Severity', tone: (v, r) => severityTone(r.severity) },
+  { key: 'flags_label', label: 'Flags' },
+  { key: 'tool', label: 'Server / tool' },
+  { key: 'surface', label: 'Surface' },
+  { key: 'file_label', label: 'File' },
+  { key: 'env_label', label: 'Env keys passed' },
+  { key: 'running_label', label: 'Process seen' },
+  { key: 'first_seen_label', label: historyDays.value < 7 ? `First seen (history ${historyDays.value}d)` : 'First seen', type: 'datetime' },
+  ...(expertMode.value ? [{ key: 'path_label', label: 'Path' }] : []),
+])
+const worklist = computed(() => rows.value
+  .filter(r => r.flags.length)
+  .filter(r => showFair.value || r.severity !== 'fair' || activeFlag.value)
+  .filter(r => !activeFlag.value || r.flags.includes(activeFlag.value))
+  .map(r => ({
+    ...toFinding(r),
+    // What to open: the config file for MCP/instructions; the browser profile
+    // for an extension (its path ends in manifest.json, which says nothing).
+    file_label: r.type === 'browser_extension' ? [r.detail.browser, r.detail.profile].filter(Boolean).join(' · ') || '—' : (r.configFile || '—'),
+    tool: r.type === 'browser_extension' && r.version ? `${r.tool} ${r.version}` : r.tool,
+    env_label: parseEnvKeys(r.detail.env_keys).join(', ') || '—',
+    first_seen_label: r.firstSeen || null,
+  })))
+function parseEnvKeys(v) {
+  if (!v) return []
+  if (Array.isArray(v)) return v
+  try { const p = JSON.parse(v); return Array.isArray(p) ? p : [] } catch { return [] }
+}
+function exportWorklist() {
+  if (!worklist.value.length) return
+  const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const cols = ['host', 'host_id', 'severity', 'flags', 'tool', 'surface', 'file', 'env_keys', 'process_seen', 'first_seen', 'path']
+  const lines = [cols.join(','), ...worklist.value.map(r => [
+    wcMode.value ? '' : r.host_label, wcMode.value ? '' : (r.hostId || ''), r.severity_label, r.flags_label, r.tool, r.surface,
+    r.file_label, r.env_label, r.running_label, r.first_seen_label || '', r.path_label,
+  ].map(esc).join(','))]
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = `ai-findings-${activeFlag.value || 'all'}-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(a.href)
+}
 const liveLabel = computed(() => {
   const c = coverage.value
   if (!c) return 'ClickHouse'
@@ -476,6 +563,7 @@ const serverRows = computed(() => servers.value.map(s => ({
 // ─── Hosts table ─────────────────────────────────────────────────
 const hostColumns = [
   { key: 'host_label', label: 'Host' },
+  { key: 'risk_label', label: 'Risk', tone: (v, r) => (r.riskScore < 60 ? 'critical' : r.riskScore < 90 ? 'elevated' : 'good') },
   { key: 'severity_label', label: 'Worst flag', tone: (v, r) => severityTone(r.severity) },
   { key: 'flagged', label: 'Flagged', type: 'number', align: 'right' },
   { key: 'mcp', label: 'MCP', type: 'number', align: 'right' },
@@ -490,6 +578,7 @@ const hostColumns = [
 const hostRows = computed(() => hosts.value.map(h => ({
   ...h,
   host_label: hostLabel(h.host),
+  risk_label: `${gradeOf(h.riskScore)} · ${h.riskScore}`,
   severity_rank: rankOf(h.severity),
   severity_label: h.severity || 'none',
   vendors_label: h.vendors.join(', ') || '—',
@@ -536,16 +625,6 @@ const findingRows = computed(() =>
 // Workers Council mode with the host column removed — the finding itself is
 // not attribution; the host drill is, so it is not offered there.
 const drill = ref(null)
-function drillFlag(f) {
-  if (drill.value?.id === 'flag:' + f.flag) { drill.value = null; return }
-  drill.value = {
-    id: 'flag:' + f.flag,
-    title: `${f.label} — ${f.findings} finding${f.findings === 1 ? '' : 's'}`,
-    caption: f.description,
-    columns: findingColumns.value,
-    rows: rows.value.filter(r => r.flags.includes(f.flag)).map(toFinding),
-  }
-}
 function drillServer(s) {
   if (wcMode.value) return
   if (drill.value?.id === 'server:' + s.key) { drill.value = null; return }
@@ -624,6 +703,30 @@ watch(filterParams, () => load({ ...filterParams.value }), { deep: true })
 .hl-fair { color: var(--status-fair); }
 .hl-bad { color: var(--status-critical-soft); }
 .hl-info { color: var(--fleet-vibrant-blue); }
+.hero-grade-row { display: flex; align-items: center; gap: 14px; }
+.hero-grade { transform: scale(1.35); transform-origin: left center; margin-right: 10px; }
+.hero-grade-text { display: flex; flex-direction: column; gap: 4px; }
+.hero-score { font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.hero-score-of { font-size: 14px; color: var(--fleet-black-33); font-weight: 500; }
+
+/* ─── Worklist ─── */
+.work-controls { display: flex; align-items: center; gap: var(--pad-small); flex-wrap: wrap; }
+.work-btn { padding: 5px 10px; border: 1px solid var(--fleet-black-10); border-radius: var(--radius); background: var(--fleet-white); color: var(--fleet-black-75); font-size: var(--font-size-xxsmall); font-weight: 600; cursor: pointer; }
+.work-btn:hover { border-color: var(--fleet-black-25); color: var(--fleet-black); }
+.work-btn:disabled { opacity: 0.5; cursor: default; }
+.work-btn--on { background: var(--fleet-black-5); color: var(--fleet-black); }
+.flag-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.flag-chip { display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px; border-radius: var(--radius-full); border: 1px solid var(--fleet-black-10); background: var(--fleet-white); font: inherit; font-size: var(--font-size-sm); color: var(--fleet-black-75); cursor: pointer; transition: background var(--transition-fast), border-color var(--transition-fast); }
+.flag-chip:hover { border-color: var(--fleet-black-25); }
+.flag-chip--critical { border-left: 3px solid var(--status-critical); }
+.flag-chip--elevated { border-left: 3px solid var(--status-elevated); }
+.flag-chip--fair { border-left: 3px solid var(--status-fair); }
+.flag-chip--dim { opacity: 0.55; }
+.flag-chip--on { background: var(--fleet-black); color: var(--fleet-white); border-color: var(--fleet-black); }
+.flag-chip-count { font-family: var(--font-mono); font-weight: 700; }
+.flag-active { display: flex; align-items: flex-start; gap: var(--pad-small); margin: 0; font-size: var(--font-size-sm); color: var(--fleet-black-75); line-height: 1.5; text-wrap: pretty; }
+.flag-caveat-inline { color: var(--status-fair-text); }
+.risk-formula { color: var(--fleet-black-50); }
 
 /* ─── Governance tiers ─── */
 .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--pad-smedium); }

@@ -320,6 +320,8 @@ export function normalizeRow(raw, index = 0) {
     // The query writes 'remote' for every http/sse transport without looking
     // at the host. A recorded loopback host overrides that.
     location: loopback ? 'loopback' : (raw.location || raw.file_location || ''),
+    /** When this exact finding (host, type, identifier, path) was first recorded — null for a CSV snapshot. */
+    firstSeen: raw.first_seen || null,
     targetEndpoint: targetEndpoint,
     endpointHost: host,
     loopback,
@@ -340,6 +342,9 @@ export function normalizeRow(raw, index = 0) {
     detail,
   }
   row.surface = SURFACE_LABEL[row.type] || row.type || '—'
+  // The file a reviewer opens to fix it: the last path segment. A directory
+  // path (extension folder, app bundle) keeps its last segment too.
+  row.configFile = String(row.path || '').split(/[\\/]/).filter(Boolean).pop() || ''
   row.vendor = vendorOf(row)
   row.tool = toolLabel(row)
   row.tier = governanceTier(row)
@@ -627,7 +632,7 @@ export function hostRollup(rows) {
     if (!e) {
       e = {
         host: r.host, hostId: r.hostId, findings: 0, byType: {}, vendors: new Set(), tools: new Set(),
-        runningTools: new Set(), flagged: 0, severity: null, flags: new Set(), rows: [],
+        runningTools: new Set(), flagged: 0, severity: null, flags: new Set(), rows: [], bySeverity: {},
       }
       m.set(r.host, e)
     }
@@ -638,6 +643,7 @@ export function hostRollup(rows) {
     if (r.running === true && (r.type === 'agents' || r.type === 'apps')) e.runningTools.add(r.tool)
     if (r.flags.length) {
       e.flagged++
+      e.bySeverity[r.severity] = (e.bySeverity[r.severity] || 0) + 1
       for (const f of r.flags) e.flags.add(f)
       if (e.severity == null || SEVERITY_RANK[r.severity] < SEVERITY_RANK[e.severity]) e.severity = r.severity
     }
@@ -659,10 +665,61 @@ export function hostRollup(rows) {
     flagged: e.flagged,
     severity: e.severity,
     flags: Array.from(e.flags),
+    criticalFindings: e.bySeverity.critical || 0,
+    elevatedFindings: e.bySeverity.elevated || 0,
+    fairFindings: e.bySeverity.fair || 0,
+    riskScore: hostRiskScore(e.bySeverity),
     rows: e.rows,
   })).sort((a, b) => {
     const sa = a.severity ? SEVERITY_RANK[a.severity] : 9
     const sb = b.severity ? SEVERITY_RANK[b.severity] : 9
     return sa - sb || b.flagged - a.flagged || b.findings - a.findings || a.host.localeCompare(b.host)
   })
+}
+
+// ─── Preliminary risk rating ──────────────────────────────────────
+/**
+ * PRELIMINARY. A first, explainable reading of AI-tooling risk on the same
+ * 0–100 / A–F scale as the experience score, so it can sit next to it.
+ * The weights are judgement, not calibration — the page labels the rating
+ * preliminary and prints the formula. Two levels:
+ *
+ *   Fleet   share of SCANNED hosts whose worst flag is critical / elevated /
+ *           fair, weighted 60 / 30 / 10. A fleet where every host carries a
+ *           critical flag scores 40 (F); a clean fleet scores 100 (A).
+ *           Hosts that scanned clean pull the score up — that is the point of
+ *           using scanned hosts, not hosts-with-findings, as the denominator.
+ *   Host    100 minus 30 per critical, 10 per elevated, 3 per fair finding,
+ *           floored at 0. One plaintext secret is a C; three are an F.
+ */
+export const RISK_WEIGHTS = {
+  fleet: { critical: 60, elevated: 30, fair: 10 },
+  host: { critical: 30, elevated: 10, fair: 3 },
+}
+
+export function hostRiskScore(bySeverity = {}) {
+  const w = RISK_WEIGHTS.host
+  const penalty = w.critical * (bySeverity.critical || 0) + w.elevated * (bySeverity.elevated || 0) + w.fair * (bySeverity.fair || 0)
+  return Math.max(0, 100 - penalty)
+}
+
+/**
+ * Fleet rating from a summary's hostsBySeverity and the scanned-host count.
+ * Falls back to hosts-with-findings when no scan denominator is known (CSV).
+ */
+export function fleetRiskRating(summary, hostsScanned = 0) {
+  const denom = Math.max(Number(hostsScanned) || 0, summary?.hosts || 0)
+  if (!denom) return { score: null, grade: null, denominator: 0, shares: null }
+  const hb = summary.risk.hostsBySeverity
+  const shares = { critical: hb.critical / denom, elevated: hb.elevated / denom, fair: hb.fair / denom }
+  const w = RISK_WEIGHTS.fleet
+  const score = Math.round(100 - (w.critical * shares.critical + w.elevated * shares.elevated + w.fair * shares.fair))
+  return { score: Math.max(0, Math.min(100, score)), grade: gradeOf(score), denominator: denom, shares }
+}
+
+/** Same bands as gradeColors.scoreToGrade; duplicated here to keep this module DOM- and import-free. */
+export function gradeOf(score) {
+  if (score == null || !Number.isFinite(Number(score))) return null
+  const n = Number(score)
+  return n >= 90 ? 'A' : n >= 75 ? 'B' : n >= 60 ? 'C' : n >= 40 ? 'D' : 'F'
 }

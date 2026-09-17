@@ -187,9 +187,16 @@ export const firehoseAiToolsQueries: QueryConfig[] = [
         t.risk_indicators AS risk_indicators,
         t.target_endpoint AS target_endpoint,
         t.detail AS detail,
-        t.sha256_hash AS sha256_hash
+        t.sha256_hash AS sha256_hash,
+        fs.first_seen AS first_seen
       FROM ai_tools t
       INNER JOIN latest_scans s ON t.host_id = s.host_id AND t.timestamp = s.scanned_at
+      -- When this exact finding first appeared on this host, over all
+      -- history — "new this week" vs "sat there for a month".
+      LEFT JOIN (
+        SELECT host_id, tool_type, identifier, path, min(timestamp) AS first_seen
+        FROM ai_tools GROUP BY host_id, tool_type, identifier, path
+      ) fs ON fs.host_id = t.host_id AND fs.tool_type = t.tool_type AND fs.identifier = t.identifier AND fs.path = t.path
       ORDER BY t.host_id, t.tool_type, t.tool_name
     `,
   },

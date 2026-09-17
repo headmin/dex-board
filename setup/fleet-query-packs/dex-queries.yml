@@ -169,6 +169,47 @@
   automations_enabled: true
   logging: snapshot
   interval: 3600
+- name: DEX - Hardware experience - Thermal
+  description: Fan RPM (actual/target/min/max), hottest sensor, heatsink and battery temperature, 1m/5m load for idle-vs-busy context, and battery wear in one row per host per hour. Dust buildup shows as drift, not as one hot reading — a host needing more RPM at idle to hold the same temperature, or spending more time at max fan — so this feeds a per-host baseline over weeks and a fan-vs-battery wear correlation. Apple silicon reports fan and heatsink sensors but no CPU die temperature (cpu_c empty); fanless models report fan_count 0.
+  query: |
+    SELECT
+      (SELECT hardware_model FROM system_info)                                   AS hardware_model,
+      (SELECT cpu_brand FROM system_info)                                        AS cpu_brand,
+
+      -- Fans: first fan in detail, plus the busiest fan right now
+      (SELECT count(*) FROM fan_speed_sensors)                                   AS fan_count,
+      (SELECT actual FROM fan_speed_sensors ORDER BY fan LIMIT 1)                AS fan0_rpm,
+      (SELECT target FROM fan_speed_sensors ORDER BY fan LIMIT 1)                AS fan0_target_rpm,
+      (SELECT min    FROM fan_speed_sensors ORDER BY fan LIMIT 1)                AS fan0_min_rpm,
+      (SELECT max    FROM fan_speed_sensors ORDER BY fan LIMIT 1)                AS fan0_max_rpm,
+      (SELECT MAX(actual) FROM fan_speed_sensors)                                AS fan_max_rpm_now,
+
+      -- Temperatures: hottest sensor, heatsink, battery, CPU die (Intel only)
+      (SELECT ROUND(MAX(celsius), 1) FROM temperature_sensors)                   AS temp_max_c,
+      (SELECT name FROM temperature_sensors ORDER BY celsius DESC LIMIT 1)       AS temp_max_sensor,
+      (SELECT ROUND(celsius, 1) FROM temperature_sensors
+         WHERE name LIKE '%Heatsink%' ORDER BY celsius DESC LIMIT 1)             AS heatsink_c,
+      (SELECT ROUND(MAX(celsius), 1) FROM temperature_sensors
+         WHERE name LIKE 'Battery%')                                             AS battery_temp_c,
+      (SELECT ROUND(celsius, 1) FROM temperature_sensors
+         WHERE name LIKE 'CPU%' OR name LIKE '%Die%' ORDER BY celsius DESC LIMIT 1) AS cpu_c,
+      (SELECT count(*) FROM temperature_sensors)                                 AS sensor_count,
+
+      -- Load, so idle samples can be separated from busy ones
+      (SELECT average FROM load_average WHERE period = '1m')                     AS load_1m,
+      (SELECT average FROM load_average WHERE period = '5m')                     AS load_5m,
+
+      -- Battery wear, for the same-row correlation
+      (SELECT cycle_count FROM battery)                                          AS battery_cycles,
+      (SELECT health FROM battery)                                               AS battery_health,
+      (SELECT ROUND(100.0 * max_capacity / designed_capacity, 1) FROM battery
+         WHERE designed_capacity > 0)                                            AS battery_health_pct,
+      (SELECT charging FROM battery)                                             AS battery_charging,
+      (SELECT total_seconds FROM uptime)                                         AS uptime_s;
+  interval: 3600
+  platform: darwin
+  automations_enabled: true
+  logging: snapshot
 - name: DEX - System experience - OS health
   description: OS version currency (macOS 26 = current), uptime risk, and recent kernel panic / crash count. A device on a current OS with fresh uptime and zero crashes is healthy; stale uptime + legacy OS + panics is actionable.
   query: |
