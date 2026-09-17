@@ -1,6 +1,6 @@
 <template>
   <ChartCard :title="title" :loading="loading">
-    <v-chart class="chart" :option="chartOption" autoresize />
+    <v-chart class="chart" :class="{ 'chart--clickable': clickable }" :option="chartOption" autoresize @click="onBarClick" />
   </ChartCard>
 </template>
 
@@ -23,8 +23,28 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   nameKey: { type: String, default: 'name' },
   valueKey: { type: String, default: 'value' },
-  horizontal: { type: Boolean, default: true }
+  horizontal: { type: Boolean, default: true },
+  // Only affects the cursor. The emit fires regardless; a parent that does
+  // not listen simply drops it, so the ~20 existing BarCharts are untouched.
+  clickable: { type: Boolean, default: false }
 })
+
+const emit = defineEmits(['bar-click'])
+
+// ECharts reports the clicked index; the parent wants its own row object back,
+// not the bare label, so it can key a drill-down off whatever it put in `data`.
+//
+// The horizontal branch below renders `names.reverse()` / `values.reverse()`,
+// because a category y-axis draws index 0 at the BOTTOM and the fleet reads
+// top-down. That reversal means the chart's dataIndex runs opposite to
+// `props.data`, so handing back `props.data[dataIndex]` returns the wrong row
+// -- clicking M2 opened the M5 Pro cohort. Map the index back before emitting.
+function onBarClick(params) {
+  const di = params?.dataIndex
+  if (di == null || di < 0 || di >= props.data.length) return
+  const i = props.horizontal ? props.data.length - 1 - di : di
+  emit('bar-click', props.data[i], i)
+}
 
 const chartOption = computed(() => {
   const names = props.data.map(d => d[props.nameKey])
@@ -111,5 +131,8 @@ const chartOption = computed(() => {
 .chart {
   width: 100%;
   height: 300px;
+}
+.chart--clickable {
+  cursor: pointer;
 }
 </style>

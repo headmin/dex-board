@@ -19,7 +19,8 @@
       </div>
       <div class="hp-actions">
         <BaseButton variant="secondary" @click="openCompare('')">Compare hosts</BaseButton>
-        <a :href="fleetManageLink" target="_blank" rel="noopener" class="hp-btn-link">
+        <!-- Hidden in demo mode: Fleet's host list shows every real hostname. -->
+        <a v-if="!isMasked('hosts')" :href="fleetManageLink" target="_blank" rel="noopener" class="hp-btn-link">
           <BaseButton variant="secondary">Open in Fleet ↗</BaseButton>
         </a>
       </div>
@@ -147,7 +148,7 @@ import BaseButton from '../components/base/BaseButton.vue'
 import EmptyState from '../components/base/EmptyState.vue'
 import GradeBadge from '../components/GradeBadge.vue'
 import HostCompare from '../components/HostCompare.vue'
-import { displayHost } from '../composables/displayName'
+import { displayHost, displayTeam } from '../composables/displayName'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { useSort } from '../composables/useSort'
 import { gradeColor } from '../composables/gradeColors'
@@ -155,12 +156,14 @@ import { utilizationColor } from '../composables/statusTones'
 import { chipInfo, ageTone } from '../composables/chipAge'
 import { humanizeToken } from '../composables/humanize'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useDemoMode } from '../composables/useDemoMode'
 
 const GRADES = ['A', 'B', 'C', 'D', 'F']
 
 const route = useRoute()
 const router = useRouter()
 const { config } = useAppConfig()
+const { isMasked } = useDemoMode()
 const { searchText, selectedModel, selectedRAMTier, selectedOS, selectedTeam, filterParams } = useFleetFilter()
 
 const error = ref(null)
@@ -179,9 +182,7 @@ const updatedLabel = computed(() => {
   return ` · updated ${hh}:${mm} UTC`
 })
 
-function teamLabel(id) {
-  return config.value.teamNames?.[id] || id
-}
+const teamLabel = (id) => displayTeam(id, config.value.teamNames)
 
 // ─── Fetch: telemetry list + scores + 7d movers, merged by host ──
 async function fetchAll() {
@@ -238,7 +239,9 @@ const mergedRows = computed(() => {
   const moverMap = new Map(movers.value.map(m => [m.host_id, Number(m.delta)]))
   return devices.value.map(d => {
     const s = scoreMap.get(d.host_id)
-    const info = chipInfo(d.cpu_class || s?.cpu_class)
+    // cpu_brand carries the tier (M1 Max vs M1); cpu_class is the coarse
+    // generation fallback for hosts whose brand string is missing.
+    const info = chipInfo(d.cpu_class || s?.cpu_class, d.cpu_brand || s?.cpu_brand)
     const memPressure = d.total_memory_mb && d.memory_gb
       ? Math.round((Number(d.total_memory_mb) / (Number(d.memory_gb) * 1024)) * 1000) / 10
       : null
@@ -253,6 +256,8 @@ const mergedRows = computed(() => {
       cpu_label: info?.pretty || humanizeToken(String(d.cpu_class || '')) || d.cpu_brand || '—',
       chip_year: info?.year ?? null,
       gens_behind: info?.gensBehind ?? null,
+      chip_tier: info?.tier ?? null,
+      chip_family: info?.family ?? null,
       team_id: d.team_id || s?.team_id || null,
     }
   })
@@ -265,9 +270,16 @@ const queueRows = computed(() => {
   let list = mergedRows.value
   if (searchText.value) {
     const q = searchText.value.toLowerCase()
+    // display_name is what the user can actually read on screen, so it must
+    // match. In demo mode the raw name fields are deliberately excluded: they
+    // would turn this box into a de-anonymisation oracle — type a hostname you
+    // already know and the one matching row filters in, binding the real name
+    // to its pseudonym. scopeCaption also echoes the typed string back.
+    const nameFields = isMasked('hosts')
+      ? ['display_name']
+      : ['display_name', 'hostname', 'computer_name']
     list = list.filter(d =>
-      (d.hostname || '').toLowerCase().includes(q) ||
-      (d.computer_name || '').toLowerCase().includes(q) ||
+      nameFields.some(f => (d[f] || '').toLowerCase().includes(q)) ||
       (d.hardware_model || '').toLowerCase().includes(q) ||
       (d.host_id || '').toLowerCase().includes(q)
     )

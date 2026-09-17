@@ -6,7 +6,7 @@
       </div>
       <div class="tile-title">
         <div class="tile-name" :title="displayHost(host)">{{ displayHost(host) }}</div>
-        <div class="tile-sub">{{ host.cpu_class || host.cpu_brand || '—' }}</div>
+        <div class="tile-sub">{{ chipLabel(host.cpu_brand, host.cpu_class) || host.cpu_class || '—' }}</div>
       </div>
     </div>
 
@@ -36,7 +36,9 @@
         </svg>
         DEX host details
       </button>
-      <a class="tile-action primary" :href="openInFleetUrl" target="_blank" rel="noopener noreferrer" title="Open this host in Fleet (new tab)">
+      <!-- Hidden in demo mode: Fleet opens the real host under its real name
+           in a new tab, which no amount of masking on this page can prevent. -->
+      <a v-if="!isMasked('hosts')" class="tile-action primary" :href="openInFleetUrl" target="_blank" rel="noopener noreferrer" title="Open this host in Fleet (new tab)">
         Open in Fleet
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path d="M6 3h7v7M13 3L6 10M10 2H3v11h11v-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -49,9 +51,11 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { chipLabel } from '../composables/chipTier'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { displayHost } from '../composables/displayName'
 import { useAppConfig } from '../composables/useAppConfig'
+import { useDemoMode } from '../composables/useDemoMode'
 
 const props = defineProps({
   host: { type: Object, required: true },
@@ -66,14 +70,20 @@ const props = defineProps({
 const router = useRouter()
 const { searchText } = useFleetFilter()
 const { config } = useAppConfig()
+const { isMasked } = useDemoMode()
 const fleetBase = computed(() => props.fleetServerUrl || config.value.fleetUrl)
 
 // "DEX host details" routes to /devices with ?hostId=<uuid>. The Devices view
 // reads that param on mount and auto-selects the matching row, expanding the
 // detail drawer. We also seed searchText so the device list below is filtered
 // to the same host, keeping the view visually coherent.
+// searchText feeds the server-side filterSearch, which LIKE-matches only
+// hostname/serial/model (core-filters.ts) — not host_id. In demo mode the
+// display name is a pseudonym that matches nothing, and seeding the *real*
+// hostname instead would print it straight into the visible search box. So
+// leave the search empty there; the route param alone selects the host.
 function openInDex() {
-  searchText.value = displayHost(props.host) || props.host.host_id || ''
+  searchText.value = isMasked('hosts') ? '' : (displayHost(props.host) || '')
   router.push(`/hosts/${props.host.host_id}`)
 }
 
@@ -119,6 +129,10 @@ const primaryLabel = computed(() => {
     case 'degraded_battery':
     case 'replace_battery':
       return 'Battery health'
+    case 'battery_cycles':
+      return 'Cycles'
+    case 'battery_capacity':
+      return 'Capacity'
     case 'high_compression':
       return 'Compression'
     case 'degraded_os':
@@ -144,6 +158,13 @@ const primaryValue = computed(() => {
     case 'degraded_battery':
     case 'replace_battery':
       return props.host.battery_health_score || '—'
+    case 'battery_cycles':
+      return props.host.battery_cycles ?? '—'
+    case 'battery_capacity':
+      // 0 means the capacity read failed, not an empty battery.
+      return props.host.battery_health_pct > 0
+        ? `${Math.min(100, Math.round(props.host.battery_health_pct))}%`
+        : 'unreadable'
     case 'high_compression':
       return props.host.compression_pressure || '—'
     case 'degraded_os':

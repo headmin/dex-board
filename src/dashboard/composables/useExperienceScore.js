@@ -29,6 +29,8 @@ export function useExperienceScore({ queryParams, snapshotParams, timeRangeHours
     deviceList: false
   })
 
+  const history = ref([])
+
   const fleet = ref({ grade: '—', score: null, delta: null, sparkline: [], deviceCount: 0 })
 
   // Now-vs-window deltas for the top tiles: each tile's "now" score minus its
@@ -106,8 +108,14 @@ export function useExperienceScore({ queryParams, snapshotParams, timeRangeHours
       // the same scoring CTE — replaces the old 30 as-of queries per load).
       const [nowRows, historyRows] = await Promise.all([
         query('firehose.scores.fleet_summary', { ...snapshotParams.value }),
-        query('firehose.scores.daily_history', { days: 30 }).catch(() => []),
+        // Full persisted depth, not 30 days: the sparkline below still takes
+        // only its own window, but the history chart wants the long tail.
+        query('firehose.scores.daily_history', { days: 365 }).catch(() => []),
       ])
+
+      // Raw rows kept for the history chart, which plots real dates on a
+      // compressed axis rather than a fixed-slot window.
+      history.value = historyRows || []
 
       const todayRow = nowRows?.[0]
       const score = todayRow?.avg_score ?? null
@@ -386,6 +394,7 @@ export function useExperienceScore({ queryParams, snapshotParams, timeRangeHours
   return {
     loading,
     fleet,
+    history,
     tileDeltas,
     categories,
     distribution,

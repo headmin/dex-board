@@ -6,13 +6,14 @@
     <div class="hd-header">
       <div class="hd-title-group">
         <div class="hd-title-row">
-          <h1 class="hd-title">{{ displayHost(detail) || hostId }}</h1>
+          <h1 class="hd-title">{{ titleName }}</h1>
           <Badge v-if="staleness" :tone="staleness.tone" :label="staleness.label" :title="staleness.title" />
         </div>
         <div class="hd-subtitle">{{ specLine }}</div>
       </div>
       <div class="hd-actions">
-        <a :href="fleetLink" target="_blank" rel="noopener">
+        <!-- Hidden in demo mode: Fleet shows this host under its real name. -->
+        <a v-if="!isMasked('hosts')" :href="fleetLink" target="_blank" rel="noopener">
           <BaseButton variant="secondary">Open in Fleet ↗</BaseButton>
         </a>
       </div>
@@ -152,7 +153,8 @@
 
       <div v-if="recommendation" class="recommend-callout">
         <span class="recommend-text"><strong>Recommended:</strong> {{ recommendation }}</span>
-        <a :href="fleetLink" target="_blank" rel="noopener">
+        <!-- Guarded like the header link above: Fleet renders the real hostname. -->
+        <a v-if="!isMasked('hosts')" :href="fleetLink" target="_blank" rel="noopener">
           <BaseButton variant="primary" size="small">Open in Fleet ↗</BaseButton>
         </a>
       </div>
@@ -183,12 +185,35 @@ import { humanizeToken } from '../composables/humanize'
 import { palette } from '../composables/uiPalette'
 import { useAppConfig } from '../composables/useAppConfig'
 import { useNow } from '../composables/useNow'
+import { useDemoMode } from '../composables/useDemoMode'
+import { pseudoSoftware, pseudoIdentifier } from '../composables/pseudonyms'
 
 const route = useRoute()
 const hostId = computed(() => String(route.params.hostId || ''))
 
 const { config } = useAppConfig()
+const { isMasked } = useDemoMode()
 const { now } = useNow()
+
+// Recognised public software keeps its real title; in-house titles are what
+// identify a company, so only those are pseudonymised.
+//
+// Covers every software-shaped identifier this page tabulates, not just the
+// title: crash identifiers and process names are reverse-DNS or binary names
+// of in-house tooling (`com.acmecorp.agent`), which name the company more
+// precisely than a display title does. DataTable renders row[col.key] and
+// sorts on the raw value, so this has to happen in the row.
+function withSoftwareIds(rows) {
+  if (!Array.isArray(rows) || !isMasked('software')) return rows
+  return rows.map((r) => {
+    const out = { ...r }
+    if (r.app_name) out.app_name = pseudoSoftware(r.app_name)
+    if (r.software_name) out.software_name = pseudoSoftware(r.software_name)
+    if (r.crashed_identifier) out.crashed_identifier = pseudoIdentifier(r.crashed_identifier)
+    if (r.process_name) out.process_name = pseudoIdentifier(r.process_name)
+    return out
+  })
+}
 
 const error = ref(null)
 const loading = ref(false)
@@ -207,6 +232,12 @@ const adoption = ref([])
 const wifiTs = ref([])
 
 const activeTab = ref('crashes')
+
+// The detail row arrives after the route does, so fall back to the route param
+// while it loads — displayHost({}) on an empty row renders a placeholder name.
+const titleName = computed(() =>
+  displayHost(detail.value?.host_id ? detail.value : { host_id: hostId.value }) || hostId.value
+)
 
 // ─── Fetch (same host-scoped batch the old drawer used) ───────
 async function load() {
@@ -234,14 +265,17 @@ async function load() {
     ])
     detail.value = det[0] || {}
     wifiTs.value = wTs || []
-    apps.value = appRows || []
+    // In-house app titles are pseudonymised in demo mode; recognised public
+    // software stays readable. DataTable renders row[col.key] and sorts on the
+    // raw value, so this has to happen in the row, not at render.
+    apps.value = withSoftwareIds(appRows || [])
     health.value = h[0] || {}
     os.value = o[0] || {}
     vpn.value = v[0] || {}
-    crashes.value = crashRows || []
-    processes.value = procRows || []
-    adoption.value = adoptRows || []
-    patches.value = patchRows || []
+    crashes.value = withSoftwareIds(crashRows || [])
+    processes.value = withSoftwareIds(procRows || [])
+    adoption.value = withSoftwareIds(adoptRows || [])
+    patches.value = withSoftwareIds(patchRows || [])
     drivers.value = buildSignalDrivers((signalsCompare || [])[0])
     mttp.value = (mttpRows || [])[0] || null
     pressure30d.value = (pressRows || [])[0] || null
@@ -259,7 +293,9 @@ const specLine = computed(() => {
   const d = detail.value
   const parts = [
     d.hardware_model,
-    d.cpu_brand || humanizeToken(String(health.value.cpu_class || '')),
+    chipInfo(health.value.cpu_class, d.cpu_brand)?.pretty
+      || d.cpu_brand
+      || humanizeToken(String(health.value.cpu_class || '')),
     d.memory_gb ? `${d.memory_gb} GB RAM` : null,
     d.os_version || os.value.os_version,
   ].filter(Boolean)
@@ -437,7 +473,9 @@ const swapPattern = computed(() => {
 
 const hostChips = computed(() => {
   const chips = []
-  const info = chipInfo(health.value.cpu_class)
+  // cpu_brand resolves the tier (M1 Max, not just M1) and with it the real
+  // ship year — the Pro/Max bins land up to 18 months after the base chip.
+  const info = chipInfo(health.value.cpu_class, health.value.cpu_brand || detail.value.cpu_brand)
   if (info) chips.push({ label: 'cpu', value: `${info.pretty} (${info.year ?? '—'})`, tone: ageTone(info.gensBehind) })
   if (health.value.ram_tier) chips.push({ label: 'ram', value: String(health.value.ram_tier).toUpperCase(), tone: String(health.value.ram_tier).toLowerCase() === '8gb' ? 'elevated' : 'neutral' })
   const swap = health.value.swap_pressure

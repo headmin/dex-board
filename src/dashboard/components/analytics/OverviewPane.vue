@@ -41,7 +41,8 @@
         <div class="clickable-wrap" :class="{ active: drillCondition === 'degraded_battery' }" @click="toggleDrill('degraded_battery')" role="button" tabindex="0">
           <MetricCard label="Degraded battery" :value="deviceHealth.degradedBattery" :loading="loading.deviceHealth" />
         </div>
-        <MetricCard label="Avg battery" :value="deviceHealth.avgBatteryPct" unit="%" :loading="loading.deviceHealth" />
+        <MetricCard label="Avg battery health" :value="deviceHealth.avgBatteryHealthPct" unit="%"
+          :subtitle="batteryReadNote" :loading="loading.deviceHealth" />
       </div>
     </section>
 
@@ -57,10 +58,10 @@
     <div class="charts-row two-col">
       <section class="section">
         <BarChart
-          title="CPU class distribution"
+          title="Chip distribution"
           :data="cpuDistribution"
           :loading="loading.deviceHealth"
-          nameKey="cpu_class"
+          nameKey="label"
           valueKey="device_count"
           :horizontal="true"
         />
@@ -90,6 +91,58 @@
         </ChartCard>
       </section>
     </div>
+
+    <div class="charts-row two-col">
+      <section class="section">
+        <BarChart
+          title="Battery cycles by chip"
+          :data="batteryByChip"
+          :loading="loading.deviceHealth"
+          nameKey="label"
+          valueKey="avg_cycles"
+          :horizontal="true"
+          clickable
+          @bar-click="b => chipDrill.open(b, 'battery_cycles')"
+        />
+      </section>
+      <section class="section">
+        <ChartCard title="Capacity remaining by chip" :loading="loading.deviceHealth" :empty="!batteryByChip.length">
+          <table class="batt-chip">
+            <thead>
+              <tr><th>Chip</th><th class="num">Hosts</th><th class="num">Cycles</th><th class="num">Capacity</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="b in batteryByChip" :key="b.key"
+                class="batt-row" :class="{ active: chipDrill.bucket.value?.key === b.key }"
+                role="button" tabindex="0"
+                @click="chipDrill.open(b, 'battery_capacity')"
+                @keydown.enter="chipDrill.open(b, 'battery_capacity')">
+                <td>
+                  {{ b.label }}
+                  <!-- A failed capacity read is disclosed on the row it affects,
+                       never folded into the average that sits beside it. -->
+                  <span v-if="b.suspect_hosts" class="batt-flag"
+                    :title="`${b.suspect_hosts} host(s) report cycles but no capacity — the reading failed, so they are excluded from the capacity average`">
+                    {{ b.suspect_hosts }} unreadable
+                  </span>
+                </td>
+                <td class="num">{{ b.device_count }}</td>
+                <td class="num">{{ b.avg_cycles ?? '—' }}</td>
+                <td class="num">{{ b.avg_health_pct != null ? `${b.avg_health_pct}%` : '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </ChartCard>
+      </section>
+    </div>
+
+    <DrillPanel v-if="chipDrill.bucket.value" :title="chipDrill.title.value" @close="chipDrill.close">
+      <div v-if="chipDrill.loading.value" class="drill-loading">Loading hosts...</div>
+      <EmptyState v-else-if="!chipDrill.drillHosts.value.length" small title="No hosts in this chip cohort." />
+      <div v-else class="host-tile-grid">
+        <HostTile v-for="h in chipDrill.drillHosts.value" :key="h.host_id" :host="h" :condition="chipDrill.metric.value" />
+      </div>
+    </DrillPanel>
 
     <!-- ═══ 2. OS HEALTH ═════════════════════════════════════ -->
     <section class="section">
@@ -373,8 +426,12 @@ import SectionHeader from '../base/SectionHeader.vue'
 import DrillPanel from '../base/DrillPanel.vue'
 import EmptyState from '../base/EmptyState.vue'
 import { palette } from '../../composables/uiPalette'
-import { displayHost } from '../../composables/displayName'
+import { displayHost, displayApp, displayIdentifier } from '../../composables/displayName'
+import { useDemoMode } from '../../composables/useDemoMode'
+import { pseudoSoftware, pseudoIdentifier } from '../../composables/pseudonyms'
 import { aggregatePatchRowsBySoftware } from '../../composables/patchAggregation'
+import { chipDistribution, chipRollup } from '../../composables/chipTier'
+import { useBatteryChipDrill } from '../../composables/useBatteryChipDrill'
 import { useAppConfig } from '../../composables/useAppConfig'
 
 const SIGNAL_ORDER = ['excellent', 'good', 'fair', 'weak', 'poor', 'very_weak', 'unknown']
@@ -390,6 +447,21 @@ const UPTIME_ORDER = ['< 1h', '1h - 1d', '1d - 7d', '7d - 30d', '30d+']
 const UPTIME_TONES = { '< 1h': 'good', '1h - 1d': 'good', '1d - 7d': 'soft', '7d - 30d': 'fair', '30d+': 'elevated' }
 
 const { config } = useAppConfig()
+const { isMasked } = useDemoMode()
+
+// Recognised public software keeps its real title; in-house titles, bundle ids
+// and process names are what identify a company. Applied to the rows because
+// the charts below read nameKey="app_name" / "process_name" straight off them.
+function withSoftwareIds(rows) {
+  if (!Array.isArray(rows) || !isMasked('software')) return rows
+  return rows.map((r) => {
+    const out = { ...r }
+    if (r.app_name) out.app_name = pseudoSoftware(r.app_name)
+    if (r.process_name) out.process_name = pseudoIdentifier(r.process_name)
+    if (r.bundle_identifier) out.bundle_identifier = pseudoIdentifier(r.bundle_identifier)
+    return out
+  })
+}
 
 // Shared filter bar — propagates to every firehose query that respects
 // FILTER_PARAMS. Wrap this in a computed so queries re-fetch when the user
@@ -416,7 +488,7 @@ const memoryHogs = ref([])
 const ramTiers = ref([])
 const fleetd = ref({ totalHosts: 0, enrolledHosts: 0, uniqueVersions: 0, avgUptimeHours: 0 })
 const uptimeDist = ref([])
-const deviceHealth = ref({ severeSwap: 0, elevatedSwap: 0, degradedBattery: 0, avgBatteryPct: 0 })
+const deviceHealth = ref({ severeSwap: 0, elevatedSwap: 0, degradedBattery: 0, avgBatteryHealthPct: null, suspectBattery: 0, noBattery: 0 })
 const cpuDistribution = ref([])
 const swapDistribution = ref([])
 const osHealth = ref({ healthy: 0, acceptable: 0, degraded: 0, avgUptimeDays: 0 })
@@ -486,7 +558,8 @@ async function toggleDrill(condition) {
   drillLoading.value = true
   drillHosts.value = []
   try {
-    const rows = await query('firehose.health.hosts_by_condition', { condition, limit: 100 })
+    // Filter-scoped so the tile list matches the count on the card clicked.
+    const rows = await query('firehose.health.hosts_by_condition', { condition, limit: 100, ...queryParams.value })
     drillHosts.value = rows
   } catch (e) {
     console.error('Drill-down fetch failed:', e)
@@ -495,6 +568,23 @@ async function toggleDrill(condition) {
 }
 
 const batteryDist = ref([])
+const batteryByChip = ref([])
+
+// Same composable the Analytics Host-health tab uses, so both panes agree on
+// which hosts make up a chip cohort.
+const chipDrill = useBatteryChipDrill({ params: () => queryParams.value })
+
+// Disclosed under the headline number rather than hidden: the average is over
+// hosts that actually reported capacity, so the card has to say who was left
+// out. Desktops have no battery; "unreadable" hosts have one we could not
+// measure -- different facts, so they are counted separately.
+const batteryReadNote = computed(() => {
+  const { suspectBattery: bad, noBattery: none } = deviceHealth.value
+  const parts = []
+  if (bad) parts.push(`${bad} unreadable`)
+  if (none) parts.push(`${none} without a battery`)
+  return parts.length ? `excludes ${parts.join(' · ')}` : ''
+})
 const processClassData = ref([])
 const processClassTotals = ref({ uniqueProcesses: 0, userApps: 0, mgmtAgents: 0, system: 0 })
 const mgmtAgents = ref([])
@@ -508,7 +598,7 @@ async function fetchAll() {
   loading.value = { overview: true, wifi: true, wifiTs: true, apps: true, hogs: true, hardware: true, fleetd: true, uptime: true, deviceHealth: true, osHealth: true, vpn: true, processes: true, adoption: true, crashes: true }
 
   try {
-    const [ov, wSummary, wDist, wDevices, wTs, appSummary, appTop, hogs, ram, fSummary, uptime, dhSummary, cpuDist, swapDist, battDist, osSummary, osCurrency, uptimeRisk, vpnSum, vpnConf, procClass, procAgents, adoptSum, adoptTiers, adoptStale, crashSum, crashTop] = await Promise.all([
+    const [ov, wSummary, wDist, wDevices, wTs, appSummary, appTop, hogs, ram, fSummary, uptime, dhSummary, cpuDist, swapDist, battDist, battChip, osSummary, osCurrency, uptimeRisk, vpnSum, vpnConf, procClass, procAgents, adoptSum, adoptTiers, adoptStale, crashSum, crashTop] = await Promise.all([
       // The 7 summary/overview queries respect the fleet filter bar; others
       // still return fleet-wide data for now (see Phase 2 follow-up).
       query('firehose.devices.overview', queryParams.value),
@@ -523,9 +613,10 @@ async function fetchAll() {
       query('firehose.fleetd.summary', queryParams.value),
       query('firehose.fleetd.uptime'),
       query('firehose.health.device_summary', queryParams.value),
-      query('firehose.health.cpu_distribution'),
+      query('firehose.health.chip_distribution', queryParams.value),
       query('firehose.health.swap_distribution'),
-      query('firehose.health.battery_overview'),
+      query('firehose.health.battery_overview', queryParams.value),
+      query('firehose.health.battery_by_chip', queryParams.value),
       query('firehose.health.os_summary', queryParams.value),
       query('firehose.health.os_currency_distribution'),
       query('firehose.health.uptime_distribution'),
@@ -561,8 +652,8 @@ async function fetchAll() {
 
     const as = appSummary[0] || {}
     apps.value = { uniqueApps: as.unique_apps || 0, avgMemory: as.avg_app_memory_mb || 0, p95Memory: as.p95_memory_mb || 0 }
-    topApps.value = appTop
-    memoryHogs.value = hogs.map(h => ({ ...h, label: `${h.app_name} (${displayHost(h)})` }))
+    topApps.value = withSoftwareIds(appTop)
+    memoryHogs.value = hogs.map(h => ({ ...h, label: `${displayApp(h.app_name)} (${displayHost(h)})` }))
 
     ramTiers.value = ram
 
@@ -580,11 +671,25 @@ async function fetchAll() {
       severeSwap: dh.severe_swap || 0,
       elevatedSwap: dh.elevated_swap || 0,
       degradedBattery: dh.degraded_battery || 0,
-      avgBatteryPct: dh.avg_battery_pct || 0,
+      // Capacity vs design -- the real health measure. `avg_battery_pct` is
+      // charge level at last check-in and was never a fleet health signal.
+      avgBatteryHealthPct: dh.avg_battery_health_pct ?? null,
+      suspectBattery: dh.suspect_battery || 0,
+      noBattery: dh.no_battery || 0,
     }
-    cpuDistribution.value = cpuDist
+    // Tier-aware: splits the cpu_class `apple_m1` bucket into M1 / M1 Pro /
+    // M1 Max / M1 Ultra, ordered oldest+weakest -> newest+strongest.
+    cpuDistribution.value = chipDistribution(cpuDist, { countKey: 'device_count' })
     swapDistribution.value = swapDist
     batteryDist.value = battDist
+    chipDrill.reset()
+    // Weighted merge: a bucket's capacity average is weighted by the hosts
+    // that actually reported capacity, not by host count.
+    batteryByChip.value = chipRollup(battChip, {
+      sums: ['measured_hosts', 'suspect_hosts', 'degraded', 'replace_count'],
+      means: { avg_health_pct: 'measured_hosts', avg_cycles: 'device_count' },
+      maxes: ['max_cycles'],
+    })
 
     const os = osSummary[0] || {}
     osHealth.value = {
@@ -616,7 +721,7 @@ async function fetchAll() {
       mgmtAgents: classMap['mgmt_agent'] || 0,
       system: classMap['system'] || 0,
     }
-    mgmtAgents.value = procAgents
+    mgmtAgents.value = withSoftwareIds(procAgents)
 
     // Adoption
     const ad = adoptSum[0] || {}
@@ -627,7 +732,7 @@ async function fetchAll() {
       stale90Plus: ad.stale_90d_plus || 0,
     }
     adoptionTierDist.value = adoptTiers
-    topStaleApps.value = adoptStale
+    topStaleApps.value = withSoftwareIds(adoptStale)
 
     // Crashes
     const cr = crashSum[0] || {}
@@ -636,7 +741,7 @@ async function fetchAll() {
       devicesWithCrashes: cr.devices_with_crashes || 0,
       totalCrashes: cr.total_crashes_7d || 0,
       critical: cr.critical_devices || 0,
-      topCrasher: topCr.crashed_identifier || '—',
+      topCrasher: displayIdentifier(topCr.crashed_identifier) || '—',
     }
   } catch (e) {
     error.value = e.message
@@ -679,6 +784,40 @@ watch(filterParams, () => {
 </script>
 
 <style scoped>
+/* Battery-by-chip table — matches .lc-table density so the two read as one
+   system; scoped here because it is the only table in this pane. */
+.batt-chip { width: 100%; border-collapse: collapse; font-size: var(--font-size-base); }
+.batt-chip th {
+  text-align: left;
+  padding: 6px 10px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--fleet-black-75);
+  border-bottom: 1px solid var(--fleet-black-10);
+  white-space: nowrap;
+}
+.batt-chip td {
+  padding: 7px 10px;
+  color: var(--fleet-black-75);
+  border-bottom: 1px solid var(--fleet-black-5);
+}
+.batt-chip tr:last-child td { border-bottom: none; }
+.batt-row { cursor: pointer; }
+.batt-row:hover td { background: var(--fleet-off-white); }
+.batt-row.active td { background: var(--status-good-bg); }
+.batt-chip .num { text-align: right; font-variant-numeric: tabular-nums; }
+/* A failed capacity read is a caveat on the row, not an alarm — gold, not
+   red: nothing is wrong with the host, we simply could not measure it. */
+.batt-flag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: var(--radius-small, 4px);
+  font-size: var(--font-size-xs, 11px);
+  font-weight: 600;
+  color: var(--status-fair-text);
+  background: var(--status-fair-bg);
+  white-space: nowrap;
+}
 /* Sections stack their own blocks; the page-stack global handles inter-section gaps */
 .section {
   display: flex;

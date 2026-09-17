@@ -17,7 +17,7 @@
       </thead>
       <tbody>
         <tr v-for="r in rows" :key="rowKey(r)">
-          <td class="mttp-col-app">{{ r.software_name }}</td>
+          <td class="mttp-col-app">{{ displayApp(r.software_name) }}</td>
           <td class="mttp-col-num">
             <strong>{{ r.hosts }}</strong><span
               v-if="r.eligible_hosts != null && r.eligible_hosts >= r.hosts"
@@ -45,6 +45,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { displayApp } from '../composables/displayName'
 
 const props = defineProps({
   rows: { type: Array, required: true },

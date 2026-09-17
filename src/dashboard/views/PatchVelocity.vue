@@ -184,9 +184,9 @@
           stroke-width="1.5"
           @mouseenter="hovered = a" @mouseleave="hovered = null"
         >
-          <title>{{ a.software_name }} — {{ a.lag.toFixed(1) }}d mean · {{ a.hosts }} hosts</title>
+          <title>{{ displayApp(a.software_name) }} — {{ a.lag.toFixed(1) }}d mean · {{ a.hosts }} hosts</title>
         </circle>
-        <text v-if="slowestDot && !hovered" :x="Math.min(dotX(slowestDot.lag), 840)" y="34" text-anchor="end" class="curve-label curve-label--bad">{{ slowestDot.software_name }} — {{ slowestDot.lag.toFixed(0) }}d</text>
+        <text v-if="slowestDot && !hovered" :x="Math.min(dotX(slowestDot.lag), 840)" y="34" text-anchor="end" class="curve-label curve-label--bad">{{ displayApp(slowestDot.software_name) }} — {{ slowestDot.lag.toFixed(0) }}d</text>
         <!-- Hover tooltip: name · mean · hosts, clamped inside the plot -->
         <g v-if="hovered" class="dot-tip" :transform="`translate(${tipX}, ${Math.max(2, hovered.cy - 30)})`">
           <rect :width="tipW" height="22" rx="4" fill="var(--fleet-black)" />
@@ -203,7 +203,7 @@
           <div class="apps-rows">
             <div v-for="a in fastApps" :key="a.software_name" class="app-row">
               <div class="app-row-label">
-                <span class="app-row-name">{{ a.software_name }}</span>
+                <span class="app-row-name">{{ displayApp(a.software_name) }}</span>
                 <span class="app-row-sub">{{ a.hosts }} host{{ a.hosts === 1 ? '' : 's' }} · spread {{ Number(a.min_lag).toFixed(1) }}–{{ Number(a.max_lag).toFixed(1) }}d</span>
               </div>
               <span class="app-row-value mono" :style="{ color: palette.good }">{{ Number(a.avg_lag).toFixed(1) }}d</span>
@@ -215,7 +215,7 @@
           <div class="apps-rows">
             <div v-for="a in slowApps" :key="a.software_name" class="app-row" :class="{ 'app-row--bad': Number(a.avg_lag) > config.patchSlaDays * 2 }">
               <div class="app-row-label">
-                <span class="app-row-name">{{ a.software_name }}</span>
+                <span class="app-row-name">{{ displayApp(a.software_name) }}</span>
                 <span class="app-row-sub">{{ a.hosts }} host{{ a.hosts === 1 ? '' : 's' }} · spread {{ Number(a.min_lag).toFixed(1) }}–{{ Number(a.max_lag).toFixed(1) }}d</span>
               </div>
               <span class="app-row-value mono" :style="{ color: lagColor(Number(a.avg_lag)) }">{{ Number(a.avg_lag).toFixed(1) }}d</span>
@@ -325,7 +325,7 @@ import { buildImpactRows, COHORT_RULES } from '../composables/useCohortImpact'
 import { PATCH_EXCLUSIONS, PATCH_EXCLUSIONS_PARAM, isExcludedSoftware } from '../composables/patchExclusions'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { query } from '../services/api'
-import { displayHost } from '../composables/displayName'
+import { displayHost, displayApp } from '../composables/displayName'
 import { palette } from '../composables/uiPalette'
 
 const RULES = COHORT_RULES
@@ -482,7 +482,7 @@ const appDots = computed(() => {
 // Hover state + tooltip geometry (SVG user units, viewBox 0..900).
 const hovered = ref(null)
 const tipText = computed(() => hovered.value
-  ? `${hovered.value.software_name} · ${hovered.value.lag.toFixed(1)}d mean · ${hovered.value.hosts} host${hovered.value.hosts === 1 ? '' : 's'}`
+  ? `${displayApp(hovered.value.software_name)} · ${hovered.value.lag.toFixed(1)}d mean · ${hovered.value.hosts} host${hovered.value.hosts === 1 ? '' : 's'}`
   : '')
 const tipW = computed(() => Math.round(tipText.value.length * 6.6) + 20)
 const tipX = computed(() => {

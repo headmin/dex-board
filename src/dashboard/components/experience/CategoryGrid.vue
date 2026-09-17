@@ -19,7 +19,7 @@
       </div>
       <div class="cat-grade-row">
         <span class="cat-grade" :style="{ color: cat.key === 'network' ? 'var(--fleet-black-50)' : gradeColor(cat.grade) }">{{ cat.grade }}</span>
-        <span class="cat-score">{{ cat.score != null ? cat.score : '—' }}</span>
+        <span v-if="expertMode" class="cat-score">{{ cat.score != null ? cat.score : '—' }}</span>
       </div>
       <div class="cat-meter">
         <div
@@ -36,6 +36,9 @@
 
 <script setup>
 import { gradeColor } from '../../composables/gradeColors'
+import { useExpertMode } from '../../composables/useExpertMode'
+
+const { expertMode } = useExpertMode()
 
 // Composite weights — mirrors core-scores.ts (the canonical scoring source):
 // 0.25*DH + 0.35*Perf + 0.20*Sec + 0.20*SW; network is informational.
@@ -69,10 +72,16 @@ function deltaClass(key) {
 }
 
 function captionFor(cat) {
+  // Kept in both modes: "not scored" changes how the card should be read, so
+  // it is a caveat, not a detail.
   if (cat.key === 'network') return 'Context only — not scored'
+  const expanded = props.expandedCategory === cat.key
+  // The weight only means something next to the other four weights and the
+  // composite formula — that is an expert reading, not a glance.
+  if (!expertMode.value) return expanded ? 'expanded' : ''
   const w = WEIGHTS[cat.key]
   const base = w ? `${w}% of composite` : ''
-  return props.expandedCategory === cat.key ? `${base} · expanded` : base
+  return expanded ? `${base} · expanded` : base
 }
 </script>
 

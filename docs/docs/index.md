@@ -48,4 +48,5 @@ Full from-scratch guide (two ClickHouse instances, Fleet packs, branches by audi
 - **Basic auth** — Optional HTTP basic auth to protect the dashboard
 - **Cloudflare Access auth** — Optional JWT validation for access control
 - **Privacy by design** — Device-scoped telemetry, TTL-enforced retention, Works-Council display mode — see **[Privacy & data minimization](privacy.md)**
-- **Workers Council mode** — Privacy-preserving view that hides per-device drill-down
+- **Workers Council mode** — Privacy-preserving view that hides per-host drill-down
+- **Demo mode** — Renders host, team, people and in-house app names as stable pseudonyms for screen-shared demos (presentation aid, not an access control — see **[Privacy & data minimization](privacy.md)**)

@@ -56,6 +56,7 @@ import { gradeColor, scoreToGrade } from '../../composables/gradeColors'
 import { humanizeToken } from '../../composables/humanize'
 import { useFleetFilter } from '../../composables/useFleetFilter'
 import { useAppConfig } from '../../composables/useAppConfig'
+import { displayTeam } from '../../composables/displayName'
 
 const props = defineProps({
   /** Scored teams (useExperienceScore.teamRows). */
@@ -76,9 +77,7 @@ const dim = ref('team')
 const { setModelFilter, setRAMFilter, setTeamFilter } = useFleetFilter()
 const { config } = useAppConfig()
 
-function teamLabel(id) {
-  return config.value.teamNames?.[id] || id
-}
+const teamLabel = (id) => displayTeam(id, config.value.teamNames)
 
 const rows = computed(() => {
   if (dim.value === 'team') {

@@ -8,7 +8,7 @@
         <input
           type="text"
           class="field__input"
-          placeholder="Search hostname, serial, model..."
+          :placeholder="searchPlaceholder"
           v-model="localSearch"
         />
         <button v-if="localSearch" class="search-clear" @click="localSearch = ''">
@@ -47,7 +47,7 @@
           <span class="filter-pill-label">Fleet</span>
           <select v-model="selectedTeam">
             <option value="">All</option>
-            <option v-for="t in teamOptions" :key="t" :value="t">{{ t }}</option>
+            <option v-for="t in teamOptions" :key="t" :value="t">{{ teamLabel(t) }}</option>
           </select>
         </label>
       </div>
@@ -81,6 +81,9 @@ import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { useWorkersCouncil } from '../composables/useWorkersCouncil'
+import { useDemoMode } from '../composables/useDemoMode'
+import { useAppConfig } from '../composables/useAppConfig'
+import { displayTeam } from '../composables/displayName'
 
 const route = useRoute()
 
@@ -92,6 +95,17 @@ const {
 } = useFleetFilter()
 
 const { wcMode, toggleWcMode } = useWorkersCouncil()
+const { isMasked } = useDemoMode()
+const { config } = useAppConfig()
+
+const teamLabel = (id) => displayTeam(id, config.value.teamNames)
+
+// The search term goes to the server, where filterSearch LIKE-matches the real
+// hostname/serial (core-filters.ts). A pseudonym read off the screen would
+// match nothing, so demo mode advertises only the fields that still work.
+const searchPlaceholder = computed(() =>
+  isMasked('hosts') ? 'Search model...' : 'Search hostname, serial, model...'
+)
 
 // Fleet filters only make sense on host-telemetry pages.
 const hideBar = computed(() => route.path.startsWith('/audit') || route.path.startsWith('/styleguide'))

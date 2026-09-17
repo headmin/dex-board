@@ -140,15 +140,22 @@
                 </div>
               </td>
               <td class="lc-muted">
-                {{ cpuLabel(h.cpu_class) }}<template v-if="chipInfo(h.cpu_class)"> ·
-                <span class="lc-age" :class="`lc-age--${ageTone(chipInfo(h.cpu_class).gensBehind)}`"
-                  :title="`Chip released ${chipInfo(h.cpu_class).year ?? '—'} — a host can't be newer than its chip`">≥{{ chipAgeYears(h.cpu_class) }} yrs, {{ chipInfo(h.cpu_class).gensBehind }} gen{{ chipInfo(h.cpu_class).gensBehind === 1 ? '' : 's' }}</span></template>
+                {{ cpuLabel(h) }}<template v-if="chipMeta(h)"> ·
+                <span class="lc-age" :class="`lc-age--${ageTone(chipMeta(h).gensBehind)}`"
+                  :title="chipAgeTitle(h)">≥{{ chipAgeYears(h) }} yrs, {{ chipMeta(h).gensBehind }} gen{{ chipMeta(h).gensBehind === 1 ? '' : 's' }}</span></template>
               </td>
               <td class="num" :class="{ 'lc-ram-low': String(h.ram_tier).toLowerCase() === '8gb' }">{{ String(h.ram_tier || '—').toUpperCase() }}</td>
               <td>
                 <Badge :tone="batteryTone(h.battery_health_score)" :dot="false">
                   {{ h.battery_health_score || '—' }}<template v-if="h.battery_health_pct"> · {{ Math.min(100, Math.round(h.battery_health_pct)) }}%</template>
                 </Badge>
+                <!-- The classification stands as reported; this only discloses
+                     that the capacity read behind it is inconsistent with the
+                     cycle count, so nobody swaps a battery on a bad sensor. -->
+                <span v-if="batterySuspect(h)" class="lc-batt-flag"
+                  :title="`Reported ${h.battery_health_score}, but the capacity reading failed (${h.battery_cycles} cycles recorded). That verdict is derived from the same failed read — verify on the host before acting.`">
+                  unverified
+                </span>
               </td>
               <td>
                 <span v-if="Number(h.days_reporting_30d) >= 5" class="lc-strain" :class="strainClass(h)">
@@ -230,20 +237,43 @@ function openHost(id) {
   if (id) router.push(`/hosts/${id}`)
 }
 
-function cpuLabel(c) {
-  if (!c) return '—'
-  return humanizeToken(String(c))
+// These all take the whole row: the tier lives in cpu_brand, and a label that
+// reads "M1" for an M1 Max is exactly the collapse this page exists to undo.
+// Memoised per row object — the table calls chipMeta several times per row and
+// re-parsing the brand string on every render tick is pure waste.
+const chipMetaCache = new WeakMap()
+function chipMeta(h) {
+  if (!h || typeof h !== 'object') return null
+  if (chipMetaCache.has(h)) return chipMetaCache.get(h)
+  const info = chipInfo(h.cpu_class, h.cpu_brand)
+  chipMetaCache.set(h, info)
+  return info
 }
 
-function chipAgeYears(cpuClass) {
-  const info = chipInfo(cpuClass)
+function cpuLabel(h) {
+  const info = chipMeta(h)
+  if (info) return info.pretty
+  return h?.cpu_class ? humanizeToken(String(h.cpu_class)) : '—'
+}
+
+function chipAgeYears(h) {
+  const info = chipMeta(h)
   if (!info?.year) return '?'
   return Math.max(0, new Date().getFullYear() - info.year)
 }
 
+// The tooltip has to say WHICH date it aged from, because for a Pro/Max host
+// that date is the tier's ship date, not the generation's.
+function chipAgeTitle(h) {
+  const info = chipMeta(h)
+  if (!info) return ''
+  const known = info.exact ? info.pretty : `${info.pretty} (tier unconfirmed)`
+  return `${known} released ${info.year ?? '—'} — a host can't be newer than its chip`
+}
+
 // ─── Verdicts (trend-earned) ──────────────────────────────────
 function hostVerdict(h) {
-  const info = chipInfo(h.cpu_class)
+  const info = chipMeta(h)
   const gensBehind = info?.gensBehind ?? null
   // A battery at end of life is an unambiguous hardware fact — it must land
   // in an action group on its own, without waiting for swap-day persistence
@@ -291,7 +321,7 @@ const verdictGroups = computed(() => {
   for (const h of candidates.value) {
     const v = hostVerdict(h)
     // Derived sort fields so every visible column is orderable.
-    const info = chipInfo(h.cpu_class)
+    const info = chipMeta(h)
     byKey.get(v.key)?.rows.push({
       ...h,
       _host: displayHost(h),
@@ -319,7 +349,10 @@ const scoreMap = computed(() => new Map(scores.value.map(s => [s.host_id, Number
 
 const currentSiliconAvg = computed(() => {
   const current = scores.value.filter(s => {
-    const info = chipInfo(s.cpu_class)
+    // gensBehind is deliberately tier-blind -- an M1 Max is still M1-era
+    // silicon -- so this gate reads the same either way. It goes through
+    // chipMeta anyway so the file has exactly one way to resolve a chip.
+    const info = chipMeta(s)
     return info && info.gensBehind <= 1 && s.composite_score != null
   })
   if (current.length < 3) return null
@@ -357,7 +390,7 @@ const dominantSignals = computed(() => {
   const flagged = verdictGroups.value.flatMap(g => (g.key === 'defer' ? [] : g.rows))
   if (!flagged.length) return []
   const rows = [
-    { label: 'Silicon 3+ generations old', count: flagged.filter(h => (chipInfo(h.cpu_class)?.gensBehind ?? 0) >= 3).length },
+    { label: 'Silicon 3+ generations old', count: flagged.filter(h => (chipMeta(h)?.gensBehind ?? 0) >= 3).length },
     { label: 'Sustained severe swap', count: flagged.filter(h => Number(h.days_severe_30d) >= Math.max(3, Number(h.days_reporting_30d) * 0.5)).length },
     { label: '16 GB of RAM or less', count: flagged.filter(h => ['8gb', '16gb'].includes(String(h.ram_tier).toLowerCase())).length },
     { label: 'Battery degraded or replace', count: flagged.filter(h => ['degraded', 'replace'].includes(h.battery_health_score)).length },
@@ -379,7 +412,10 @@ const ageBands = computed(() => {
   ]
   const out = BANDS.map(b => ({ ...b, hosts: [] }))
   for (const s of scores.value) {
-    const info = chipInfo(s.cpu_class)
+    // Unlike the generation gate above, banding is by YEAR -- and the tier
+    // moves the year. Ageing an M1 Max off the base-M1 date pushes it a
+    // whole band older and drags that band's average down with it.
+    const info = chipMeta(s)
     if (!info?.year || s.composite_score == null) continue
     const age = Math.max(0, year - info.year)
     const band = out.find(b => age >= b.min && age <= b.max)
@@ -413,6 +449,8 @@ const ageBands = computed(() => {
 function mapDim(rows, withYear = false) {
   return rows
     .map(r => {
+      // Class-only on purpose: these rows are GROUPed by cpu_class in SQL, so
+      // the bucket IS the whole generation and has no single tier to resolve.
       const info = withYear ? chipInfo(r.dimension) : null
       return {
         name: r.dimension,
@@ -457,6 +495,22 @@ const cohortCards = computed(() => {
 function batteryTone(s) {
   return s === 'replace' ? 'critical' : s === 'degraded' ? 'fair' : 'good'
 }
+
+// A battery that reports cycles but no capacity has a failed sensor read, not
+// a failed battery — the pack returns NULL there and the ingest stores it as 0.
+//
+// This deliberately mirrors BATTERY_SUSPECT in core-health.ts rather than
+// adding a cycle threshold: battery_health_score is itself derived from the
+// same max_capacity/designed_capacity read, so when that read fails the
+// verdict is unverified at ANY cycle count — a high-mileage host is no more
+// confirmed than a new one. `cycles > 0` stands in for the server's
+// has-a-battery test, since this query does not return battery_state.
+// The verdict is left exactly as reported; only the confidence is disclosed.
+function batterySuspect(h) {
+  const pct = Number(h?.battery_health_pct) || 0
+  const cycles = Number(h?.battery_cycles) || 0
+  return pct <= 0 && cycles > 0 && !!h?.battery_health_score
+}
 function scoreTone(n) {
   return n >= 40 ? 'critical' : n >= 20 ? 'fair' : 'good'
 }
@@ -479,7 +533,7 @@ function exportShortlist() {
       ${g.rows.map(h => `<tr>
         <td style="padding:7px 12px;border-bottom:1px solid #f4f4f6;font-weight:600;">${esc(displayHost(h))}</td>
         <td style="padding:7px 12px;border-bottom:1px solid #f4f4f6;">${esc(h.hardware_model || '—')}</td>
-        <td style="padding:7px 12px;border-bottom:1px solid #f4f4f6;">${esc(cpuLabel(h.cpu_class))}</td>
+        <td style="padding:7px 12px;border-bottom:1px solid #f4f4f6;">${esc(cpuLabel(h))}</td>
         <td style="padding:7px 12px;border-bottom:1px solid #f4f4f6;">${esc(String(h.ram_tier || '—').toUpperCase())}</td>
         <td style="padding:7px 12px;border-bottom:1px solid #f4f4f6;">${esc(h.battery_health_score || '—')}</td>
         <td style="padding:7px 12px;border-bottom:1px solid #f4f4f6;">${Number(h.days_reporting_30d) >= 5 ? `${h.days_pressured_30d}/${h.days_reporting_30d}d · ${h.days_severe_30d} severe` : 'not enough history'}</td>
@@ -506,6 +560,17 @@ function exportShortlist() {
 </script>
 
 <style scoped>
+.lc-batt-flag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: var(--font-size-xs, 11px);
+  font-weight: 600;
+  color: var(--status-fair-text);
+  background: var(--status-fair-bg);
+  white-space: nowrap;
+}
+
 .lifecycle-page {
   max-width: 1280px;
   margin: 0 auto;

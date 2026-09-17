@@ -4,6 +4,7 @@
  * Source: alt ClickHouse → running_apps (materialized from osquery result logs)
  */
 import type { QueryConfig } from '../types'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
 export const firehoseAppsQueries: QueryConfig[] = [
   {
@@ -12,9 +13,11 @@ export const firehoseAppsQueries: QueryConfig[] = [
     client: 'core',
     description: 'Top apps by average memory usage across fleet',
     params: [
+      ...FILTER_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 100, default: 20 },
     ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         app_name,
         bundle_identifier,
@@ -25,6 +28,7 @@ export const firehoseAppsQueries: QueryConfig[] = [
         count() AS sample_count
       FROM running_apps
       WHERE app_name != ''
+        AND host_id IN (SELECT host_id FROM filtered_hosts)
       GROUP BY app_name, bundle_identifier
       ORDER BY avg_memory_mb DESC
       {{LIMIT}}
@@ -59,9 +63,11 @@ export const firehoseAppsQueries: QueryConfig[] = [
     client: 'core',
     description: 'Heaviest apps by peak memory across all devices',
     params: [
+      ...FILTER_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 50, default: 10 },
     ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         app_name,
         hostname,
@@ -71,6 +77,7 @@ export const firehoseAppsQueries: QueryConfig[] = [
         argMax(timestamp, memory_mb) AS peak_time
       FROM running_apps
       WHERE app_name != ''
+        AND host_id IN (SELECT host_id FROM filtered_hosts)
       GROUP BY app_name, hostname, host_id
       ORDER BY peak_memory_mb DESC
       {{LIMIT}}
@@ -125,8 +132,11 @@ export const firehoseAppsQueries: QueryConfig[] = [
     domain: 'processes',
     client: 'core',
     description: 'Fleet-wide app summary stats',
-    params: [],
+    params: [
+      ...FILTER_PARAMS,
+    ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         countDistinct(app_name) AS unique_apps,
         countDistinct(host_id) AS unique_hosts,
@@ -135,6 +145,7 @@ export const firehoseAppsQueries: QueryConfig[] = [
         count() AS total_samples
       FROM running_apps
       WHERE app_name != ''
+        AND host_id IN (SELECT host_id FROM filtered_hosts)
     `,
   },
 ]

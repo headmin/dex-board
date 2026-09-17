@@ -124,7 +124,7 @@
     </EmptyState>
 
     <!-- Drawer -->
-    <Drawer title="Allen's MacBook Pro" @close="() => {}">
+    <Drawer title="olive-mesa-1172" @close="() => {}">
       <template #meta><Badge tone="critical" label="Inactive · 10d ago" /></template>
       <template #subtitle>Mac17,2 · Apple M5 · 16 GB RAM</template>
       <template #actions><BaseButton variant="primary" size="small">Open in Fleet</BaseButton></template>
@@ -213,11 +213,11 @@ const tableCols = [
   { key: 'status', label: 'Status', type: 'status' },
 ]
 const tableRows = [
-  { name: 'allens-mac-mini', score: 66, health: 74, status: 'healthy' },
-  { name: 'mac.localdomain', score: 66, health: 83, status: 'healthy' },
-  { name: 'marcus-work-macbook-pro', score: 68, health: 66, status: 'warning' },
-  { name: 'nicolas-macbook-pro', score: 88, health: 86, status: 'healthy' },
-  { name: 'dales-macbook-pro', score: 45, health: 40, status: 'unhealthy' },
+  { name: 'olive-mesa-1172', score: 66, health: 74, status: 'healthy' },
+  { name: 'plain-cedar-3733', score: 66, health: 83, status: 'healthy' },
+  { name: 'copper-prairie-2069', score: 68, health: 66, status: 'warning' },
+  { name: 'fleet-lantern-5609', score: 88, health: 86, status: 'healthy' },
+  { name: 'tidal-forge-4493', score: 45, health: 40, status: 'unhealthy' },
 ]
 </script>
 

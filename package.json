@@ -8,7 +8,8 @@
     "dev:worker": "wrangler dev",
     "build": "vite build",
     "deploy": "vite build && wrangler deploy",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test src/dashboard/**/*.test.js"
   },
   "dependencies": {
     "dayjs": "^1.11.0",

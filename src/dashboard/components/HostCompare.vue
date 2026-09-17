@@ -142,7 +142,7 @@
             <span class="sw-diff-col">{{ displayHost(rightDevice) }}</span>
           </div>
           <div v-for="d in softwareDiffs" :key="d.app_name" class="sw-diff-row">
-            <span class="sw-diff-app">{{ d.app_name }}</span>
+            <span class="sw-diff-app">{{ displayApp(d.app_name) }}</span>
             <span class="sw-diff-col">
               <Badge v-if="d.leftUsage" :tone="usageTone(d.leftUsage)" :label="usageLabel(d.leftUsage)" />
               <span v-else class="not-installed">—</span>
@@ -225,7 +225,7 @@
               <span class="compare-diff">Diff</span>
             </div>
             <div v-for="p in patchComparison" :key="p.software_name" class="compare-row" :class="{ highlight: Math.abs(p.diff) >= 5 }">
-              <span class="compare-label">{{ p.software_name }}</span>
+              <span class="compare-label">{{ displayApp(p.software_name) }}</span>
               <span class="compare-col">{{ p.leftDays !== null ? p.leftDays.toFixed(0) + 'd' : '—' }}</span>
               <span class="compare-col">{{ p.rightDays !== null ? p.rightDays.toFixed(0) + 'd' : '—' }}</span>
               <span class="compare-diff" :class="diffClass(-p.diff)">
@@ -255,7 +255,7 @@ import SegmentedControl from './base/SegmentedControl.vue'
 import PlatformBenchmark from './PlatformBenchmark.vue'
 import { usePlatformBenchmark } from '../composables/usePlatformBenchmark'
 import { useWorkersCouncil } from '../composables/useWorkersCouncil'
-import { displayHost } from '../composables/displayName'
+import { displayHost, displayApp } from '../composables/displayName'
 
 const props = defineProps({
   initialHostId: { type: String, default: '' },

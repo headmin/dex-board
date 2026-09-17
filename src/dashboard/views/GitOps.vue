@@ -286,7 +286,7 @@
               <div class="patch-bucket-row" @click="toggleBucket(day.date, bucket.software_name)">
                 <span class="patch-bucket-caret">{{ isBucketExpanded(day.date, bucket.software_name) ? '▼' : '▶' }}</span>
                 <Badge tone="info" label="Patch" />
-                <span class="patch-bucket-name">{{ bucket.software_name }}</span>
+                <span class="patch-bucket-name">{{ displayApp(bucket.software_name) }}</span>
                 <span class="patch-bucket-versions mono">
                   {{ bucket.earliest_from || '—' }}
                   <span class="ver-arrow">→</span>
@@ -395,6 +395,7 @@ import { buildImpactRows } from '../composables/useCohortImpact'
 import { useAppConfig } from '../composables/useAppConfig'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { query } from '../services/api'
+import { displayApp } from '../composables/displayName'
 import dayjs from 'dayjs'
 
 const loading = ref(true)
@@ -976,7 +977,7 @@ function buildMarkdownExport() {
       lines.push('### Endpoint patches')
       for (const b of day.patchBuckets) {
         const from = b.earliest_from || '*new*'
-        lines.push(`- **${b.software_name}** ${from} → ${b.latest_to} — ${b.hosts} hosts · ${b.transitions} transitions · MTTP ${b.avg_lag}d`)
+        lines.push(`- **${displayApp(b.software_name)}** ${from} → ${b.latest_to} — ${b.hosts} hosts · ${b.transitions} transitions · MTTP ${b.avg_lag}d`)
       }
       lines.push('')
     }

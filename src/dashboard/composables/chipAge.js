@@ -1,32 +1,49 @@
 /**
  * Chip generation → age context. A device cannot be newer than its chip,
- * so cpu_class gives a deterministic *minimum* age — enough to separate
+ * so the chip gives a deterministic *minimum* age — enough to separate
  * "old and weak → refresh" from "new and weak → investigate" without any
- * new telemetry. (hardware_model could refine this to exact model release
- * dates later.)
+ * new telemetry.
+ *
+ * Age resolution now comes from chipTier, which prefers cpu_brand ("Apple M1
+ * Max") over the generation-only cpu_class enum ("apple_m1"). That matters for
+ * age, not just labelling: the Pro/Max/Ultra bins of a generation ship up to
+ * 18 months after its base chip, so ageing an M1 Max off the base-M1 date
+ * overstated its age by a year and could push a healthy host onto the refresh
+ * list. Pass cpu_brand wherever the query returns it.
  */
-import { humanizeToken } from './humanize'
+import { chipSpec } from './chipTier'
 
 const CURRENT_GEN = 5 // Apple M5 era
 
-const APPLE_YEAR = { 1: 2020, 2: 2022, 3: 2023, 4: 2024, 5: 2025 }
-
-/** cpu_class -> { year, gensBehind, pretty } | null when unknown */
-export function chipInfo(cpuClass) {
-  const c = String(cpuClass || '').toLowerCase()
-  const m = c.match(/^apple_m(\d+)/)
-  if (m) {
-    const gen = Number(m[1])
-    return {
-      year: APPLE_YEAR[gen] ?? null,
-      gensBehind: Math.max(0, CURRENT_GEN - gen),
-      pretty: humanizeToken(c),
-    }
+/**
+ * Age + identity context for a host's chip.
+ *
+ * @param {string} cpuClass  generation-only enum, e.g. "apple_m1"
+ * @param {string} [cpuBrand] system_info.cpu_brand, e.g. "Apple M1 Max" —
+ *   optional only for callers whose query does not return it; supplying it
+ *   sharpens both the label and the release year.
+ * @returns {null | { year, gensBehind, pretty, label, tier, family, exact }}
+ */
+export function chipInfo(cpuClass, cpuBrand) {
+  const spec = chipSpec(cpuBrand, cpuClass)
+  if (!spec) return null
+  return {
+    year: spec.year,
+    // Generations behind stays a whole-generation measure: an M1 Max is still
+    // M1-era silicon. Tier refines WHEN it shipped, not WHICH generation it
+    // belongs to, and the refresh quadrant gates on the latter.
+    gensBehind: spec.vendor === 'intel'
+      ? CURRENT_GEN + 1
+      : Math.max(0, CURRENT_GEN - spec.generation),
+    pretty: spec.pretty,
+    label: spec.label,
+    tier: spec.tier,
+    family: spec.family,
+    // false when the tier could not be resolved (cpu_class-only host, or
+    // Intel, which has no tier axis) — callers that draw a tier distinction
+    // must not present such a host as a confirmed base-tier machine.
+    exact: spec.exact,
   }
-  if (c.startsWith('intel')) {
-    return { year: 2020, gensBehind: CURRENT_GEN + 1, pretty: humanizeToken(c) }
-  }
-  return null
 }
 
 /** Chip tone for age context: 0-1 current, 2 mid-life, 3 aging, 4+ old */

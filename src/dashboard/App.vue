@@ -105,6 +105,43 @@
           </div>
         </nav>
 
+        <!-- Demo toggle lives here, not in FleetFilterBar: that bar is hidden
+             on /audit and /styleguide, and /audit is exactly where admin
+             emails render. The sidebar is present on every route. -->
+        <div class="sidebar-demo">
+          <button
+            class="demo-toggle"
+            :class="{ active: demoMode }"
+            :aria-pressed="demoMode"
+            @click="toggleDemoMode"
+            title="Demo mode — render host, team and people names as deterministic pseudonyms. Presentation aid only: raw values still reach the browser."
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/>
+              <path d="M4 4l16 16"/>
+            </svg>
+            <span>{{ demoMode ? 'Demo mode on' : 'Demo mode' }}</span>
+          </button>
+        </div>
+
+        <!-- Density switch, alongside the demo toggle for the same reason:
+             the sidebar is the only chrome present on every route. -->
+        <div class="sidebar-demo">
+          <button
+            class="demo-toggle"
+            :class="{ active: expertMode }"
+            :aria-pressed="expertMode"
+            @click="toggleExpertMode"
+            title="Expert mode — show the numbers behind the grades: raw scores, per-signal breakdowns and sample sizes. Presentation only; nothing is access-restricted."
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/>
+              <path d="M1 14h6M9 8h6M17 16h6"/>
+            </svg>
+            <span>{{ expertMode ? 'Expert mode on' : 'Expert mode' }}</span>
+          </button>
+        </div>
+
         <div class="sidebar-footer">
           <router-link to="/styleguide" class="sidebar-footer-link">Style guide</router-link>
           <div class="version-badge">v1.0.0</div>
@@ -113,14 +150,29 @@
 
       <main class="main-content">
         <FleetFilterBar />
-        <div v-if="wcMode" class="wc-banner">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-          Workers Council Mode Active
+        <div v-if="wcMode || demoMode" class="mode-banners">
+          <div v-if="wcMode" class="wc-banner">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Workers Council Mode Active
+          </div>
+          <div v-if="demoMode" class="demo-banner">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/>
+              <path d="M4 4l16 16"/>
+            </svg>
+            Demo mode — names are pseudonyms, not real hosts
+          </div>
         </div>
         <div class="content-wrapper">
-          <router-view />
+          <!-- Keyed on both display modes so flipping either one remounts the
+               current view and refetches. Several views mask at fetch time
+               (Analytics, HostDetail, AuditLogs), and Workers Council mode
+               skips a fetch outright (useExperienceScore.fetchDeviceList) —
+               without this, toggling leaves the previous mode's rows on screen
+               under the new banner until an unrelated filter change. -->
+          <router-view :key="`${wcMode}-${demoMode}`" />
         </div>
       </main>
     </div>
@@ -130,8 +182,12 @@
 <script setup>
 import FleetFilterBar from './components/FleetFilterBar.vue'
 import { useWorkersCouncil } from './composables/useWorkersCouncil'
+import { useDemoMode } from './composables/useDemoMode'
+import { useExpertMode } from './composables/useExpertMode'
 
 const { wcMode } = useWorkersCouncil()
+const { demoMode, toggleDemoMode } = useDemoMode()
+const { expertMode, toggleExpertMode } = useExpertMode()
 </script>
 
 <style>
@@ -416,23 +472,84 @@ a:not([class]):hover { color: var(--link-color-hover); }
 }
 
 /* ── WC Banner ───────────────────────────────── */
-.wc-banner {
+/* Both modes can be on at once, so the banners stack rather than overlap. */
+.mode-banners {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: var(--pad-medium) var(--pad-large) 0;
+}
+
+.wc-banner,
+.demo-banner {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: var(--status-good-bg);
-  color: var(--status-good-text);
   font-family: var(--font-body);
   font-size: var(--font-size-xsmall);
   font-weight: 500;
   padding: 9px 14px;
-  margin: var(--pad-medium) var(--pad-large) 0;
   border-radius: var(--radius);
+}
+
+.wc-banner {
+  background: var(--status-good-bg);
+  color: var(--status-good-text);
   border: 1px solid rgba(61, 182, 123, 0.3);
 }
 
 .wc-banner svg {
   stroke: var(--status-good-text);
+  flex-shrink: 0;
+}
+
+/* Gold, not green: demo mode must never be mistaken for the Workers Council
+   privacy guarantee at a glance. */
+.demo-banner {
+  background: var(--status-fair-bg);
+  color: var(--status-fair-text);
+  border: 1px solid rgba(164, 127, 30, 0.3);
+}
+
+.demo-banner svg {
+  stroke: var(--status-fair-text);
+  flex-shrink: 0;
+}
+
+/* ── Sidebar demo toggle ─────────────────────── */
+.sidebar-demo {
+  padding: var(--pad-small) var(--pad-large) 0;
+}
+
+.demo-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 7px 10px;
+  background: transparent;
+  border: 1px solid var(--fleet-black-10);
+  border-radius: var(--radius);
+  color: var(--fleet-black-50);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xxsmall);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.demo-toggle:hover {
+  color: var(--fleet-black);
+  border-color: var(--fleet-black-25);
+}
+
+.demo-toggle.active {
+  background: var(--status-fair-bg);
+  border-color: rgba(164, 127, 30, 0.3);
+  color: var(--status-fair-text);
+}
+
+.demo-toggle svg {
   flex-shrink: 0;
 }
 

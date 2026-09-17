@@ -1,5 +1,5 @@
 import { gradeColor, scoreToGrade } from './gradeColors'
-import { displayHost } from './displayName'
+import { displayHost, displayTeam } from './displayName'
 
 /**
  * "Save briefing" — renders the current Experience-score view as a fully
@@ -25,7 +25,7 @@ function deltaSpan(d, digits = 1) {
   return `<span style="font-family:ui-monospace,monospace;font-weight:700;color:${color};">${n > 0 ? '+' : '−'}${Math.abs(n).toFixed(digits)}</span>`
 }
 
-export function buildBriefingHtml({ fleet, tileDeltas, categories, exposureView, distribution, deviceList, movers, teamRows, deltaLabel }) {
+export function buildBriefingHtml({ fleet, tileDeltas, categories, exposureView, distribution, deviceList, movers, teamRows, teamNames, deltaLabel }) {
   const now = new Date()
   const stamp = now.toUTCString()
   const WEIGHTS = { device_health: '25%', performance: '35%', security: '20%', software: '20%', network: 'context' }
@@ -48,7 +48,7 @@ export function buildBriefingHtml({ fleet, tileDeltas, categories, exposureView,
 
   const teamRowsHtml = (teamRows || []).filter(t => !t.unscorable).map(t => `
     <tr>
-      <td style="padding:8px 12px;border-bottom:1px solid #f4f4f6;font-weight:600;">${esc(t.team_id)}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f4f4f6;font-weight:600;">${esc(displayTeam(t.team_id, teamNames))}</td>
       <td style="padding:8px 12px;border-bottom:1px solid #f4f4f6;color:#8b8fa2;">${t.hosts} hosts</td>
       <td style="padding:8px 12px;border-bottom:1px solid #f4f4f6;">${gradeBadge(scoreToGrade(t.avg_composite))}</td>
       <td style="padding:8px 12px;border-bottom:1px solid #f4f4f6;font-weight:700;">${t.avg_composite != null ? Math.round(t.avg_composite) : '—'}</td>

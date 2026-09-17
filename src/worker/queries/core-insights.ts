@@ -5,6 +5,7 @@
  * Joins running_apps + hardware_inventory + fleetd_info for composite signals.
  */
 import type { QueryConfig } from '../types'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
 export const firehoseInsightQueries: QueryConfig[] = [
   {
@@ -112,8 +113,11 @@ export const firehoseInsightQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Memory pressure by RAM tier',
-    params: [],
+    params: [
+      ...FILTER_PARAMS,
+    ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         multiIf(memory_gb <= 8, '8 GB', memory_gb <= 16, '16 GB', memory_gb <= 18, '18 GB', memory_gb <= 24, '24 GB', memory_gb <= 32, '32 GB', memory_gb <= 36, '36 GB', memory_gb <= 48, '48 GB', memory_gb <= 64, '64 GB', '128+ GB') AS ram_tier,
         count() AS device_count,
@@ -133,6 +137,7 @@ export const firehoseInsightQueries: QueryConfig[] = [
           SELECT host_id, timestamp, sum(memory_mb) AS total_mem
           FROM running_apps GROUP BY host_id, timestamp
         ) a ON h.host_id = a.host_id
+        WHERE host_id IN (SELECT host_id FROM filtered_hosts)
         GROUP BY h.host_id, h.memory_gb
       )
       GROUP BY ram_tier
@@ -174,8 +179,11 @@ export const firehoseInsightQueries: QueryConfig[] = [
     domain: 'scores',
     client: 'core',
     description: 'Management and security agent memory overhead',
-    params: [],
+    params: [
+      ...FILTER_PARAMS,
+    ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         app_name,
         bundle_identifier,
@@ -186,6 +194,7 @@ export const firehoseInsightQueries: QueryConfig[] = [
         round(avg(memory_mb) * countDistinct(host_id), 0) AS fleet_cost_mb
       FROM running_apps
       WHERE bundle_identifier LIKE '%crowdstrike%'
+        AND host_id IN (SELECT host_id FROM filtered_hosts)
         OR bundle_identifier LIKE '%jamf%'
         OR bundle_identifier LIKE '%zscaler%'
         OR bundle_identifier LIKE '%sentinelone%'

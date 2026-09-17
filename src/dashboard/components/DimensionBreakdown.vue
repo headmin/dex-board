@@ -73,6 +73,8 @@ function gradeColor(grade) {
 }
 
 function chipYear(name) {
+  // Class-only by nature: `name` is a cpu_class dimension bucket (the whole
+  // generation), so there is no per-host brand string and no tier to resolve.
   return chipInfo(name)?.year ?? null
 }
 

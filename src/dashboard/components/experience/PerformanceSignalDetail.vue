@@ -27,7 +27,7 @@
         <div v-if="topProcesses === null" class="data-unavailable">Process data unavailable</div>
         <div v-else-if="topProcesses.length" class="app-list">
           <div v-for="p in topProcesses" :key="p.process_name + p.process_class" class="app-row">
-            <span class="app-name">{{ p.process_name }}</span>
+            <span class="app-name">{{ displayIdentifier(p.process_name) }}</span>
             <span class="row-metric">{{ p.device_count != null ? `${p.device_count} hosts` : '—' }}</span>
             <span class="row-mb">{{ p.max_rss_mb != null ? `${Math.round(p.max_rss_mb).toLocaleString()} MB max` : '—' }}</span>
           </div>
@@ -63,7 +63,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import Badge from '../base/Badge.vue'
 import { query } from '../../services/api'
-import { displayHost } from '../../composables/displayName'
+import { displayHost, displayIdentifier } from '../../composables/displayName'
 import { useFleetFilter } from '../../composables/useFleetFilter'
 
 const { filterParams } = useFleetFilter()

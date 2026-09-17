@@ -38,8 +38,11 @@ export const firehoseFleetdQueries: QueryConfig[] = [
     domain: 'software',
     client: 'core',
     description: 'Fleet agent version distribution',
-    params: [],
+    params: [
+      ...FILTER_PARAMS,
+    ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         orbit_version,
         osquery_version,
@@ -51,6 +54,7 @@ export const firehoseFleetdQueries: QueryConfig[] = [
           argMax(osquery_version, timestamp) AS osquery_version,
           argMax(desktop_version, timestamp) AS desktop_version
         FROM fleetd_info
+        WHERE host_id IN (SELECT host_id FROM filtered_hosts)
         GROUP BY host_id
       )
       GROUP BY orbit_version, osquery_version, desktop_version
@@ -63,9 +67,11 @@ export const firehoseFleetdQueries: QueryConfig[] = [
     client: 'core',
     description: 'Devices with recent fleetd errors',
     params: [
+      ...FILTER_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 100, default: 20 },
     ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT host_id, hostname, version, platform, last_error, last_seen
       FROM (
         SELECT
@@ -79,6 +85,7 @@ export const firehoseFleetdQueries: QueryConfig[] = [
         GROUP BY host_id
       )
       WHERE last_error != ''
+        AND host_id IN (SELECT host_id FROM filtered_hosts)
       ORDER BY last_seen DESC
       {{LIMIT}}
     `,
@@ -113,8 +120,11 @@ export const firehoseFleetdQueries: QueryConfig[] = [
     domain: 'software',
     client: 'core',
     description: 'Device uptime distribution',
-    params: [],
+    params: [
+      ...FILTER_PARAMS,
+    ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         multiIf(
           up < 3600, '< 1h',
@@ -127,6 +137,7 @@ export const firehoseFleetdQueries: QueryConfig[] = [
       FROM (
         SELECT host_id, argMax(uptime_seconds, timestamp) AS up
         FROM fleetd_info
+        WHERE host_id IN (SELECT host_id FROM filtered_hosts)
         GROUP BY host_id
       )
       GROUP BY uptime_bucket

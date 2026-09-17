@@ -5,7 +5,12 @@
       <span class="hero-eyebrow">Fleet composite</span>
       <div class="hero-grade-row">
         <span class="hero-grade" :style="{ color: gradeColor(fleet.grade) }" title="Grades: A ≥ 90 · B ≥ 75 · C ≥ 60 · D ≥ 40 · F below 40">{{ fleet.grade }}</span>
-        <span class="hero-score">{{ fleet.score != null ? fleet.score : '—' }}<span class="hero-score-max">/100</span></span>
+        <!-- The number is the expert reading. "B" and "75.6/100" say the same
+             thing at a glance, and only one of them invites arguing about a
+             decimal point. The coverage line below is NOT hidden with it: a
+             grade that does not cover the whole fleet has to say so whether
+             or not you asked for detail. -->
+        <span v-if="expertMode" class="hero-score">{{ fleet.score != null ? fleet.score : '—' }}<span class="hero-score-max">/100</span></span>
       </div>
       <span v-if="compositeDelta != null" class="hero-delta" :class="compositeDelta >= 0 ? 'hero-delta--up' : 'hero-delta--down'">
         {{ compositeDelta >= 0 ? '▲' : '▼' }} {{ Math.abs(compositeDelta).toFixed(1) }} pts vs {{ deltaLabel }}
@@ -69,6 +74,9 @@
 <script setup>
 import { computed } from 'vue'
 import { gradeColor } from '../../composables/gradeColors'
+import { useExpertMode } from '../../composables/useExpertMode'
+
+const { expertMode } = useExpertMode()
 
 const props = defineProps({
   fleet: { type: Object, default: () => ({ grade: '—', score: null, deviceCount: 0 }) },

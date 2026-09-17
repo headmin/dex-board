@@ -21,7 +21,7 @@
             :class="{ 'is-active': lowGradesOnly }"
             @click="lowGradesOnly = !lowGradesOnly"
           >Grade D or F</button>
-          <SearchInput v-model="deviceSearch" class="act-search" placeholder="Search hostname..." />
+          <SearchInput v-model="deviceSearch" class="act-search" :placeholder="searchPlaceholder" />
         </div>
       </div>
 
@@ -31,7 +31,7 @@
         <table class="act-table">
           <thead>
             <tr>
-              <th @click="deviceSortBy('hostname')" class="sortable">Host {{ deviceSortIcon('hostname') }}</th>
+              <th @click="deviceSortBy('display_name')" class="sortable">Host {{ deviceSortIcon('display_name') }}</th>
               <th>Hardware</th>
               <th @click="deviceSortBy('composite_grade')" class="sortable">Grade {{ deviceSortIcon('composite_grade') }}</th>
               <th @click="deviceSortBy('composite_score')" class="sortable">Score {{ deviceSortIcon('composite_score') }}</th>
@@ -82,6 +82,7 @@ import { useSort } from '../../composables/useSort'
 import { gradeColor } from '../../composables/gradeColors'
 import { humanizeToken } from '../../composables/humanize'
 import { useWorkersCouncil } from '../../composables/useWorkersCouncil'
+import { useDemoMode } from '../../composables/useDemoMode'
 
 const GRADES = ['A', 'B', 'C', 'D', 'F']
 
@@ -103,6 +104,13 @@ const props = defineProps({
 defineEmits(['inspect-host'])
 
 const { wcMode } = useWorkersCouncil()
+const { isMasked } = useDemoMode()
+
+// Demo mode no longer matches the raw hostname (see filteredDeviceList), so
+// the placeholder must not invite typing one.
+const searchPlaceholder = computed(() =>
+  isMasked('hosts') ? 'Search host, CPU, RAM...' : 'Search hostname...'
+)
 
 const deviceSearch = ref('')
 const lowGradesOnly = ref(false)
@@ -116,14 +124,23 @@ const {
 } = useSort('composite_score', true)
 
 const filteredDeviceList = computed(() => {
-  let list = props.deviceList
+  // display_name is materialised here so the Host column can sort and search
+  // on what the user actually sees. Sorting the raw hostname while rendering
+  // displayHost() looks random in demo mode, and searching the raw hostname
+  // never matches a pseudonym the user just read off the screen.
+  let list = props.deviceList.map(d => ({ ...d, display_name: displayHost(d) }))
   if (lowGradesOnly.value) {
     list = list.filter(d => d.composite_grade === 'D' || d.composite_grade === 'F')
   }
   if (deviceSearch.value) {
     const s = deviceSearch.value.toLowerCase()
+    // In demo mode the raw hostname is NOT searchable. Leaving it in would make
+    // this box a de-anonymisation oracle: anyone who knows one real hostname
+    // could type it and watch the single matching row filter in, binding that
+    // name to its pseudonym and to the host's scores.
+    const nameFields = isMasked('hosts') ? ['display_name'] : ['display_name', 'hostname']
     list = list.filter(d =>
-      (d.hostname || '').toLowerCase().includes(s) ||
+      nameFields.some(f => (d[f] || '').toLowerCase().includes(s)) ||
       (d.host_id || '').toLowerCase().includes(s) ||
       (d.cpu_class || '').toLowerCase().includes(s) ||
       (d.ram_tier || '').toLowerCase().includes(s)

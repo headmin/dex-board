@@ -4,6 +4,7 @@
  * Source: alt ClickHouse → wifi_signal (materialized from osquery result logs)
  */
 import type { QueryConfig } from '../types'
+import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
 export const firehoseWifiQueries: QueryConfig[] = [
   {
@@ -11,8 +12,11 @@ export const firehoseWifiQueries: QueryConfig[] = [
     domain: 'network',
     client: 'core',
     description: 'Fleet-wide Wi-Fi signal stats from firehose data source',
-    params: [],
+    params: [
+      ...FILTER_PARAMS,
+    ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         count() AS total_samples,
         countDistinct(host_id) AS unique_hosts,
@@ -24,6 +28,7 @@ export const firehoseWifiQueries: QueryConfig[] = [
       -- rssi = 0 is the "no reading" sentinel (real RSSI is negative dBm);
       -- averaging it in drags avg_rssi toward 0 and inflates the fleet stats
       WHERE rssi < 0
+        AND host_id IN (SELECT host_id FROM filtered_hosts)
     `,
   },
   {
@@ -32,9 +37,11 @@ export const firehoseWifiQueries: QueryConfig[] = [
     client: 'core',
     description: 'Per-device latest Wi-Fi signal quality',
     params: [
+      ...FILTER_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 50 },
     ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         host_id,
         argMax(hostname, timestamp) AS hostname,
@@ -51,6 +58,7 @@ export const firehoseWifiQueries: QueryConfig[] = [
       -- only real readings — hosts whose latest row is the rssi = 0
       -- "no reading" sentinel fall back to their last real reading.
       FROM (SELECT * FROM wifi_signal WHERE rssi < 0)
+      WHERE host_id IN (SELECT host_id FROM filtered_hosts)
       GROUP BY host_id
       ORDER BY rssi ASC
       {{LIMIT}}
@@ -61,14 +69,18 @@ export const firehoseWifiQueries: QueryConfig[] = [
     domain: 'network',
     client: 'core',
     description: 'Distribution of signal quality ratings',
-    params: [],
+    params: [
+      ...FILTER_PARAMS,
+    ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         signal_quality,
         count() AS cnt,
         round(count() * 100.0 / sum(count()) OVER (), 1) AS pct
       FROM wifi_signal
       WHERE rssi < 0
+        AND host_id IN (SELECT host_id FROM filtered_hosts)
       GROUP BY signal_quality
       ORDER BY
         CASE signal_quality
@@ -85,8 +97,11 @@ export const firehoseWifiQueries: QueryConfig[] = [
     domain: 'network',
     client: 'core',
     description: 'Fleet-wide Wi-Fi signal strength over time (hourly avg)',
-    params: [],
+    params: [
+      ...FILTER_PARAMS,
+    ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         toStartOfHour(timestamp) AS hour,
         round(avg(rssi), 1) AS avg_rssi,
@@ -95,6 +110,7 @@ export const firehoseWifiQueries: QueryConfig[] = [
         count() AS samples
       FROM wifi_signal
       WHERE rssi < 0
+        AND host_id IN (SELECT host_id FROM filtered_hosts)
       GROUP BY hour
       ORDER BY hour
     `,

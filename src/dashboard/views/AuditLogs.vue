@@ -120,9 +120,24 @@ import HeatmapChart from '../components/HeatmapChart.vue'
 import DataTable from '../components/DataTable.vue'
 import PageHeader from '../components/base/PageHeader.vue'
 import SectionHeader from '../components/base/SectionHeader.vue'
+import { useDemoMode } from '../composables/useDemoMode'
+import { pseudoPerson } from '../composables/pseudonyms'
 
 const { timeRangeHours } = useTimeRange()
+const { isMasked } = useDemoMode()
 const error = ref(null)
+
+// Fleet admin emails. Note the `detail` column is free text straight from the
+// audit payload and can also name a user, so it is dropped rather than masked
+// in demo mode — there is no reliable way to rewrite arbitrary prose.
+function withDisplayUser(rows) {
+  if (!Array.isArray(rows) || !isMasked('people')) return rows
+  return rows.map(r => ({
+    ...r,
+    user_email: pseudoPerson(r.user_email),
+    ...(r.detail !== undefined ? { detail: '—' } : {}),
+  }))
+}
 
 const loading = ref({
   overview: false,
@@ -206,8 +221,11 @@ async function fetchDetails() {
     ])
 
     typeBreakdown.value = types
-    topUsers.value = users
-    recentEvents.value = events
+    // Masking at assignment covers every downstream surface at once: the hero
+    // sentence, the rail (which also keys on user_email), the "Most active
+    // users" chart and the events table.
+    topUsers.value = withDisplayUser(users)
+    recentEvents.value = withDisplayUser(events)
   } catch (e) {
     error.value = `Details: ${e.message}`
   } finally {

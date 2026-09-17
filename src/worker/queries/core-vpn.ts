@@ -35,10 +35,12 @@ export const firehoseVpnQueries: QueryConfig[] = [
     client: 'core',
     description: 'Per-device VPN/network status. Pass hostId to fetch one host.',
     params: [
+      ...FILTER_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 500, default: 200 },
       { name: 'hostId', type: 'string' as const, required: false },
     ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         host_id,
         hostname,
@@ -53,6 +55,7 @@ export const firehoseVpnQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM vpn_gate GROUP BY host_id
       )
+        AND host_id IN (SELECT host_id FROM filtered_hosts)
         AND if({filterHostId:String} != '', host_id = {filterHostId:String}, true)
       ORDER BY hostname
       {{LIMIT}}
@@ -63,8 +66,11 @@ export const firehoseVpnQueries: QueryConfig[] = [
     domain: 'network',
     client: 'core',
     description: 'Device count by network confidence level',
-    params: [],
+    params: [
+      ...FILTER_PARAMS,
+    ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         network_confidence,
         count() AS device_count
@@ -72,6 +78,7 @@ export const firehoseVpnQueries: QueryConfig[] = [
         SELECT host_id, argMax(network_confidence, timestamp) AS network_confidence
         FROM vpn_gate GROUP BY host_id
       )
+      WHERE host_id IN (SELECT host_id FROM filtered_hosts)
       GROUP BY network_confidence
       ORDER BY device_count DESC
     `,

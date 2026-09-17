@@ -158,6 +158,7 @@ import BaseButton from '../components/base/BaseButton.vue'
 import EmptyState from '../components/base/EmptyState.vue'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { chipInfo, verdictFor } from '../composables/chipAge'
+import { displayApp, displayIdentifier } from '../composables/displayName'
 import { palette } from '../composables/uiPalette'
 
 const { filterParams } = useFleetFilter()
@@ -274,7 +275,7 @@ const findings = computed(() => {
           {
             label: 'Evidence — agent RAM, fleet-wide',
             rows: top.map(a => ({
-              label: a.app_name || a.bundle_identifier,
+              label: displayApp(a.app_name || a.bundle_identifier),
               pct: Math.round((Number(a.avg_mem_mb) / maxAvg) * 100),
               color: Number(a.avg_mem_mb) >= 400 ? palette.critical : Number(a.avg_mem_mb) >= 250 ? palette.elevated : Number(a.avg_mem_mb) >= 150 ? palette.fair : palette.good,
               value: `${Math.round(a.avg_mem_mb)} MB`,
@@ -289,7 +290,7 @@ const findings = computed(() => {
 
   // 2 — Sustained severe swap on current silicon (lifecycle verdicts)
   const investigate = lifecycleRows.value.filter(h => {
-    const info = chipInfo(h.cpu_class)
+    const info = chipInfo(h.cpu_class, h.cpu_brand)
     return verdictFor(Number(h.refresh_score) >= 30, info?.gensBehind ?? null, {
       weakDays: Number(h.days_pressured_30d) || 0,
       reportDays: Number(h.days_reporting_30d) || 0,
@@ -361,21 +362,21 @@ const findings = computed(() => {
       out.push({
         id: 'crash-concentration',
         category: 'software',
-        title: `${top.crashed_identifier} accounts for ${pct}% of fleet crashes this week`,
+        title: `${displayIdentifier(top.crashed_identifier)} accounts for ${pct}% of fleet crashes this week`,
         short: 'Crash concentration',
-        body: `${topN} of ${totalCrashes} crashes in the last 7 days come from ${top.crashed_identifier} (${top.affected_devices} host${Number(top.affected_devices) === 1 ? '' : 's'}, worst severity ${top.worst_severity}). One identifier owns most of the fleet's crash budget.`,
+        body: `${topN} of ${totalCrashes} crashes in the last 7 days come from ${displayIdentifier(top.crashed_identifier)} (${top.affected_devices} host${Number(top.affected_devices) === 1 ? '' : 's'}, worst severity ${top.worst_severity}). One identifier owns most of the fleet's crash budget.`,
         population: Number(top.affected_devices) || 0,
         populationLabel: 'hosts affected',
         effort: 'medium',
         kind: 'investigation',
         cost: 'none',
-        action: `Investigate ${top.crashed_identifier} on affected hosts`,
-        recommendation: `investigate ${top.crashed_identifier} on the affected host${Number(top.affected_devices) === 1 ? '' : 's'} — with ${pct}% of all crashes in one identifier, one fix moves the whole software category.`,
+        action: `Investigate ${displayIdentifier(top.crashed_identifier)} on affected hosts`,
+        recommendation: `investigate ${displayIdentifier(top.crashed_identifier)} on the affected host${Number(top.affected_devices) === 1 ? '' : 's'} — with ${pct}% of all crashes in one identifier, one fix moves the whole software category.`,
         link: { to: '/analytics', label: 'Open Analytics' },
         evidence: [{
           label: 'Evidence — top crashers, 7 days',
           rows: crashers.value.map(c => ({
-            label: c.crashed_identifier,
+            label: displayIdentifier(c.crashed_identifier),
             pct: Math.max(2, Math.round((Number(c.total_crashes_7d) / maxN) * 100)),
             color: c.worst_severity === 'critical' ? palette.critical : c.worst_severity === 'elevated' ? palette.elevated : palette.fair,
             value: c.total_crashes_7d,

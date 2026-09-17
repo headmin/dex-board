@@ -644,8 +644,8 @@ echo "  → adoption_gap rows: $(count_table adoption_gap)"
 echo ""
 
 # ── 12. Security Posture (FileVault / firewall / SIP / Gatekeeper) ───
-# macOS-only today (the dex_security_posture_macos query in the GitOps
-# pack is platform: darwin). Linux/Windows hosts won't produce rows;
+# macOS-only today ("DEX - System experience - Security posture" in the
+# upstream pack is platform: darwin). Linux/Windows hosts won't produce rows;
 # alt-scores.ts falls back to OS-only signals for them.
 echo "12/12 Security Posture"
 run_sql "CREATE TABLE security_posture" "

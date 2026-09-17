@@ -98,6 +98,11 @@ ${FILTERED_HOSTS_CTE},
 mac_h AS (
   SELECT host_id, argMax(hostname, timestamp) AS hostname,
     argMax(cpu_class, timestamp) AS cpu_class,
+    -- Carried for identity, never for scoring: cpu_class stays the scoring
+    -- key (the CASE below), while cpu_brand lets the client resolve the tier
+    -- cpu_class collapses -- "Apple M1 Max" vs the shared apple_m1 bucket.
+    -- (No backticks in here: this whole CTE is a JS template literal.)
+    argMax(cpu_brand, timestamp) AS cpu_brand,
     argMax(ram_tier, timestamp) AS ram_tier,
     argMax(battery_health_score, timestamp) AS battery_health_score,
     argMax(swap_pressure, timestamp) AS swap_pressure,
@@ -171,6 +176,7 @@ device_scores AS (
     bh.hostname AS hostname,
     bh.platform AS platform,
     h.cpu_class AS cpu_class,
+    h.cpu_brand AS cpu_brand,
     h.ram_tier AS ram_tier,
 
     -- Data coverage: how many secondary tables have data for this device (0-7)
@@ -662,6 +668,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
         host_id,
         hostname,
         cpu_class,
+        cpu_brand,
         ram_tier,
         platform,
         device_health_score,

@@ -52,8 +52,11 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
     domain: 'software',
     client: 'core',
     description: 'App count by usage tier',
-    params: [],
+    params: [
+      ...FILTER_PARAMS,
+    ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         usage_tier,
         count() AS app_count,
@@ -63,6 +66,7 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id
       )
+        AND host_id IN (SELECT host_id FROM filtered_hosts)
       GROUP BY usage_tier
       ORDER BY app_count DESC
     `,
@@ -73,6 +77,7 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
     client: 'core',
     description: 'Most stale apps across fleet (longest since last opened); excludes OS-shipped utilities and nested helper bundles by default',
     params: [
+      ...FILTER_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 50 },
       // 'no' (default) drops two categories of noise:
       //   - /System/* paths — OS-shipped utilities that ship with macOS and
@@ -88,6 +93,7 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
       { name: 'includeNoise', type: 'enum' as const, values: ['no', 'yes'], required: false, default: 'no' },
     ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         app_name,
         bundle_identifier,
@@ -101,6 +107,7 @@ export const firehoseAdoptionQueries: QueryConfig[] = [
       WHERE (host_id, timestamp) IN (
         SELECT host_id, max(timestamp) FROM adoption_gap GROUP BY host_id
       )
+        AND host_id IN (SELECT host_id FROM filtered_hosts)
         AND days_since_opened > 0
         AND (
           {includeNoise:String} = 'yes'

@@ -37,9 +37,11 @@ export const firehoseHardwareQueries: QueryConfig[] = [
     client: 'core',
     description: 'Latest hardware info per device',
     params: [
+      ...FILTER_PARAMS,
       { name: 'limit', type: 'number' as const, required: false, min: 1, max: 200, default: 100 },
     ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         host_id,
         argMax(hostname, timestamp) AS hostname,
@@ -52,6 +54,7 @@ export const firehoseHardwareQueries: QueryConfig[] = [
         argMax(memory_gb, timestamp) AS memory_gb,
         max(timestamp) AS last_seen
       FROM hardware_inventory
+      WHERE host_id IN (SELECT host_id FROM filtered_hosts)
       GROUP BY host_id
       ORDER BY hostname ASC
       {{LIMIT}}
@@ -62,8 +65,11 @@ export const firehoseHardwareQueries: QueryConfig[] = [
     domain: 'devices',
     client: 'core',
     description: 'Hardware model distribution across fleet',
-    params: [],
+    params: [
+      ...FILTER_PARAMS,
+    ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         hardware_model,
         any(cpu_brand) AS cpu_brand,
@@ -73,6 +79,7 @@ export const firehoseHardwareQueries: QueryConfig[] = [
           argMax(hardware_model, timestamp) AS hardware_model,
           argMax(cpu_brand, timestamp) AS cpu_brand
         FROM hardware_inventory
+        WHERE host_id IN (SELECT host_id FROM filtered_hosts)
         GROUP BY host_id
       )
       GROUP BY hardware_model
@@ -84,8 +91,11 @@ export const firehoseHardwareQueries: QueryConfig[] = [
     domain: 'devices',
     client: 'core',
     description: 'Device count by RAM tier',
-    params: [],
+    params: [
+      ...FILTER_PARAMS,
+    ],
     sql: `
+      WITH ${FILTERED_HOSTS_CTE}
       SELECT
         multiIf(
           mem <= 8, '8 GB',
@@ -98,6 +108,7 @@ export const firehoseHardwareQueries: QueryConfig[] = [
       FROM (
         SELECT host_id, argMax(memory_gb, timestamp) AS mem
         FROM hardware_inventory
+        WHERE host_id IN (SELECT host_id FROM filtered_hosts)
         GROUP BY host_id
       )
       GROUP BY ram_tier

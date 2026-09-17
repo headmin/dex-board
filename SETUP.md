@@ -72,31 +72,40 @@ curl -fsSL https://raw.githubusercontent.com/fleetdm/fleet/main/it-and-security/
   | fleetctl apply -f -
 ```
 
-> ⚠️ Do **not** apply the copies in `setup/fleet-query-packs/` — they are
-> reduced reference snapshots that do *not* emit the scoring tables. Applying
-> them silently under-populates Performance, Software, and Network: the
-> `ifNull()` defaults make missing data look "average" instead of missing.
-> See `setup/fleet-query-packs/README.md`.
+> ℹ️ `setup/fleet-query-packs/dex-queries.yml` is a verbatim mirror of the
+> upstream pack, kept so you can read and diff the queries without cloning the
+> fleet repo. Apply from upstream anyway: the mirror has no way to stay
+> current, so it lags the moment the pack changes in fleet. See
+> `setup/fleet-query-packs/README.md`.
 
 After queries have had one collection interval to run, verify data landed
 (section 3.2a below) **before** trusting any grade the dashboard shows.
 
 ### 3.2 Required scheduled queries
 
-The firehose materialized views key off the `name` column on the ClickPipe table. Make sure all of these are active on at least one team in Fleet:
+The firehose materialized views key off the `name` column on the ClickPipe
+table. Names below are quoted exactly as they appear in the upstream pack, so
+you can find them in Fleet's UI. Make sure all of these are active on at least
+one team in Fleet:
 
-- `DEX - Hardware experience - device health`
+- `DEX - Hardware experience - Device health`
 - `DEX - System experience - OS health`
-- `DEX - Application experience - process health`
-- `DEX - Application experience - crash summary`
-- `DEX - Application experience - crash detail`
-- `DEX - Application experience - adoption gap`
+- `DEX - Application experience - Process health`
+- `DEX - Application experience - Crash summary`
+- `DEX - Application experience - Crash detail`
+- `DEX - Application experience - Adoption gap`
 - `DEX - Network experience - VPN gate`
-- `DEX - Device security posture`
-- `Wi-Fi signal quality` (macOS)
-- `macOS Running Apps` (macOS)
-- `fleetd information`
-- `System Information`
+- `DEX - System experience - Security posture`
+- `DEX - Network experience - Wi-Fi signal quality` (macOS)
+- `DEX - Application experience - macOS running apps` (macOS)
+- `DEX - Hardware inventory - System information`
+- `Collect fleetd information` (from `lib/all/reports/collect-fleetd-information.yml`)
+
+The matchers are `ILIKE` and substring-based, so casing does not affect
+ingest — but a *wrong* name does. This list previously said
+`DEX - Device security posture`, which exists in no pack; the real query is
+`DEX - System experience - Security posture` and only kept flowing because its
+matcher (`%security%posture%`) is broad enough to catch it anyway.
 
 If any of these are paused or missing, the corresponding tile/view will show blanks.
 

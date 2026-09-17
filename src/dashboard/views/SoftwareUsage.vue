@@ -31,7 +31,7 @@
         <span class="hero-eyebrow">Most idle apps</span>
         <div v-if="topIdle.length" class="hero-rail-list">
           <div v-for="a in topIdle" :key="a.app_name" class="hero-rail-row">
-            <span class="hero-rail-label">{{ a.app_name }}</span>
+            <span class="hero-rail-label">{{ a.display_app }}</span>
             <span class="hero-rail-count">{{ a.unused_hosts }}</span>
           </div>
         </div>
@@ -99,7 +99,7 @@
         <table class="sw-table">
           <thead>
             <tr>
-              <th class="sortable" @click="sortBy('app_name')">App {{ sortIcon('app_name') }}</th>
+              <th class="sortable" @click="sortBy('display_app')">App {{ sortIcon('display_app') }}</th>
               <th class="sortable" @click="sortBy('category')">Category {{ sortIcon('category') }}</th>
               <th class="num sortable" @click="sortBy('installs')">Installs {{ sortIcon('installs') }}</th>
               <th class="num sortable" @click="sortBy('unused_hosts')">Unused {{ sortIcon('unused_hosts') }}</th>
@@ -120,7 +120,7 @@
                 :title="wcMode ? undefined : `Show the ${a.unused_hosts} hosts with an idle seat`"
                 @click="!wcMode && toggleDrill(a.app_name)"
               >
-                <td class="sw-app"><span v-if="!wcMode" class="sw-drill-arrow">{{ drillApp === a.app_name ? '▾' : '▸' }}</span>{{ a.app_name }}</td>
+                <td class="sw-app"><span v-if="!wcMode" class="sw-drill-arrow">{{ drillApp === a.app_name ? '▾' : '▸' }}</span>{{ a.display_app }}</td>
                 <td class="sw-cat">{{ prettyCategory(a.category) }}</td>
                 <td class="num">{{ a.installs }}</td>
                 <td class="num"><strong>{{ a.unused_hosts }}</strong></td>
@@ -180,8 +180,11 @@ import { useFleetFilter } from '../composables/useFleetFilter'
 import { useSort } from '../composables/useSort'
 import { useWorkersCouncil } from '../composables/useWorkersCouncil'
 import { displayHost } from '../composables/displayName'
+import { useDemoMode } from '../composables/useDemoMode'
+import { pseudoSoftware } from '../composables/pseudonyms'
 
 const { wcMode } = useWorkersCouncil()
+const { isMasked } = useDemoMode()
 const { filterParams } = useFleetFilter()
 const fp = () => ({ ...filterParams.value })
 
@@ -191,12 +194,29 @@ const summary = ref({})
 const apps = ref([])
 const wasteByCategory = ref([])
 
+// Recognised public software keeps its real title — "Photoshop idle on 40
+// seats" is the whole reclaim story. Only in-house titles, which are what
+// actually identify a company, get pseudonymised.
+//
+// display_app is a separate field rather than a rewrite of app_name, because
+// app_name is the row :key, the open-drill identity, and the `appName` param
+// sent to firehose.adoption.unused_hosts_for_app — masking it in place would
+// send a pseudonym to ClickHouse and drill into nothing. Derived in a computed
+// (not at fetch time) so toggling demo mode re-maps without a refetch.
+const appRows = computed(() => {
+  const mask = isMasked('software')
+  return apps.value.map(a => ({
+    ...a,
+    display_app: mask ? pseudoSoftware(a.app_name) : a.app_name,
+  }))
+})
+
 // Rail always shows the top reclaim targets regardless of table sort.
-const topIdle = computed(() => [...apps.value].sort((a, b) => Number(b.unused_hosts) - Number(a.unused_hosts)).slice(0, 3))
+const topIdle = computed(() => [...appRows.value].sort((a, b) => Number(b.unused_hosts) - Number(a.unused_hosts)).slice(0, 3))
 
 const { sortKey, sortAsc, toggleSort, sortRows } = useSort('unused_hosts', false)
 function sortBy(col) {
-  toggleSort(col, !['app_name', 'category'].includes(col))
+  toggleSort(col, !['display_app', 'category'].includes(col))
 }
 function sortIcon(col) {
   if (sortKey.value !== col) return ''
@@ -227,7 +247,7 @@ const SUPPORT_META = {
 const clusters = computed(() => {
   const groups = CLUSTER_META.map(m => ({ ...m, rows: [], idleSeats: 0 }))
   const support = { ...SUPPORT_META, rows: [], idleSeats: null }
-  for (const a of apps.value) {
+  for (const a of appRows.value) {
     if (Number(a.is_support_binary) === 1) { support.rows.push(a); continue }
     const pct = Number(a.pct_unused) || 0
     const g = groups.find(m => pct >= m.min)
@@ -279,7 +299,9 @@ function exportDrillCsv(appRow) {
   const blob = new Blob([lines.join('\n')], { type: 'text/csv' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  const safe = String(appRow.app_name).replace(/\.app$/, '').replace(/[^\w-]+/g, '-').toLowerCase()
+  // Filename follows the displayed name — a CSV saved during a demo must not
+  // carry the real app title in its filename.
+  const safe = String(appRow.display_app || appRow.app_name).replace(/\.app$/, '').replace(/[^\w-]+/g, '-').toLowerCase()
   a.download = `idle-seats-${safe}-${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   URL.revokeObjectURL(a.href)

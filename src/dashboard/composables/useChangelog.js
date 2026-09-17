@@ -1,4 +1,6 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { isMasked } from './useDemoMode'
+import { pseudoPerson } from './pseudonyms'
 
 /**
  * GitOps changelog — shared, session-cached fetch of the commit feed.
@@ -59,6 +61,27 @@ export function fileTags(files) {
   return [...tags]
 }
 
+/**
+ * Commits with authors pseudonymised in demo mode.
+ *
+ * Exposed in place of the raw ref so every GitOps consumer — the author
+ * filter, the "Commits by author" chart, the timeline rows and the markdown
+ * export — inherits the masking from one place. It is a computed rather than
+ * a mutation of `commits` because the fetch is session-cached (`fetched`),
+ * so a mid-session toggle would otherwise never re-map.
+ *
+ * These are public open-source contributors to fleetdm/fleet, so this is
+ * about not putting names on a demo screen rather than confidentiality.
+ */
+const displayCommits = computed(() => {
+  if (!isMasked('people')) return commits.value
+  return commits.value.map(c => ({
+    ...c,
+    author: pseudoPerson(c.author, { email: false }),
+    email: pseudoPerson(c.email),
+  }))
+})
+
 export function useChangelog() {
-  return { commits, changelogError, fetchChangelog }
+  return { commits: displayCommits, changelogError, fetchChangelog }
 }

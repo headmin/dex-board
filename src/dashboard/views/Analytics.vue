@@ -16,7 +16,7 @@
       </div>
       <div class="hero-narrative">
         <p class="hero-headline">
-          <template v-if="activeTab === 'overview'">
+          <template v-if="!expertMode || activeTab === 'overview'">
             <template v-if="coverage.flowing != null && coverage.flowing === coverage.total">
               <span class="hl-good">Every telemetry domain is populated</span> — the deep dives read from live data, not defaults.
             </template>
@@ -42,7 +42,10 @@
     </section>
 
     <!-- Tabs -->
+    <AnalyticsGlance v-if="!expertMode" @open="openInExpert" />
+
     <Tabs
+      v-if="expertMode"
       :model-value="activeTab"
       :options="tabItems"
       variant="underline"
@@ -50,10 +53,10 @@
     />
 
     <!-- ═══ Overview Tab (cross-domain summary) ═════ -->
-    <OverviewPane v-if="activeTab === 'overview'" />
+    <OverviewPane v-if="expertMode && activeTab === 'overview'" />
 
     <!-- ═══ Wi-Fi Tab ═══════════════════════════════ -->
-    <div v-if="activeTab === 'wifi'" class="page-stack">
+    <div v-if="expertMode && activeTab === 'wifi'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Hosts" :value="wifiSummary.unique_hosts" :loading="loading.wifi" />
@@ -80,7 +83,7 @@
     </div>
 
     <!-- ═══ Apps Tab ════════════════════════════════ -->
-    <div v-if="activeTab === 'apps'" class="page-stack">
+    <div v-if="expertMode && activeTab === 'apps'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Unique apps" :value="appSummary.unique_apps" :loading="loading.apps" />
@@ -153,7 +156,7 @@
     </div>
 
     <!-- ═══ Hardware Tab ════════════════════════════ -->
-    <div v-if="activeTab === 'hardware'" class="page-stack">
+    <div v-if="expertMode && activeTab === 'hardware'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Hosts" :value="hwDeviceCount" :loading="loading.hw" />
@@ -178,7 +181,7 @@
     </div>
 
     <!-- ═══ Fleetd Tab ═════════════════════════════ -->
-    <div v-if="activeTab === 'fleetd'" class="page-stack">
+    <div v-if="expertMode && activeTab === 'fleetd'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Total hosts" :value="fleetdSummary.total_hosts" :loading="loading.fleetd" />
@@ -207,20 +210,21 @@
     </div>
 
     <!-- ═══ Host Health Tab ══════════════════════ -->
-    <div v-if="activeTab === 'health'" class="page-stack">
+    <div v-if="expertMode && activeTab === 'health'" class="page-stack">
       <section class="section">
         <SectionHeader title="Host health" />
         <div class="metrics-row four-col">
           <MetricCard label="Hosts" :value="healthSummary.total_devices" :loading="loading.health" />
           <MetricCard label="Severe swap" :value="healthSummary.severe_swap" :loading="loading.health" />
           <MetricCard label="Degraded battery" :value="healthSummary.degraded_battery" :loading="loading.health" />
-          <MetricCard label="Avg battery" :value="healthSummary.avg_battery_pct" unit="%" :loading="loading.health" />
+          <MetricCard label="Avg battery health" :value="healthSummary.avg_battery_health_pct ?? null" unit="%"
+            :subtitle="batteryReadNote" :loading="loading.health" />
         </div>
       </section>
 
       <div class="charts-row two-col">
         <section class="section">
-          <BarChart title="CPU class" :data="cpuDist" :loading="loading.health" nameKey="cpu_class" valueKey="device_count" :horizontal="true" />
+          <BarChart title="Chip" :data="cpuDist" :loading="loading.health" nameKey="label" valueKey="device_count" :horizontal="true" />
         </section>
         <section class="section">
           <BarChart title="Swap pressure" :data="swapDist" :loading="loading.health" nameKey="swap_pressure" valueKey="device_count" :horizontal="true" />
@@ -229,7 +233,38 @@
 
       <div class="charts-row two-col">
         <section class="section">
-          <BarChart title="Battery health" :data="batteryDist" :loading="loading.health" nameKey="battery_health_score" valueKey="device_count" :horizontal="true" />
+          <BarChart title="Battery cycles by chip" :data="batteryByChip" :loading="loading.health"
+            nameKey="label" valueKey="avg_cycles" :horizontal="true"
+            clickable @bar-click="b => chipDrill.open(b, 'battery_cycles')" />
+        </section>
+        <section class="section">
+          <BarChart title="Capacity lost by chip" :data="batteryCapacityByChip" :loading="loading.health"
+            nameKey="label" valueKey="capacity_lost" :horizontal="true"
+            clickable @bar-click="b => chipDrill.open(b, 'battery_capacity')" />
+        </section>
+      </div>
+
+      <DrillPanel v-if="condDrill" :title="condTitle" @close="condDrill = null">
+        <div v-if="condLoading" class="drill-loading">Loading hosts...</div>
+        <EmptyState v-else-if="!condHosts.length" small title="No hosts in this battery state." />
+        <div v-else class="host-tile-grid">
+          <HostTile v-for="h in condHosts" :key="h.host_id" :host="h" :condition="condDrill" />
+        </div>
+      </DrillPanel>
+
+      <DrillPanel v-if="chipDrill.bucket.value" :title="chipDrill.title.value" @close="chipDrill.close">
+        <div v-if="chipDrill.loading.value" class="drill-loading">Loading hosts...</div>
+        <EmptyState v-else-if="!chipDrill.drillHosts.value.length" small title="No hosts in this chip cohort." />
+        <div v-else class="host-tile-grid">
+          <HostTile v-for="h in chipDrill.drillHosts.value" :key="h.host_id" :host="h" :condition="chipDrill.metric.value" />
+        </div>
+      </DrillPanel>
+
+      <div class="charts-row two-col">
+        <section class="section">
+          <BarChart title="Battery health" :data="batteryDist" :loading="loading.health"
+            nameKey="battery_health_score" valueKey="device_count" :horizontal="true"
+            clickable @bar-click="openBatteryCondition" />
         </section>
         <section class="section">
           <BarChart title="Uptime risk" :data="uptimeRiskDist" :loading="loading.health" nameKey="uptime_risk" valueKey="device_count" :horizontal="true" />
@@ -265,7 +300,7 @@
     </div>
 
     <!-- ═══ VPN Tab ════════════════════════════════ -->
-    <div v-if="activeTab === 'vpn'" class="page-stack">
+    <div v-if="expertMode && activeTab === 'vpn'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Total hosts" :value="vpnSummary.total_devices" :loading="loading.vpn" />
@@ -289,7 +324,7 @@
     </div>
 
     <!-- ═══ Crashes Tab ════════════════════════════ -->
-    <div v-if="activeTab === 'crashes'" class="page-stack">
+    <div v-if="expertMode && activeTab === 'crashes'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Hosts w/ crashes" :value="crashSummary.devices_with_crashes" :loading="loading.crashes" />
@@ -313,7 +348,7 @@
     </div>
 
     <!-- ═══ Adoption Tab ═══════════════════════════ -->
-    <div v-if="activeTab === 'adoption'" class="page-stack">
+    <div v-if="expertMode && activeTab === 'adoption'" class="page-stack">
       <section class="section">
         <div class="metrics-row four-col">
           <MetricCard label="Hosts" :value="adoptionSummary.total_devices" :loading="loading.adoption" />
@@ -337,7 +372,7 @@
     </div>
 
     <!-- ═══ Security posture Tab ═══════════════════ -->
-    <div v-if="activeTab === 'security'" class="page-stack">
+    <div v-if="expertMode && activeTab === 'security'" class="page-stack">
       <!-- macOS posture (security_posture table, fleet-filter aware) -->
       <section class="section">
         <div class="metrics-row four-col">
@@ -390,9 +425,18 @@ import SectionHeader from '../components/base/SectionHeader.vue'
 import Tabs from '../components/base/Tabs.vue'
 import MeterBar from '../components/base/MeterBar.vue'
 import OverviewPane from '../components/analytics/OverviewPane.vue'
+import AnalyticsGlance from '../components/analytics/AnalyticsGlance.vue'
+import { useExpertMode } from '../composables/useExpertMode'
 import { palette } from '../composables/uiPalette'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { displayHost } from '../composables/displayName'
+import { useDemoMode } from '../composables/useDemoMode'
+import { pseudoSerial, pseudoSoftware, pseudoIdentifier } from '../composables/pseudonyms'
+import { chipDistribution, chipRollup, chipLabel } from '../composables/chipTier'
+import { useBatteryChipDrill } from '../composables/useBatteryChipDrill'
+import DrillPanel from '../components/base/DrillPanel.vue'
+import EmptyState from '../components/base/EmptyState.vue'
+import HostTile from '../components/HostTile.vue'
 
 const SIGNAL_ORDER = ['excellent', 'good', 'fair', 'weak', 'poor', 'very_weak', 'unknown']
 const SIGNAL_TONES = { excellent: 'good', good: 'soft', fair: 'fair', weak: 'elevated', poor: 'critical', very_weak: 'critical', unknown: 'neutral' }
@@ -410,16 +454,70 @@ const UPTIME_TONES = { '< 1h': 'good', '1h - 1d': 'good', '1d - 7d': 'soft', '7d
 // into every "Hostname" column in this view. Mapping rows once at assignment
 // time lets displayHost pick computer_name (when present) or strip .local
 // (when only hostname is available), without changing every column config.
+//
+// The serial rides along: it is printed in the Hardware tab (hwCols) and is
+// traceable to a purchase record, and DataTable makes every column sortable,
+// so masking has to happen in the row rather than at render.
 function withDisplayHost(rows) {
   if (!Array.isArray(rows)) return rows
-  return rows.map(r => ({ ...r, hostname: displayHost(r) }))
+  const maskSerial = isMasked('serials')
+  const maskHosts = isMasked('hosts')
+  return rows.map(r => ({
+    ...r,
+    hostname: displayHost(r),
+    ...(maskSerial && r.hardware_serial
+      ? { hardware_serial: pseudoSerial(r.hardware_serial) }
+      : {}),
+    // last_error is free text from fleetd and embeds the org's own Fleet URL
+    // ("dial tcp: lookup fleet.acmecorp.com"), which names the company
+    // outright — and can carry local paths and hostnames too. Arbitrary prose
+    // has no structure to rewrite reliably, so it is redacted rather than
+    // pseudonymised, same as the audit log's `detail` column. It is a
+    // diagnostics field, not part of any demo narrative.
+    ...(maskHosts && r.last_error ? { last_error: '—' } : {}),
+  }))
 }
 
 // Wire the top filter bar (search / OS / model / RAM) into every query
 // fired by /reports. Queries that don't accept FILTER_PARAMS will just
 // ignore the extra params; queries that do will scope to the filter.
 const { filterParams } = useFleetFilter()
+const { isMasked } = useDemoMode()
 const fp = () => ({ ...filterParams.value })
+
+// Recognised public software stays readable — the value of the Applications
+// tab is naming real titles. Only non-catalog (in-house) names are masked,
+// since those are what identify a company.
+//
+// Covers every software-shaped identifier this view renders, not just the
+// title: a bundle id or install path (`com.acmecorp.agent`,
+// /Library/Application Support/AcmeCorp/) names the company more precisely
+// than the title does, so masking the title alone would be self-defeating.
+// Paths are dropped rather than rewritten — arbitrary filesystem strings have
+// no reliable structure to preserve.
+function withSoftwareIds(rows) {
+  if (!Array.isArray(rows) || !isMasked('software')) return rows
+  return rows.map((r) => {
+    const out = { ...r }
+    if (r.app_name) out.app_name = pseudoSoftware(r.app_name)
+    if (r.software_name) out.software_name = pseudoSoftware(r.software_name)
+    if (r.bundle_identifier) out.bundle_identifier = pseudoIdentifier(r.bundle_identifier)
+    if (r.crashed_identifier) out.crashed_identifier = pseudoIdentifier(r.crashed_identifier)
+    if (r.process_name) out.process_name = pseudoIdentifier(r.process_name)
+    if (r.path) out.path = '—'
+    return out
+  })
+}
+
+const { expertMode } = useExpertMode()
+
+// Clicking a glance card is a request for the detail behind it, so it turns
+// expert mode on rather than dead-ending: the card IS the affordance that
+// explains what the toggle does.
+async function openInExpert(tab) {
+  expertMode.value = true
+  await switchTab(tab)
+}
 
 const error = ref(null)
 const route = useRoute()
@@ -553,13 +651,84 @@ const osSummary = ref({})
 const cpuDist = ref([])
 const swapDist = ref([])
 const batteryDist = ref([])
+const batteryByChip = ref([])
+
+// The capacity chart drops buckets we could not measure rather than plotting
+// them at zero — an unmeasured chip must not render as a flat dead bar beside
+// real ones. Cycles are kept separate because a host can report cycles while
+// its capacity read fails, and that host still has a real cycle count.
+const batteryCapacityByChip = computed(() =>
+  batteryByChip.value
+    .filter(b => b.avg_health_pct != null)
+    // Plotted as capacity LOST, not remaining. Remaining clusters between 75%
+    // and 101%, so a bar chart from zero renders every cohort as the same full
+    // bar -- technically honest, visually useless. Loss starts at a true zero
+    // and makes the worn cohorts the tall ones. A new battery can read just
+    // over 100%, so clamp at 0 rather than draw a negative bar.
+    .map(b => ({ ...b, capacity_lost: Math.max(0, Math.round((100 - b.avg_health_pct) * 10) / 10) })))
+
+// ─── Battery health state drill-down ──────────────────────────
+// Clicking a segment of the battery-health chart lists the hosts in that
+// state. Reuses hosts_by_condition, the same query the Overview metric cards
+// drill through, so the two entry points cannot report different hosts.
+const BATTERY_CONDITIONS = {
+  good: 'good_battery',
+  degraded: 'degraded_battery',
+  replace: 'replace_battery',
+}
+const BATTERY_STATE_LABELS = {
+  good_battery: 'Battery good',
+  degraded_battery: 'Battery degraded',
+  replace_battery: 'Battery needs replacement',
+}
+const condDrill = ref(null)
+const condHosts = ref([])
+const condLoading = ref(false)
+
+const condTitle = computed(() => {
+  if (!condDrill.value) return ''
+  const n = condHosts.value.length
+  return `${BATTERY_STATE_LABELS[condDrill.value] || condDrill.value} · ${n} host${n === 1 ? '' : 's'}`
+})
+
+async function openBatteryCondition(row) {
+  const condition = BATTERY_CONDITIONS[row?.battery_health_score]
+  if (!condition) return
+  if (condDrill.value === condition) { condDrill.value = null; return }
+  condDrill.value = condition
+  condHosts.value = []
+  condLoading.value = true
+  try {
+    condHosts.value = withDisplayHost(
+      await query('firehose.health.hosts_by_condition', { condition, limit: 200, ...fp() }))
+  } catch (e) {
+    console.error('Battery state drill-down fetch failed:', e)
+  }
+  condLoading.value = false
+}
+
+// ─── Battery-by-chip drill-down ───────────────────────────────
+// Shared with OverviewPane so both panes slice the cohort identically.
+const chipDrill = useBatteryChipDrill({
+  params: () => ({ ...fp() }),
+  decorate: withDisplayHost,
+})
+
+const batteryReadNote = computed(() => {
+  const bad = Number(healthSummary.value.suspect_battery) || 0
+  const none = Number(healthSummary.value.no_battery) || 0
+  const parts = []
+  if (bad) parts.push(`${bad} unreadable`)
+  if (none) parts.push(`${none} without a battery`)
+  return parts.length ? `excludes ${parts.join(' · ')}` : ''
+})
 const osCurrencyDist = ref([])
 const uptimeRiskDist = ref([])
 const healthDevices = ref([])
 const osDevices = ref([])
 const healthDeviceCols = [
   { key: 'hostname', label: 'Hostname' },
-  { key: 'cpu_class', label: 'CPU' },
+  { key: 'chip_label', label: 'CPU' },
   { key: 'ram_tier', label: 'RAM' },
   { key: 'swap_pressure', label: 'Swap' },
   { key: 'battery_health_score', label: 'Battery' },
@@ -689,10 +858,10 @@ async function fetchTab(tab) {
         query('firehose.apps.daemon_inventory', { limit: 60, minHosts: 2 }).catch(() => []),
       ])
       appSummary.value = s[0] || {}
-      topApps.value = top
-      peakApps.value = peak.map(h => ({ ...h, label: `${h.app_name} (${displayHost(h)})` }))
-      allApps.value = all
-      daemons.value = daemonData || []
+      topApps.value = withSoftwareIds(top)
+      peakApps.value = withSoftwareIds(peak).map(h => ({ ...h, label: `${h.app_name} (${displayHost(h)})` }))
+      allApps.value = withSoftwareIds(all)
+      daemons.value = withSoftwareIds(daemonData || [])
       loading.value.apps = false
     }
     else if (tab === 'hardware') {
@@ -741,12 +910,13 @@ async function fetchTab(tab) {
     }
     else if (tab === 'health') {
       loading.value.health = true
-      const [dh, os, cpu, swap, batt, osCurr, upRisk, devList, osList] = await Promise.all([
+      const [dh, os, cpu, swap, batt, battChip, osCurr, upRisk, devList, osList] = await Promise.all([
         query('firehose.health.device_summary', { ...fp() }),
         query('firehose.health.os_summary', { ...fp() }),
-        query('firehose.health.cpu_distribution', { ...fp() }),
+        query('firehose.health.chip_distribution', { ...fp() }),
         query('firehose.health.swap_distribution', { ...fp() }),
         query('firehose.health.battery_overview', { ...fp() }),
+        query('firehose.health.battery_by_chip', { ...fp() }),
         query('firehose.health.os_currency_distribution', { ...fp() }),
         query('firehose.health.uptime_distribution', { ...fp() }),
         query('firehose.health.device_list', { limit: 200, ...fp() }),
@@ -754,12 +924,25 @@ async function fetchTab(tab) {
       ])
       healthSummary.value = dh[0] || {}
       osSummary.value = os[0] || {}
-      cpuDist.value = cpu
+      // Tier-aware: splits `apple_m1` into M1 / M1 Pro / M1 Max / M1 Ultra.
+      cpuDist.value = chipDistribution(cpu, { countKey: 'device_count' })
       swapDist.value = swap
       batteryDist.value = batt
+      // The host cache is filter-scoped; drop it so a re-filter refetches.
+      chipDrill.reset()
+      condDrill.value = null
+      batteryByChip.value = chipRollup(battChip, {
+        sums: ['measured_hosts', 'suspect_hosts', 'degraded', 'replace_count'],
+        means: { avg_health_pct: 'measured_hosts', avg_cycles: 'device_count' },
+        maxes: ['max_cycles'],
+      })
       osCurrencyDist.value = osCurr
       uptimeRiskDist.value = upRisk
-      healthDevices.value = withDisplayHost(devList)
+      // Tier-aware label so the table agrees with the charts above it.
+      healthDevices.value = withDisplayHost(devList).map(d => ({
+        ...d,
+        chip_label: chipLabel(d.cpu_brand, d.cpu_class) || d.cpu_class || '—',
+      }))
       osDevices.value = withDisplayHost(osList)
       loading.value.health = false
     }
@@ -784,7 +967,7 @@ async function fetchTab(tab) {
       ])
       crashSummary.value = s[0] || {}
       crashSevDist.value = sev
-      topCrashers.value = top
+      topCrashers.value = withSoftwareIds(top)
       loading.value.crashes = false
     }
     else if (tab === 'security') {
@@ -802,7 +985,7 @@ async function fetchTab(tab) {
         return out
       })
       const boolKeysWin = ['disk_encrypted', 'firewall_ok', 'antivirus_ok', 'uac_ok', 'secure_boot_enabled', 'tpm_ready']
-      winPosture.value = (winList || []).map(r => {
+      winPosture.value = withDisplayHost(winList || []).map(r => {
         const out = { ...r }
         for (const k of boolKeysWin) out[k] = onOff(r[k])
         return out
@@ -818,7 +1001,7 @@ async function fetchTab(tab) {
       ])
       adoptionSummary.value = s[0] || {}
       adoptionTierDist.value = tiers
-      staleApps.value = stale
+      staleApps.value = withSoftwareIds(stale)
       loading.value.adoption = false
     }
   } catch (e) {
@@ -950,7 +1133,9 @@ const heroView = computed(() => {
       eyebrow: 'Hosts reporting health',
       count: num(s.total_devices),
       countOf: 'hosts',
-      chip: num(s.avg_battery_pct) != null ? `avg battery ${s.avg_battery_pct}%` : '',
+      // Capacity remaining, not charge level — the hero chip said "avg battery"
+      // while showing how charged laptops happened to be at check-in.
+      chip: num(s.avg_battery_health_pct) != null ? `avg battery health ${s.avg_battery_health_pct}%` : '',
       headline: num(s.total_devices) ? `${s.severe_swap || 0} host${num(s.severe_swap) === 1 ? ' is' : 's are'} in severe swap and ${os.degraded || 0} run a degraded OS — the raw signals behind Device health and Security.` : '',
       support: 'Hardware health first, then OS health — each with its inventory table.',
       railLabel: 'Worst signals',
@@ -1038,6 +1223,11 @@ watch(filterParams, () => {
 </script>
 
 <style scoped>
+.host-tile-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+.drill-loading { color: var(--fleet-black-50); font-size: var(--font-size-sm); padding: 24px 0; text-align: center; }
+@media (max-width: 1100px) { .host-tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px)  { .host-tile-grid { grid-template-columns: 1fr; } }
+
 .dashboard { max-width: 1280px; margin: 0 auto; padding: var(--pad-xlarge); }
 
 .section {

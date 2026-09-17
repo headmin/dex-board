@@ -10,7 +10,8 @@
           </span>
         </div>
         <div class="header-buttons">
-          <a :href="fleetManageLink" target="_blank" rel="noopener" class="header-btn-link">
+          <!-- Hidden in demo mode: Fleet's host list shows every real hostname. -->
+          <a v-if="!isMasked('hosts')" :href="fleetManageLink" target="_blank" rel="noopener" class="header-btn-link">
             <BaseButton variant="secondary">Open in Fleet ↗</BaseButton>
           </a>
           <BaseButton variant="primary" @click="exportBriefing">Save briefing</BaseButton>
@@ -39,6 +40,20 @@
       :device-list="deviceList"
       :coverage="coverage"
     />
+
+    <section class="grammar-section">
+      <div class="grammar-head">
+        <h2 class="grammar-title">How we got here</h2>
+        <span class="grammar-hint">Recent days at full width; older history compressed</span>
+      </div>
+      <HistoryChart
+        title="Fleet grade over time"
+        :data="history"
+        :loading="loading.fleet"
+        date-key="score_date"
+        value-key="composite"
+      />
+    </section>
 
     <!-- ─── Why — where the points are going ────────────────── -->
     <section class="grammar-section">
@@ -117,6 +132,7 @@ import { useRouter } from 'vue-router'
 import { useFleetFilter } from '../composables/useFleetFilter'
 import { useTimeRange } from '../composables/useTimeRange'
 import { useWorkersCouncil } from '../composables/useWorkersCouncil'
+import { useDemoMode } from '../composables/useDemoMode'
 import { useExperienceScore } from '../composables/useExperienceScore'
 import { useSignalDetails } from '../composables/useSignalDetails'
 import { useSecurityExposure } from '../composables/useSecurityExposure'
@@ -127,6 +143,7 @@ import BiggestMovers from '../components/BiggestMovers.vue'
 import { useAppConfig } from '../composables/useAppConfig'
 import { buildBriefingHtml, downloadBriefing } from '../composables/useBriefingExport'
 import AnswerHero from '../components/experience/AnswerHero.vue'
+import HistoryChart from '../components/HistoryChart.vue'
 import CategoryGrid from '../components/experience/CategoryGrid.vue'
 import SignalBreakdown from '../components/experience/SignalBreakdown.vue'
 import SoftwareSignalDetail from '../components/experience/SoftwareSignalDetail.vue'
@@ -153,6 +170,7 @@ function exportBriefing() {
     deviceList: deviceList.value,
     movers: movers.value,
     teamRows: teamRows.value,
+    teamNames: config.value.teamNames,
     deltaLabel: tileDeltaLabel.value,
   })
   downloadBriefing(html)
@@ -160,6 +178,7 @@ function exportBriefing() {
 
 const { filterParams } = useFleetFilter()
 const { wcMode } = useWorkersCouncil()
+const { isMasked } = useDemoMode()
 const { timeRangeHours, selectedRange } = useTimeRange()
 
 // ─── Query params (replaces all SQL fragment computeds) ───────
@@ -193,6 +212,7 @@ const pageSubtitle = computed(() => {
 const {
   loading,
   fleet,
+  history,
   tileDeltas,
   categories,
   distribution,

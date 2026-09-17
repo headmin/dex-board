@@ -27,7 +27,7 @@
         <div v-if="mostUsedApps.length" class="app-list">
           <div v-for="app in mostUsedApps" :key="app.app_name">
             <div class="app-row">
-              <span class="app-name">{{ app.app_name }}</span>
+              <span class="app-name">{{ displayApp(app.app_name) }}</span>
               <span class="app-devices stale">{{ app.device_count }} hosts</span>
               <GradeBadge :grade="app.usage_grade" />
             </div>
@@ -40,7 +40,7 @@
         <div class="app-list">
           <div v-for="app in leastUsedApps" :key="app.app_name">
             <div class="app-row" :class="{ clickable: !wcMode }" @click="!wcMode && $emit('toggle-app-drill', app.app_name, 'stale')">
-              <span class="app-name">{{ app.app_name }}</span>
+              <span class="app-name">{{ displayApp(app.app_name) }}</span>
               <span class="app-devices stale">{{ app.stale_count }} hosts unused</span>
               <span class="app-avg-days">{{ app.avg_days }}d avg</span>
               <span v-if="!wcMode" class="drill-arrow">{{ drillApp === app.app_name ? '▾' : '▸' }}</span>
@@ -86,7 +86,7 @@
 import GradeBadge from '../GradeBadge.vue'
 import MttpTable from '../MttpTable.vue'
 import Badge from '../base/Badge.vue'
-import { displayHost } from '../../composables/displayName'
+import { displayHost, displayApp } from '../../composables/displayName'
 import { useAppConfig } from '../../composables/useAppConfig'
 import { useWorkersCouncil } from '../../composables/useWorkersCouncil'
 
