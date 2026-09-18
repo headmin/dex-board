@@ -1,5 +1,18 @@
 [
   {
+    "sha": "c0e33e7a21c57ed3afa761945ff69aec10092124",
+    "short_sha": "c0e33e7a21",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 2.2553.1 (#53504)",
+    "timestamp": "2026-09-18T09:32:30-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "55d6663f3fccfbc192592d8480c7c9d9fd4b8123",
     "short_sha": "55d6663f3f",
     "author": "claude[bot]",
@@ -7354,21 +7367,6 @@
     "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-slack.yml"
-    ]
-  },
-  {
-    "sha": "9740ff7d235f873eaf852a1d2df8344ab8417535",
-    "short_sha": "9740ff7d23",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Query and policy fixes (#25864)",
-    "timestamp": "2025-01-29T13:04:46-06:00",
-    "insertions": 2,
-    "deletions": 0,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/lib/all/queries/{collect-operating-system-information.yaml => collect-operating-system-information.yml}",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]

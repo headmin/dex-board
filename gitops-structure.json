@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-18T10:14:20Z",
+  "generated": "2026-09-18T15:31:31Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "55d6663f3fccfbc192592d8480c7c9d9fd4b8123",
-    "short_sha": "55d6663f3f",
-    "message": "Add ARM/x86 labels for Linux workstations (#53477)",
-    "timestamp": "2026-09-17T21:52:30-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/55d6663f3fccfbc192592d8480c7c9d9fd4b8123"
+    "sha": "c0e33e7a21c57ed3afa761945ff69aec10092124",
+    "short_sha": "c0e33e7a21",
+    "message": "Bump Linux Claude Desktop patch policy to 2.2553.1 (#53504)",
+    "timestamp": "2026-09-18T09:32:30-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/c0e33e7a21c57ed3afa761945ff69aec10092124"
   },
   "fleets": [
     {
