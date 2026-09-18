@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-18T02:08:40Z",
+  "generated": "2026-09-18T10:14:20Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "d061c8e58d8462afde3f55531d2b130c16c24cab",
-    "short_sha": "d061c8e58d",
-    "message": "Bump Linux Claude Desktop patch policy to 2.110.1 (#53420)",
-    "timestamp": "2026-09-17T09:53:19-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/d061c8e58d8462afde3f55531d2b130c16c24cab"
+    "sha": "55d6663f3fccfbc192592d8480c7c9d9fd4b8123",
+    "short_sha": "55d6663f3f",
+    "message": "Add ARM/x86 labels for Linux workstations (#53477)",
+    "timestamp": "2026-09-17T21:52:30-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/55d6663f3fccfbc192592d8480c7c9d9fd4b8123"
   },
   "fleets": [
     {
@@ -102,6 +102,11 @@
           "name": "apple-silicon-macos-hosts",
           "file": "it-and-security/lib/all/labels/apple-silicon-macos-hosts.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/apple-silicon-macos-hosts.yml"
+        },
+        {
+          "name": "arm-based-linux-hosts",
+          "file": "it-and-security/lib/all/labels/arm-based-linux-hosts.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/arm-based-linux-hosts.yml"
         },
         {
           "name": "arm-based-windows-hosts",
@@ -212,6 +217,11 @@
           "name": "windows-with-fleet-maintained-apps-installed",
           "file": "it-and-security/lib/all/labels/windows-with-fleet-maintained-apps-installed.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/windows-with-fleet-maintained-apps-installed.yml"
+        },
+        {
+          "name": "x86-based-linux-hosts",
+          "file": "it-and-security/lib/all/labels/x86-based-linux-hosts.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/x86-based-linux-hosts.yml"
         },
         {
           "name": "x86-based-windows-hosts",
@@ -1043,7 +1053,7 @@
     "fleets": 6,
     "agent_options": 2,
     "icons": 7,
-    "labels": 24,
+    "labels": 26,
     "policies": 43,
     "reports": 22,
     "scripts": 19,
@@ -1053,6 +1063,6 @@
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 190
+    "total_files": 192
   }
 }

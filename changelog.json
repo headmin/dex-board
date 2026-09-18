@@ -1,5 +1,21 @@
 [
   {
+    "sha": "55d6663f3fccfbc192592d8480c7c9d9fd4b8123",
+    "short_sha": "55d6663f3f",
+    "author": "claude[bot]",
+    "email": "209825114+claude[bot]@users.noreply.github.com",
+    "message": "Add ARM/x86 labels for Linux workstations (#53477)",
+    "timestamp": "2026-09-17T21:52:30-05:00",
+    "insertions": 30,
+    "deletions": 12,
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/arm-based-linux-hosts.yml",
+      "it-and-security/lib/all/labels/x86-based-linux-hosts.yml"
+    ]
+  },
+  {
     "sha": "d061c8e58d8462afde3f55531d2b130c16c24cab",
     "short_sha": "d061c8e58d",
     "author": "Allen Houchins",
@@ -7352,30 +7368,6 @@
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/all/queries/{collect-operating-system-information.yaml => collect-operating-system-information.yml}",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "f85dc597c1b4d4bbf08440dcfaa93f28ed4e4c2a",
-    "short_sha": "f85dc597c1",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Cleaning up policies (#25850)",
-    "timestamp": "2025-01-29T12:46:41-06:00",
-    "insertions": 37,
-    "deletions": 273,
-    "files": [
-      "it-and-security/lib/all/queries/collect-operating-system-information.yaml",
-      "it-and-security/lib/linux/policies/{linux-device-health.yml => disk-encryption-check.yml}",
-      "it-and-security/lib/macos/policies/1password-emergency-kit-check.yml",
-      "it-and-security/lib/macos/policies/cis.yml",
-      "it-and-security/lib/macos/policies/device-health.yml",
-      "it-and-security/lib/macos/policies/update-firefox.yml",
-      "it-and-security/lib/macos/policies/update-slack.yml",
-      "it-and-security/lib/windows/policies/cis.yml",
-      "it-and-security/lib/windows/policies/device-health.yml",
-      "it-and-security/lib/windows/policies/windows-device-health.yml",
-      "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]
   }
