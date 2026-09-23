@@ -1,5 +1,46 @@
 [
   {
+    "sha": "64dbfa494141df19d9a2a92dbbaf9de2abb421a8",
+    "short_sha": "64dbfa4941",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 2.7032.0 (#53831)",
+    "timestamp": "2026-09-23T10:24:12-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
+    "sha": "ed9102892258eb87dc8ee3f0cc1a319a05d20b58",
+    "short_sha": "ed91028922",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Set Okta Verify OrgUrl on Linux workstations (#53838)",
+    "timestamp": "2026-09-23T10:22:30-05:00",
+    "insertions": 34,
+    "deletions": 0,
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/linux/scripts/configure-okta-verify-org-url.sh",
+      "it-and-security/lib/linux/software/okta-verify-deb.yml"
+    ]
+  },
+  {
+    "sha": "4d2fc0223259c56e2c9643735fe67ae742899c59",
+    "short_sha": "4d2fc02232",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 2.2553.13 (#53778)",
+    "timestamp": "2026-09-23T09:00:06-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "610979239a14b8f0ef8aaba154c20942e1b2abc7",
     "short_sha": "610979239a",
     "author": "Allen Houchins",
@@ -7304,71 +7345,6 @@
       "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml",
       "it-and-security/lib/macos/configuration-profiles/disable-update-notifications.mobileconfig",
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "a677632cfe1e6bebf39ca09b4d81ecca8c33d428",
-    "short_sha": "a677632cfe",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update antivirus-signatures-up-to-date.yml (#25990)",
-    "timestamp": "2025-02-03T14:20:18-06:00",
-    "insertions": 2,
-    "deletions": 2,
-    "files": [
-      "it-and-security/lib/windows/policies/antivirus-signatures-up-to-date.yml"
-    ]
-  },
-  {
-    "sha": "0a9bd62bfea5c6475dbaafda9a60e1834465d568",
-    "short_sha": "0a9bd62bfe",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Multiple policy updates (#25927)",
-    "timestamp": "2025-01-31T11:02:16-06:00",
-    "insertions": 19,
-    "deletions": 15,
-    "files": [
-      "it-and-security/lib/all/queries/collect-usb-devices.yml",
-      "it-and-security/lib/macos/policies/all-software-updates-installed.yml",
-      "it-and-security/lib/windows/policies/all-windows-updates-installed.yml",
-      "it-and-security/lib/windows/policies/{windows-device-health.yml => antivirus-signatures-up-to-date.yml}",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "212979d9fc58baef6f745d3f964c243852e333e2",
-    "short_sha": "212979d9fc",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Multiple updates to queries (#25891)",
-    "timestamp": "2025-01-30T13:00:43-06:00",
-    "insertions": 76,
-    "deletions": 116,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/lib/all/queries/collect-crowdstrike-info.yml",
-      "it-and-security/lib/all/queries/collect-fleetd-update-channels.yml",
-      "it-and-security/lib/all/queries/collect-known-vulnerable-chrome-extensions.yml",
-      "it-and-security/lib/all/queries/collect-vs-code-extensions.yml",
-      "it-and-security/lib/linux/queries/all-deb-hosts.yml",
-      "it-and-security/lib/linux/queries/all-rpm-hosts.yml",
-      "it-and-security/lib/macos/policies/update-1password.yml",
-      "it-and-security/lib/macos/policies/update-firefox.yml",
-      "it-and-security/lib/macos/queries/check-if-apple-silicon.yml",
-      "it-and-security/lib/macos/queries/collect-failed-login-attempts.yml",
-      "it-and-security/lib/macos/queries/collect-software-permissions-system.yml",
-      "it-and-security/lib/macos/queries/collect-software-permissions-user.yml",
-      "it-and-security/lib/macos/queries/detect-apple-intelligence.yml",
-      "it-and-security/lib/windows/queries/all-arm-hosts.yml",
-      "it-and-security/lib/windows/queries/all-x86-hosts.yml",
-      "it-and-security/lib/windows/queries/collect-windows-defender.yml",
-      "it-and-security/lib/windows/software/slack.yml",
-      "it-and-security/lib/windows/software/zoom-arm.yml",
-      "it-and-security/lib/windows/software/zoom.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]

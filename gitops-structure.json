@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-23T10:27:48Z",
+  "generated": "2026-09-23T15:55:12Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "610979239a14b8f0ef8aaba154c20942e1b2abc7",
-    "short_sha": "610979239a",
-    "message": "Set app icon for Okta Verify for Linux (#53807)",
-    "timestamp": "2026-09-22T21:08:24-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/610979239a14b8f0ef8aaba154c20942e1b2abc7"
+    "sha": "64dbfa494141df19d9a2a92dbbaf9de2abb421a8",
+    "short_sha": "64dbfa4941",
+    "message": "Bump Linux Claude Desktop patch policy to 2.7032.0 (#53831)",
+    "timestamp": "2026-09-23T10:24:12-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/64dbfa494141df19d9a2a92dbbaf9de2abb421a8"
   },
   "fleets": [
     {
@@ -408,6 +408,11 @@
           "name": "change-password-linux",
           "file": "it-and-security/lib/linux/scripts/change-password-linux.sh",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/change-password-linux.sh"
+        },
+        {
+          "name": "configure-okta-verify-org-url",
+          "file": "it-and-security/lib/linux/scripts/configure-okta-verify-org-url.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/configure-okta-verify-org-url.sh"
         },
         {
           "name": "install-claude-desktop",
@@ -1066,13 +1071,13 @@
     "labels": 26,
     "policies": 43,
     "reports": 22,
-    "scripts": 19,
+    "scripts": 20,
     "configuration_profiles": 43,
     "declaration_profiles": 7,
     "software": 14,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 194
+    "total_files": 195
   }
 }
