@@ -1,5 +1,19 @@
 [
   {
+    "sha": "e491eae777ba88791e384a903cee384ac384d618",
+    "short_sha": "e491eae777",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Fix dogfood patch-when-closed policies: set `install_software: true` (#53849)",
+    "timestamp": "2026-09-23T11:54:17-05:00",
+    "insertions": 33,
+    "deletions": 33,
+    "files": [
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
     "sha": "64dbfa494141df19d9a2a92dbbaf9de2abb421a8",
     "short_sha": "64dbfa4941",
     "author": "Allen Houchins",
@@ -7329,22 +7343,6 @@
     "deletions": 4,
     "files": [
       "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml"
-    ]
-  },
-  {
-    "sha": "3b9b21c5d8edf8128543c3ab42128427a74c221a",
-    "short_sha": "3b9b21c5d8",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "New enrollment profile policy, removed disable notification mobileconfig (#26018)",
-    "timestamp": "2025-02-04T10:37:05-06:00",
-    "insertions": 13,
-    "deletions": 85,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml",
-      "it-and-security/lib/macos/configuration-profiles/disable-update-notifications.mobileconfig",
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]

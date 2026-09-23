@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-23T15:55:12Z",
+  "generated": "2026-09-23T20:50:25Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "64dbfa494141df19d9a2a92dbbaf9de2abb421a8",
-    "short_sha": "64dbfa4941",
-    "message": "Bump Linux Claude Desktop patch policy to 2.7032.0 (#53831)",
-    "timestamp": "2026-09-23T10:24:12-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/64dbfa494141df19d9a2a92dbbaf9de2abb421a8"
+    "sha": "e491eae777ba88791e384a903cee384ac384d618",
+    "short_sha": "e491eae777",
+    "message": "Fix dogfood patch-when-closed policies: set `install_software: true` (#53849)",
+    "timestamp": "2026-09-23T11:54:17-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/e491eae777ba88791e384a903cee384ac384d618"
   },
   "fleets": [
     {
