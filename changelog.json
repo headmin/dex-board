@@ -1,5 +1,33 @@
 [
   {
+    "sha": "610979239a14b8f0ef8aaba154c20942e1b2abc7",
+    "short_sha": "610979239a",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Set app icon for Okta Verify for Linux (#53807)",
+    "timestamp": "2026-09-22T21:08:24-05:00",
+    "insertions": 2,
+    "deletions": 0,
+    "files": [
+      "it-and-security/lib/all/icons/okta-verify-logo.png",
+      "it-and-security/lib/linux/software/okta-verify-deb.yml"
+    ]
+  },
+  {
+    "sha": "632d1b8cde292bc5dcbffff3a04cd534b61c5653",
+    "short_sha": "632d1b8cde",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Okta Verify for Linux to Workstations (#53783)",
+    "timestamp": "2026-09-22T16:11:30-05:00",
+    "insertions": 10,
+    "deletions": 0,
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/linux/software/okta-verify-deb.yml"
+    ]
+  },
+  {
     "sha": "c0e33e7a21c57ed3afa761945ff69aec10092124",
     "short_sha": "c0e33e7a21",
     "author": "Allen Houchins",
@@ -7341,32 +7369,6 @@
       "it-and-security/lib/windows/software/zoom.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "e55c664b1353b3f7002a577a807d43825ef61465",
-    "short_sha": "e55c664b13",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update collect-operating-system-information.yml (#25879)",
-    "timestamp": "2025-01-29T17:44:09-06:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/all/queries/collect-operating-system-information.yml"
-    ]
-  },
-  {
-    "sha": "87f58e9e4685159a55419c2728a07c22633ea01c",
-    "short_sha": "87f58e9e46",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update update-slack.yml (#25868)",
-    "timestamp": "2025-01-29T14:00:51-06:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/update-slack.yml"
     ]
   }
 ]

@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-22T20:39:13Z",
+  "generated": "2026-09-23T02:22:55Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "c0e33e7a21c57ed3afa761945ff69aec10092124",
-    "short_sha": "c0e33e7a21",
-    "message": "Bump Linux Claude Desktop patch policy to 2.2553.1 (#53504)",
-    "timestamp": "2026-09-18T09:32:30-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/c0e33e7a21c57ed3afa761945ff69aec10092124"
+    "sha": "610979239a14b8f0ef8aaba154c20942e1b2abc7",
+    "short_sha": "610979239a",
+    "message": "Set app icon for Okta Verify for Linux (#53807)",
+    "timestamp": "2026-09-22T21:08:24-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/610979239a14b8f0ef8aaba154c20942e1b2abc7"
   },
   "fleets": [
     {
@@ -85,6 +85,11 @@
           "name": "nudge-logo",
           "file": "it-and-security/lib/all/icons/nudge-logo.png",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/icons/nudge-logo.png"
+        },
+        {
+          "name": "okta-verify-logo",
+          "file": "it-and-security/lib/all/icons/okta-verify-logo.png",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/icons/okta-verify-logo.png"
         },
         {
           "name": "slack-logo",
@@ -450,6 +455,11 @@
           "name": "1password-rpm",
           "file": "it-and-security/lib/linux/software/1password-rpm.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/software/1password-rpm.yml"
+        },
+        {
+          "name": "okta-verify-deb",
+          "file": "it-and-security/lib/linux/software/okta-verify-deb.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/software/okta-verify-deb.yml"
         },
         {
           "name": "slack-deb",
@@ -1052,17 +1062,17 @@
     ],
     "fleets": 6,
     "agent_options": 2,
-    "icons": 7,
+    "icons": 8,
     "labels": 26,
     "policies": 43,
     "reports": 22,
     "scripts": 19,
     "configuration_profiles": 43,
     "declaration_profiles": 7,
-    "software": 13,
+    "software": 14,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 192
+    "total_files": 194
   }
 }
