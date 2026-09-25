@@ -30,6 +30,25 @@ const BATTERY_MEASURED = `(${HAS_BATTERY} AND battery_health_pct > 0)`
 const BATTERY_SUSPECT = `(${HAS_BATTERY} AND battery_health_pct <= 0)`
 
 /**
+ * The verdict, guarded on a capacity reading existing.
+ *
+ * The pack query fell through to 'replace' whenever capacity was unreadable
+ * (SQLite treats `NULL <= 0` as NULL, not false, so the guard clause never
+ * fired). On 2026-09-25 that put 41 hosts in "battery needs replacement"
+ * with a capacity reading on exactly none of them, and one genuinely
+ * degraded host. A verdict with nothing behind it is not a verdict, so it
+ * reports as its own state rather than as the worst one.
+ *
+ * Hosts with no battery at all (desktops) already report an empty score and
+ * are filtered out by the callers.
+ */
+const BATTERY_VERDICT = `if(${BATTERY_MEASURED}, battery_health_score, 'unmeasured')`
+
+/** Same predicates against the `dh` alias used by hosts_by_condition. */
+const BATTERY_MEASURED_QUALIFIED = `((dh.battery_cycles > 0 OR dh.battery_state != '') AND dh.battery_health_pct > 0)`
+const BATTERY_SUSPECT_QUALIFIED = `((dh.battery_cycles > 0 OR dh.battery_state != '') AND dh.battery_health_pct <= 0)`
+
+/**
  * Latest battery + chip row per host, already scoped to the fleet filter.
  * Callers inline it as a second CTE after FILTERED_HOSTS_CTE.
  */
@@ -69,8 +88,8 @@ export const firehoseHealthQueries: QueryConfig[] = [
         countDistinctIf(host_id, swap_pressure = 'elevated') AS elevated_swap,
         countDistinctIf(host_id, compression_pressure = 'high') AS high_compression,
         countDistinctIf(host_id, compression_pressure = 'moderate') AS moderate_compression,
-        countDistinctIf(host_id, battery_health_score = 'degraded') AS degraded_battery,
-        countDistinctIf(host_id, battery_health_score = 'replace') AS replace_battery,
+        countDistinctIf(host_id, battery_health_score = 'degraded' AND ${BATTERY_MEASURED}) AS degraded_battery,
+        countDistinctIf(host_id, battery_health_score = 'replace'  AND ${BATTERY_MEASURED}) AS replace_battery,
         -- Capacity remaining vs design: the actual health measure. Averaged
         -- only over hosts that reported it, so desktops and failed reads
         -- cannot pull the fleet number down.
@@ -105,7 +124,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
       { name: 'condition', type: 'enum' as const, required: true, values: [
         // device_health
         'severe_swap', 'elevated_swap',
-        'degraded_battery', 'replace_battery', 'good_battery',
+        'degraded_battery', 'replace_battery', 'good_battery', 'unmeasured_battery',
         'high_compression',
         // os_health
         'degraded_os', 'acceptable_os', 'healthy_os',
@@ -178,9 +197,10 @@ export const firehoseHealthQueries: QueryConfig[] = [
       AND multiIf(
         {condition:String} = 'severe_swap',       dh.swap_pressure = 'severe',
         {condition:String} = 'elevated_swap',     dh.swap_pressure = 'elevated',
-        {condition:String} = 'degraded_battery',  dh.battery_health_score = 'degraded',
-        {condition:String} = 'replace_battery',   dh.battery_health_score = 'replace',
-        {condition:String} = 'good_battery',      dh.battery_health_score = 'good',
+        {condition:String} = 'degraded_battery',  dh.battery_health_score = 'degraded' AND ${BATTERY_MEASURED_QUALIFIED},
+        {condition:String} = 'replace_battery',   dh.battery_health_score = 'replace'  AND ${BATTERY_MEASURED_QUALIFIED},
+        {condition:String} = 'good_battery',      dh.battery_health_score = 'good'     AND ${BATTERY_MEASURED_QUALIFIED},
+        {condition:String} = 'unmeasured_battery', ${BATTERY_SUSPECT_QUALIFIED},
         {condition:String} = 'high_compression',  dh.compression_pressure = 'high',
         {condition:String} = 'degraded_os',       os.dex_os_health = 'degraded',
         {condition:String} = 'acceptable_os',     os.dex_os_health = 'acceptable',
@@ -335,7 +355,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
     sql: `
       WITH ${FILTERED_HOSTS_CTE}, latest AS (${LATEST_BATTERY})
       SELECT
-        battery_health_score,
+        ${BATTERY_VERDICT} AS battery_health_score,
         count() AS device_count,
         round(avgIf(battery_health_pct, ${BATTERY_MEASURED}), 0) AS avg_health_pct,
         round(avgIf(battery_cycles, battery_cycles > 0), 0)      AS avg_cycles,
