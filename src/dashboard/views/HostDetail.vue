@@ -88,8 +88,8 @@
       <div class="grammar-head">
         <h2 class="grammar-title">Who — this host right now</h2>
       </div>
-      <!-- Host attributes, not RAM: this row lived inside the RAM card, which
-           put the battery and network chips under a "RAM utilization" title. -->
+      <!-- Host attributes. RAM tier and swap pressure are memory signals and
+           render inside the RAM card instead. -->
       <div class="hd-chips">
         <Chip v-for="c in hostChips" :key="c.label" :tone="c.tone" :label="c.label" :value="c.value" :dot="false" :title="c.title" />
       </div>
@@ -105,6 +105,9 @@
           <div class="ram-caption">
             <span>{{ pressure.free_gb != null ? `${pressure.free_gb} GB free` : 'no memory telemetry for this host' }}</span>
             <span v-if="pressure.pct >= 70" class="ram-critical">Critical — swap thrashing probable</span>
+          </div>
+          <div v-if="memoryChips.length" class="hd-chips hd-chips--in-card">
+            <Chip v-for="c in memoryChips" :key="c.label" :tone="c.tone" :label="c.label" :value="c.value" :dot="false" :title="c.title" />
           </div>
         </div>
         <div class="stat-grid">
@@ -482,12 +485,14 @@ const swapPattern = computed(() => {
   return { severe, report, sustained: severe >= Math.max(3, report * 0.5) }
 })
 
-const hostChips = computed(() => {
+/**
+ * Memory signals, rendered inside the RAM card. RAM tier and swap pressure
+ * describe memory, so they belong with the utilization gauge rather than in
+ * the host-attribute row. They also give the card something to say when the
+ * gauge itself has no telemetry.
+ */
+const memoryChips = computed(() => {
   const chips = []
-  // cpu_brand resolves the tier (M1 Max, not just M1) and with it the real
-  // ship year — the Pro/Max bins land up to 18 months after the base chip.
-  const info = chipInfo(health.value.cpu_class, health.value.cpu_brand || detail.value.cpu_brand)
-  if (info) chips.push({ label: 'cpu', value: `${info.pretty} (${info.year ?? '—'})`, tone: ageTone(info.gensBehind) })
   // Telemetry ships ram_tier as '32gb_plus' / '16gb'; render it the way the
   // filter bar spells it rather than shouting the raw enum.
   if (health.value.ram_tier) {
@@ -513,6 +518,16 @@ const hostChips = computed(() => {
       chips.push({ label: 'swap', value: `${swap} · <5d history`, tone: 'neutral', title: 'Not enough reporting days in the last 30 to judge whether this is a pattern' })
     }
   }
+  return chips
+})
+
+/** Host attributes: silicon, battery, OS, uptime, network. */
+const hostChips = computed(() => {
+  const chips = []
+  // cpu_brand resolves the tier (M1 Max, not just M1) and with it the real
+  // ship year — the Pro/Max bins land up to 18 months after the base chip.
+  const info = chipInfo(health.value.cpu_class, health.value.cpu_brand || detail.value.cpu_brand)
+  if (info) chips.push({ label: 'cpu', value: `${info.pretty} (${info.year ?? '—'})`, tone: ageTone(info.gensBehind) })
   // The verdict is about CAPACITY, so the number beside it must be capacity
   // too. It used to show battery_percent, the current charge, which produced
   // "replace (100%)" — a worn-out battery that happens to be fully charged.
@@ -871,6 +886,12 @@ const recommendation = computed(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+/* Inside the RAM card the chips need the separator the card used to own. */
+.hd-chips--in-card {
+  padding-top: 8px;
+  border-top: 1px solid var(--fleet-black-5);
 }
 
 .stat-grid {
