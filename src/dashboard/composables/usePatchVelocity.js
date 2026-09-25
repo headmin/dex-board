@@ -60,7 +60,12 @@ export function usePatchVelocity() {
     // Per-app rows are aggregated client-side from the bucketed feed, which
     // has no exclusion param — drop excluded titles here so the app list
     // matches the server-side numbers above.
-    const cleanApp = (appRows || []).filter(r => !isExcludedSoftware(r.software_name))
+    // patch_type 'os' belongs in the by-type breakdown, not in a list of
+    // apps: a major macOS upgrade legitimately takes months, so ranking it
+    // against Chrome's 1.5 days reads as a failure when it is not one.
+    const cleanApp = (appRows || [])
+      .filter(r => r.patch_type !== 'os')
+      .filter(r => !isExcludedSoftware(r.software_name))
     // Eligible-cohort denominator: hosts reporting the app installed in the
     // last 14 days (adoption_gap). Turns "N hosts patched" into "N of M that
     // have the app" — the censored never-patched population becomes visible.

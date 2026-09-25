@@ -224,7 +224,9 @@
           <span class="apps-col-foot">Averaging these into one number would hide every one of them.</span>
         </div>
       </div>
-      <p v-if="excludedLabel" class="apps-excluded">{{ excludedLabel }} is left out — it ships with macOS and updates on Apple's schedule, not the fleet's.</p>
+      <p class="apps-excluded">
+        Apple-bundled titles are left out — Safari, System Settings, iWork and the helpers inside Xcode move on Apple's schedule, not the fleet's. Version changes that go backwards are dropped too, since they are not patches. macOS itself is counted under OS updates above.<template v-if="excludedLabel"> Also excluded by hand: {{ excludedLabel }}.</template>
+      </p>
     </section>
 
     <!-- ─── Machines dragging the tail ──────────────────────── -->

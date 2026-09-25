@@ -78,8 +78,68 @@ const SCORE_PARAMS = [...FILTER_PARAMS, AS_OF_PARAM, AS_OF_HOURS_PARAM]
 // fleet and would distort velocity numbers. Empty default excludes nothing
 // (splitByChar(',', '') → [''], which never matches a real lowercased name).
 const EXCLUDE_SOFTWARE_PARAM = { name: 'excludeSoftware', type: 'string' as const, required: false, default: '' }
-const excludeClause = (col: string) =>
-  `AND NOT has(splitByChar(',', lower({excludeSoftware:String})), lower(${col}))`
+
+/**
+ * A version change is only a patch if the version went UP.
+ *
+ * dex_patch_events records every version transition, and some of them go
+ * backwards: macOS 27 renumbered System Settings.app from 15.0 to 1.0, and
+ * Cinema 4D reports 2025.3 -> 2024.5. Those are not patches, but they carry
+ * a days_to_patch computed from the fleet-first sighting of the "new"
+ * version, which produced the slowest entries on the whole page — System
+ * Settings at 98 days was really the macOS 27 rollout wearing an app name.
+ *
+ * Comparing versions properly is not possible in general, so this compares
+ * the leading numeric component only, which is enough to catch a backwards
+ * jump. Transitions with no leading number on either side are kept, since
+ * nothing can be concluded about them.
+ */
+const upgradeOnlyClause = (prefix: string) => `
+    AND NOT (
+      toUInt32OrZero(extract(${prefix}new_version, '^([0-9]+)')) < toUInt32OrZero(extract(${prefix}old_version, '^([0-9]+)'))
+      AND extract(${prefix}old_version, '^([0-9]+)') != ''
+      AND extract(${prefix}new_version, '^([0-9]+)') != ''
+    )`
+
+/**
+ * Apple-bundled titles, excluded as a class rather than by name.
+ *
+ * Safari, System Settings, iWork and the helpers inside Xcode all move on
+ * Apple's release schedule through Software Update or the App Store, not
+ * through the delivery pipeline this page measures. Their lag is the OS
+ * adoption curve wearing an app name: Numbers, Keynote and Pages sat at 158
+ * days, System Settings at 98.
+ *
+ * dex_patch_events carries only a title, so the class is resolved through
+ * adoption_gap, which knows each title's bundle identifier and install path.
+ * The dominant identifier per title is used (argMax on timestamp) so one
+ * oddly-signed host cannot drag a whole title in or out. Titles adoption_gap
+ * has never seen are kept — absence of evidence is not evidence of Apple.
+ */
+const APPLE_BUNDLED = (col: string) => `
+    AND lower(${col}) NOT IN (
+      SELECT lower(app_name) FROM (
+        SELECT app_name,
+          argMax(bundle_identifier, timestamp) AS bid,
+          argMax(path, timestamp)              AS install_path
+        FROM adoption_gap
+        -- Bounded to recent inventory: a title's bundle identifier does not
+        -- change, so scanning all history to learn it costs seconds for
+        -- nothing. A title absent from 90 days of inventory is stale anyway.
+        WHERE bundle_identifier != '' AND timestamp > now() - INTERVAL 90 DAY
+        GROUP BY app_name
+      ) WHERE bid LIKE 'com.apple.%' OR install_path LIKE '/System/%'
+    )`
+
+/**
+ * Titles excluded by the caller, plus the upgrade-only and Apple-bundled
+ * rules above. `col` may be qualified ("e.software_name"); the version
+ * columns take the same qualifier so the clause works inside aliased queries.
+ */
+const excludeClause = (col: string) => {
+  const prefix = col.includes('.') ? col.slice(0, col.lastIndexOf('.') + 1) : ''
+  return `AND NOT has(splitByChar(',', lower({excludeSoftware:String})), lower(${col}))${upgradeOnlyClause(prefix)}${APPLE_BUNDLED(col)}`
+}
 
 // Drill-down queries (distributions, dimensions, biggest movers, device list)
 // additionally take a timeRange (in hours) that scopes the result to hosts seen
@@ -1247,6 +1307,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
         max(event_time) AS last_applied
       FROM dex_patch_events
       WHERE event_time >= {startDate:String} AND event_time <= {endDate:String}
+        ${upgradeOnlyClause('')}${APPLE_BUNDLED('software_name')}
       GROUP BY day, software_name, patch_type
       HAVING hosts >= {minHosts:UInt32}
       ORDER BY day DESC, hosts DESC

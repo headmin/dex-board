@@ -1,21 +1,21 @@
 /**
- * Patch-velocity exclusion list.
+ * Patch-velocity exclusion list — the manual escape hatch.
  *
- * Some titles don't reflect how fast the fleet ships the software it
- * manages, so leaving them in the velocity numbers is misleading:
- *   - Safari ships with macOS and updates through Software Update on
- *     Apple's own cadence — its lag measures OS-update behaviour, not the
- *     app-delivery pipeline every other title here goes through.
+ * Two classes of title are excluded automatically, server-side, in
+ * src/worker/queries/core-scores.ts, so they need no entry here:
+ *   - Apple-bundled titles (Safari, System Settings, iWork, the helpers
+ *     inside Xcode), resolved by bundle identifier and install path rather
+ *     than by name. They move on Apple's schedule, not the fleet's.
+ *   - Version changes that go backwards, which are not patches at all.
  *
- * Entries are matched case-insensitively against dex_patch_events
- * `software_name` (exact, after lowercasing) — so "Safari.app" excludes
- * the Safari rows without catching, say, "Safari Technology Preview.app".
- * Add a title here to drop it from the hero percentiles, the coverage
- * curve, and the app/host lists in one place.
+ * This list is for anything else the team decides does not reflect how fast
+ * the fleet ships software it actually manages. Entries are matched
+ * case-insensitively against dex_patch_events `software_name` (exact, after
+ * lowercasing) — so "safari.app" would exclude Safari without catching
+ * "Safari Technology Preview.app". Adding a title here drops it from the
+ * hero percentiles, the coverage curve, and the app/host lists at once.
  */
-export const PATCH_EXCLUSIONS = [
-  'safari.app',
-]
+export const PATCH_EXCLUSIONS = []
 
 /** True when a software_name is on the exclusion list. */
 export function isExcludedSoftware(name) {
