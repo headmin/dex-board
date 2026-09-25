@@ -155,8 +155,13 @@
         ELSE NULL
        END FROM battery
       )                                                 AS battery_health_pct,
+      -- NULL-safe: in SQLite `NULL <= 0` is NULL, not false, so the old
+      -- guard never fired and a host whose capacity osquery cannot read fell
+      -- through every comparison to ELSE 'replace'. A missing measurement
+      -- must read as unknown, never as the worst verdict.
       (SELECT CASE
-        WHEN max_capacity <= 0 OR designed_capacity <= 0  THEN NULL
+        WHEN max_capacity IS NULL OR designed_capacity IS NULL THEN NULL
+        WHEN max_capacity <= 0 OR designed_capacity <= 0       THEN NULL
         WHEN CAST(max_capacity AS REAL) / designed_capacity >= 0.80 THEN 'good'
         WHEN CAST(max_capacity AS REAL) / designed_capacity >= 0.60 THEN 'degraded'
         ELSE 'replace'

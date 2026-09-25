@@ -25,6 +25,29 @@
 import type { QueryConfig } from '../types'
 import { FILTERED_HOSTS_CTE, FILTER_PARAMS } from './core-filters'
 
+/**
+ * Battery verdict, guarded on a capacity reading actually existing.
+ *
+ * The pack query's CASE fell through to 'replace' whenever max_capacity or
+ * designed_capacity was NULL: in SQLite `NULL <= 0` is NULL, not false, so
+ * the guard never fired and every comparison below it was NULL too. A host
+ * whose battery capacity osquery could not read therefore reported as
+ * "needs replacing" — 40 of 70 hosts on 2026-09-25, with battery_health_pct
+ * empty on every one of them.
+ *
+ * The pack fix ships separately; until every host runs it, capacity is the
+ * tell. A verdict with no capacity behind it is not a verdict, so it scores
+ * as unknown — the same 100 a NULL verdict has always scored here.
+ */
+const batteryVerdict = (alias: string) =>
+  `if(${alias}.battery_health_pct > 0, ifNull(${alias}.battery_health_score, ''), '')`
+
+/** Verdict -> 0-100. '' is "not measured": not penalised, same as NULL always was. */
+const batteryScoreSql = (alias: string) => `(CASE ${batteryVerdict(alias)}
+        WHEN 'good' THEN 100 WHEN 'degraded' THEN 60 WHEN 'replace' THEN 20
+        WHEN '' THEN 100 ELSE 80 END)`
+
+
 // Score queries take FILTER_PARAMS + asOfDaysAgo. The asOf param turns the
 // composite into a snapshot of the fleet's state N days back (default 0 = now).
 // Used by the Δ-vs-7d-ago tile and the 30-day trend sparkline.
@@ -105,6 +128,7 @@ mac_h AS (
     argMax(cpu_brand, timestamp) AS cpu_brand,
     argMax(ram_tier, timestamp) AS ram_tier,
     argMax(battery_health_score, timestamp) AS battery_health_score,
+    argMax(battery_health_pct, timestamp) AS battery_health_pct,
     argMax(swap_pressure, timestamp) AS swap_pressure,
     argMax(compression_pressure, timestamp) AS compression_pressure
   FROM device_health
@@ -199,8 +223,7 @@ device_scores AS (
         ELSE 50 END)
     + 0.25 * (CASE h.ram_tier
         WHEN '32gb_plus' THEN 100 WHEN '16gb' THEN 80 WHEN '8gb' THEN 50 ELSE 30 END)
-    + 0.25 * (CASE ifNull(h.battery_health_score, 'good')
-        WHEN 'good' THEN 100 WHEN 'degraded' THEN 60 WHEN 'replace' THEN 20 ELSE 80 END)
+    + 0.25 * ${batteryScoreSql('h')}
     + 0.20 * (CASE h.swap_pressure
         WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 WHEN 'severe' THEN 30 ELSE 75 END)
     ), NULL) AS device_health_score,
@@ -425,8 +448,7 @@ const PRIOR_SCORES_CTES = `      -- Prior period: scores from data before 7 days
               ELSE 50 END)
           + 0.25 * (CASE h.ram_tier
               WHEN '32gb_plus' THEN 100 WHEN '16gb' THEN 80 WHEN '8gb' THEN 50 ELSE 30 END)
-          + 0.25 * (CASE ifNull(h.battery_health_score, 'good')
-              WHEN 'good' THEN 100 WHEN 'degraded' THEN 60 WHEN 'replace' THEN 20 ELSE 80 END)
+          + 0.25 * ${batteryScoreSql('h')}
           + 0.20 * (CASE h.swap_pressure
               WHEN 'none' THEN 100 WHEN 'light' THEN 85 WHEN 'elevated' THEN 60 WHEN 'severe' THEN 30 ELSE 75 END)
           ) AS device_health_score,
@@ -487,6 +509,7 @@ const PRIOR_SCORES_CTES = `      -- Prior period: scores from data before 7 days
             argMax(cpu_class, timestamp) AS cpu_class,
             argMax(ram_tier, timestamp) AS ram_tier,
             argMax(battery_health_score, timestamp) AS battery_health_score,
+            argMax(battery_health_pct, timestamp) AS battery_health_pct,
             argMax(swap_pressure, timestamp) AS swap_pressure,
             argMax(compression_pressure, timestamp) AS compression_pressure
           FROM device_health
@@ -958,6 +981,7 @@ export const firehoseScoreQueries: QueryConfig[] = [
             argMax(swap_pressure, timestamp)         AS swap_pressure,
             argMax(compression_pressure, timestamp)  AS compression_pressure,
             argMax(battery_health_score, timestamp)  AS battery_health_score,
+            argMax(battery_health_pct, timestamp)  AS battery_health_pct,
             argMax(cpu_class, timestamp)             AS cpu_class,
             argMax(ram_tier, timestamp)              AS ram_tier
           FROM device_health
@@ -967,7 +991,8 @@ export const firehoseScoreQueries: QueryConfig[] = [
           SELECT
             argMax(swap_pressure, timestamp)         AS swap_pressure,
             argMax(compression_pressure, timestamp)  AS compression_pressure,
-            argMax(battery_health_score, timestamp)  AS battery_health_score
+            argMax(battery_health_score, timestamp)  AS battery_health_score,
+            argMax(battery_health_pct, timestamp)  AS battery_health_pct
           FROM device_health
           WHERE host_id = {filterHostId:String}
             AND timestamp < now() - INTERVAL 7 DAY
@@ -1044,8 +1069,8 @@ export const firehoseScoreQueries: QueryConfig[] = [
         po.uptime_risk           AS prev_uptime_risk,
         co.uptime_days           AS curr_uptime_days,
         -- Device-health signals (cpu/ram are static — no prev needed)
-        ch.battery_health_score  AS curr_battery,
-        ph.battery_health_score  AS prev_battery,
+        ${batteryVerdict('ch')}  AS curr_battery,
+        ${batteryVerdict('ph')}  AS prev_battery,
         ch.cpu_class             AS curr_cpu_class,
         ch.ram_tier              AS curr_ram_tier,
         -- Security signals

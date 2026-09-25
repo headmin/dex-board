@@ -88,6 +88,11 @@
       <div class="grammar-head">
         <h2 class="grammar-title">Who — this host right now</h2>
       </div>
+      <!-- Host attributes, not RAM: this row lived inside the RAM card, which
+           put the battery and network chips under a "RAM utilization" title. -->
+      <div class="hd-chips">
+        <Chip v-for="c in hostChips" :key="c.label" :tone="c.tone" :label="c.label" :value="c.value" :dot="false" :title="c.title" />
+      </div>
       <div class="who-grid">
         <div class="ram-card">
           <div class="ram-head">
@@ -100,9 +105,6 @@
           <div class="ram-caption">
             <span>{{ pressure.free_gb != null ? `${pressure.free_gb} GB free` : 'no memory telemetry for this host' }}</span>
             <span v-if="pressure.pct >= 70" class="ram-critical">Critical — swap thrashing probable</span>
-          </div>
-          <div class="hd-chips">
-            <Chip v-for="c in hostChips" :key="c.label" :tone="c.tone" :label="c.label" :value="c.value" :dot="false" :title="c.title" />
           </div>
         </div>
         <div class="stat-grid">
@@ -486,7 +488,12 @@ const hostChips = computed(() => {
   // ship year — the Pro/Max bins land up to 18 months after the base chip.
   const info = chipInfo(health.value.cpu_class, health.value.cpu_brand || detail.value.cpu_brand)
   if (info) chips.push({ label: 'cpu', value: `${info.pretty} (${info.year ?? '—'})`, tone: ageTone(info.gensBehind) })
-  if (health.value.ram_tier) chips.push({ label: 'ram', value: String(health.value.ram_tier).toUpperCase(), tone: String(health.value.ram_tier).toLowerCase() === '8gb' ? 'elevated' : 'neutral' })
+  // Telemetry ships ram_tier as '32gb_plus' / '16gb'; render it the way the
+  // filter bar spells it rather than shouting the raw enum.
+  if (health.value.ram_tier) {
+    const t = String(health.value.ram_tier).toLowerCase()
+    chips.push({ label: 'ram', value: t.replace(/_plus$/, '+').replace(/gb/, 'GB'), tone: t === '8gb' ? 'elevated' : 'neutral' })
+  }
   const swap = health.value.swap_pressure
   if (swap) {
     const pat = swapPattern.value
@@ -496,7 +503,7 @@ const hostChips = computed(() => {
       const chronic = pat.sustained
       chips.push({
         label: 'swap',
-        value: `${swap} · ${pat.severe}/${pat.report}d severe`,
+        value: `${swap} · ${pat.severe} of ${pat.report}d`,
         tone: chronic ? 'critical' : swap === 'severe' || swap === 'elevated' ? 'fair' : 'good',
         title: chronic
           ? `Severe swap on ${pat.severe} of ${pat.report} reporting days — chronic over-utilization, not a one-off`
@@ -506,8 +513,32 @@ const hostChips = computed(() => {
       chips.push({ label: 'swap', value: `${swap} · <5d history`, tone: 'neutral', title: 'Not enough reporting days in the last 30 to judge whether this is a pattern' })
     }
   }
+  // The verdict is about CAPACITY, so the number beside it must be capacity
+  // too. It used to show battery_percent, the current charge, which produced
+  // "replace (100%)" — a worn-out battery that happens to be fully charged.
+  //
+  // A verdict with no capacity reading behind it is not a verdict: the pack
+  // query fell through to 'replace' whenever osquery could not read capacity
+  // (see batteryVerdict in core-scores.ts). Those hosts read "unknown" here
+  // and are not scored against.
   const batt = health.value.battery_health_score
-  if (batt) chips.push({ label: 'battery', value: health.value.battery_percent ? `${batt} (${health.value.battery_percent}%)` : batt, tone: batt === 'replace' ? 'critical' : batt === 'degraded' ? 'fair' : 'good' })
+  const cap = Number(health.value.battery_health_pct)
+  const capKnown = Number.isFinite(cap) && cap > 0
+  if (batt || capKnown) {
+    chips.push(capKnown
+      ? {
+          label: 'battery',
+          value: `${batt || '—'} · ${Math.round(cap)}% capacity`,
+          tone: batt === 'replace' ? 'critical' : batt === 'degraded' ? 'fair' : 'good',
+          title: `Capacity is ${Math.round(cap)}% of this battery's design capacity${health.value.battery_cycles ? ` after ${health.value.battery_cycles} cycles` : ''}. Charge right now is ${health.value.battery_percent ?? '—'}%.`,
+        }
+      : {
+          label: 'battery',
+          value: 'capacity not reported',
+          tone: 'neutral',
+          title: 'osquery returned no max_capacity or designed_capacity for this host, so battery wear cannot be judged. Not counted against the score.',
+        })
+  }
   if (os.value.os_version) chips.push({ label: 'os', value: String(os.value.os_version), tone: 'neutral' })
   const curr = os.value.os_currency
   if (curr && curr !== 'current') chips.push({ label: 'os currency', value: humanizeToken(String(curr), { capitalize: false }), tone: curr === 'legacy' ? 'critical' : 'elevated' })
@@ -840,8 +871,6 @@ const recommendation = computed(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding-top: 8px;
-  border-top: 1px solid var(--fleet-black-5);
 }
 
 .stat-grid {

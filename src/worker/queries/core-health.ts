@@ -218,6 +218,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
         battery_percent,
         battery_cycles,
         battery_health_score,
+        battery_health_pct,
         battery_state,
         timestamp
       FROM device_health
@@ -335,6 +336,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
       WITH ${FILTERED_HOSTS_CTE}, latest AS (${LATEST_BATTERY})
       SELECT
         battery_health_score,
+        battery_health_pct,
         count() AS device_count,
         round(avgIf(battery_health_pct, ${BATTERY_MEASURED}), 0) AS avg_health_pct,
         round(avgIf(battery_cycles, battery_cycles > 0), 0)      AS avg_cycles,
@@ -411,6 +413,7 @@ export const firehoseHealthQueries: QueryConfig[] = [
         swap_pressure,
         compression_pressure,
         battery_health_score,
+        battery_health_pct,
         battery_health_pct,
         battery_percent,
         battery_cycles,
