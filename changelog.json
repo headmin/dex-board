@@ -1,5 +1,18 @@
 [
   {
+    "sha": "bc40aa90a232ffc2d49c6aebe958343f3c5dc8ce",
+    "short_sha": "bc40aa90a2",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Nudge: add macOS 27 target, OS-specific update URLs, and macOS 15 upgrade deadline (#54130)",
+    "timestamp": "2026-09-28T10:27:04-05:00",
+    "insertions": 13,
+    "deletions": 3,
+    "files": [
+      "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig"
+    ]
+  },
+  {
     "sha": "e491eae777ba88791e384a903cee384ac384d618",
     "short_sha": "e491eae777",
     "author": "Allen Houchins",
@@ -7330,19 +7343,6 @@
       "it-and-security/teams/company-owned-iphones.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "a6f8ee710e2a5f2d7da6b7158f40839ee79f2cfb",
-    "short_sha": "a6f8ee710e",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update mac-enrollment-profile-up-to-date.yml (#26024)",
-    "timestamp": "2025-02-04T11:10:04-06:00",
-    "insertions": 5,
-    "deletions": 4,
-    "files": [
-      "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml"
     ]
   }
 ]

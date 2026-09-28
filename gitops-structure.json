@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-28T12:20:21Z",
+  "generated": "2026-09-28T22:45:18Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "e491eae777ba88791e384a903cee384ac384d618",
-    "short_sha": "e491eae777",
-    "message": "Fix dogfood patch-when-closed policies: set `install_software: true` (#53849)",
-    "timestamp": "2026-09-23T11:54:17-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/e491eae777ba88791e384a903cee384ac384d618"
+    "sha": "bc40aa90a232ffc2d49c6aebe958343f3c5dc8ce",
+    "short_sha": "bc40aa90a2",
+    "message": "Nudge: add macOS 27 target, OS-specific update URLs, and macOS 15 upgrade deadline (#54130)",
+    "timestamp": "2026-09-28T10:27:04-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/bc40aa90a232ffc2d49c6aebe958343f3c5dc8ce"
   },
   "fleets": [
     {
