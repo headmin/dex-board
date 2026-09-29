@@ -1,5 +1,31 @@
 [
   {
+    "sha": "90c8fb9cfb8b17316ffd12cd4ef662673b73ac9c",
+    "short_sha": "90c8fb9cfb",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 2.9939.4 (#54256)",
+    "timestamp": "2026-09-29T09:57:47-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
+    "sha": "6fee77151ef3b308d3f68ac55a6b84e8a830a090",
+    "short_sha": "6fee77151e",
+    "author": "Henry Stamerjohann",
+    "email": "headmin@users.noreply.github.com",
+    "message": "Add case for Apple M6 in dex-queries.yml (#54315)",
+    "timestamp": "2026-09-29T16:31:46+02:00",
+    "insertions": 1,
+    "deletions": 0,
+    "files": [
+      "it-and-security/lib/all/reports/dex-queries.yml"
+    ]
+  },
+  {
     "sha": "bc40aa90a232ffc2d49c6aebe958343f3c5dc8ce",
     "short_sha": "bc40aa90a2",
     "author": "Allen Houchins",
@@ -7311,36 +7337,6 @@
       "it-and-security/teams/company-owned-ipads.yml",
       "it-and-security/teams/company-owned-iphones.yml",
       "it-and-security/teams/personally-owned-iphones.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "b2beaa731d15d2664d1039768e5b9102fcd3a9d3",
-    "short_sha": "b2beaa731d",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update default.yml (#26115)",
-    "timestamp": "2025-02-05T17:21:48-06:00",
-    "insertions": 0,
-    "deletions": 7,
-    "files": [
-      "it-and-security/default.yml"
-    ]
-  },
-  {
-    "sha": "44eda681d458b5a15790c67a0ee2964cc73468ff",
-    "short_sha": "44eda681d4",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Updated macOS/iOS/iPadOS update deadlines (#26048)",
-    "timestamp": "2025-02-04T15:51:46-06:00",
-    "insertions": 9,
-    "deletions": 9,
-    "files": [
-      "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml",
-      "it-and-security/teams/company-owned-ipads.yml",
-      "it-and-security/teams/company-owned-iphones.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]

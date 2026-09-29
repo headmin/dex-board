@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-29T11:48:04Z",
+  "generated": "2026-09-29T17:15:36Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "bc40aa90a232ffc2d49c6aebe958343f3c5dc8ce",
-    "short_sha": "bc40aa90a2",
-    "message": "Nudge: add macOS 27 target, OS-specific update URLs, and macOS 15 upgrade deadline (#54130)",
-    "timestamp": "2026-09-28T10:27:04-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/bc40aa90a232ffc2d49c6aebe958343f3c5dc8ce"
+    "sha": "90c8fb9cfb8b17316ffd12cd4ef662673b73ac9c",
+    "short_sha": "90c8fb9cfb",
+    "message": "Bump Linux Claude Desktop patch policy to 2.9939.4 (#54256)",
+    "timestamp": "2026-09-29T09:57:47-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/90c8fb9cfb8b17316ffd12cd4ef662673b73ac9c"
   },
   "fleets": [
     {
