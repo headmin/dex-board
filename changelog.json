@@ -1,5 +1,32 @@
 [
   {
+    "sha": "f150dae420dbf7c4742f3567cbedecff0e53a8cd",
+    "short_sha": "f150dae420",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Linux OS update remediation script (docs/solutions + dogfood) (#53439)",
+    "timestamp": "2026-09-30T14:19:37-05:00",
+    "insertions": 128,
+    "deletions": 0,
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/linux/scripts/update-linux-os.sh"
+    ]
+  },
+  {
+    "sha": "ce69b60cac2cd9ba4c454c658bf10cea5a30d791",
+    "short_sha": "ce69b60cac",
+    "author": "Terry",
+    "email": "31892197+terry-kwok-code@users.noreply.github.com",
+    "message": "Add host 1798 to excluded storage restrictions (#54333)",
+    "timestamp": "2026-09-30T14:46:54-04:00",
+    "insertions": 1,
+    "deletions": 0,
+    "files": [
+      "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml"
+    ]
+  },
+  {
     "sha": "90c8fb9cfb8b17316ffd12cd4ef662673b73ac9c",
     "short_sha": "90c8fb9cfb",
     "author": "Allen Houchins",
@@ -7304,41 +7331,6 @@
       "it-and-security/lib/macos/software/zoom.yml",
       "it-and-security/lib/windows/software/zoom-arm.yml",
       "it-and-security/lib/windows/software/zoom.yml"
-    ]
-  },
-  {
-    "sha": "6c512ec85756dde02957879d5d8db6b935da1165",
-    "short_sha": "6c512ec857",
-    "author": "Ian Littman",
-    "email": "iansltx@gmail.com",
-    "message": "Re-add VPP apps and VPP-team associations to Dogfood (#26122)",
-    "timestamp": "2025-02-05T17:46:06-06:00",
-    "insertions": 19,
-    "deletions": 0,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/teams/company-owned-ipads.yml",
-      "it-and-security/teams/company-owned-iphones.yml",
-      "it-and-security/teams/personally-owned-iphones.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "1ce3be1b8e183e0df8bbaca6b3097b849d51200d",
-    "short_sha": "1ce3be1b8e",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Multiple updates to resolve VPP issues (#26117)",
-    "timestamp": "2025-02-05T17:32:59-06:00",
-    "insertions": 0,
-    "deletions": 12,
-    "files": [
-      "it-and-security/teams/company-owned-ipads.yml",
-      "it-and-security/teams/company-owned-iphones.yml",
-      "it-and-security/teams/personally-owned-iphones.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]

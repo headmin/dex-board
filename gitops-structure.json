@@ -1,14 +1,14 @@
 {
-  "generated": "2026-09-30T17:13:23Z",
+  "generated": "2026-09-30T21:39:55Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "90c8fb9cfb8b17316ffd12cd4ef662673b73ac9c",
-    "short_sha": "90c8fb9cfb",
-    "message": "Bump Linux Claude Desktop patch policy to 2.9939.4 (#54256)",
-    "timestamp": "2026-09-29T09:57:47-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/90c8fb9cfb8b17316ffd12cd4ef662673b73ac9c"
+    "sha": "f150dae420dbf7c4742f3567cbedecff0e53a8cd",
+    "short_sha": "f150dae420",
+    "message": "Add Linux OS update remediation script (docs/solutions + dogfood) (#53439)",
+    "timestamp": "2026-09-30T14:19:37-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/f150dae420dbf7c4742f3567cbedecff0e53a8cd"
   },
   "fleets": [
     {
@@ -443,6 +443,11 @@
           "name": "update-claude-desktop",
           "file": "it-and-security/lib/linux/scripts/update-claude-desktop.sh",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/update-claude-desktop.sh"
+        },
+        {
+          "name": "update-linux-os",
+          "file": "it-and-security/lib/linux/scripts/update-linux-os.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/update-linux-os.sh"
         },
         {
           "name": "verify-claude-desktop",
@@ -1071,13 +1076,13 @@
     "labels": 26,
     "policies": 43,
     "reports": 22,
-    "scripts": 20,
+    "scripts": 21,
     "configuration_profiles": 43,
     "declaration_profiles": 7,
     "software": 14,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 195
+    "total_files": 196
   }
 }
