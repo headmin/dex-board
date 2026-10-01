@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-01T12:02:56Z",
+  "generated": "2026-10-01T22:08:13Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "f150dae420dbf7c4742f3567cbedecff0e53a8cd",
-    "short_sha": "f150dae420",
-    "message": "Add Linux OS update remediation script (docs/solutions + dogfood) (#53439)",
-    "timestamp": "2026-09-30T14:19:37-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/f150dae420dbf7c4742f3567cbedecff0e53a8cd"
+    "sha": "fdef384f13f3f5d526742f76ebd5cfc5db44a7d4",
+    "short_sha": "fdef384f13",
+    "message": "Handbook: Point usage statistics references to the automatically updated sheet (#54546)",
+    "timestamp": "2026-10-01T11:58:37-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/fdef384f13f3f5d526742f76ebd5cfc5db44a7d4"
   },
   "fleets": [
     {

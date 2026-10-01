@@ -1,5 +1,18 @@
 [
   {
+    "sha": "fdef384f13f3f5d526742f76ebd5cfc5db44a7d4",
+    "short_sha": "fdef384f13",
+    "author": "Luke Heath",
+    "email": "luke@fleetdm.com",
+    "message": "Handbook: Point usage statistics references to the automatically updated sheet (#54546)",
+    "timestamp": "2026-10-01T11:58:37-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
+    ]
+  },
+  {
     "sha": "f150dae420dbf7c4742f3567cbedecff0e53a8cd",
     "short_sha": "f150dae420",
     "author": "Allen Houchins",
@@ -7314,23 +7327,6 @@
     "deletions": 1,
     "files": [
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "47301ecb0a0549f93e6f27024ca69bad8bd97f1c",
-    "short_sha": "47301ecb0a",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update so latest Zoom is always installed for macOS and Windows (#26161)",
-    "timestamp": "2025-02-06T18:16:42-06:00",
-    "insertions": 5,
-    "deletions": 5,
-    "files": [
-      "it-and-security/lib/linux/software/zoom-deb.yml",
-      "it-and-security/lib/linux/software/zoom-rpm.yml",
-      "it-and-security/lib/macos/software/zoom.yml",
-      "it-and-security/lib/windows/software/zoom-arm.yml",
-      "it-and-security/lib/windows/software/zoom.yml"
     ]
   }
 ]
