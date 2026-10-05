@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-04T20:38:38Z",
+  "generated": "2026-10-05T02:59:37Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "fdef384f13f3f5d526742f76ebd5cfc5db44a7d4",
-    "short_sha": "fdef384f13",
-    "message": "Handbook: Point usage statistics references to the automatically updated sheet (#54546)",
-    "timestamp": "2026-10-01T11:58:37-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/fdef384f13f3f5d526742f76ebd5cfc5db44a7d4"
+    "sha": "9b99ba55e11e494a895615cf83e85b7201ef5f95",
+    "short_sha": "9b99ba55e1",
+    "message": "Add Warehouse: Ready for deployment label to dogfood (#54765)",
+    "timestamp": "2026-10-04T21:25:18-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/9b99ba55e11e494a895615cf83e85b7201ef5f95"
   },
   "fleets": [
     {
@@ -207,6 +207,11 @@
           "name": "virtual-machines",
           "file": "it-and-security/lib/all/labels/virtual-machines.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/virtual-machines.yml"
+        },
+        {
+          "name": "warehouse-status",
+          "file": "it-and-security/lib/all/labels/warehouse-status.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/warehouse-status.yml"
         },
         {
           "name": "windows-excluded-from-external-storage-restrictions",
@@ -1073,7 +1078,7 @@
     "fleets": 6,
     "agent_options": 2,
     "icons": 8,
-    "labels": 26,
+    "labels": 27,
     "policies": 43,
     "reports": 22,
     "scripts": 21,
@@ -1083,6 +1088,6 @@
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 196
+    "total_files": 197
   }
 }
