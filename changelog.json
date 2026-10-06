@@ -1,5 +1,18 @@
 [
   {
+    "sha": "f2717e84ab4989f28b524663bb12c6c78565ff71",
+    "short_sha": "f2717e84ab",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 2.19675.1 (#54868)",
+    "timestamp": "2026-10-06T09:35:00-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "9b99ba55e11e494a895615cf83e85b7201ef5f95",
     "short_sha": "9b99ba55e1",
     "author": "Allen Houchins",
@@ -7313,19 +7326,6 @@
     "timestamp": "2025-02-14T14:10:34-06:00",
     "insertions": 1,
     "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/latest-macos.yml"
-    ]
-  },
-  {
-    "sha": "ebdb4b860d180491190647bcd0b6d6c0d7c17185",
-    "short_sha": "ebdb4b860d",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update macOS version number to 15.3.1 (#26249)",
-    "timestamp": "2025-02-10T19:47:28-06:00",
-    "insertions": 2,
-    "deletions": 2,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
     ]

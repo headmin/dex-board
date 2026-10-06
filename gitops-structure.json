@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-06T12:27:21Z",
+  "generated": "2026-10-06T22:00:57Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "9b99ba55e11e494a895615cf83e85b7201ef5f95",
-    "short_sha": "9b99ba55e1",
-    "message": "Add Warehouse: Ready for deployment label to dogfood (#54765)",
-    "timestamp": "2026-10-04T21:25:18-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/9b99ba55e11e494a895615cf83e85b7201ef5f95"
+    "sha": "f2717e84ab4989f28b524663bb12c6c78565ff71",
+    "short_sha": "f2717e84ab",
+    "message": "Bump Linux Claude Desktop patch policy to 2.19675.1 (#54868)",
+    "timestamp": "2026-10-06T09:35:00-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/f2717e84ab4989f28b524663bb12c6c78565ff71"
   },
   "fleets": [
     {
