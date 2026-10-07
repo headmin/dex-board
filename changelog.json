@@ -1,5 +1,18 @@
 [
   {
+    "sha": "72b2755fc53ed50d141ed353eb5957be61f49d2b",
+    "short_sha": "72b2755fc5",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 2.26454.0 (#54979)",
+    "timestamp": "2026-10-07T09:29:20-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "f2717e84ab4989f28b524663bb12c6c78565ff71",
     "short_sha": "f2717e84ab",
     "author": "Allen Houchins",
@@ -7311,19 +7324,6 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version number to 15.3.1 (#26355)",
     "timestamp": "2025-02-14T14:17:56-06:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/latest-macos.yml"
-    ]
-  },
-  {
-    "sha": "2afff8242edd432c73a650b4e301a452c376e3ac",
-    "short_sha": "2afff8242e",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update dogfood-policy-updater-latest-macos.sh (#26351)",
-    "timestamp": "2025-02-14T14:10:34-06:00",
     "insertions": 1,
     "deletions": 1,
     "files": [
