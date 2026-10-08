@@ -1,5 +1,18 @@
 [
   {
+    "sha": "d62adc46a902675d5a820166c2ef2f72de132cc5",
+    "short_sha": "d62adc46a9",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 2.26454.2 (#55034)",
+    "timestamp": "2026-10-07T17:30:06-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "72b2755fc53ed50d141ed353eb5957be61f49d2b",
     "short_sha": "72b2755fc5",
     "author": "Allen Houchins",
@@ -7311,19 +7324,6 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Added troubleshooting logic (#26357)",
     "timestamp": "2025-02-14T14:39:58-06:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/latest-macos.yml"
-    ]
-  },
-  {
-    "sha": "4e967dbaa41515e8e727b48623e3f0544648adb0",
-    "short_sha": "4e967dbaa4",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update macOS version number to 15.3.1 (#26355)",
-    "timestamp": "2025-02-14T14:17:56-06:00",
     "insertions": 1,
     "deletions": 1,
     "files": [
