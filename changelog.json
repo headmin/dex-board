@@ -1,5 +1,18 @@
 [
   {
+    "sha": "f5e3f413c779839375154c76b6284491eceab834",
+    "short_sha": "f5e3f413c7",
+    "author": "Marko Lisica",
+    "email": "83164494+marko-lisica@users.noreply.github.com",
+    "message": "Change patch policies to notify before patching (#55134)",
+    "timestamp": "2026-10-08T19:33:07+02:00",
+    "insertions": 2,
+    "deletions": 2,
+    "files": [
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
     "sha": "d62adc46a902675d5a820166c2ef2f72de132cc5",
     "short_sha": "d62adc46a9",
     "author": "Allen Houchins",
@@ -7311,19 +7324,6 @@
     "email": "32207388+allenhouchins@users.noreply.github.com",
     "message": "Update macOS version number to 15.3.1 (#26360)",
     "timestamp": "2025-02-14T15:01:17-06:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/latest-macos.yml"
-    ]
-  },
-  {
-    "sha": "1ec82f1544cafd0b804c204f7ae7f0ef2941277e",
-    "short_sha": "1ec82f1544",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Added troubleshooting logic (#26357)",
-    "timestamp": "2025-02-14T14:39:58-06:00",
     "insertions": 1,
     "deletions": 1,
     "files": [
