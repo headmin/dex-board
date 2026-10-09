@@ -1,5 +1,31 @@
 [
   {
+    "sha": "76fd71df78228b6a9bbed6df6519edc7d9d54e34",
+    "short_sha": "76fd71df78",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Nudge postinstall: load LaunchAgent into the logged-in user's GUI domain (#55279)",
+    "timestamp": "2026-10-09T14:40:27-05:00",
+    "insertions": 20,
+    "deletions": 6,
+    "files": [
+      "it-and-security/lib/macos/scripts/nudge-postinstall.sh"
+    ]
+  },
+  {
+    "sha": "d5ba6b04e6fb5d054f05d63dc38cbc2ff9312304",
+    "short_sha": "d5ba6b04e6",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 2.31226.0 (#55243)",
+    "timestamp": "2026-10-09T09:11:44-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "d9fa7d4026878fcd240bd656586321657533a58f",
     "short_sha": "d9fa7d4026",
     "author": "Allen Houchins",
@@ -7296,32 +7322,6 @@
     "deletions": 1,
     "files": [
       "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml"
-    ]
-  },
-  {
-    "sha": "0a94f8143194bd772cf568129d8bf23bd09223b1",
-    "short_sha": "0a94f81431",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Switched from metadata_url to metadata for end user authentication (#26042)",
-    "timestamp": "2025-02-20T10:02:24-06:00",
-    "insertions": 5,
-    "deletions": 2,
-    "files": [
-      "it-and-security/default.yml"
-    ]
-  },
-  {
-    "sha": "fa5e2187acc5f00def85fda78c3569be6558ca51",
-    "short_sha": "fa5e2187ac",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Enable disk encryption for \"Compliance exclusions\" (#26476)",
-    "timestamp": "2025-02-19T16:29:23-05:00",
-    "insertions": 1,
-    "deletions": 0,
-    "files": [
-      "it-and-security/teams/compliance-exclusions.yml"
     ]
   }
 ]

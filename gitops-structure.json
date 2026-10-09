@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-09T12:16:46Z",
+  "generated": "2026-10-09T22:00:17Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "d9fa7d4026878fcd240bd656586321657533a58f",
-    "short_sha": "d9fa7d4026",
-    "message": "Dogfood: make sshd PermitRootLogin policy see directives in drop-in files (#55218)",
-    "timestamp": "2026-10-09T00:56:19-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/d9fa7d4026878fcd240bd656586321657533a58f"
+    "sha": "76fd71df78228b6a9bbed6df6519edc7d9d54e34",
+    "short_sha": "76fd71df78",
+    "message": "Nudge postinstall: load LaunchAgent into the logged-in user's GUI domain (#55279)",
+    "timestamp": "2026-10-09T14:40:27-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/76fd71df78228b6a9bbed6df6519edc7d9d54e34"
   },
   "fleets": [
     {
