@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-09T03:38:10Z",
+  "generated": "2026-10-09T12:16:46Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "f5e3f413c779839375154c76b6284491eceab834",
-    "short_sha": "f5e3f413c7",
-    "message": "Change patch policies to notify before patching (#55134)",
-    "timestamp": "2026-10-08T19:33:07+02:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/f5e3f413c779839375154c76b6284491eceab834"
+    "sha": "d9fa7d4026878fcd240bd656586321657533a58f",
+    "short_sha": "d9fa7d4026",
+    "message": "Dogfood: make sshd PermitRootLogin policy see directives in drop-in files (#55218)",
+    "timestamp": "2026-10-09T00:56:19-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/d9fa7d4026878fcd240bd656586321657533a58f"
   },
   "fleets": [
     {

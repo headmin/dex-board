@@ -1,5 +1,32 @@
 [
   {
+    "sha": "d9fa7d4026878fcd240bd656586321657533a58f",
+    "short_sha": "d9fa7d4026",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Dogfood: make sshd PermitRootLogin policy see directives in drop-in files (#55218)",
+    "timestamp": "2026-10-09T00:56:19-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/sshd-permitrootlogin-restricted.yml"
+    ]
+  },
+  {
+    "sha": "d517b1dd56b04f505f12a2322cb83c4782929ca1",
+    "short_sha": "d517b1dd56",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Shorten two dogfood label descriptions to fit the 255-character limit (#55216)",
+    "timestamp": "2026-10-09T00:54:11-05:00",
+    "insertions": 2,
+    "deletions": 2,
+    "files": [
+      "it-and-security/lib/all/labels/linux-excluded-from-external-storage-restrictions.yml",
+      "it-and-security/lib/all/labels/macos-screen-lock-exclusions.yml"
+    ]
+  },
+  {
     "sha": "f5e3f413c779839375154c76b6284491eceab834",
     "short_sha": "f5e3f413c7",
     "author": "Marko Lisica",
@@ -7295,39 +7322,6 @@
     "deletions": 0,
     "files": [
       "it-and-security/teams/compliance-exclusions.yml"
-    ]
-  },
-  {
-    "sha": "b02966b5293cf42c1f6b5fa10212897b0cc13b4d",
-    "short_sha": "b02966b529",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Software updates (#26452)",
-    "timestamp": "2025-02-19T10:35:47-06:00",
-    "insertions": 10,
-    "deletions": 10,
-    "files": [
-      "it-and-security/lib/linux/software/slack-deb.yml",
-      "it-and-security/lib/linux/software/slack-rpm.yml",
-      "it-and-security/lib/linux/software/zoom-deb.yml",
-      "it-and-security/lib/linux/software/zoom-rpm.yml",
-      "it-and-security/lib/windows/software/google-chrome.yml",
-      "it-and-security/lib/windows/software/slack.yml",
-      "it-and-security/lib/windows/software/zoom-arm.yml",
-      "it-and-security/lib/windows/software/zoom.yml"
-    ]
-  },
-  {
-    "sha": "58745eb86bbf583df4be55a982e49c92e659e17d",
-    "short_sha": "58745eb86b",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update macOS version number to 15.3.1 (#26360)",
-    "timestamp": "2025-02-14T15:01:17-06:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
   }
 ]
