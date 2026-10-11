@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-10T20:52:06Z",
+  "generated": "2026-10-11T02:51:59Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "76fd71df78228b6a9bbed6df6519edc7d9d54e34",
-    "short_sha": "76fd71df78",
-    "message": "Nudge postinstall: load LaunchAgent into the logged-in user's GUI domain (#55279)",
-    "timestamp": "2026-10-09T14:40:27-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/76fd71df78228b6a9bbed6df6519edc7d9d54e34"
+    "sha": "f307c022c1fa796b9c3edcd0484e2082bd521cc1",
+    "short_sha": "f307c022c1",
+    "message": "Bump Linux Claude Desktop patch policy to 2.31226.1 (#55328)",
+    "timestamp": "2026-10-10T20:38:53-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/f307c022c1fa796b9c3edcd0484e2082bd521cc1"
   },
   "fleets": [
     {

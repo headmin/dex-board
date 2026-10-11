@@ -1,5 +1,18 @@
 [
   {
+    "sha": "f307c022c1fa796b9c3edcd0484e2082bd521cc1",
+    "short_sha": "f307c022c1",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 2.31226.1 (#55328)",
+    "timestamp": "2026-10-10T20:38:53-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "76fd71df78228b6a9bbed6df6519edc7d9d54e34",
     "short_sha": "76fd71df78",
     "author": "Allen Houchins",
@@ -7307,19 +7320,6 @@
     "timestamp": "2025-02-25T00:48:46-06:00",
     "insertions": 5,
     "deletions": 4,
-    "files": [
-      "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml"
-    ]
-  },
-  {
-    "sha": "713068f4c1934c5b254bd7fad4255d34b46f6097",
-    "short_sha": "713068f4c1",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update mac-enrollment-profile-up-to-date.yml (#26530)",
-    "timestamp": "2025-02-24T10:14:51-06:00",
-    "insertions": 1,
-    "deletions": 1,
     "files": [
       "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml"
     ]
