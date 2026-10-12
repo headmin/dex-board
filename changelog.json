@@ -1,5 +1,22 @@
 [
   {
+    "sha": "e32ded287f11108f8cf960158daa303d2d635154",
+    "short_sha": "e32ded287f",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Support Keynote 15 in Fleet Keynote theme installer (#55388)",
+    "timestamp": "2026-10-12T11:04:03-05:00",
+    "insertions": 8,
+    "deletions": 8,
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/keynote-14-installed.yml",
+      "it-and-security/lib/all/labels/keynote-installed.yml",
+      "it-and-security/lib/macos/software/fleet-keynote-theme.yml"
+    ]
+  },
+  {
     "sha": "f307c022c1fa796b9c3edcd0484e2082bd521cc1",
     "short_sha": "f307c022c1",
     "author": "Allen Houchins",
@@ -7309,19 +7326,6 @@
       "it-and-security/lib/macos/scripts/santa-block-script.sh",
       "it-and-security/lib/macos/software/santa.yml",
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "90b4e2eabfc6af5f5c79fc132549c8d1d3b2f964",
-    "short_sha": "90b4e2eabf",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update mac-enrollment-profile-up-to-date.yml (#26563)",
-    "timestamp": "2025-02-25T00:48:46-06:00",
-    "insertions": 5,
-    "deletions": 4,
-    "files": [
-      "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml"
     ]
   }
 ]

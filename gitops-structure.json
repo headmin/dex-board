@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-12T13:52:05Z",
+  "generated": "2026-10-12T23:57:14Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "f307c022c1fa796b9c3edcd0484e2082bd521cc1",
-    "short_sha": "f307c022c1",
-    "message": "Bump Linux Claude Desktop patch policy to 2.31226.1 (#55328)",
-    "timestamp": "2026-10-10T20:38:53-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/f307c022c1fa796b9c3edcd0484e2082bd521cc1"
+    "sha": "e32ded287f11108f8cf960158daa303d2d635154",
+    "short_sha": "e32ded287f",
+    "message": "Support Keynote 15 in Fleet Keynote theme installer (#55388)",
+    "timestamp": "2026-10-12T11:04:03-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/e32ded287f11108f8cf960158daa303d2d635154"
   },
   "fleets": [
     {
@@ -139,9 +139,9 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/idp-group-saml-aws-vpn.yml"
         },
         {
-          "name": "keynote-14-installed",
-          "file": "it-and-security/lib/all/labels/keynote-14-installed.yml",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/keynote-14-installed.yml"
+          "name": "keynote-installed",
+          "file": "it-and-security/lib/all/labels/keynote-installed.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/keynote-installed.yml"
         },
         {
           "name": "linux-excluded-from-external-storage-restrictions",
