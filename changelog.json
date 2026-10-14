@@ -1,5 +1,18 @@
 [
   {
+    "sha": "f9891e62faee9f8902588cb2062dfe01b5b2d51b",
+    "short_sha": "f9891e62fa",
+    "author": "Lucas Manuel Rodriguez",
+    "email": "lucas@fleetdm.com",
+    "message": "Use `edge` for workstations to test osquery 5.24.0 sooner vs later (#55558)",
+    "timestamp": "2026-10-14T10:55:05-03:00",
+    "insertions": 2,
+    "deletions": 1,
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
     "sha": "e32ded287f11108f8cf960158daa303d2d635154",
     "short_sha": "e32ded287f",
     "author": "Allen Houchins",
@@ -7305,26 +7318,6 @@
     "insertions": 1,
     "deletions": 0,
     "files": [
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "4c244657ddeedfce6c14f0e02a7c3673c6710c5c",
-    "short_sha": "4c244657dd",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Adding santa for testing (#26586)",
-    "timestamp": "2025-02-25T13:11:03-06:00",
-    "insertions": 397,
-    "deletions": 0,
-    "files": [
-      "it-and-security/lib/macos/configuration-profiles/santa-configuration-no-rules-or-sync-server.mobileconfig",
-      "it-and-security/lib/macos/configuration-profiles/santa-notification-settings.mobileconfig",
-      "it-and-security/lib/macos/configuration-profiles/santa-service-management.mobileconfig",
-      "it-and-security/lib/macos/configuration-profiles/santa-system-extension-policy.mobileconfig",
-      "it-and-security/lib/macos/configuration-profiles/santa-tcc-configuration-profile-policy.mobileconfig",
-      "it-and-security/lib/macos/scripts/santa-block-script.sh",
-      "it-and-security/lib/macos/software/santa.yml",
       "it-and-security/teams/workstations-canary.yml"
     ]
   }
