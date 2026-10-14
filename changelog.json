@@ -1,5 +1,18 @@
 [
   {
+    "sha": "9f11414c7c6106c1142a413ad8d7f1acf5cdc5f4",
+    "short_sha": "9f11414c7c",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 2.37337.1 (#55517)",
+    "timestamp": "2026-10-14T15:34:43-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "f9891e62faee9f8902588cb2062dfe01b5b2d51b",
     "short_sha": "f9891e62fa",
     "author": "Lucas Manuel Rodriguez",
@@ -7306,19 +7319,6 @@
     "deletions": 0,
     "files": [
       "it-and-security/lib/windows/scripts/turn-off-mdm.ps1"
-    ]
-  },
-  {
-    "sha": "5a37455a7b3db4cad53ac32885a4a89663e17d0c",
-    "short_sha": "5a37455a7b",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update workstations-canary.yml (#26595)",
-    "timestamp": "2025-02-25T15:00:18-06:00",
-    "insertions": 1,
-    "deletions": 0,
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]
