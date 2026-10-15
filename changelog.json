@@ -1,5 +1,18 @@
 [
   {
+    "sha": "e9a355878b0419bc1a8df742d843d9d5b4238e52",
+    "short_sha": "e9a355878b",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add AppleCare warranty expiration custom host vital to dogfood (#55593)",
+    "timestamp": "2026-10-14T16:11:58-05:00",
+    "insertions": 2,
+    "deletions": 0,
+    "files": [
+      "it-and-security/default.yml"
+    ]
+  },
+  {
     "sha": "9f11414c7c6106c1142a413ad8d7f1acf5cdc5f4",
     "short_sha": "9f11414c7c",
     "author": "Allen Houchins",
@@ -7306,19 +7319,6 @@
       "it-and-security/teams/compliance-exclusions.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "727f9aaf4c6f7413950414643db2fe46483cb40d",
-    "short_sha": "727f9aaf4c",
-    "author": "Marko Lisica",
-    "email": "83164494+marko-lisica@users.noreply.github.com",
-    "message": "Update Windows setup guide to include how to turn off MDM (#26562)",
-    "timestamp": "2025-02-26T00:35:41+01:00",
-    "insertions": 2,
-    "deletions": 0,
-    "files": [
-      "it-and-security/lib/windows/scripts/turn-off-mdm.ps1"
     ]
   }
 ]
