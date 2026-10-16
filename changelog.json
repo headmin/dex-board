@@ -1,5 +1,18 @@
 [
   {
+    "sha": "f1d5fa2931232c7423b0c0ebd80624271e96e772",
+    "short_sha": "f1d5fa2931",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 2.42304.0 (#55705)",
+    "timestamp": "2026-10-15T16:15:03-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "e9a355878b0419bc1a8df742d843d9d5b4238e52",
     "short_sha": "e9a355878b",
     "author": "Allen Houchins",
@@ -7301,24 +7314,6 @@
     "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml"
-    ]
-  },
-  {
-    "sha": "9ee2d5e695f4e22504dad6a247b3d8e11d22ae02",
-    "short_sha": "9ee2d5e695",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Updating APNs certificate and related policy automations (#26696)",
-    "timestamp": "2025-03-04T13:42:42-06:00",
-    "insertions": 17,
-    "deletions": 15,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/lib/all/policies/mac-enrollment-profile-up-to-date.yml",
-      "it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml",
-      "it-and-security/teams/compliance-exclusions.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]

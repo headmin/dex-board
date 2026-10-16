@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-15T20:42:10Z",
+  "generated": "2026-10-16T02:12:29Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "e9a355878b0419bc1a8df742d843d9d5b4238e52",
-    "short_sha": "e9a355878b",
-    "message": "Add AppleCare warranty expiration custom host vital to dogfood (#55593)",
-    "timestamp": "2026-10-14T16:11:58-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/e9a355878b0419bc1a8df742d843d9d5b4238e52"
+    "sha": "f1d5fa2931232c7423b0c0ebd80624271e96e772",
+    "short_sha": "f1d5fa2931",
+    "message": "Bump Linux Claude Desktop patch policy to 2.42304.0 (#55705)",
+    "timestamp": "2026-10-15T16:15:03-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/f1d5fa2931232c7423b0c0ebd80624271e96e772"
   },
   "fleets": [
     {
