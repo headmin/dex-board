@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-19T11:32:25Z",
+  "generated": "2026-10-19T17:57:09Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "f23f0671af4a1582a0b2b1f3621600b5fc3107c2",
-    "short_sha": "f23f0671af",
-    "message": "Add a per-host AI governance report to dogfood (#55867)",
-    "timestamp": "2026-10-18T18:12:55-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/f23f0671af4a1582a0b2b1f3621600b5fc3107c2"
+    "sha": "7fcbf666f6e5008fcaeb31cf4a5c63d00bb51ec7",
+    "short_sha": "7fcbf666f6",
+    "message": "Bump Linux Claude Desktop patch policy to 2.42304.2 (#55891)",
+    "timestamp": "2026-10-19T12:10:43-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/7fcbf666f6e5008fcaeb31cf4a5c63d00bb51ec7"
   },
   "fleets": [
     {
