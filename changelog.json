@@ -1,5 +1,18 @@
 [
   {
+    "sha": "f23f0671af4a1582a0b2b1f3621600b5fc3107c2",
+    "short_sha": "f23f0671af",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add a per-host AI governance report to dogfood (#55867)",
+    "timestamp": "2026-10-18T18:12:55-05:00",
+    "insertions": 15,
+    "deletions": 0,
+    "files": [
+      "it-and-security/lib/all/reports/dex-queries.yml"
+    ]
+  },
+  {
     "sha": "f1d5fa2931232c7423b0c0ebd80624271e96e772",
     "short_sha": "f1d5fa2931",
     "author": "Allen Houchins",
@@ -7301,19 +7314,6 @@
     "files": [
       "it-and-security/default.yml",
       "it-and-security/lib/macos/queries/detect-apns-certificate.yml"
-    ]
-  },
-  {
-    "sha": "bd283aae5ed74c6497f08accfa86d2e74d4b154f",
-    "short_sha": "bd283aae5e",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update enrollment-profile-up-to-date.yml (#26834)",
-    "timestamp": "2025-03-04T15:13:08-06:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml"
     ]
   }
 ]
