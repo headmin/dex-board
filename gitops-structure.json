@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-19T17:57:09Z",
+  "generated": "2026-10-19T21:54:40Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "7fcbf666f6e5008fcaeb31cf4a5c63d00bb51ec7",
-    "short_sha": "7fcbf666f6",
-    "message": "Bump Linux Claude Desktop patch policy to 2.42304.2 (#55891)",
-    "timestamp": "2026-10-19T12:10:43-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/7fcbf666f6e5008fcaeb31cf4a5c63d00bb51ec7"
+    "sha": "8689a5cf26f1fba216a7ebc26e70b1eb313225c5",
+    "short_sha": "8689a5cf26",
+    "message": "Workstations back to osquery `stable` (#55934)",
+    "timestamp": "2026-10-19T17:24:12-03:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/8689a5cf26f1fba216a7ebc26e70b1eb313225c5"
   },
   "fleets": [
     {

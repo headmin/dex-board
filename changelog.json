@@ -1,5 +1,18 @@
 [
   {
+    "sha": "8689a5cf26f1fba216a7ebc26e70b1eb313225c5",
+    "short_sha": "8689a5cf26",
+    "author": "Lucas Manuel Rodriguez",
+    "email": "lucas@fleetdm.com",
+    "message": "Workstations back to osquery `stable` (#55934)",
+    "timestamp": "2026-10-19T17:24:12-03:00",
+    "insertions": 1,
+    "deletions": 2,
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
     "sha": "7fcbf666f6e5008fcaeb31cf4a5c63d00bb51ec7",
     "short_sha": "7fcbf666f6",
     "author": "Allen Houchins",
@@ -7299,20 +7312,6 @@
       "it-and-security/lib/windows/policies/{disk-encrpytion-check.yml => disk-encryption-check.yml}",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "72230056d11f68d5549463f8e24dd5d18be01b51",
-    "short_sha": "72230056d1",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Added disk encryption check policies (#26949)",
-    "timestamp": "2025-03-07T09:49:23-06:00",
-    "insertions": 18,
-    "deletions": 0,
-    "files": [
-      "it-and-security/lib/macos/policies/disk-encryption-check.yml",
-      "it-and-security/lib/windows/policies/disk-encrpytion-check.yml"
     ]
   }
 ]
