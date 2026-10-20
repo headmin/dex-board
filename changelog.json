@@ -1,5 +1,18 @@
 [
   {
+    "sha": "418a65db3edf75354f6dab857cbd9f4f3f367098",
+    "short_sha": "418a65db3e",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 3.1623.0 (#56086)",
+    "timestamp": "2026-10-20T15:12:18-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "53523d19470beb9eb63aa849674f710e09fec336",
     "short_sha": "53523d1947",
     "author": "fleetdm-bot",
@@ -7295,27 +7308,6 @@
     "files": [
       "it-and-security/lib/windows/software/google-chrome-arm.yml",
       "it-and-security/lib/windows/software/google-chrome.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "5120606db3a73a0fbddfd8e41aba0f929178c979",
-    "short_sha": "5120606db3",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "1Password updates (#27058)",
-    "timestamp": "2025-03-12T09:54:14-05:00",
-    "insertions": 53,
-    "deletions": 7,
-    "files": [
-      "it-and-security/lib/macos/configuration-profiles/{automatically-update-1Password.mobileconfig => 1password-managed-settings.mobileconfig}",
-      "it-and-security/lib/macos/policies/1password-installed.yml",
-      "it-and-security/lib/macos/policies/update-1password.yml",
-      "it-and-security/lib/macos/software/1password.yml",
-      "it-and-security/lib/windows/policies/1password-installed.yml",
-      "it-and-security/lib/windows/policies/update-1password.yml",
-      "it-and-security/lib/windows/software/1password.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]

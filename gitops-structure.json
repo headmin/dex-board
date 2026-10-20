@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-20T16:01:10Z",
+  "generated": "2026-10-20T21:00:49Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "53523d19470beb9eb63aa849674f710e09fec336",
-    "short_sha": "53523d1947",
-    "message": "Fix inner payload name in disable-internet-sharing profile (#55943)",
-    "timestamp": "2026-10-20T09:42:32-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/53523d19470beb9eb63aa849674f710e09fec336"
+    "sha": "418a65db3edf75354f6dab857cbd9f4f3f367098",
+    "short_sha": "418a65db3e",
+    "message": "Bump Linux Claude Desktop patch policy to 3.1623.0 (#56086)",
+    "timestamp": "2026-10-20T15:12:18-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/418a65db3edf75354f6dab857cbd9f4f3f367098"
   },
   "fleets": [
     {
