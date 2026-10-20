@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-20T10:37:59Z",
+  "generated": "2026-10-20T16:01:10Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "8689a5cf26f1fba216a7ebc26e70b1eb313225c5",
-    "short_sha": "8689a5cf26",
-    "message": "Workstations back to osquery `stable` (#55934)",
-    "timestamp": "2026-10-19T17:24:12-03:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/8689a5cf26f1fba216a7ebc26e70b1eb313225c5"
+    "sha": "53523d19470beb9eb63aa849674f710e09fec336",
+    "short_sha": "53523d1947",
+    "message": "Fix inner payload name in disable-internet-sharing profile (#55943)",
+    "timestamp": "2026-10-20T09:42:32-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/53523d19470beb9eb63aa849674f710e09fec336"
   },
   "fleets": [
     {
@@ -149,6 +149,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/linux-excluded-from-external-storage-restrictions.yml"
         },
         {
+          "name": "macos-15-and-older-hosts",
+          "file": "it-and-security/lib/all/labels/macos-15-and-older-hosts.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macos-15-and-older-hosts.yml"
+        },
+        {
           "name": "macos-compatibility-extension-installed",
           "file": "it-and-security/lib/all/labels/macos-compatibility-extension-installed.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macos-compatibility-extension-installed.yml"
@@ -162,6 +167,11 @@
           "name": "macs-excluded-from-external-storage-restrictions",
           "file": "it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macs-excluded-from-external-storage-restrictions.yml"
+        },
+        {
+          "name": "macs-not-enrolled-through-ade",
+          "file": "it-and-security/lib/all/labels/macs-not-enrolled-through-ade.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/labels/macs-not-enrolled-through-ade.yml"
         },
         {
           "name": "macs-with-1password-installed",
@@ -633,9 +643,19 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/configuration-profiles/misc.mobileconfig"
         },
         {
-          "name": "nudge-configuration",
-          "file": "it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig",
-          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/configuration-profiles/nudge-configuration.mobileconfig"
+          "name": "nudge-background-task",
+          "file": "it-and-security/lib/macos/configuration-profiles/nudge-background-task.mobileconfig",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/configuration-profiles/nudge-background-task.mobileconfig"
+        },
+        {
+          "name": "nudge-preferences-ungated",
+          "file": "it-and-security/lib/macos/configuration-profiles/nudge-preferences-ungated.mobileconfig",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/configuration-profiles/nudge-preferences-ungated.mobileconfig"
+        },
+        {
+          "name": "nudge-preferences",
+          "file": "it-and-security/lib/macos/configuration-profiles/nudge-preferences.mobileconfig",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/configuration-profiles/nudge-preferences.mobileconfig"
         },
         {
           "name": "okta-verify-settings",
@@ -673,6 +693,16 @@
           "name": "Disk management settings",
           "file": "it-and-security/lib/macos/declaration-profiles/Disk management settings.json",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/declaration-profiles/Disk management settings.json"
+        },
+        {
+          "name": "Nudge activation",
+          "file": "it-and-security/lib/macos/declaration-profiles/Nudge activation.json",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/declaration-profiles/Nudge activation.json"
+        },
+        {
+          "name": "Nudge settings",
+          "file": "it-and-security/lib/macos/declaration-profiles/Nudge settings.json",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/declaration-profiles/Nudge settings.json"
         },
         {
           "name": "Passcode settings",
@@ -1078,16 +1108,16 @@
     "fleets": 6,
     "agent_options": 2,
     "icons": 8,
-    "labels": 27,
+    "labels": 29,
     "policies": 43,
     "reports": 22,
     "scripts": 21,
-    "configuration_profiles": 43,
-    "declaration_profiles": 7,
+    "configuration_profiles": 45,
+    "declaration_profiles": 9,
     "software": 14,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 197
+    "total_files": 203
   }
 }

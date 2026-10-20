@@ -1,5 +1,54 @@
 [
   {
+    "sha": "53523d19470beb9eb63aa849674f710e09fec336",
+    "short_sha": "53523d1947",
+    "author": "fleetdm-bot",
+    "email": "luke+fleetbot@fleetdm.com",
+    "message": "Fix inner payload name in disable-internet-sharing profile (#55943)",
+    "timestamp": "2026-10-20T09:42:32-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/macos/configuration-profiles/disable-internet-sharing.mobileconfig"
+    ]
+  },
+  {
+    "sha": "e3e6682af3de59e40737797daba09ae44dd035b0",
+    "short_sha": "e3e6682af3",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Only show Nudge once an update is prepared (#51546)",
+    "timestamp": "2026-10-20T09:29:48-05:00",
+    "insertions": 284,
+    "deletions": 27,
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/macos-15-and-older-hosts.yml",
+      "it-and-security/lib/all/labels/macs-not-enrolled-through-ade.yml",
+      "it-and-security/lib/macos/configuration-profiles/nudge-background-task.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/{nudge-configuration.mobileconfig => nudge-preferences-ungated.mobileconfig}",
+      "it-and-security/lib/macos/configuration-profiles/nudge-preferences.mobileconfig",
+      "it-and-security/lib/macos/declaration-profiles/Nudge activation.json",
+      "it-and-security/lib/macos/declaration-profiles/Nudge settings.json"
+    ]
+  },
+  {
+    "sha": "179e1c02cd7efbb3609a688c603d7e9e7e707bdc",
+    "short_sha": "179e1c02cd",
+    "author": "Magnus Jensen",
+    "email": "magnus@fleetdm.com",
+    "message": "fix typo in software update declaration it-and-security (#55995)",
+    "timestamp": "2026-10-20T21:09:33+07:00",
+    "insertions": 5,
+    "deletions": 5,
+    "files": [
+      "it-and-security/lib/ios/declaration-profiles/Software Update settings.json",
+      "it-and-security/lib/ipados/declaration-profiles/Software Update settings.json",
+      "it-and-security/lib/macos/declaration-profiles/Software Update settings.json"
+    ]
+  },
+  {
     "sha": "8689a5cf26f1fba216a7ebc26e70b1eb313225c5",
     "short_sha": "8689a5cf26",
     "author": "Lucas Manuel Rodriguez",
@@ -7267,49 +7316,6 @@
       "it-and-security/lib/windows/policies/1password-installed.yml",
       "it-and-security/lib/windows/policies/update-1password.yml",
       "it-and-security/lib/windows/software/1password.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "16638c375416996b8b7ddec9b81ebd0f2ca18446",
-    "short_sha": "16638c3754",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update macOS version number to 15.3.2 (#27056)",
-    "timestamp": "2025-03-11T19:30:55-05:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/latest-macos.yml"
-    ]
-  },
-  {
-    "sha": "ce915c460df94e6f1347cca7360240b5d24b3ec1",
-    "short_sha": "ce915c460d",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Use disk encryption key to login to a Windows computer (#26951)",
-    "timestamp": "2025-03-10T13:32:10-04:00",
-    "insertions": 16,
-    "deletions": 0,
-    "files": [
-      "it-and-security/lib/windows/scripts/create-admin-user.ps1",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "2975d51032783421b40ad36b783c9d767b4610bb",
-    "short_sha": "2975d51032",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Assigning new disk encryption check policies to teams (#26952)",
-    "timestamp": "2025-03-07T10:24:55-06:00",
-    "insertions": 4,
-    "deletions": 0,
-    "files": [
-      "it-and-security/lib/windows/policies/{disk-encrpytion-check.yml => disk-encryption-check.yml}",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]
