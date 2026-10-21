@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-21T16:17:58Z",
+  "generated": "2026-10-21T21:01:32Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "418a65db3edf75354f6dab857cbd9f4f3f367098",
-    "short_sha": "418a65db3e",
-    "message": "Bump Linux Claude Desktop patch policy to 3.1623.0 (#56086)",
-    "timestamp": "2026-10-20T15:12:18-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/418a65db3edf75354f6dab857cbd9f4f3f367098"
+    "sha": "0357b530718676974d7aa2a8ff094bac4ac950a2",
+    "short_sha": "0357b53071",
+    "message": "Dogfood: add eMudhra CA compromise policies and remediation scripts (#56187)",
+    "timestamp": "2026-10-21T13:06:16-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/0357b530718676974d7aa2a8ff094bac4ac950a2"
   },
   "fleets": [
     {
@@ -251,6 +251,11 @@
       ],
       "policies": [
         {
+          "name": "emudhra-compromised-intermediate-cas",
+          "file": "it-and-security/lib/all/policies/emudhra-compromised-intermediate-cas.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/policies/emudhra-compromised-intermediate-cas.yml"
+        },
+        {
           "name": "npm-supply-chain-compromised-packages",
           "file": "it-and-security/lib/all/policies/npm-supply-chain-compromised-packages.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/policies/npm-supply-chain-compromised-packages.yml"
@@ -318,6 +323,11 @@
           "name": "configure-npmrc-min-release-age",
           "file": "it-and-security/lib/all/scripts/configure-npmrc-min-release-age.sh",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/scripts/configure-npmrc-min-release-age.sh"
+        },
+        {
+          "name": "remove-emudhra-roots-fleetd",
+          "file": "it-and-security/lib/all/scripts/remove-emudhra-roots-fleetd.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/scripts/remove-emudhra-roots-fleetd.sh"
         }
       ]
     },
@@ -895,6 +905,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/scripts/nudge-postinstall.sh"
         },
         {
+          "name": "remove-emudhra-roots-macos-system",
+          "file": "it-and-security/lib/macos/scripts/remove-emudhra-roots-macos-system.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/scripts/remove-emudhra-roots-macos-system.sh"
+        },
+        {
           "name": "uninstall-fleetd-macos",
           "file": "it-and-security/lib/macos/scripts/uninstall-fleetd-macos.sh",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/scripts/uninstall-fleetd-macos.sh"
@@ -1072,6 +1087,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/install-bitdefender.ps1"
         },
         {
+          "name": "remove-emudhra-roots-fleetd",
+          "file": "it-and-security/lib/windows/scripts/remove-emudhra-roots-fleetd.ps1",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/remove-emudhra-roots-fleetd.ps1"
+        },
+        {
           "name": "uninstall-zoom",
           "file": "it-and-security/lib/windows/scripts/uninstall-zoom.ps1",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/uninstall-zoom.ps1"
@@ -1109,15 +1129,15 @@
     "agent_options": 2,
     "icons": 8,
     "labels": 29,
-    "policies": 43,
+    "policies": 44,
     "reports": 22,
-    "scripts": 21,
+    "scripts": 24,
     "configuration_profiles": 45,
     "declaration_profiles": 9,
     "software": 14,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 203
+    "total_files": 207
   }
 }

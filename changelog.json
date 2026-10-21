@@ -1,5 +1,24 @@
 [
   {
+    "sha": "0357b530718676974d7aa2a8ff094bac4ac950a2",
+    "short_sha": "0357b53071",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Dogfood: add eMudhra CA compromise policies and remediation scripts (#56187)",
+    "timestamp": "2026-10-21T13:06:16-05:00",
+    "insertions": 268,
+    "deletions": 0,
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/testing-and-qa.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/policies/emudhra-compromised-intermediate-cas.yml",
+      "it-and-security/lib/all/scripts/remove-emudhra-roots-fleetd.sh",
+      "it-and-security/lib/macos/scripts/remove-emudhra-roots-macos-system.sh",
+      "it-and-security/lib/windows/scripts/remove-emudhra-roots-fleetd.ps1"
+    ]
+  },
+  {
     "sha": "418a65db3edf75354f6dab857cbd9f4f3f367098",
     "short_sha": "418a65db3e",
     "author": "Allen Houchins",
@@ -7292,22 +7311,6 @@
       "it-and-security/lib/windows/scripts/create-admin-user.ps1",
       "it-and-security/lib/windows/scripts/{remove-fleetd.ps1 => uninstall-fleetd-windows.ps1}",
       "it-and-security/teams/compliance-exclusions.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "79679efd01151ce6315c3e84ea024e239ce96ec1",
-    "short_sha": "79679efd01",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Updated Google Chrome for Windows software entries (#27133)",
-    "timestamp": "2025-03-14T08:36:12-05:00",
-    "insertions": 13,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/windows/software/google-chrome-arm.yml",
-      "it-and-security/lib/windows/software/google-chrome.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
     ]
