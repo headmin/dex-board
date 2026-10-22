@@ -1,5 +1,18 @@
 [
   {
+    "sha": "9a0f353c925fed60a5ac23a030d042fd0db427d4",
+    "short_sha": "9a0f353c92",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add sustainability DEX reports to dogfood (#56279)",
+    "timestamp": "2026-10-21T23:27:55-05:00",
+    "insertions": 137,
+    "deletions": 0,
+    "files": [
+      "it-and-security/lib/all/reports/dex-queries.yml"
+    ]
+  },
+  {
     "sha": "0357b530718676974d7aa2a8ff094bac4ac950a2",
     "short_sha": "0357b53071",
     "author": "Allen Houchins",
@@ -7294,25 +7307,6 @@
     "deletions": 1,
     "files": [
       "it-and-security/lib/windows/software/1password.yml"
-    ]
-  },
-  {
-    "sha": "919f42a3ea907246622504a1436b5e1d5ec98553",
-    "short_sha": "919f42a3ea",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Uninstall fleetd remotely (#27024)",
-    "timestamp": "2025-03-19T14:35:39-04:00",
-    "insertions": 146,
-    "deletions": 43,
-    "files": [
-      "it-and-security/lib/linux/scripts/uninstall-fleetd-linux.sh",
-      "it-and-security/lib/macos/scripts/uninstall-fleetd-macos.sh",
-      "it-and-security/lib/windows/scripts/create-admin-user.ps1",
-      "it-and-security/lib/windows/scripts/{remove-fleetd.ps1 => uninstall-fleetd-windows.ps1}",
-      "it-and-security/teams/compliance-exclusions.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]
