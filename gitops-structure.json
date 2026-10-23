@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-23T10:42:08Z",
+  "generated": "2026-10-23T16:07:21Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "9a0f353c925fed60a5ac23a030d042fd0db427d4",
-    "short_sha": "9a0f353c92",
-    "message": "Add sustainability DEX reports to dogfood (#56279)",
-    "timestamp": "2026-10-21T23:27:55-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/9a0f353c925fed60a5ac23a030d042fd0db427d4"
+    "sha": "773dd6b1eb71089723d8d2ff19b24530b4e34d30",
+    "short_sha": "773dd6b1eb",
+    "message": "Bump Linux Claude Desktop patch policy to 3.6556.2 (#56437)",
+    "timestamp": "2026-10-23T09:18:06-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/773dd6b1eb71089723d8d2ff19b24530b4e34d30"
   },
   "fleets": [
     {

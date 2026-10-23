@@ -1,5 +1,18 @@
 [
   {
+    "sha": "773dd6b1eb71089723d8d2ff19b24530b4e34d30",
+    "short_sha": "773dd6b1eb",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 3.6556.2 (#56437)",
+    "timestamp": "2026-10-23T09:18:06-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "9a0f353c925fed60a5ac23a030d042fd0db427d4",
     "short_sha": "9a0f353c92",
     "author": "Allen Houchins",
@@ -7294,19 +7307,6 @@
     "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
-    ]
-  },
-  {
-    "sha": "30012688d1e2dd7e6a71b39b4d0403fc7a0a5725",
-    "short_sha": "30012688d1",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Added policy automation and new Windows installer (#27244)",
-    "timestamp": "2025-03-19T13:54:25-05:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/windows/software/1password.yml"
     ]
   }
 ]
