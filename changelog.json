@@ -1,5 +1,38 @@
 [
   {
+    "sha": "f8a90ab5c9ff92fd0e94308b9ce01526e99be30b",
+    "short_sha": "f8a90ab5c9",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Dogfood: add PHP2Shell policies and remediation scripts (#56545)",
+    "timestamp": "2026-10-26T09:39:43-05:00",
+    "insertions": 843,
+    "deletions": 0,
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/servers.yml",
+      "it-and-security/fleets/testing-and-qa.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/policies/php2shell-php-patched.yml",
+      "it-and-security/lib/linux/scripts/remediate-php2shell-linux.sh",
+      "it-and-security/lib/macos/scripts/remediate-php2shell-macos.sh",
+      "it-and-security/lib/windows/scripts/mitigate-php2shell-windows.ps1"
+    ]
+  },
+  {
+    "sha": "151cdbbed7609b6c55c4e1d1b8df5c60522b8720",
+    "short_sha": "151cdbbed7",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Managed bookmarks: add DEX overview dashboard (#56555)",
+    "timestamp": "2026-10-26T09:31:22-05:00",
+    "insertions": 7,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
+    ]
+  },
+  {
     "sha": "773dd6b1eb71089723d8d2ff19b24530b4e34d30",
     "short_sha": "773dd6b1eb",
     "author": "Allen Houchins",
@@ -7281,32 +7314,6 @@
     "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml"
-    ]
-  },
-  {
-    "sha": "431b38f1c45aa9f19ce80277ff80cb167b4e0eea",
-    "short_sha": "431b38f1c4",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update 1Password macOS version number to 8.10.68 (#27398)",
-    "timestamp": "2025-03-21T10:57:45-05:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/update-1password.yml"
-    ]
-  },
-  {
-    "sha": "c15d535598f3a0f4faa1a77a46384495d669f71d",
-    "short_sha": "c15d535598",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update 1Password macOS version number to 8.10.70 (#27306)",
-    "timestamp": "2025-03-19T14:05:49-05:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/update-1password.yml"
     ]
   }
 ]

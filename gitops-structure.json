@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-26T11:51:20Z",
+  "generated": "2026-10-26T17:53:12Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "773dd6b1eb71089723d8d2ff19b24530b4e34d30",
-    "short_sha": "773dd6b1eb",
-    "message": "Bump Linux Claude Desktop patch policy to 3.6556.2 (#56437)",
-    "timestamp": "2026-10-23T09:18:06-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/773dd6b1eb71089723d8d2ff19b24530b4e34d30"
+    "sha": "f8a90ab5c9ff92fd0e94308b9ce01526e99be30b",
+    "short_sha": "f8a90ab5c9",
+    "message": "Dogfood: add PHP2Shell policies and remediation scripts (#56545)",
+    "timestamp": "2026-10-26T09:39:43-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/f8a90ab5c9ff92fd0e94308b9ce01526e99be30b"
   },
   "fleets": [
     {
@@ -264,6 +264,11 @@
           "name": "npm-user-npmrc-min-release-age",
           "file": "it-and-security/lib/all/policies/npm-user-npmrc-min-release-age.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/policies/npm-user-npmrc-min-release-age.yml"
+        },
+        {
+          "name": "php2shell-php-patched",
+          "file": "it-and-security/lib/all/policies/php2shell-php-patched.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/policies/php2shell-php-patched.yml"
         }
       ],
       "reports": [
@@ -453,6 +458,11 @@
           "name": "install-readonly-removable-storage",
           "file": "it-and-security/lib/linux/scripts/install-readonly-removable-storage.sh",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/install-readonly-removable-storage.sh"
+        },
+        {
+          "name": "remediate-php2shell-linux",
+          "file": "it-and-security/lib/linux/scripts/remediate-php2shell-linux.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/remediate-php2shell-linux.sh"
         },
         {
           "name": "uninstall-claude-desktop",
@@ -905,6 +915,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/scripts/nudge-postinstall.sh"
         },
         {
+          "name": "remediate-php2shell-macos",
+          "file": "it-and-security/lib/macos/scripts/remediate-php2shell-macos.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/scripts/remediate-php2shell-macos.sh"
+        },
+        {
           "name": "remove-emudhra-roots-macos-system",
           "file": "it-and-security/lib/macos/scripts/remove-emudhra-roots-macos-system.sh",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/scripts/remove-emudhra-roots-macos-system.sh"
@@ -1087,6 +1102,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/install-bitdefender.ps1"
         },
         {
+          "name": "mitigate-php2shell-windows",
+          "file": "it-and-security/lib/windows/scripts/mitigate-php2shell-windows.ps1",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/mitigate-php2shell-windows.ps1"
+        },
+        {
           "name": "remove-emudhra-roots-fleetd",
           "file": "it-and-security/lib/windows/scripts/remove-emudhra-roots-fleetd.ps1",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/scripts/remove-emudhra-roots-fleetd.ps1"
@@ -1129,15 +1149,15 @@
     "agent_options": 2,
     "icons": 8,
     "labels": 29,
-    "policies": 44,
+    "policies": 45,
     "reports": 22,
-    "scripts": 24,
+    "scripts": 27,
     "configuration_profiles": 45,
     "declaration_profiles": 9,
     "software": 14,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 207
+    "total_files": 211
   }
 }
