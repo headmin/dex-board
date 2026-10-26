@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-26T17:53:12Z",
+  "generated": "2026-10-26T22:05:10Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "f8a90ab5c9ff92fd0e94308b9ce01526e99be30b",
-    "short_sha": "f8a90ab5c9",
-    "message": "Dogfood: add PHP2Shell policies and remediation scripts (#56545)",
-    "timestamp": "2026-10-26T09:39:43-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/f8a90ab5c9ff92fd0e94308b9ce01526e99be30b"
+    "sha": "2211b736ad7714ddd0a05f33721140eb6ace011d",
+    "short_sha": "2211b736ad",
+    "message": "Keep Fleet Desktop.app installed and hide the menu bar icon on Workstations (#56597)",
+    "timestamp": "2026-10-26T13:57:04-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/2211b736ad7714ddd0a05f33721140eb6ace011d"
   },
   "fleets": [
     {
@@ -269,6 +269,11 @@
           "name": "php2shell-php-patched",
           "file": "it-and-security/lib/all/policies/php2shell-php-patched.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/policies/php2shell-php-patched.yml"
+        },
+        {
+          "name": "tailscale-ssh-forwarding-disabled",
+          "file": "it-and-security/lib/all/policies/tailscale-ssh-forwarding-disabled.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/policies/tailscale-ssh-forwarding-disabled.yml"
         }
       ],
       "reports": [
@@ -443,6 +448,11 @@
           "name": "configure-okta-verify-org-url",
           "file": "it-and-security/lib/linux/scripts/configure-okta-verify-org-url.sh",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/configure-okta-verify-org-url.sh"
+        },
+        {
+          "name": "disable-tailscale-ssh-forwarding-linux",
+          "file": "it-and-security/lib/linux/scripts/disable-tailscale-ssh-forwarding-linux.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/linux/scripts/disable-tailscale-ssh-forwarding-linux.sh"
         },
         {
           "name": "install-claude-desktop",
@@ -781,6 +791,16 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/firewall-enabled.yml"
         },
         {
+          "name": "fleet-desktop-installed",
+          "file": "it-and-security/lib/macos/policies/fleet-desktop-installed.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/fleet-desktop-installed.yml"
+        },
+        {
+          "name": "fleet-desktop-menu-bar-hidden",
+          "file": "it-and-security/lib/macos/policies/fleet-desktop-menu-bar-hidden.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/fleet-desktop-menu-bar-hidden.yml"
+        },
+        {
           "name": "gatekeeper-enabled",
           "file": "it-and-security/lib/macos/policies/gatekeeper-enabled.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/policies/gatekeeper-enabled.yml"
@@ -900,9 +920,19 @@
       ],
       "scripts": [
         {
+          "name": "disable-tailscale-ssh-forwarding-macos",
+          "file": "it-and-security/lib/macos/scripts/disable-tailscale-ssh-forwarding-macos.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/scripts/disable-tailscale-ssh-forwarding-macos.sh"
+        },
+        {
           "name": "enable-touch-id-sudo",
           "file": "it-and-security/lib/macos/scripts/enable-touch-id-sudo.sh",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/scripts/enable-touch-id-sudo.sh"
+        },
+        {
+          "name": "hide-fleet-desktop-menu-bar",
+          "file": "it-and-security/lib/macos/scripts/hide-fleet-desktop-menu-bar.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/macos/scripts/hide-fleet-desktop-menu-bar.sh"
         },
         {
           "name": "load-santa-system-extension",
@@ -1149,15 +1179,15 @@
     "agent_options": 2,
     "icons": 8,
     "labels": 29,
-    "policies": 45,
+    "policies": 48,
     "reports": 22,
-    "scripts": 27,
+    "scripts": 30,
     "configuration_profiles": 45,
     "declaration_profiles": 9,
     "software": 14,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 211
+    "total_files": 217
   }
 }

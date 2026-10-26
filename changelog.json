@@ -1,5 +1,41 @@
 [
   {
+    "sha": "2211b736ad7714ddd0a05f33721140eb6ace011d",
+    "short_sha": "2211b736ad",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Keep Fleet Desktop.app installed and hide the menu bar icon on Workstations (#56597)",
+    "timestamp": "2026-10-26T13:57:04-05:00",
+    "insertions": 93,
+    "deletions": 1,
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/labels/macs-with-fleet-desktop-installed.yml",
+      "it-and-security/lib/macos/policies/fleet-desktop-installed.yml",
+      "it-and-security/lib/macos/policies/fleet-desktop-menu-bar-hidden.yml",
+      "it-and-security/lib/macos/scripts/hide-fleet-desktop-menu-bar.sh"
+    ]
+  },
+  {
+    "sha": "e37c50b6d61e5c2be73db39a01821f2713f36fc1",
+    "short_sha": "e37c50b6d6",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Tailworm (Tailscale SSH forwarding) guide, article, policies, reports, scripts, and dogfood (#56598)",
+    "timestamp": "2026-10-26T13:40:25-05:00",
+    "insertions": 317,
+    "deletions": 0,
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/servers.yml",
+      "it-and-security/fleets/testing-and-qa.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/policies/tailscale-ssh-forwarding-disabled.yml",
+      "it-and-security/lib/linux/scripts/disable-tailscale-ssh-forwarding-linux.sh",
+      "it-and-security/lib/macos/scripts/disable-tailscale-ssh-forwarding-macos.sh"
+    ]
+  },
+  {
     "sha": "f8a90ab5c9ff92fd0e94308b9ce01526e99be30b",
     "short_sha": "f8a90ab5c9",
     "author": "Allen Houchins",
@@ -7283,37 +7319,6 @@
     "deletions": 0,
     "files": [
       "it-and-security/default.yml"
-    ]
-  },
-  {
-    "sha": "e93750edabc9236a16c7d88dc8d918e8215a1b6b",
-    "short_sha": "e93750edab",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Cleanup scripts (#27307)",
-    "timestamp": "2025-03-27T17:43:53-04:00",
-    "insertions": 97,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/linux/scripts/change-password-linux.sh",
-      "it-and-security/lib/linux/scripts/uninstall-fleetd-linux.sh",
-      "it-and-security/lib/macos/scripts/install-wine.sh",
-      "it-and-security/lib/macos/scripts/uninstall-fleetd-macos.sh",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "f0ba5e81b43f55ecf3a3a8cdffc7a49293384da6",
-    "short_sha": "f0ba5e81b4",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update enrollment-profile-up-to-date.yml (#27265)",
-    "timestamp": "2025-03-25T10:16:29-05:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/enrollment-profile-up-to-date.yml"
     ]
   }
 ]
