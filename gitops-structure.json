@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-27T02:52:38Z",
+  "generated": "2026-10-27T11:15:40Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "2211b736ad7714ddd0a05f33721140eb6ace011d",
-    "short_sha": "2211b736ad",
-    "message": "Keep Fleet Desktop.app installed and hide the menu bar icon on Workstations (#56597)",
-    "timestamp": "2026-10-26T13:57:04-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/2211b736ad7714ddd0a05f33721140eb6ace011d"
+    "sha": "b4921601ac7e28dff16110c3f1efa9793589f690",
+    "short_sha": "b4921601ac",
+    "message": "Fix Windows eMudhra report and policy certificate matching (#56657)",
+    "timestamp": "2026-10-26T23:41:06-04:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/b4921601ac7e28dff16110c3f1efa9793589f690"
   },
   "fleets": [
     {

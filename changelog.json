@@ -1,5 +1,18 @@
 [
   {
+    "sha": "b4921601ac7e28dff16110c3f1efa9793589f690",
+    "short_sha": "b4921601ac",
+    "author": "Billy Bryant",
+    "email": "3013565+billyjbryant@users.noreply.github.com",
+    "message": "Fix Windows eMudhra report and policy certificate matching (#56657)",
+    "timestamp": "2026-10-26T23:41:06-04:00",
+    "insertions": 2,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/all/policies/emudhra-compromised-intermediate-cas.yml"
+    ]
+  },
+  {
     "sha": "2211b736ad7714ddd0a05f33721140eb6ace011d",
     "short_sha": "2211b736ad",
     "author": "Allen Houchins",
@@ -7306,19 +7319,6 @@
     "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
-    ]
-  },
-  {
-    "sha": "6e32e3189689022d7fd6ce9c0457cc95bef0ffa7",
-    "short_sha": "6e32e31896",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update default.yml (#27626)",
-    "timestamp": "2025-03-28T09:45:28-05:00",
-    "insertions": 4,
-    "deletions": 0,
-    "files": [
-      "it-and-security/default.yml"
     ]
   }
 ]
