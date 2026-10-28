@@ -1,5 +1,34 @@
 [
   {
+    "sha": "3f0e9d9e9a196751e24b77cf72b8710af4e2c0b5",
+    "short_sha": "3f0e9d9e9a",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 4.29.0 (#56795)",
+    "timestamp": "2026-10-28T10:57:25-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
+    "sha": "c725e6e6e486038faf5b04abac1d47275aa7af0f",
+    "short_sha": "c725e6e6e4",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Dogfood: auto-remediate the macOS command-line TLS trust store eMudhra policy (#56810)",
+    "timestamp": "2026-10-28T10:50:33-05:00",
+    "insertions": 28,
+    "deletions": 23,
+    "files": [
+      "it-and-security/fleets/testing-and-qa.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/policies/emudhra-compromised-intermediate-cas.yml",
+      "it-and-security/lib/macos/policies/cli-trust-store-excludes-emudhra-roots.yml"
+    ]
+  },
+  {
     "sha": "b4921601ac7e28dff16110c3f1efa9793589f690",
     "short_sha": "b4921601ac",
     "author": "Billy Bryant",
@@ -7293,32 +7322,6 @@
       "it-and-security/teams/compliance-exclusions.yml",
       "it-and-security/teams/servers-canary.yml",
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "3255caba40f97b2b451a049924d06c09a0e28bc7",
-    "short_sha": "3255caba40",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update 1Password macOS version number to 8.10.70 (#27740)",
-    "timestamp": "2025-04-01T15:47:47-05:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/update-1password.yml"
-    ]
-  },
-  {
-    "sha": "a375069a6c2ad222bd3e65bfc93cb7c98e656c63",
-    "short_sha": "a375069a6c",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update macOS version number to 15.4 (#27721)",
-    "timestamp": "2025-03-31T20:04:30-05:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
   }
 ]
