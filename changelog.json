@@ -1,5 +1,18 @@
 [
   {
+    "sha": "4b5a04281035545a3e0212011b1176e9758d9fd8",
+    "short_sha": "4b5a042810",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 4.4212.0 (#57004)",
+    "timestamp": "2026-10-30T09:49:16-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "3f0e9d9e9a196751e24b77cf72b8710af4e2c0b5",
     "short_sha": "3f0e9d9e9a",
     "author": "Allen Houchins",
@@ -7304,24 +7317,6 @@
       "it-and-security/teams/personally-owned-iphones.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "5ddeb317ddfca5b627ae94928b868b789925c90b",
-    "short_sha": "5ddeb317dd",
-    "author": "Lucas Manuel Rodriguez",
-    "email": "lucas@fleetdm.com",
-    "message": "Added `dconf_read` table and documentation to enable fleet desktop on Fedora and Debian (#27684)",
-    "timestamp": "2025-04-01T18:54:22-03:00",
-    "insertions": 130,
-    "deletions": 32,
-    "files": [
-      "it-and-security/lib/linux/policies/fedora-debian-check-fleet-desktop.yml",
-      "it-and-security/lib/linux/queries/all-deb-hosts.yml",
-      "it-and-security/lib/linux/scripts/fedora-debian-enable-fleet-desktop.sh",
-      "it-and-security/teams/compliance-exclusions.yml",
-      "it-and-security/teams/servers-canary.yml",
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]

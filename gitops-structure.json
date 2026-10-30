@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-30T11:51:40Z",
+  "generated": "2026-10-30T17:26:59Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "3f0e9d9e9a196751e24b77cf72b8710af4e2c0b5",
-    "short_sha": "3f0e9d9e9a",
-    "message": "Bump Linux Claude Desktop patch policy to 4.29.0 (#56795)",
-    "timestamp": "2026-10-28T10:57:25-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/3f0e9d9e9a196751e24b77cf72b8710af4e2c0b5"
+    "sha": "4b5a04281035545a3e0212011b1176e9758d9fd8",
+    "short_sha": "4b5a042810",
+    "message": "Bump Linux Claude Desktop patch policy to 4.4212.0 (#57004)",
+    "timestamp": "2026-10-30T09:49:16-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/4b5a04281035545a3e0212011b1176e9758d9fd8"
   },
   "fleets": [
     {
