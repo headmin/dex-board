@@ -1,5 +1,18 @@
 [
   {
+    "sha": "842126ec075f6e0bbd3c74f105edc04222854558",
+    "short_sha": "842126ec07",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux OS up-to-date policy: Fedora 44->45 (#57075)",
+    "timestamp": "2026-10-31T10:23:28-05:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/latest-linux.yml"
+    ]
+  },
+  {
     "sha": "4b5a04281035545a3e0212011b1176e9758d9fd8",
     "short_sha": "4b5a042810",
     "author": "Allen Houchins",
@@ -7300,23 +7313,6 @@
     "files": [
       "it-and-security/lib/macos/policies/update-firefox.yml",
       "it-and-security/lib/macos/software/mozilla-firefox.yml"
-    ]
-  },
-  {
-    "sha": "90e500ff1b2f567a040a2dd06166407e7c7024d3",
-    "short_sha": "90e500ff1b",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update minimum os versions for macOS, iOS, and iPadOS (#27777)",
-    "timestamp": "2025-04-02T09:59:31-05:00",
-    "insertions": 10,
-    "deletions": 10,
-    "files": [
-      "it-and-security/teams/company-owned-ipads.yml",
-      "it-and-security/teams/company-owned-iphones.yml",
-      "it-and-security/teams/personally-owned-iphones.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]

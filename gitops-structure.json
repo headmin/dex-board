@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-31T11:24:50Z",
+  "generated": "2026-10-31T16:30:28Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "4b5a04281035545a3e0212011b1176e9758d9fd8",
-    "short_sha": "4b5a042810",
-    "message": "Bump Linux Claude Desktop patch policy to 4.4212.0 (#57004)",
-    "timestamp": "2026-10-30T09:49:16-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/4b5a04281035545a3e0212011b1176e9758d9fd8"
+    "sha": "842126ec075f6e0bbd3c74f105edc04222854558",
+    "short_sha": "842126ec07",
+    "message": "Bump Linux OS up-to-date policy: Fedora 44->45 (#57075)",
+    "timestamp": "2026-10-31T10:23:28-05:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/842126ec075f6e0bbd3c74f105edc04222854558"
   },
   "fleets": [
     {
