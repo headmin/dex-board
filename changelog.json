@@ -1,5 +1,44 @@
 [
   {
+    "sha": "c0ddba8013e3ed0cf4b4ac67d2fc413d4b6699e8",
+    "short_sha": "c0ddba8013",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Rename iOS/iPadOS self-service Web Clip to \"Self service\" (#57579)",
+    "timestamp": "2026-11-04T10:51:06-06:00",
+    "insertions": 3,
+    "deletions": 3,
+    "files": [
+      "it-and-security/lib/ios/configuration-profiles/self-service.mobileconfig"
+    ]
+  },
+  {
+    "sha": "a80c19f82f7650e060e43f6eb3cd82b404ebe23e",
+    "short_sha": "a80c19f82f",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 4.16336.0 (#57559)",
+    "timestamp": "2026-11-04T08:56:21-06:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
+    "sha": "a6b558a293f3215cef4095e922715ff4962fc598",
+    "short_sha": "a6b558a293",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Dogfood: rename macOS guest account profile to avoid case-insensitive name clash (#57563)",
+    "timestamp": "2026-11-04T08:49:09-06:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/macos/configuration-profiles/disable-guest-account.mobileconfig"
+    ]
+  },
+  {
     "sha": "842126ec075f6e0bbd3c74f105edc04222854558",
     "short_sha": "842126ec07",
     "author": "Allen Houchins",
@@ -7264,55 +7303,6 @@
     "deletions": 1,
     "files": [
       "it-and-security/lib/macos/declaration-profiles/passcode-settings.json"
-    ]
-  },
-  {
-    "sha": "e9442dd4a8eb61366c6e08aaadd1eb2dabac1723",
-    "short_sha": "e9442dd4a8",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Updates for exe installers in gitops (#27924)",
-    "timestamp": "2025-04-06T21:24:08-05:00",
-    "insertions": 385,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/windows/scripts/default-exe-install-script.ps1",
-      "it-and-security/lib/windows/scripts/uninstall-slack.ps1",
-      "it-and-security/lib/windows/scripts/uninstall-zoom.ps1",
-      "it-and-security/lib/windows/software/slack.yml",
-      "it-and-security/lib/windows/software/zoom-arm.yml",
-      "it-and-security/lib/windows/software/zoom.yml"
-    ]
-  },
-  {
-    "sha": "b0a6bd41eb7c09d12e2ad4c19ccaede9f13f3280",
-    "short_sha": "b0a6bd41eb",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Updated script and policy to match naming convention (#27858)",
-    "timestamp": "2025-04-05T22:11:01-05:00",
-    "insertions": 6,
-    "deletions": 8,
-    "files": [
-      "it-and-security/lib/linux/policies/{fedora-debian-check-fleet-desktop.yml => check-fleet-desktop-extension-fedora-debian.yml}",
-      "it-and-security/lib/linux/scripts/{fedora-debian-enable-fleet-desktop.sh => install-fleet-desktop-required-extension.sh}",
-      "it-and-security/teams/compliance-exclusions.yml",
-      "it-and-security/teams/servers-canary.yml",
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "41e5ba4776ab8adea0829da66d6dee03981ba02a",
-    "short_sha": "41e5ba4776",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update mozilla-firefox.yml (#27857)",
-    "timestamp": "2025-04-03T14:55:55-05:00",
-    "insertions": 2,
-    "deletions": 2,
-    "files": [
-      "it-and-security/lib/macos/policies/update-firefox.yml",
-      "it-and-security/lib/macos/software/mozilla-firefox.yml"
     ]
   }
 ]

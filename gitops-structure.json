@@ -1,14 +1,14 @@
 {
-  "generated": "2026-11-04T13:28:19Z",
+  "generated": "2026-11-04T22:59:43Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "842126ec075f6e0bbd3c74f105edc04222854558",
-    "short_sha": "842126ec07",
-    "message": "Bump Linux OS up-to-date policy: Fedora 44->45 (#57075)",
-    "timestamp": "2026-10-31T10:23:28-05:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/842126ec075f6e0bbd3c74f105edc04222854558"
+    "sha": "c0ddba8013e3ed0cf4b4ac67d2fc413d4b6699e8",
+    "short_sha": "c0ddba8013",
+    "message": "Rename iOS/iPadOS self-service Web Clip to \"Self service\" (#57579)",
+    "timestamp": "2026-11-04T10:51:06-06:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/c0ddba8013e3ed0cf4b4ac67d2fc413d4b6699e8"
   },
   "fleets": [
     {
