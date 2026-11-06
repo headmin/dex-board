@@ -1,5 +1,18 @@
 [
   {
+    "sha": "ac585cb8aaa8a362101707b449d9ba35169300e3",
+    "short_sha": "ac585cb8aa",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 4.23118.0 (#57909)",
+    "timestamp": "2026-11-06T13:14:28-06:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "c0ddba8013e3ed0cf4b4ac67d2fc413d4b6699e8",
     "short_sha": "c0ddba8013",
     "author": "Allen Houchins",
@@ -7288,19 +7301,6 @@
     "timestamp": "2025-04-07T11:22:10-05:00",
     "insertions": 1,
     "deletions": 0,
-    "files": [
-      "it-and-security/lib/macos/declaration-profiles/passcode-settings.json"
-    ]
-  },
-  {
-    "sha": "1a560a065358e6020ef6ca4a0021ce75377cd33e",
-    "short_sha": "1a560a0653",
-    "author": "Noah Talerman",
-    "email": "47070608+noahtalerman@users.noreply.github.com",
-    "message": "Help Rachael get back in to her Mac (#27934)",
-    "timestamp": "2025-04-07T12:00:37-04:00",
-    "insertions": 0,
-    "deletions": 1,
     "files": [
       "it-and-security/lib/macos/declaration-profiles/passcode-settings.json"
     ]

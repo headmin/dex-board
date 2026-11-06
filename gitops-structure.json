@@ -1,14 +1,14 @@
 {
-  "generated": "2026-11-06T13:26:36Z",
+  "generated": "2026-11-06T22:33:06Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "c0ddba8013e3ed0cf4b4ac67d2fc413d4b6699e8",
-    "short_sha": "c0ddba8013",
-    "message": "Rename iOS/iPadOS self-service Web Clip to \"Self service\" (#57579)",
-    "timestamp": "2026-11-04T10:51:06-06:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/c0ddba8013e3ed0cf4b4ac67d2fc413d4b6699e8"
+    "sha": "ac585cb8aaa8a362101707b449d9ba35169300e3",
+    "short_sha": "ac585cb8aa",
+    "message": "Bump Linux Claude Desktop patch policy to 4.23118.0 (#57909)",
+    "timestamp": "2026-11-06T13:14:28-06:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/ac585cb8aaa8a362101707b449d9ba35169300e3"
   },
   "fleets": [
     {
