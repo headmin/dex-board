@@ -1,5 +1,18 @@
 [
   {
+    "sha": "7d88e032e73f3253854e4486457d1141d051240c",
+    "short_sha": "7d88e032e7",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add a per-host AI agent usage report to dogfood (#58057)",
+    "timestamp": "2026-11-09T00:13:22-06:00",
+    "insertions": 30,
+    "deletions": 0,
+    "files": [
+      "it-and-security/lib/all/reports/dex-queries.yml"
+    ]
+  },
+  {
     "sha": "ac585cb8aaa8a362101707b449d9ba35169300e3",
     "short_sha": "ac585cb8aa",
     "author": "Allen Houchins",
@@ -7290,19 +7303,6 @@
       "it-and-security/teams/company-owned-ipads.yml",
       "it-and-security/teams/{company-owned-iphones.yml => company-owned-mobile-devices.yml}",
       "it-and-security/teams/{personally-owned-iphones.yml => personal-mobile-devices.yml}"
-    ]
-  },
-  {
-    "sha": "e1cd206c2621737b4dac65086889836fb1150764",
-    "short_sha": "e1cd206c26",
-    "author": "Rachael Shaw",
-    "email": "r@rachael.wtf",
-    "message": "Update passcode-settings.json (#27938)",
-    "timestamp": "2025-04-07T11:22:10-05:00",
-    "insertions": 1,
-    "deletions": 0,
-    "files": [
-      "it-and-security/lib/macos/declaration-profiles/passcode-settings.json"
     ]
   }
 ]
