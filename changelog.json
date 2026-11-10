@@ -1,5 +1,25 @@
 [
   {
+    "sha": "e08d145f04c036602b11de0ba213ba38ecc89ed5",
+    "short_sha": "e08d145f04",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Install the Inter font on dogfood workstations and iPhones (#58136)",
+    "timestamp": "2026-11-09T12:57:48-06:00",
+    "insertions": 45937,
+    "deletions": 0,
+    "files": [
+      "it-and-security/fleets/company-owned-mobile-devices.yml",
+      "it-and-security/fleets/personal-mobile-devices.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/configuration-profiles/inter-font.mobileconfig",
+      "it-and-security/lib/all/declaration-profiles/Inter font.json",
+      "it-and-security/lib/all/policies/inter-font-installed.yml",
+      "it-and-security/lib/all/scripts/install-inter-font.ps1",
+      "it-and-security/lib/all/scripts/install-inter-font.sh"
+    ]
+  },
+  {
     "sha": "7d88e032e73f3253854e4486457d1141d051240c",
     "short_sha": "7d88e032e7",
     "author": "Allen Houchins",
@@ -7287,22 +7307,6 @@
     "files": [
       "it-and-security/teams/company-owned-mobile-devices.yml",
       "it-and-security/teams/personal-mobile-devices.yml"
-    ]
-  },
-  {
-    "sha": "00480f8fb043635e17082d54b2213d4487d5bc4f",
-    "short_sha": "00480f8fb0",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Renaming teams to support Android devices (#27991)",
-    "timestamp": "2025-04-08T17:45:14-05:00",
-    "insertions": 14,
-    "deletions": 37,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/teams/company-owned-ipads.yml",
-      "it-and-security/teams/{company-owned-iphones.yml => company-owned-mobile-devices.yml}",
-      "it-and-security/teams/{personally-owned-iphones.yml => personal-mobile-devices.yml}"
     ]
   }
 ]

@@ -1,14 +1,14 @@
 {
-  "generated": "2026-11-09T14:41:09Z",
+  "generated": "2026-11-10T00:58:41Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "7d88e032e73f3253854e4486457d1141d051240c",
-    "short_sha": "7d88e032e7",
-    "message": "Add a per-host AI agent usage report to dogfood (#58057)",
-    "timestamp": "2026-11-09T00:13:22-06:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/7d88e032e73f3253854e4486457d1141d051240c"
+    "sha": "e08d145f04c036602b11de0ba213ba38ecc89ed5",
+    "short_sha": "e08d145f04",
+    "message": "Install the Inter font on dogfood workstations and iPhones (#58136)",
+    "timestamp": "2026-11-09T12:57:48-06:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/e08d145f04c036602b11de0ba213ba38ecc89ed5"
   },
   "fleets": [
     {
@@ -58,6 +58,20 @@
           "name": "servers.agent-options",
           "file": "it-and-security/lib/all/agent-options/servers.agent-options.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/agent-options/servers.agent-options.yml"
+        }
+      ],
+      "configuration_profiles": [
+        {
+          "name": "inter-font",
+          "file": "it-and-security/lib/all/configuration-profiles/inter-font.mobileconfig",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/configuration-profiles/inter-font.mobileconfig"
+        }
+      ],
+      "declaration_profiles": [
+        {
+          "name": "Inter font",
+          "file": "it-and-security/lib/all/declaration-profiles/Inter font.json",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/declaration-profiles/Inter font.json"
         }
       ],
       "icons": [
@@ -256,6 +270,11 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/policies/emudhra-compromised-intermediate-cas.yml"
         },
         {
+          "name": "inter-font-installed",
+          "file": "it-and-security/lib/all/policies/inter-font-installed.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/policies/inter-font-installed.yml"
+        },
+        {
           "name": "npm-supply-chain-compromised-packages",
           "file": "it-and-security/lib/all/policies/npm-supply-chain-compromised-packages.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/policies/npm-supply-chain-compromised-packages.yml"
@@ -333,6 +352,16 @@
           "name": "configure-npmrc-min-release-age",
           "file": "it-and-security/lib/all/scripts/configure-npmrc-min-release-age.sh",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/scripts/configure-npmrc-min-release-age.sh"
+        },
+        {
+          "name": "install-inter-font",
+          "file": "it-and-security/lib/all/scripts/install-inter-font.ps1",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/scripts/install-inter-font.ps1"
+        },
+        {
+          "name": "install-inter-font",
+          "file": "it-and-security/lib/all/scripts/install-inter-font.sh",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/scripts/install-inter-font.sh"
         },
         {
           "name": "remove-emudhra-roots-fleetd",
@@ -1182,17 +1211,17 @@
     ],
     "fleets": 6,
     "agent_options": 2,
+    "configuration_profiles": 46,
+    "declaration_profiles": 10,
     "icons": 8,
     "labels": 29,
-    "policies": 49,
+    "policies": 50,
     "reports": 22,
-    "scripts": 30,
-    "configuration_profiles": 45,
-    "declaration_profiles": 9,
+    "scripts": 32,
     "software": 14,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 1,
-    "total_files": 218
+    "total_files": 223
   }
 }
