@@ -1,5 +1,44 @@
 [
   {
+    "sha": "11d89476e4e174c992602c927725a116e2bd8cba",
+    "short_sha": "11d89476e4",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 4.23118.1 (#58237)",
+    "timestamp": "2026-11-10T12:14:50-06:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
+    "sha": "d4762b98f065b200587d890418b16f9ebbc65fae",
+    "short_sha": "d4762b98f0",
+    "author": "Jonathan Katz",
+    "email": "44128041+jkatz01@users.noreply.github.com",
+    "message": "Remove support for single package yaml reference (#58177)",
+    "timestamp": "2026-11-10T12:44:15-05:00",
+    "insertions": 41,
+    "deletions": 41,
+    "files": [
+      "it-and-security/lib/linux/software/1password-deb.yml",
+      "it-and-security/lib/linux/software/1password-rpm.yml",
+      "it-and-security/lib/linux/software/okta-verify-deb.yml",
+      "it-and-security/lib/linux/software/slack-deb.yml",
+      "it-and-security/lib/linux/software/slack-rpm.yml",
+      "it-and-security/lib/linux/software/zoom-deb.yml",
+      "it-and-security/lib/linux/software/zoom-rpm.yml",
+      "it-and-security/lib/macos/software/fleet-desktop-launch-agent.yml",
+      "it-and-security/lib/macos/software/fleet-keynote-theme.yml",
+      "it-and-security/lib/macos/software/nudge-assets.yml",
+      "it-and-security/lib/macos/software/nudge.yml",
+      "it-and-security/lib/windows/software/1password.yml",
+      "it-and-security/lib/windows/software/google-chrome-arm.yml",
+      "it-and-security/lib/windows/software/zoom-arm.yml"
+    ]
+  },
+  {
     "sha": "e08d145f04c036602b11de0ba213ba38ecc89ed5",
     "short_sha": "e08d145f04",
     "author": "Allen Houchins",
@@ -7279,34 +7318,6 @@
       "it-and-security/teams/personal-mobile-devices.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "d3e23451ec4df52483459718bf6bb71c7425f44e",
-    "short_sha": "d3e23451ec",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Removed VPP references (#28011)",
-    "timestamp": "2025-04-08T18:20:05-05:00",
-    "insertions": 0,
-    "deletions": 5,
-    "files": [
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "76f609556b2d9c62eb080b4146cd3c6e4d0cfbb4",
-    "short_sha": "76f609556b",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Removed app_store_apps due to VPP race condition (#28009)",
-    "timestamp": "2025-04-08T17:53:04-05:00",
-    "insertions": 0,
-    "deletions": 6,
-    "files": [
-      "it-and-security/teams/company-owned-mobile-devices.yml",
-      "it-and-security/teams/personal-mobile-devices.yml"
     ]
   }
 ]

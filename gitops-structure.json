@@ -1,14 +1,14 @@
 {
-  "generated": "2026-11-10T13:57:14Z",
+  "generated": "2026-11-10T22:39:30Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "e08d145f04c036602b11de0ba213ba38ecc89ed5",
-    "short_sha": "e08d145f04",
-    "message": "Install the Inter font on dogfood workstations and iPhones (#58136)",
-    "timestamp": "2026-11-09T12:57:48-06:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/e08d145f04c036602b11de0ba213ba38ecc89ed5"
+    "sha": "11d89476e4e174c992602c927725a116e2bd8cba",
+    "short_sha": "11d89476e4",
+    "message": "Bump Linux Claude Desktop patch policy to 4.23118.1 (#58237)",
+    "timestamp": "2026-11-10T12:14:50-06:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/11d89476e4e174c992602c927725a116e2bd8cba"
   },
   "fleets": [
     {
