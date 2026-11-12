@@ -1,5 +1,80 @@
 [
   {
+    "sha": "c7ff7319ae608ad6abc31f566e24ebe890f4634c",
+    "short_sha": "c7ff7319ae",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Dogfood: hide IT-remediated policies from end users (#58564)",
+    "timestamp": "2026-11-12T12:22:14-06:00",
+    "insertions": 40,
+    "deletions": 33,
+    "files": [
+      "it-and-security/lib/all/policies/php2shell-php-patched.yml",
+      "it-and-security/lib/all/policies/tailscale-ssh-forwarding-disabled.yml",
+      "it-and-security/lib/macos/policies/local-admin-count-reasonable.yml",
+      "it-and-security/lib/macos/policies/sip-enabled.yml"
+    ]
+  },
+  {
+    "sha": "8095190f9fd46b158aa2a9e9a2313d2b1819b2d4",
+    "short_sha": "8095190f9f",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Dogfood: hide profile-enforced and IT-only policies from end users (#58560)",
+    "timestamp": "2026-11-12T12:12:20-06:00",
+    "insertions": 44,
+    "deletions": 31,
+    "files": [
+      "it-and-security/lib/macos/policies/battery-health-check.yml",
+      "it-and-security/lib/macos/policies/disk-encryption-check.yml",
+      "it-and-security/lib/macos/policies/firewall-enabled.yml",
+      "it-and-security/lib/macos/policies/gatekeeper-enabled.yml",
+      "it-and-security/lib/macos/policies/screen-lock-inactivity.yml",
+      "it-and-security/lib/windows/policies/antivirus-signatures-up-to-date.yml",
+      "it-and-security/lib/windows/policies/battery-health-check.yml",
+      "it-and-security/lib/windows/policies/disk-encryption-check.yml",
+      "it-and-security/lib/windows/policies/screen-lock-timeout-configured.yml",
+      "it-and-security/lib/windows/policies/secure-boot-enabled.yml",
+      "it-and-security/lib/windows/policies/windows-defender-compliance-check.yml"
+    ]
+  },
+  {
+    "sha": "0799ccd00e67ad69de7f3bf61bb198d252b47c52",
+    "short_sha": "0799ccd00e",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Dogfood: hide auto-remediated and IT-only policies from end users (#58549)",
+    "timestamp": "2026-11-12T11:20:58-06:00",
+    "insertions": 61,
+    "deletions": 34,
+    "files": [
+      "it-and-security/lib/all/policies/emudhra-compromised-intermediate-cas.yml",
+      "it-and-security/lib/all/policies/inter-font-installed.yml",
+      "it-and-security/lib/all/policies/npm-user-npmrc-min-release-age.yml",
+      "it-and-security/lib/linux/policies/removable-storage-read-only.yml",
+      "it-and-security/lib/macos/policies/cli-trust-store-excludes-emudhra-roots.yml",
+      "it-and-security/lib/macos/policies/fleet-desktop-installed.yml",
+      "it-and-security/lib/macos/policies/fleet-desktop-menu-bar-hidden.yml",
+      "it-and-security/lib/macos/policies/install-fleet-desktop-launch-agent.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/macos/policies/santa-endpoint-security-extension-active.yml",
+      "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
+    "sha": "439f349824f41953eb6ce16072eeee6175d8b519",
+    "short_sha": "439f349824",
+    "author": "Henry Stamerjohann",
+    "email": "headmin@users.noreply.github.com",
+    "message": "Add DEX report for pending macOS updates (#58519)",
+    "timestamp": "2026-11-12T15:59:18+01:00",
+    "insertions": 19,
+    "deletions": 0,
+    "files": [
+      "it-and-security/lib/all/reports/dex-queries.yml"
+    ]
+  },
+  {
     "sha": "2e9133d935689f68f4e41b20a4bb9bbd1e5bc1fd",
     "short_sha": "2e9133d935",
     "author": "Allen Houchins",
@@ -7230,91 +7305,6 @@
       "it-and-security/lib/all/labels/santa-test-devices.yml",
       "it-and-security/lib/macos/software/santa.yml",
       "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "6351b92960ec9b8afea2ab21dd64ddea2ba01a82",
-    "short_sha": "6351b92960",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Re-adding labels for scoping (#28084)",
-    "timestamp": "2025-04-10T10:36:04-05:00",
-    "insertions": 39,
-    "deletions": 0,
-    "files": [
-      "it-and-security/lib/linux/software/slack-deb.yml",
-      "it-and-security/lib/linux/software/slack-rpm.yml",
-      "it-and-security/lib/linux/software/zoom-deb.yml",
-      "it-and-security/lib/linux/software/zoom-rpm.yml",
-      "it-and-security/lib/macos/software/santa.yml",
-      "it-and-security/lib/windows/software/google-chrome-arm.yml",
-      "it-and-security/lib/windows/software/google-chrome.yml",
-      "it-and-security/lib/windows/software/slack.yml",
-      "it-and-security/lib/windows/software/zoom-arm.yml",
-      "it-and-security/lib/windows/software/zoom.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "3369b15b12d89bcc5ac5168605541bc307dfb5c6",
-    "short_sha": "3369b15b12",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Adding labels via GitOps (#28083)",
-    "timestamp": "2025-04-10T10:26:01-05:00",
-    "insertions": 37,
-    "deletions": 39,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/lib/all/labels/arm-based-windows-hosts.yml",
-      "it-and-security/lib/all/labels/debian-based-linux-hosts.yml",
-      "it-and-security/lib/all/labels/macs-with-1password-installed.yml",
-      "it-and-security/lib/all/labels/rpm-based-linux-hosts.yml",
-      "it-and-security/lib/all/labels/santa-test-devices.yml",
-      "it-and-security/lib/all/labels/virtual-machines.yml",
-      "it-and-security/lib/all/labels/x86-based-windows-hosts.yml",
-      "it-and-security/lib/linux/software/slack-deb.yml",
-      "it-and-security/lib/linux/software/slack-rpm.yml",
-      "it-and-security/lib/linux/software/zoom-deb.yml",
-      "it-and-security/lib/linux/software/zoom-rpm.yml",
-      "it-and-security/lib/macos/software/santa.yml",
-      "it-and-security/lib/windows/software/google-chrome-arm.yml",
-      "it-and-security/lib/windows/software/google-chrome.yml",
-      "it-and-security/lib/windows/software/slack.yml",
-      "it-and-security/lib/windows/software/zoom-arm.yml",
-      "it-and-security/lib/windows/software/zoom.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "9de88274b06efa2fe877eec53583518bfc1f0d5c",
-    "short_sha": "9de88274b0",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Add query to collect app hashes (#28081)",
-    "timestamp": "2025-04-10T09:34:47-05:00",
-    "insertions": 23,
-    "deletions": 0,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/lib/macos/queries/collect-app-hashes.yml"
-    ]
-  },
-  {
-    "sha": "ac021a3211b68f931b12924604357c4b1c63a3c5",
-    "short_sha": "ac021a3211",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Updated team names (#28078)",
-    "timestamp": "2025-04-10T09:21:03-05:00",
-    "insertions": 6,
-    "deletions": 6,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/teams/company-owned-mobile-devices.yml",
-      "it-and-security/teams/personal-mobile-devices.yml"
     ]
   }
 ]

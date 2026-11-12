@@ -1,14 +1,14 @@
 {
-  "generated": "2026-11-12T14:15:06Z",
+  "generated": "2026-11-12T22:58:12Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "2e9133d935689f68f4e41b20a4bb9bbd1e5bc1fd",
-    "short_sha": "2e9133d935",
-    "message": "Bump Linux Claude Desktop patch policy to 5.1231.2 (#58397)",
-    "timestamp": "2026-11-11T20:19:22-06:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/2e9133d935689f68f4e41b20a4bb9bbd1e5bc1fd"
+    "sha": "c7ff7319ae608ad6abc31f566e24ebe890f4634c",
+    "short_sha": "c7ff7319ae",
+    "message": "Dogfood: hide IT-remediated policies from end users (#58564)",
+    "timestamp": "2026-11-12T12:22:14-06:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/c7ff7319ae608ad6abc31f566e24ebe890f4634c"
   },
   "fleets": [
     {
