@@ -1,5 +1,18 @@
 [
   {
+    "sha": "2e9133d935689f68f4e41b20a4bb9bbd1e5bc1fd",
+    "short_sha": "2e9133d935",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 5.1231.2 (#58397)",
+    "timestamp": "2026-11-11T20:19:22-06:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "11d89476e4e174c992602c927725a116e2bd8cba",
     "short_sha": "11d89476e4",
     "author": "Allen Houchins",
@@ -7302,22 +7315,6 @@
       "it-and-security/default.yml",
       "it-and-security/teams/company-owned-mobile-devices.yml",
       "it-and-security/teams/personal-mobile-devices.yml"
-    ]
-  },
-  {
-    "sha": "f16b01383b8a2fb853db111730cb200c872b3851",
-    "short_sha": "f16b01383b",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Re-added app store apps (#28010)",
-    "timestamp": "2025-04-08T18:37:19-05:00",
-    "insertions": 12,
-    "deletions": 0,
-    "files": [
-      "it-and-security/teams/company-owned-mobile-devices.yml",
-      "it-and-security/teams/personal-mobile-devices.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]
