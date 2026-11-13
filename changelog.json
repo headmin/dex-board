@@ -1,5 +1,53 @@
 [
   {
+    "sha": "07ba4dc0a5a63e6bf797724f4d54981a7e0b5491",
+    "short_sha": "07ba4dc0a5",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Replace Nudge with overnight macOS updates in dogfood (#58546)",
+    "timestamp": "2026-11-12T21:03:00-06:00",
+    "insertions": 101,
+    "deletions": 573,
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/all/icons/nudge-assets-logo.png",
+      "it-and-security/lib/all/icons/nudge-logo.png",
+      "it-and-security/lib/all/labels/macos-15-and-older-hosts.yml",
+      "it-and-security/lib/all/labels/macs-not-enrolled-through-ade.yml",
+      "it-and-security/lib/all/labels/macs-with-fleet-maintained-apps-installed.yml",
+      "it-and-security/lib/macos/configuration-profiles/nudge-background-task.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/nudge-preferences-ungated.mobileconfig",
+      "it-and-security/lib/macos/configuration-profiles/nudge-preferences.mobileconfig",
+      "it-and-security/lib/macos/declaration-profiles/Nudge activation.json",
+      "it-and-security/lib/macos/declaration-profiles/Nudge settings.json",
+      "it-and-security/lib/macos/policies/install-nudge-assets.yml",
+      "it-and-security/lib/macos/policies/latest-macos.yml",
+      "it-and-security/lib/macos/policies/macos-minor-update-queued.yml",
+      "it-and-security/lib/macos/policies/nudge-installed.yml",
+      "it-and-security/lib/macos/policies/nudge-removed.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/macos/scripts/nudge-postinstall.sh",
+      "it-and-security/lib/macos/scripts/queue-macos-minor-update.sh",
+      "it-and-security/lib/macos/scripts/uninstall-nudge.sh",
+      "it-and-security/lib/macos/software/nudge-assets.yml",
+      "it-and-security/lib/macos/software/nudge.yml"
+    ]
+  },
+  {
+    "sha": "a7c3c9feb34927e423d9282212ce3927f72cd90f",
+    "short_sha": "a7c3c9feb3",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Remove Mactivate LLC Apple Business token from dogfood (#58632)",
+    "timestamp": "2026-11-12T20:45:20-06:00",
+    "insertions": 0,
+    "deletions": 5,
+    "files": [
+      "it-and-security/default.yml"
+    ]
+  },
+  {
     "sha": "c7ff7319ae608ad6abc31f566e24ebe890f4634c",
     "short_sha": "c7ff7319ae",
     "author": "Allen Houchins",
@@ -7275,36 +7323,6 @@
     "deletions": 1,
     "files": [
       "it-and-security/lib/all/labels/santa-test-devices.yml"
-    ]
-  },
-  {
-    "sha": "258862f44862731d7cc5f9790a1e40bb83dc079f",
-    "short_sha": "258862f448",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Re-add santa label (#28094)",
-    "timestamp": "2025-04-10T13:31:17-05:00",
-    "insertions": 6,
-    "deletions": 0,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/lib/all/labels/santa-test-devices.yml"
-    ]
-  },
-  {
-    "sha": "b47ef0898cce2c1e9abd6b2daf7b4c6e096fd3eb",
-    "short_sha": "b47ef0898c",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Delete santa-test-devices.yml (#28085)",
-    "timestamp": "2025-04-10T10:47:32-05:00",
-    "insertions": 0,
-    "deletions": 23,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/lib/all/labels/santa-test-devices.yml",
-      "it-and-security/lib/macos/software/santa.yml",
-      "it-and-security/teams/workstations-canary.yml"
     ]
   }
 ]
