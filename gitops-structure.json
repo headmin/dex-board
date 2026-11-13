@@ -1,14 +1,14 @@
 {
-  "generated": "2026-11-13T13:37:47Z",
+  "generated": "2026-11-13T23:00:23Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "07ba4dc0a5a63e6bf797724f4d54981a7e0b5491",
-    "short_sha": "07ba4dc0a5",
-    "message": "Replace Nudge with overnight macOS updates in dogfood (#58546)",
-    "timestamp": "2026-11-12T21:03:00-06:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/07ba4dc0a5a63e6bf797724f4d54981a7e0b5491"
+    "sha": "c5157ca4aea32a66c90d9a907c4548afc13d3935",
+    "short_sha": "c5157ca4ae",
+    "message": "Add Windows EULA and refresh macOS EULA (#58706)",
+    "timestamp": "2026-11-13T13:19:49-06:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/c5157ca4aea32a66c90d9a907c4548afc13d3935"
   },
   "fleets": [
     {
@@ -1015,6 +1015,13 @@
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/configuration-profiles/Windows Defender compliance settings.xml"
         }
       ],
+      "misc": [
+        {
+          "name": "eula",
+          "file": "it-and-security/lib/windows/misc/eula.md",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/windows/misc/eula.md"
+        }
+      ],
       "policies": [
         {
           "name": "1password-installed",
@@ -1171,7 +1178,7 @@
     "software": 12,
     "commands": 1,
     "enrollment_profiles": 1,
-    "misc": 1,
-    "total_files": 213
+    "misc": 2,
+    "total_files": 214
   }
 }

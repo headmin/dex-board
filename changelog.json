@@ -1,5 +1,46 @@
 [
   {
+    "sha": "c5157ca4aea32a66c90d9a907c4548afc13d3935",
+    "short_sha": "c5157ca4ae",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Add Windows EULA and refresh macOS EULA (#58706)",
+    "timestamp": "2026-11-13T13:19:49-06:00",
+    "insertions": 38,
+    "deletions": 0,
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/lib/macos/misc/eula.pdf",
+      "it-and-security/lib/windows/misc/eula.md"
+    ]
+  },
+  {
+    "sha": "2621b995a14607a456ea7738685ecee3d54d5a1f",
+    "short_sha": "2621b995a1",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 5.11492.2 (#58657)",
+    "timestamp": "2026-11-13T09:04:24-06:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
+    "sha": "fcf6f7e0faeb41881b1eceb1742d7991e09182f2",
+    "short_sha": "fcf6f7e0fa",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux OS up-to-date policy: RHEL 9.8->9.9, RHEL 10.2->10.3 (#58665)",
+    "timestamp": "2026-11-13T09:04:10-06:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/latest-linux.yml"
+    ]
+  },
+  {
     "sha": "07ba4dc0a5a63e6bf797724f4d54981a7e0b5491",
     "short_sha": "07ba4dc0a5",
     "author": "Allen Houchins",
@@ -7282,47 +7323,6 @@
     "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
-    ]
-  },
-  {
-    "sha": "2d4a733883b6c189187d973cc16778c471d7135d",
-    "short_sha": "2d4a733883",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Updated webhook settings (#28252)",
-    "timestamp": "2025-04-15T13:05:30-05:00",
-    "insertions": 17,
-    "deletions": 5,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "2378ac1f7eb4a7587209a6d988a5befc444541e9",
-    "short_sha": "2378ac1f7e",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Re-added label scoping to configuration profiles (#28106)",
-    "timestamp": "2025-04-10T14:45:24-05:00",
-    "insertions": 15,
-    "deletions": 0,
-    "files": [
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "04395d5882c8bae0f23bbb2370d50a3ffc248b8f",
-    "short_sha": "04395d5882",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update santa-test-devices.yml (#28105)",
-    "timestamp": "2025-04-10T14:37:54-05:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/all/labels/santa-test-devices.yml"
     ]
   }
 ]
