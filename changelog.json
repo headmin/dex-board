@@ -1,5 +1,18 @@
 [
   {
+    "sha": "5ca13da2399c8c17eb9aea8a610e8a02c6f06d14",
+    "short_sha": "5ca13da239",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 5.11492.5 (#58768)",
+    "timestamp": "2026-11-14T08:36:37-06:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "c5157ca4aea32a66c90d9a907c4548afc13d3935",
     "short_sha": "c5157ca4ae",
     "author": "Allen Houchins",
@@ -7310,19 +7323,6 @@
     "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/latest-macos.yml"
-    ]
-  },
-  {
-    "sha": "555959178db40cc5b5595c9088b9a322d7f7a6c8",
-    "short_sha": "555959178d",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update 1Password macOS version number to 8.10.72 (#28257)",
-    "timestamp": "2025-04-15T13:15:56-05:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/update-1password.yml"
     ]
   }
 ]

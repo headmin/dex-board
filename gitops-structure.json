@@ -1,14 +1,14 @@
 {
-  "generated": "2026-11-14T12:42:23Z",
+  "generated": "2026-11-14T21:48:16Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "c5157ca4aea32a66c90d9a907c4548afc13d3935",
-    "short_sha": "c5157ca4ae",
-    "message": "Add Windows EULA and refresh macOS EULA (#58706)",
-    "timestamp": "2026-11-13T13:19:49-06:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/c5157ca4aea32a66c90d9a907c4548afc13d3935"
+    "sha": "5ca13da2399c8c17eb9aea8a610e8a02c6f06d14",
+    "short_sha": "5ca13da239",
+    "message": "Bump Linux Claude Desktop patch policy to 5.11492.5 (#58768)",
+    "timestamp": "2026-11-14T08:36:37-06:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/5ca13da2399c8c17eb9aea8a610e8a02c6f06d14"
   },
   "fleets": [
     {
