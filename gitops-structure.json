@@ -1,14 +1,14 @@
 {
-  "generated": "2026-11-18T00:11:25Z",
+  "generated": "2026-11-18T14:47:14Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "4fe8d269623aa460d244ad6c7039a0e31974f3e9",
-    "short_sha": "4fe8d26962",
-    "message": "Move the Workstations patch deadline to Thursday at 17:00 (#59060)",
-    "timestamp": "2026-11-17T14:32:54-06:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/4fe8d269623aa460d244ad6c7039a0e31974f3e9"
+    "sha": "a5d6eb0e383ef4a4671586300df70e9c5a5e8801",
+    "short_sha": "a5d6eb0e38",
+    "message": "Add global policy for November 2026 Java SE patches (Java4Shell) (#59102)",
+    "timestamp": "2026-11-17T21:19:13-06:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/a5d6eb0e383ef4a4671586300df70e9c5a5e8801"
   },
   "fleets": [
     {
@@ -253,6 +253,11 @@
           "name": "inter-font-installed",
           "file": "it-and-security/lib/all/policies/inter-font-installed.yml",
           "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/policies/inter-font-installed.yml"
+        },
+        {
+          "name": "java-november-2026-patched",
+          "file": "it-and-security/lib/all/policies/java-november-2026-patched.yml",
+          "url": "https://github.com/fleetdm/fleet/blob/main/it-and-security/lib/all/policies/java-november-2026-patched.yml"
         },
         {
           "name": "npm-supply-chain-compromised-packages",
@@ -1172,13 +1177,13 @@
     "declaration_profiles": 8,
     "icons": 6,
     "labels": 27,
-    "policies": 50,
+    "policies": 51,
     "reports": 22,
     "scripts": 33,
     "software": 12,
     "commands": 1,
     "enrollment_profiles": 1,
     "misc": 2,
-    "total_files": 214
+    "total_files": 215
   }
 }

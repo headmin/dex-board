@@ -1,5 +1,19 @@
 [
   {
+    "sha": "a5d6eb0e383ef4a4671586300df70e9c5a5e8801",
+    "short_sha": "a5d6eb0e38",
+    "author": "fleetdm-bot",
+    "email": "luke+fleetbot@fleetdm.com",
+    "message": "Add global policy for November 2026 Java SE patches (Java4Shell) (#59102)",
+    "timestamp": "2026-11-17T21:19:13-06:00",
+    "insertions": 186,
+    "deletions": 0,
+    "files": [
+      "it-and-security/default.yml",
+      "it-and-security/lib/all/policies/java-november-2026-patched.yml"
+    ]
+  },
+  {
     "sha": "4fe8d269623aa460d244ad6c7039a0e31974f3e9",
     "short_sha": "4fe8d26962",
     "author": "Allen Houchins",
@@ -7303,19 +7317,6 @@
     "deletions": 3,
     "files": [
       "it-and-security/default.yml",
-      "it-and-security/teams/no-team.yml"
-    ]
-  },
-  {
-    "sha": "9c2ce31c07cd1a3478e4b75cd3129f2b1a214059",
-    "short_sha": "9c2ce31c07",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update no-team.yml (#28416)",
-    "timestamp": "2025-04-21T14:17:49-05:00",
-    "insertions": 2,
-    "deletions": 0,
-    "files": [
       "it-and-security/teams/no-team.yml"
     ]
   }
