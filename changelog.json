@@ -1,5 +1,60 @@
 [
   {
+    "sha": "4fe8d269623aa460d244ad6c7039a0e31974f3e9",
+    "short_sha": "4fe8d26962",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Move the Workstations patch deadline to Thursday at 17:00 (#59060)",
+    "timestamp": "2026-11-17T14:32:54-06:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
+    "sha": "0e13ec86917d36e523a892d924541684c4bde307",
+    "short_sha": "0e13ec8691",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Keep scheduling overnight macOS updates after a failed run (#59050)",
+    "timestamp": "2026-11-17T13:54:51-06:00",
+    "insertions": 28,
+    "deletions": 12,
+    "files": [
+      "it-and-security/lib/macos/policies/macos-minor-update-queued.yml",
+      "it-and-security/lib/macos/scripts/queue-macos-minor-update.sh"
+    ]
+  },
+  {
+    "sha": "67f3e48c38a1eec2c67c11bef251c9d4a4424df1",
+    "short_sha": "67f3e48c38",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Move Zoom for macOS and Windows to calendar event patching (#59029)",
+    "timestamp": "2026-11-17T10:47:52-06:00",
+    "insertions": 4,
+    "deletions": 2,
+    "files": [
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml",
+      "it-and-security/lib/windows/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
+    "sha": "34eed10fd9a55b0a01d2c04d6f60a72f2c9c5d8a",
+    "short_sha": "34eed10fd9",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Patch Chrome, Slack, and Firefox for macOS on a Friday deadline (#59012)",
+    "timestamp": "2026-11-17T10:38:25-06:00",
+    "insertions": 7,
+    "deletions": 5,
+    "files": [
+      "it-and-security/fleets/workstations.yml",
+      "it-and-security/lib/macos/policies/patch-fleet-maintained-apps.yml"
+    ]
+  },
+  {
     "sha": "5ca13da2399c8c17eb9aea8a610e8a02c6f06d14",
     "short_sha": "5ca13da239",
     "author": "Allen Houchins",
@@ -7262,67 +7317,6 @@
     "deletions": 0,
     "files": [
       "it-and-security/teams/no-team.yml"
-    ]
-  },
-  {
-    "sha": "416733be5bb6b98b76e100d2a24e9dda57eb15fd",
-    "short_sha": "416733be5b",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update team files to clean up No Team (#28258)",
-    "timestamp": "2025-04-21T14:12:32-05:00",
-    "insertions": 3,
-    "deletions": 0,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/teams/no-team.yml"
-    ]
-  },
-  {
-    "sha": "71117b332b5dadf2486bfcc33157efad78fde468",
-    "short_sha": "71117b332b",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Removed query no longer needed (#28410)",
-    "timestamp": "2025-04-21T13:33:45-05:00",
-    "insertions": 0,
-    "deletions": 23,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/lib/macos/queries/collect-app-hashes.yml"
-    ]
-  },
-  {
-    "sha": "8e148d8025f2c78989f3abd7ed5cbeeaef2b52a5",
-    "short_sha": "8e148d8025",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Santa reconfigured for sync server (#28407)",
-    "timestamp": "2025-04-21T13:33:32-05:00",
-    "insertions": 245,
-    "deletions": 347,
-    "files": [
-      "it-and-security/lib/macos/configuration-profiles/santa-configuration-moroz.mobileconfig",
-      "it-and-security/lib/macos/configuration-profiles/santa-configuration-no-rules-or-sync-server.mobileconfig",
-      "it-and-security/lib/macos/configuration-profiles/santa-notification-settings.mobileconfig",
-      "it-and-security/lib/macos/configuration-profiles/santa-service-management.mobileconfig",
-      "it-and-security/lib/macos/configuration-profiles/santa-system-extension-policy.mobileconfig",
-      "it-and-security/lib/macos/configuration-profiles/santa-tcc-configuration-profile-policy.mobileconfig",
-      "it-and-security/lib/macos/software/santa.yml",
-      "it-and-security/teams/workstations-canary.yml"
-    ]
-  },
-  {
-    "sha": "2c511a92be8f85b2355dcd54003b013cb3567286",
-    "short_sha": "2c511a92be",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update macOS version number to 15.4.1 (#28318)",
-    "timestamp": "2025-04-16T19:41:49-05:00",
-    "insertions": 1,
-    "deletions": 1,
-    "files": [
-      "it-and-security/lib/macos/policies/latest-macos.yml"
     ]
   }
 ]

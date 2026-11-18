@@ -1,14 +1,14 @@
 {
-  "generated": "2026-11-17T15:08:56Z",
+  "generated": "2026-11-18T00:11:25Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "5ca13da2399c8c17eb9aea8a610e8a02c6f06d14",
-    "short_sha": "5ca13da239",
-    "message": "Bump Linux Claude Desktop patch policy to 5.11492.5 (#58768)",
-    "timestamp": "2026-11-14T08:36:37-06:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/5ca13da2399c8c17eb9aea8a610e8a02c6f06d14"
+    "sha": "4fe8d269623aa460d244ad6c7039a0e31974f3e9",
+    "short_sha": "4fe8d26962",
+    "message": "Move the Workstations patch deadline to Thursday at 17:00 (#59060)",
+    "timestamp": "2026-11-17T14:32:54-06:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/4fe8d269623aa460d244ad6c7039a0e31974f3e9"
   },
   "fleets": [
     {
