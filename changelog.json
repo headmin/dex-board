@@ -1,5 +1,18 @@
 [
   {
+    "sha": "38756a7983e64fb517f57242d972a15d01eeb27d",
+    "short_sha": "38756a7983",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Dogfood: display Zoom for Windows FMA as \"Zoom\" (#59206)",
+    "timestamp": "2026-11-18T15:34:46-06:00",
+    "insertions": 1,
+    "deletions": 0,
+    "files": [
+      "it-and-security/fleets/workstations.yml"
+    ]
+  },
+  {
     "sha": "a5d6eb0e383ef4a4671586300df70e9c5a5e8801",
     "short_sha": "a5d6eb0e38",
     "author": "fleetdm-bot",
@@ -7304,20 +7317,6 @@
       "it-and-security/teams/personal-mobile-devices.yml",
       "it-and-security/teams/workstations-canary.yml",
       "it-and-security/teams/workstations.yml"
-    ]
-  },
-  {
-    "sha": "3562daa28a46d3fcbe232abf401567a29833cebf",
-    "short_sha": "3562daa28a",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Testing cleanup of No team (#28418)",
-    "timestamp": "2025-04-21T14:36:21-05:00",
-    "insertions": 0,
-    "deletions": 3,
-    "files": [
-      "it-and-security/default.yml",
-      "it-and-security/teams/no-team.yml"
     ]
   }
 ]

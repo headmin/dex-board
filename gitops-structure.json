@@ -1,14 +1,14 @@
 {
-  "generated": "2026-11-18T14:47:14Z",
+  "generated": "2026-11-18T23:42:20Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "a5d6eb0e383ef4a4671586300df70e9c5a5e8801",
-    "short_sha": "a5d6eb0e38",
-    "message": "Add global policy for November 2026 Java SE patches (Java4Shell) (#59102)",
-    "timestamp": "2026-11-17T21:19:13-06:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/a5d6eb0e383ef4a4671586300df70e9c5a5e8801"
+    "sha": "38756a7983e64fb517f57242d972a15d01eeb27d",
+    "short_sha": "38756a7983",
+    "message": "Dogfood: display Zoom for Windows FMA as \"Zoom\" (#59206)",
+    "timestamp": "2026-11-18T15:34:46-06:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/38756a7983e64fb517f57242d972a15d01eeb27d"
   },
   "fleets": [
     {
