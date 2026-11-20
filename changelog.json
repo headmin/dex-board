@@ -1,5 +1,18 @@
 [
   {
+    "sha": "946ac22f332647be1c6ee17fda7862fb8bba4078",
+    "short_sha": "946ac22f33",
+    "author": "Arend Peter Castelein",
+    "email": "apc1993@gmail.com",
+    "message": "Fix broken links to Fleet-flavored Markdown and permalinks guidance (#59328)",
+    "timestamp": "2026-11-20T06:31:14-08:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/macos/configuration-profiles/google-chrome-managed-bookmarks.mobileconfig"
+    ]
+  },
+  {
     "sha": "38756a7983e64fb517f57242d972a15d01eeb27d",
     "short_sha": "38756a7983",
     "author": "Allen Houchins",
@@ -7301,22 +7314,6 @@
     "deletions": 4,
     "files": [
       "it-and-security/default.yml"
-    ]
-  },
-  {
-    "sha": "86c1a1247165f5c6c941d30f26aa468e4fe7ef01",
-    "short_sha": "86c1a12471",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Updated minimum OS versions (#28439)",
-    "timestamp": "2025-04-22T09:17:54-05:00",
-    "insertions": 12,
-    "deletions": 13,
-    "files": [
-      "it-and-security/teams/company-owned-mobile-devices.yml",
-      "it-and-security/teams/personal-mobile-devices.yml",
-      "it-and-security/teams/workstations-canary.yml",
-      "it-and-security/teams/workstations.yml"
     ]
   }
 ]
