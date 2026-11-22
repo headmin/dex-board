@@ -1,14 +1,14 @@
 {
-  "generated": "2026-11-22T04:00:13Z",
+  "generated": "2026-11-22T13:46:15Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "946ac22f332647be1c6ee17fda7862fb8bba4078",
-    "short_sha": "946ac22f33",
-    "message": "Fix broken links to Fleet-flavored Markdown and permalinks guidance (#59328)",
-    "timestamp": "2026-11-20T06:31:14-08:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/946ac22f332647be1c6ee17fda7862fb8bba4078"
+    "sha": "91bcc926b0823af9edfb6b53a174f9d81b04e58e",
+    "short_sha": "91bcc926b0",
+    "message": "Bump Linux Claude Desktop patch policy to 6.28899.2 (#59529)",
+    "timestamp": "2026-11-21T22:27:34-06:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/91bcc926b0823af9edfb6b53a174f9d81b04e58e"
   },
   "fleets": [
     {
