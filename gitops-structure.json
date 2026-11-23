@@ -1,14 +1,14 @@
 {
-  "generated": "2026-11-23T04:42:49Z",
+  "generated": "2026-11-23T16:48:53Z",
   "source_repo": "fleetdm/fleet",
   "source_path": "it-and-security/",
   "source_url": "https://github.com/fleetdm/fleet/tree/main/it-and-security",
   "latest_commit": {
-    "sha": "91bcc926b0823af9edfb6b53a174f9d81b04e58e",
-    "short_sha": "91bcc926b0",
-    "message": "Bump Linux Claude Desktop patch policy to 6.28899.2 (#59529)",
-    "timestamp": "2026-11-21T22:27:34-06:00",
-    "commit_url": "https://github.com/fleetdm/fleet/commit/91bcc926b0823af9edfb6b53a174f9d81b04e58e"
+    "sha": "a57b918c0e3e2c3648a8d2691ba11105b9d68211",
+    "short_sha": "a57b918c0e",
+    "message": "Bump Linux OS up-to-date policy: Debian 13.8+deb13u7->13.8+deb13u8 (#59551)",
+    "timestamp": "2026-11-22T23:00:23-06:00",
+    "commit_url": "https://github.com/fleetdm/fleet/commit/a57b918c0e3e2c3648a8d2691ba11105b9d68211"
   },
   "fleets": [
     {

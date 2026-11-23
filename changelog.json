@@ -1,5 +1,31 @@
 [
   {
+    "sha": "a57b918c0e3e2c3648a8d2691ba11105b9d68211",
+    "short_sha": "a57b918c0e",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux OS up-to-date policy: Debian 13.8+deb13u7->13.8+deb13u8 (#59551)",
+    "timestamp": "2026-11-22T23:00:23-06:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/latest-linux.yml"
+    ]
+  },
+  {
+    "sha": "3a6ae1454cc537c4112fa4b6806a97048ccde66c",
+    "short_sha": "3a6ae1454c",
+    "author": "Allen Houchins",
+    "email": "32207388+allenhouchins@users.noreply.github.com",
+    "message": "Bump Linux Claude Desktop patch policy to 6.28899.6 (#59550)",
+    "timestamp": "2026-11-22T23:00:03-06:00",
+    "insertions": 1,
+    "deletions": 1,
+    "files": [
+      "it-and-security/lib/linux/policies/update-claude.yml"
+    ]
+  },
+  {
     "sha": "91bcc926b0823af9edfb6b53a174f9d81b04e58e",
     "short_sha": "91bcc926b0",
     "author": "Allen Houchins",
@@ -7288,32 +7314,6 @@
     "deletions": 1,
     "files": [
       "it-and-security/lib/macos/policies/update-1password.yml"
-    ]
-  },
-  {
-    "sha": "c28d16282705603f5a5fb449ae17fabb5aca9475",
-    "short_sha": "c28d162827",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update personal-mobile-devices.yml (#28633)",
-    "timestamp": "2025-04-29T10:08:34-05:00",
-    "insertions": 0,
-    "deletions": 1,
-    "files": [
-      "it-and-security/teams/personal-mobile-devices.yml"
-    ]
-  },
-  {
-    "sha": "2ebfd8202564bace688db5595bea84b58a013db6",
-    "short_sha": "2ebfd82025",
-    "author": "Allen Houchins",
-    "email": "32207388+allenhouchins@users.noreply.github.com",
-    "message": "Update santa-test-devices.yml (#28519)",
-    "timestamp": "2025-04-24T09:55:43-05:00",
-    "insertions": 2,
-    "deletions": 0,
-    "files": [
-      "it-and-security/lib/all/labels/santa-test-devices.yml"
     ]
   }
 ]
